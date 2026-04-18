@@ -16,6 +16,8 @@ gridbridge/{direction}/{ven_id}/{type}
 | `gridbridge/ack/{ven_id}` | Edge→GB | EdgeAgent | GridBridge | 1 | 명령 수신 확인 |
 | `gridbridge/alert/{ven_id}` | Edge→GB | EdgeAgent | GridBridge | 2 | 인터록 작동/장애 알림 |
 | `gridbridge/status/{group_id}` | GB→VW | GridBridge | VWorld | 1 | 그룹 감축 현황 (30초) |
+| `vworld/telemetry/{ven_id}` | EA→VW | EdgeAgent | VWorld | 1 | 직접 텔레메트리 (경로3, GB 경유 없음) |
+| `vworld/alert/{ven_id}` | EA→VW | EdgeAgent | VWorld | 2 | 직접 알림 (인터록/장애, 경로3) |
 
 ## 페이로드 형식
 
