@@ -1,0 +1,21 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "energy-contracts/telemetry.json",
+  "title": "Telemetry",
+  "description": "설비 텔레메트리 — EdgeAgent→GridBridge (MQTT 5분 주기).",
+  "version": "1.0",
+  "type": "object",
+  "required": ["ven_id", "timestamp", "power_kw"],
+  "properties": {
+    "ven_id": { "type": "string" },
+    "timestamp": { "type": "string", "format": "date-time" },
+    "power_kw": { "type": "number", "description": "현재 전력 소비 (kW)" },
+    "indoor_temp_c": { "type": "number", "description": "실내 온도 (°C)" },
+    "hvac_setpoint_c": { "type": "number", "description": "에어컨 설정 온도 (°C)" },
+    "lighting_pct": { "type": "number", "minimum": 0, "maximum": 100, "description": "조명 디밍 (%)" },
+    "ess_soc_pct": { "type": "number", "minimum": 0, "maximum": 100, "description": "ESS 충전률 (%)" },
+    "ess_discharge_kw": { "type": "number", "description": "ESS 방전량 (kW)" },
+    "active_strategy": { "type": "string", "description": "현재 실행 중인 EMS 전략 ID" },
+    "schedule_slot_idx": { "type": "integer", "description": "현재 실행 중인 스케줄 슬롯 인덱스" }
+  }
+}

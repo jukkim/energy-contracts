@@ -1,0 +1,27 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "energy-contracts/control_command.json",
+  "title": "ControlCommand",
+  "description": "제어 명령 — VWorld/GridBridge→EdgeAgent. 즉시 실행 또는 스케줄 내 단일 슬롯.",
+  "version": "1.0",
+  "type": "object",
+  "required": ["strategy"],
+  "properties": {
+    "strategy": { "type": "string", "enum": ["M0", "M1", "M2", "M3", "M4", "M5", "M6", "M7", "M8"] },
+    "strategy_name": { "type": "string" },
+    "hvac_setpoint": { "type": "number", "minimum": 18, "maximum": 30 },
+    "lighting_pct": { "type": "number", "minimum": 0, "maximum": 100 },
+    "ess_discharge": { "type": "boolean" },
+    "duration_minutes": { "type": "integer", "minimum": 10, "maximum": 480 },
+    "constraints": {
+      "type": "object",
+      "properties": {
+        "max_indoor_temp_c": { "type": "number", "default": 28 },
+        "min_indoor_temp_c": { "type": "number", "default": 18 },
+        "min_ess_soc_pct": { "type": "number", "default": 10 },
+        "min_lighting_pct": { "type": "number", "default": 20 },
+        "emergency_lighting_exempt": { "type": "boolean", "default": true }
+      }
+    }
+  }
+}

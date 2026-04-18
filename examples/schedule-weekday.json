@@ -1,0 +1,23 @@
+{
+  "group_id": "KETS-MFG-001",
+  "name": "K-ETS 하절기 DR (평일)",
+  "days": [
+    {
+      "date": "2026-07-01",
+      "slots": [
+        { "start_time": "06:00", "end_time": "08:00", "reduction_kw": 100, "strategy": "M4", "priority": 2 },
+        { "start_time": "14:00", "end_time": "17:00", "reduction_kw": 300, "strategy": "M7", "condition": { "smp_above": 150 } },
+        { "start_time": "22:00", "end_time": "06:00", "reduction_kw": 50, "strategy": "M1" }
+      ]
+    },
+    {
+      "date": "2026-07-02",
+      "slots": [
+        { "start_time": "06:00", "end_time": "08:00", "reduction_kw": 100, "strategy": "M4" },
+        { "start_time": "14:00", "end_time": "17:00", "reduction_kw": 300, "strategy": "M7", "condition": { "smp_above": 150 } }
+      ]
+    }
+  ],
+  "recurrence": "weekdays",
+  "source": "gridbridge"
+}

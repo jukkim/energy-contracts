@@ -1,0 +1,19 @@
+{
+  "ven_id": "VEN-STORE-001",
+  "name": "오후 피크 감축",
+  "days": [
+    {
+      "date": "2026-04-19",
+      "slots": [
+        {
+          "start_time": "14:00",
+          "end_time": "17:00",
+          "reduction_kw": 200,
+          "strategy": "M5",
+          "priority": 1
+        }
+      ]
+    }
+  ],
+  "source": "vworld"
+}
