@@ -39,13 +39,69 @@
 | L-1 | `control_command.constraints` 에 object 설명 + 각 필드 기본값·단위 서술. required 없음이 의도적임을 명시. | |
 | L-2 | `CHANGELOG.md` 신설. v1.1 섹션에 `edge_registration v1.1 ↔ venue v1.1` 동기 관계 "둘 중 하나만 bump 금지" 명시. | v1.0 이력도 소급 기재 |
 
-### 합의 방법
+### VW 팀 최종 수락 (2026-04-19)
 
-### 합의 방법
+**6건 전부 수락.** Edge 처리 방식 동의.
+- M-1/M-2 절충안 (inline 유지 + common.json SSOT) 합리적. 스키마 20개 넘으면 $ref 전환 재검토.
+- common.json 추가로 스키마 10개 체제.
+- **v1.1 finalize 완료.**
 
-1. Edge 팀: 위 이슈 검토 후 `[x]` 체크 또는 반론 코멘트 추가
-2. 합의된 항목은 수정 PR 생성
-3. 수정 완료 후 `[x]`로 변경 + 수정 커밋 해시 기록
+### 합의 프로세스
+
+1. 리뷰 결과를 이 파일에 기록
+2. Edge 팀: `[x]` 체크 + 처리 방식 기록
+3. VW 팀: 수락/반론
+4. 양쪽 수락 → finalize
+
+---
+
+## 2026-04-19 라운드 2 — Phase B+ 구현 후속 문서 동기화 (Edge 팀 제안)
+
+Edge 측 Phase B+ 가 구현·실측 검증까지 완료된 시점에서, **VW·GB 프로젝트 내 문서**가 아직 갱신되지 않아 스펙 이행 상태와 내부 문서 간 괴리가 있다. Edge 팀 관할 밖이라 PR 은 못 올리지만, 본 리뷰 라운드로 각 팀에 공식 요청을 기록한다.
+
+### HIGH
+
+| # | 이슈 | 수신 팀 | 상태 |
+|---|------|:---:|:---:|
+| H2-1 | VW `docs/PRD.md` 에 관측형/제어형 수용가 시뮬레이션 섹션(§5.11 또는 유사)이 부재 — Phase CS(편의점 220 + E+ 가상) 기능 요구사항을 정식 PRD 엔트리로 추가 | VW | [ ] |
+| H2-2 | VW `docs/4-LAYER-ARCHITECTURE.md` 에 `venue.kind × backend` 이원 분류가 반영 안 됨 — §9 수용가 이분화 섹션(GB 라우팅 분기·ESG 그룹 4종·가상 PNU 규칙) 추가 필요 | VW | [ ] |
+| H2-3 | GB `docs/DESIGN.md` 가 아직 없음 — 이번 세션에 구현된 MqttBridge·AI Oracle·kind 라우팅·DR dispatch→MQTT 자동 전파를 정식 설계문서로 고정 필요 | GB | [ ] |
+
+### MEDIUM
+
+| # | 이슈 | 수신 팀 | 상태 |
+|---|------|:---:|:---:|
+| M2-1 | VW 제어 라우터 `/api/v1/control/dispatch` 가 kind 체크 없이 관측형에도 command 를 발행하려 시도 — GB 쪽에 라우팅 스킵 로직은 있지만 VW 쪽에서 **미리 거부** 하면 불필요 MQTT 트래픽 감소 | VW | [ ] |
+| M2-2 | `smartbuilding` 포털 22 시뮬 중 현재 VW `frontend/control.html` 에는 7종만 iframe 임베드. GB 모니터 `/control` 은 22종 전부. **VW 측도 22 확장 권고** (또는 통일된 컴포넌트 공유) | VW | [ ] |
+| M2-3 | GB `ai_oracle.py` 환경변수(`GRIDBRIDGE_ORACLE_ENABLED` 등) 가 `CLAUDE.md` 에 기재 안 됨 — 운영팀 가시성 문제 | GB | [ ] |
+
+### LOW
+
+| # | 이슈 | 수신 팀 | 상태 |
+|---|------|:---:|:---:|
+| L2-1 | VW PRD 제어 사슬 다이어그램이 가상 PNU 99001/99002 규칙·ven_id 접두 네이밍 표기 없음 | VW | [ ] |
+| L2-2 | GB `CLAUDE.md` 에 `scripts/run_monitor.py` 경량 실행 경로 없음 — DB/Redis 없이 대시보드만 띄우는 시연용 경로 안내 필요 | GB | [ ] |
+
+### 관련 Edge 측 증빙
+
+처리 후 확인 가능한 Edge 문서:
+- `edge-agent/docs/PDR.md` v0.5 §1.0 · §13.b
+- `edge-agent/docs/RFC-CUSTOMER-SIMULATION.md` v0.2 (Implemented)
+- `edge-agent/docs/DEPLOYMENT.md` — 실 편의점 CSV + E+ plugin 기동 예제
+- `edge-agent/CLAUDE.md` §4 운영 원칙
+- `energy-contracts/CHANGELOG.md` v1.1 — finalized 스펙 10종
+
+### Edge 팀 의견
+
+- H2-1·H2-2 는 **VW 팀이 기존 PRD/4-LAYER 에 섹션 신설** 하는 게 맞음. Edge 측은 요구사항·인터페이스만 `energy-contracts` 와 `edge-agent/docs/` 에 완결.
+- H2-3 GB 설계문서는 내가 세션 중 구현했지만 **정식 설계 서술은 GB 팀 관할**. 이번 세션 커밋(`995a8aa`·`431afa4`·`32768f3`·`539861f`·`df2ceaf`) 을 근거로 작성하면 됨.
+- 본 라운드 6건은 스펙 자체 변경 없음 — **프로젝트 내 문서 갱신 요청** 만. 스펙 `v1.1` 은 그대로 유지.
+
+### 처리 가이드
+
+각 수신 팀이 해당 항목 처리 후:
+1. `[x]` 체크 + 처리 커밋 해시 기록
+2. (선택) 이 라운드 말미에 "VW 팀 응답"·"GB 팀 응답" 섹션 추가
 
 ---
 
