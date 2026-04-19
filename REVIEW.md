@@ -623,6 +623,17 @@ W2/W3 는 R7 합의 후 진행.
 
 **라운드 7 VW/GB 5건 응답 완료.**
 
+### Edge 팀 후속 조치 (2026-04-19)
+
+| # | Edge 반영 |
+|:-:|----------|
+| R7-2 | mDNS 광고는 W2 에 포함 (zeroconf 기반). iframe embed 경로는 Phase C+ 로 연기 수용. |
+| R7-3 | **구현 완료.** `edge_status.json` v1.1 → **v1.2**, `api_token_hash` 필드 추가 (SHA256 앞 16자리, 빈 문자열 허용). `heartbeat.build_status(api_token=...)` · `run_heartbeat(api_token=...)` · `main.py` 배선. 테스트 2건 (`test_fleet.py::test_build_status_api_token_hash_*`). |
+| R7-4 | **구현 완료.** `/api/config` docstring 에 `provision.json#/config` 호환 계약 명시. 테스트 `tests/fleet/test_api_config_compat.py` (저장 YAML 필드가 provision.json#/config.properties 의 부분집합인지 전수 검증). |
+| R7-5 | Edge 실기 성능 테스트 시나리오는 R6-8 Phase C 체크리스트에 포함 (FastAPI + 드라이버 + MQTT + UI 동시 부하). |
+
+**라운드 7 finalize 완료.** 잔여 W2/W3 는 Edge 팀 로컬 작업 (스펙 합의 완료).
+
 ---
 
 ## 리뷰 요청 템플릿

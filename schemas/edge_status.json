@@ -3,7 +3,7 @@
   "$id": "energy-contracts/edge_status.json",
   "title": "EdgeStatus",
   "description": "EdgeAgent heartbeat + 설비·드라이버 상태. Edge → GB (보통 30~60초 주기).",
-  "version": "1.1",
+  "version": "1.2",
   "type": "object",
   "required": ["ven_id", "timestamp", "state", "uptime_sec"],
   "properties": {
@@ -68,6 +68,11 @@
       "type": "string",
       "format": "date-time",
       "description": "Edge 측 설정 파일 마지막 반영 시각. VW 중앙 설정의 updated_at 과 비교하여 신선도 확인."
+    },
+    "api_token_hash": {
+      "type": "string",
+      "pattern": "^[a-f0-9]{16}$|^$",
+      "description": "Edge 로컬 HTTP API (R7 W1) 토큰의 SHA256 앞 16자리. VW/GB 가 현장 토큰 재생성·드리프트 탐지용. 토큰 미설정(=localhost only) 이면 빈 문자열 또는 생략. v1.2 (R7-3, 2026-04-19)."
     }
   }
 }
