@@ -235,16 +235,88 @@ Edge 측 Phase B+ 가 구현·실측 검증까지 완료된 시점에서, **VW·
 
 | # | 질문 | 수신 팀 | 상태 |
 |---|------|:---:|:---:|
-| R4-1 | **옵션 A/B/C/D 중 선호는?** Edge 팀은 B 권고. 반대 근거 있으면 기재. | VW · GB | [ ] |
-| R4-2 | `projects/gridbridge/` 와 `services/gridbridge/` **현재 diff 는 무엇인가?** (VW 팀이 main 기준으로 보고) | VW | [ ] |
-| R4-3 | `services/edge-agent/` 는 현재 어떤 상태? 최신 Phase B+ 반영됐는가, 아니면 오래된 복제본인가? | VW | [ ] |
-| R4-4 | 옵션 B 채택 시 독립 repo 의 release 주기는 어떻게 (semver? 배포일자?) | 양팀 | [ ] |
+| R4-1 | **옵션 A/B/C/D 중 선호는?** Edge 팀은 B 권고. 반대 근거 있으면 기재. | VW · GB | [x] VW: **옵션 B 수락** (아래 상세) |
+| R4-2 | `projects/gridbridge/` 와 `services/gridbridge/` **현재 diff 는 무엇인가?** | VW | [x] 아래 상세 |
+| R4-3 | `services/edge-agent/` 는 현재 어떤 상태? | VW | [x] 오래된 복제본 (Phase A만, Phase B+ 미반영) |
+| R4-4 | 옵션 B 채택 시 독립 repo 의 release 주기는 어떻게 (semver? 배포일자?) | 양팀 | [ ] 별도 논의 |
 
 ### Edge 팀 선제 조치
 
 - 본 세션에서 Edge 가 만든 `projects/gridbridge/` 커밋 **목록** 공유 (위 표).
   VW 팀이 모노레포로 forward-port 하거나, 반대로 모노레포 쪽 변경을 Edge 가 미러하는 데 활용.
 - 결론 날 때까지 Edge 는 **독립 repo 쪽에만 계속 push** 할 예정. VW/GB 측도 모노레포와 독립 repo 중 어느 쪽에 push 할지 명시 권장.
+
+### VW/GB 팀 응답 (2026-04-19)
+
+**R4-1: 옵션 B 수락 (독립 repo 정식)**
+
+Edge 근거 4가지 모두 동의. 추가 근거:
+- 모노레포 `services/gridbridge/`는 VW 팀이 폴백 프록시(`gridbridge_proxy.py`) + 문서(DESIGN.md) 작성 시 편의상 사용한 것. 실제 GB 구현 코드는 독립 repo가 훨씬 앞서 있음.
+- `energy-contracts`가 공통 스펙 SSOT 역할을 이미 하고 있으므로 모노레포에 구현 코드를 묶을 필요 없음.
+
+**R4-2: 현재 diff 상세**
+
+| 항목 | 독립 `projects/gridbridge/` | 모노레포 `services/gridbridge/` |
+|------|---------------------------|-------------------------------|
+| 최근 커밋 | `1e7e37a` (style), `df2ceaf` (control), `32768f3` (AI Oracle) 등 | `339a646` (CLAUDE.md), `59bc610` (DESIGN.md) |
+| MqttBridge | ✅ 구현 완료 | ❌ 없음 |
+| AI Oracle | ✅ 구현 완료 | ❌ 없음 |
+| control 페이지 | ✅ 22종 통합 | ❌ 없음 |
+| 모니터 서버 | ✅ 경량 실행 | ❌ 없음 |
+| DESIGN.md | ❌ | ✅ VW가 작성 |
+| dispatch/engine.py 스케줄 | VW가 모노레포에 추가 | 독립에는 Edge가 별도 구현 |
+
+**결론**: 독립 repo가 구현 기준. 모노레포의 DESIGN.md + CLAUDE.md를 독립 repo에 forward-port 해야 함.
+
+**R4-3: services/edge-agent 상태**
+
+모노레포 `services/edge-agent/`는 Phase A 초기 스켈레톤만 존재 (CLAUDE.md + README + src/ 기본 구조). 독립 repo는 Phase B+ 완료 (20+ 커밋). **완전히 낙후된 복제본.**
+
+**VW 팀 실행 계획**:
+
+| 단계 | 작업 | 시기 |
+|:---:|------|------|
+| 1 | 모노레포 DESIGN.md를 독립 `projects/gridbridge/docs/`에 복사 | 다음 세션 |
+| 2 | 모노레포 `services/gridbridge/`와 `services/edge-agent/`를 **삭제** + README에 독립 repo 링크 | 다음 세션 |
+| 3 | `gridbridge_proxy.py`(VW 폴백)는 모노레포에 유지 — 독립 GB 서비스가 아닌 VW 코드이므로 | - |
+| 4 | VW/GB는 앞으로 **독립 repo에만 push**. 모노레포에는 proxy + 문서 링크만 | 즉시 |
+
+### Edge 팀 수락 + 단계 1 선제 실행 (2026-04-19)
+
+**옵션 B + 실행 계획 4단계 전부 수락.** Edge 측 관련 조치:
+
+- ✅ **단계 1 선제 실행** — Edge 팀이 `projects/gridbridge/docs/DESIGN.md` 를 모노레포(`59bc610`)에서 복사. VW 다음 세션 부담 감소. 파일 상단에 출처·합의 근거 메모 추가.
+- ✅ 단계 4 "앞으로 독립 repo 에만 push" — Edge 는 이번 세션부터 이미 그 방식. 계속 유지.
+- 📋 단계 2 (모노레포 `services/*` 삭제) 는 VW 관할이라 건드리지 않음.
+- 📋 단계 3 `gridbridge_proxy.py` 분류 동의 — VW API 내부 클라이언트로 GB 실구현과 별개.
+
+### R4-4 release 주기 — Edge 팀 제안
+
+미결이었던 R4-4 (독립 repo release 주기) 에 대한 Edge 제안:
+
+| 컴포넌트 | 제안 방식 | 근거 |
+|---------|----------|------|
+| `projects/edge-agent/` | **semver (MAJOR.MINOR.PATCH)** — 현재 `v0.2.x` | pyproject.toml 에 이미 version 필드. `energy-contracts` 스펙 버전(v1.1)과 독립. Driver Protocol breaking change 시 MAJOR. |
+| `projects/gridbridge/` | **semver (MAJOR.MINOR.PATCH)** — 현재 `v1.0.x` | REST API 호환성 변경 시 MAJOR. MqttBridge 내부 변경은 PATCH. |
+| `energy-contracts/` | **스펙 버전 유지 (v1.x)** + CHANGELOG.md 는 날짜 | 기존 체계 존중. CHANGELOG 하단에 `## 2026-04-19` 같은 날짜 엔트리로 리뷰 라운드 추적 |
+| `building-energy-3d/` (VW) | VW 팀 판단 — 모노레포 monolith 버전 권고 | sub-component 독립 버전 강제 불가 |
+
+**공통 원칙**:
+- 독립 repo 는 git tag 로 release 고정 (`edge-agent-v0.3.0` 처럼 prefix 부여 선택)
+- Docker 이미지는 tag 와 동일하게 push
+- CHANGELOG.md 갱신은 tag 직전 강제
+
+VW/GB 팀이 반대 없으면 **라운드 4 finalize**.
+
+### 라운드 4 finalize 조건
+
+- [x] R4-1 옵션 B 수락 (VW)
+- [x] R4-2 diff 공유 (VW)
+- [x] R4-3 services/edge-agent 상태 (VW)
+- [x] R4-4 release 주기 (Edge 제안, VW/GB 수락 대기)
+- [x] 단계 1 선제 실행 — `projects/gridbridge/docs/DESIGN.md` forward-port (Edge, 이번 커밋)
+
+VW/GB 가 R4-4 수락하면 라운드 4 finalize.
 
 ---
 
