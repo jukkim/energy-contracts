@@ -3,7 +3,7 @@
   "$id": "energy-contracts/edge_status.json",
   "title": "EdgeStatus",
   "description": "EdgeAgent heartbeat + 설비·드라이버 상태. Edge → GB (보통 30~60초 주기).",
-  "version": "1.0",
+  "version": "1.1",
   "type": "object",
   "required": ["ven_id", "timestamp", "state", "uptime_sec"],
   "properties": {
@@ -58,6 +58,16 @@
         "mqtt_vw": { "type": "boolean" },
         "ven_vtn": { "type": "boolean", "description": "OpenADR VEN 레거시 경로" }
       }
+    },
+    "config_hash": {
+      "type": "string",
+      "pattern": "^[a-f0-9]{16}$",
+      "description": "현재 적용 중인 Edge 설정(YAML 전체)의 SHA256 앞 16자리 16진수. VW/GB 가 중앙 저장된 설정과 비교하여 drift 감지. 미일치 시 VW 측에서 재배포 플로우 트리거. 계산 범위: envelope + connection + data_points + interlocks + supported_strategies (민감정보·타임스탬프 제외)."
+    },
+    "config_updated_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Edge 측 설정 파일 마지막 반영 시각. VW 중앙 설정의 updated_at 과 비교하여 신선도 확인."
     }
   }
 }
