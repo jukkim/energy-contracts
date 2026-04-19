@@ -72,7 +72,7 @@ Edge 측 Phase B+ 가 구현·실측 검증까지 완료된 시점에서, **VW·
 | # | 이슈 | 수신 팀 | 상태 |
 |---|------|:---:|:---:|
 | M2-1 | VW 제어 라우터 `/api/v1/control/dispatch` 가 kind 체크 없이 관측형에도 command 를 발행하려 시도 — GB 쪽에 라우팅 스킵 로직은 있지만 VW 쪽에서 **미리 거부** 하면 불필요 MQTT 트래픽 감소 | VW | [x] control_router.py에 kind=telemetry 거부 로직 추가 |
-| M2-2 | `smartbuilding` 포털 22 시뮬 중 현재 VW `frontend/control.html` 에는 7종만 iframe 임베드. GB 모니터 `/control` 은 22종 전부. **VW 측도 22 확장 권고** (또는 통일된 컴포넌트 공유) | VW | [ ] 다음 세션 |
+| M2-2 | `smartbuilding` 포털 22 시뮬 중 현재 VW `frontend/control.html` 에는 7종만 iframe 임베드. GB 모니터 `/control` 은 22종 전부. **VW 측도 22 확장 권고** (또는 통일된 컴포넌트 공유) | VW | [ ] 다음 세션 — Edge 지원 패키지 아래 ↓ |
 | M2-3 | GB `ai_oracle.py` 환경변수(`GRIDBRIDGE_ORACLE_ENABLED` 등) 가 `CLAUDE.md` 에 기재 안 됨 — 운영팀 가시성 문제 | GB | [x] CLAUDE.md에 MQTT_BROKER_URL, ORACLE_ENABLED, 시연 경로 추가 |
 
 ### LOW
@@ -238,7 +238,7 @@ Edge 측 Phase B+ 가 구현·실측 검증까지 완료된 시점에서, **VW·
 | R4-1 | **옵션 A/B/C/D 중 선호는?** Edge 팀은 B 권고. 반대 근거 있으면 기재. | VW · GB | [x] VW: **옵션 B 수락** (아래 상세) |
 | R4-2 | `projects/gridbridge/` 와 `services/gridbridge/` **현재 diff 는 무엇인가?** | VW | [x] 아래 상세 |
 | R4-3 | `services/edge-agent/` 는 현재 어떤 상태? | VW | [x] 오래된 복제본 (Phase A만, Phase B+ 미반영) |
-| R4-4 | 옵션 B 채택 시 독립 repo 의 release 주기는 어떻게 (semver? 배포일자?) | 양팀 | [ ] 별도 논의 |
+| R4-4 | 옵션 B 채택 시 독립 repo 의 release 주기는 어떻게 (semver? 배포일자?) | 양팀 | [x] VW/GB 수락 — Edge 제안(semver + git tag + Docker 동기 + CHANGELOG 강제) 동의 |
 
 ### Edge 팀 선제 조치
 
@@ -316,7 +316,99 @@ VW/GB 팀이 반대 없으면 **라운드 4 finalize**.
 - [x] R4-4 release 주기 (Edge 제안, VW/GB 수락 대기)
 - [x] 단계 1 선제 실행 — `projects/gridbridge/docs/DESIGN.md` forward-port (Edge, 이번 커밋)
 
-VW/GB 가 R4-4 수락하면 라운드 4 finalize.
+### VW/GB 팀 R4-4 수락 (2026-04-19)
+
+**R4-4 release 주기 수락.** Edge 제안 그대로:
+
+| 컴포넌트 | 방식 | 현재 버전 |
+|---------|------|----------|
+| edge-agent | semver | v0.2.x |
+| gridbridge | semver | v1.0.x |
+| energy-contracts | 스펙 v1.x + CHANGELOG 날짜 | v1.1 |
+| building-energy-3d | VW 판단 (모노레포) | - |
+
+공통 원칙 (git tag + Docker 이미지 = 동일 버전 + CHANGELOG 강제) 동의.
+
+**라운드 4 finalize 완료.**
+
+---
+
+## 2026-04-19 라운드 5 — Edge 팀 M2-2 지원 패키지 (VW 착수용)
+
+라운드 2 M2-2(`control.html` 22종 확장) 를 VW 가 빨리 처리하도록 Edge 가 작업 패키지를 제공.
+
+### 22 시뮬 SSOT 테이블
+
+출처: `projects/gridbridge/static/control.html:165-190` (GB 모니터 실동작 목록).
+
+```js
+const PORTAL = 'https://smartbuilding-portal.vercel.app';
+const SIMS = [
+  // AI 11종
+  ['energy_forecast',   'AI·에너지 예측'],
+  ['hvac_anomaly',      'AI·HVAC 이상탐지'],
+  ['ems_strategy',      'AI·EMS 전략'],
+  ['load_prediction',   'AI·부하 예측'],
+  ['occupancy',         'AI·재실 예측'],
+  ['equipment_pdm',     'AI·예지보전'],
+  ['llm_qa',            'AI·LLM QA'],
+  ['rl_control',        'AI·강화학습 제어'],
+  ['mlops_monitoring',  'AI·MLOps 모니터'],
+  ['automl_tuning',     'AI·AutoML 튜닝'],
+  ['mpc_surrogate',     'AI·MPC 서로게이트'],
+  // Smart 11종
+  ['digital_twin',      '스마트·디지털 트윈'],
+  ['demand_response',   '스마트·수요반응'],
+  ['indoor_comfort',    '스마트·실내 쾌적'],
+  ['carbon_analysis',   '스마트·탄소 분석'],
+  ['smart_city',        '스마트·스마트시티'],
+  ['virtual_sensor',    '스마트·가상 센서'],
+  ['bas_architecture',  '스마트·BAS 아키텍처'],
+  ['der_management',    '스마트·DER 관리'],
+  ['ot_security',       '스마트·OT 보안'],
+  ['commissioning',     '스마트·커미셔닝'],
+  ['energy_dashboard',  '스마트·에너지 대시보드'],
+];
+// iframe src 규칙: `${PORTAL}/${key}_simulator.html`
+```
+
+### 권장 구현 방식 (VW 선택)
+
+**옵션 A — GB 방식 그대로 복붙** (가장 빠름)
+- `projects/gridbridge/static/control.html:269-301` (buildTechTabs 함수) 그대로 VW `control.html` 에 포팅.
+- 탭 버튼 + iframe lazy-load 패턴 포함. **첫 탭만 즉시 로드, 나머지는 클릭 시 `data-src→src` 승격** → 네트워크 부하 최소화.
+- 스타일: GB 는 라이트 테마 13px base. VW rem 체계와 호환.
+
+**옵션 B — 공통 컴포넌트 분리** (중장기)
+- `projects/smartbuilding/web/components/sim-tabs.js` 로 추출 → VW·GB 양쪽에서 `<sim-tabs>` 웹컴포넌트로 include.
+- 22 목록이 한 곳에만 존재 → 향후 추가/삭제 시 단일 수정점.
+- 옵션 A 먼저 반영 후 옵션 B 로 이행 권고.
+
+### L2-1 PNU/ven_id 표기 지원 (같은 라운드 묶음)
+
+VW PRD 제어사슬 다이어그램 주석에 추가할 표기 규칙 — `energy-contracts/CHANGELOG.md` v1.1 + `edge-agent/CLAUDE.md` §VW합의매핑 요약:
+
+| 분류 | 가상 PNU | ven_id 접두 | group_id | 예 |
+|------|---------|------------|----------|----|
+| 관측형 편의점 100그룹 | `99001xxxxx` | `VEN-STORE-B###` | `ESG-STORE-100` | `VEN-STORE-B001` |
+| 관측형 편의점 120그룹 | `99002xxxxx` | `VEN-STORE-RGR######` | `ESG-STORE-120` | `VEN-STORE-RGR000123` |
+| 제어형 E+ 가상 | (N/A — 가상) | `VEN-EP-{SEQ}` | `ESG-EP-OFFICE`·`ESG-EP-APT` | `VEN-EP-OFFICE-01` |
+| 실물 설비 | 실 PNU | `VEN-REAL-{SEQ}` | (건물별 지정) | `VEN-REAL-MBUS-01` |
+| 테스트/E2E | (N/A) | `VEN-TEST-###`·`VEN-E2E-###` | - | - |
+
+### 라운드 5 질의
+
+| # | 질문 | 수신 팀 | 상태 |
+|---|------|:---:|:---:|
+| R5-1 | 옵션 A 채택? (아니면 B) | VW | [ ] |
+| R5-2 | L2-1 PNU 표기를 PRD 다이어그램 주석으로 반영 가능? | VW | [ ] |
+| R5-3 | GB 의 `control.html:269-301` 을 직접 복붙해도 저작권/구조 문제 없는가? (같은 조직 내부지만 확인) | GB | [ ] |
+
+### Edge 팀 선제 조치
+
+- 본 라운드에 22 SIM SSOT 테이블 + iframe 규칙 + lazy-load 로직 참조 지점 명시.
+- VW 가 질문 시 Edge 가 `buildTechTabs` 함수 단독 파일로 추출해 PR 제공 가능.
+- 결정 완료 → R2 M2-2·L2-1 자동 closure.
 
 ---
 
