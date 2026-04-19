@@ -9,8 +9,8 @@
   "properties": {
     "ven_id": {
       "type": "string",
-      "description": "ven_id 네이밍 규칙: VEN-STORE-xxx(관측형 편의점) · VEN-EP-xxx(E+ 가상) · VEN-REAL-xxx(실 설비)",
-      "pattern": "^VEN-(STORE|EP|REAL|TEST|E2E|SHOP|A\\d+|B\\d+)-[A-Z0-9]+$"
+      "description": "ven_id 네이밍 규칙: VEN-STORE-xxx(관측형 편의점) · VEN-EP-xxx(E+ 가상) · VEN-REAL-xxx(실 설비) · VEN-TEST-xxx · VEN-E2E-xxx. 접두 뒤엔 영숫자·하이픈 조합 자유.",
+      "pattern": "^VEN-(STORE|EP|REAL|TEST|E2E|SHOP)-[A-Z0-9][A-Z0-9\\-]*$"
     },
     "edge_type": {
       "type": "string",
