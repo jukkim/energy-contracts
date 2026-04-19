@@ -1,0 +1,49 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "energy-contracts/control_response.json",
+  "title": "ControlResponse",
+  "description": "제어 명령 적용 결과. Edge → GB/VW 피드백. ack의 상세 payload로 사용하거나 별도 토픽으로 발행 가능.",
+  "version": "1.0",
+  "type": "object",
+  "required": ["ven_id", "correlation_id", "status", "applied_at"],
+  "properties": {
+    "ven_id": { "type": "string" },
+    "correlation_id": { "type": "string", "description": "원 명령의 correlation_id. 왕복 매칭 키." },
+    "status": {
+      "type": "string",
+      "enum": ["applied", "clamped", "rejected", "queued", "failed"],
+      "description": "applied=요청대로, clamped=인터록으로 일부 제한, rejected=거부, queued=로컬 큐 적재, failed=드라이버 오류"
+    },
+    "applied_at": { "type": "string", "format": "date-time" },
+    "strategy": { "type": "string", "pattern": "^M[0-8]$" },
+    "strategy_name": { "type": "string" },
+    "requested": {
+      "type": "object",
+      "description": "사용자가 요청한 원값. control_command.json 의 부분집합.",
+      "additionalProperties": true
+    },
+    "actual": {
+      "type": "object",
+      "description": "실제 적용된 값(인터록 클램프 후).",
+      "properties": {
+        "hvac_setpoint_c": { "type": "number" },
+        "lighting_pct": { "type": "number" },
+        "ess_discharge_kw": { "type": "number" }
+      },
+      "additionalProperties": true
+    },
+    "interlocks": {
+      "type": "array",
+      "items": { "type": "string" },
+      "description": "발동한 인터록 메시지 목록(예: 'HVAC 상한 제한: 28°C')"
+    },
+    "baseline_kw": { "type": "number", "description": "감축 계산 기준 전력" },
+    "current_kw": { "type": "number", "description": "적용 직후 관측/시뮬 전력" },
+    "reduction_kw": { "type": "number", "description": "baseline - current" },
+    "simulation_step": {
+      "type": "integer", "minimum": 0,
+      "description": "backend=energyplus 일 때 누적 스텝 번호 (선택)"
+    },
+    "error": { "type": "string", "description": "status=failed/rejected 일 때 사유" }
+  }
+}

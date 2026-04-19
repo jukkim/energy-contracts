@@ -1,0 +1,63 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "energy-contracts/edge_status.json",
+  "title": "EdgeStatus",
+  "description": "EdgeAgent heartbeat + 설비·드라이버 상태. Edge → GB (보통 30~60초 주기).",
+  "version": "1.0",
+  "type": "object",
+  "required": ["ven_id", "timestamp", "state", "uptime_sec"],
+  "properties": {
+    "ven_id": { "type": "string" },
+    "timestamp": { "type": "string", "format": "date-time" },
+    "state": {
+      "type": "string",
+      "enum": ["online", "degraded", "offline", "booting"],
+      "description": "online=정상, degraded=일부 드라이버 단절, offline=곧 종료/응답불가, booting=기동중"
+    },
+    "uptime_sec": { "type": "integer", "minimum": 0 },
+    "edge_agent_version": { "type": "string" },
+    "queue": {
+      "type": "object",
+      "description": "로컬 outbox 큐 상태(브로커 단절 내성).",
+      "properties": {
+        "size": { "type": "integer", "minimum": 0 },
+        "oldest_age_sec": { "type": "integer" },
+        "max_age_sec": { "type": "integer" }
+      }
+    },
+    "drivers": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["name", "connected"],
+        "properties": {
+          "name": { "type": "string", "description": "예: virtual, energyplus, bacnet, modbus, replay" },
+          "connected": { "type": "boolean" },
+          "last_read_at": { "type": "string", "format": "date-time" },
+          "last_error": { "type": "string" },
+          "points_ok": { "type": "integer", "description": "정상 포인트 수" },
+          "points_err": { "type": "integer", "description": "오류 포인트 수" }
+        }
+      }
+    },
+    "ems": {
+      "type": "object",
+      "description": "현재 EMS 실행 상태.",
+      "properties": {
+        "active_strategy": { "type": "string", "pattern": "^M[0-8]$" },
+        "schedule_slot_idx": { "type": "integer" },
+        "schedule_id": { "type": "string" },
+        "interlocks_fired_1h": { "type": "integer", "minimum": 0 }
+      }
+    },
+    "links": {
+      "type": "object",
+      "description": "외부 연결 상태.",
+      "properties": {
+        "mqtt_gb": { "type": "boolean" },
+        "mqtt_vw": { "type": "boolean" },
+        "ven_vtn": { "type": "boolean", "description": "OpenADR VEN 레거시 경로" }
+      }
+    }
+  }
+}

@@ -35,6 +35,27 @@ VWorld (L1) ──경로1──→ GridBridge (L2) ──→ EdgeAgent (L3) ×N
 2. 스키마 필드 추가는 자유, **필드 삭제/이름 변경은 금지** (하위 호환)
 3. 각 프로젝트 CLAUDE.md에 이 프로젝트 참조 명시
 4. 버전 태그로 호환성 관리: `v1.0`, `v1.1` (minor = 필드 추가, major = 호환 깨짐)
+5. **변경 제안은 PR로**. VW/GB 측과 Edge 측 양쪽 리뷰 후 머지. 스펙에 없는 필드는 수신자가 무시(forward-compat).
+
+## 수용가(VEN) 분류 용어
+
+이 플랫폼은 수용가를 운영 모드 기준으로 이분한다:
+
+| 분류 | 한글 용어 | 영문 용어 (스키마 `kind`) | 대표 예 | 제어 가능 | 데이터 |
+|------|---------|--------------------------|--------|:---:|------|
+| 관측형 수용가 | Telemetry VEN / Observable | `telemetry` | 편의점 220채 (DB replay) | X (read-only) | 단일 채널 시간별 |
+| 제어형 수용가 | Dispatchable VEN | `dispatch` | E+ 가상, 실 설비(BACnet/Modbus) | O (양방향) | 다채널, Tier A 15+ 필드 |
+
+GridBridge는 `venue.kind` 에 따라 `gridbridge/command/*`·`schedule/*` 발행을 분기(관측형 스킵). 구현 기술은 `backend: replay|energyplus|real_bas|virtual` 로 별도 기술한다.
+
+### ESG 사전 정의 그룹
+
+| group_id | 이름 | kind | 수량 | 용도 |
+|----------|------|:---:|:---:|------|
+| `ESG-STORE-100` | 편의점 100 (에너지) | telemetry | 100 | 실측 벤치마크 |
+| `ESG-STORE-120` | 편의점 120 (센서) | telemetry | 120 | 센서 분석 |
+| `ESG-EP-OFFICE` | E+ 가상 오피스 | dispatch | N | 제어 검증 |
+| `ESG-EP-APT` | E+ 가상 아파트 | dispatch | N | 제어 검증 |
 
 ## 디렉토리
 
@@ -42,28 +63,40 @@ VWorld (L1) ──경로1──→ GridBridge (L2) ──→ EdgeAgent (L3) ×N
 energy-contracts/
 ├── CLAUDE.md              ← 이 파일
 ├── schemas/               ← JSON Schema (SSOT)
-│   ├── reduction_schedule.json   — 감축 스케줄
-│   ├── dr_event.json             — DR 이벤트
-│   ├── telemetry.json            — 텔레메트리
-│   └── control_command.json      — 제어 명령
-├── openapi/               ← API 스펙 (OpenAPI 3.0)
-│   ├── vworld-api.yaml           — L1 공개 API
-│   ├── gridbridge-api.yaml       — L2 공개 API
-│   └── edge-api.yaml             — L3 공개 API
+│   ├── dr_event.json             — DR 이벤트 (GB 생성)
+│   ├── reduction_schedule.json   — 감축 스케줄 (VW/GB → Edge)
+│   ├── control_command.json      — 제어 명령 (VW/GB → Edge)
+│   ├── telemetry.json            — 텔레메트리 (Edge → GB/VW)
+│   ├── venue.json                — 수용가 레지스트리 (GB SSOT)         [v1.1]
+│   ├── virtual_prosumer.json     — E+ 가상 수용가 I/O 계약 (Edge)      [v1.0]
+│   ├── control_response.json     — 제어 결과 (Edge → GB/VW)            [v1.0]
+│   ├── edge_registration.json    — Edge 자동 등록 메타 (Edge → GB)     [v1.1]
+│   └── edge_status.json          — heartbeat + 설비·드라이버 (Edge)    [v1.0]
 ├── protocols/             ← 프로토콜 규칙
-│   ├── mqtt-topics.md            — MQTT 토픽 네이밍
-│   └── openleadr-profile.md      — OpenADR 프로파일
+│   ├── broker-architecture.md    — MQTT 브로커 배포·인증·Edge 유형 (VW)
+│   ├── mqtt-topics.md            — 토픽·QoS·retain·ACL·네이밍 (통합)
+│   └── openleadr-profile.md      — OpenADR 프로파일 (레거시)
+├── openapi/               ← API 스펙 (미정)
 └── examples/              ← 예제 JSON
     ├── schedule-simple.json
     ├── schedule-weekday.json
     └── telemetry-sample.json
 ```
 
+## 작성 책임 분담
+
+| 영역 | 작성 주체 | 리뷰어 |
+|------|:---:|:---:|
+| dr_event · reduction_schedule · control_command · broker-architecture | VW/GB 팀 | Edge 팀 |
+| telemetry(보강) · control_response · virtual_prosumer · edge_registration · edge_status | Edge 팀 | VW/GB 팀 |
+| mqtt-topics (통합) · venue · CLAUDE.md | 양쪽 공동 | 전원 |
+
 ## 버전
 
 | 버전 | 날짜 | 변경 |
 |:---:|:---:|------|
 | v1.0 | 2026-04-19 | 초기 스펙: 감축 스케줄, DR 이벤트, 텔레메트리, 제어 명령 |
+| v1.1 | 2026-04-19 | **관측형/제어형 이분화**. Edge측 스펙 4종 추가(virtual_prosumer, control_response, edge_registration, edge_status). venue.json 신설(kind+backend). mqtt-topics에 fleet/register · ACL · ven_id 네이밍 추가. |
 
 ## 참조하는 프로젝트
 

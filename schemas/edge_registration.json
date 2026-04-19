@@ -1,0 +1,93 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "energy-contracts/edge_registration.json",
+  "title": "EdgeRegistration",
+  "description": "EdgeAgent 기동 시 MQTT `fleet/register/{ven_id}` 또는 `gridbridge/registration/{ven_id}` 토픽으로 발행하는 자동 등록 메타. Edge → GB. VW broker-architecture §5 호환.",
+  "version": "1.1",
+  "type": "object",
+  "required": ["ven_id", "edge_type", "kind", "backend", "capabilities", "registered_at"],
+  "properties": {
+    "ven_id": {
+      "type": "string",
+      "description": "ven_id 네이밍 규칙: VEN-STORE-xxx(관측형 편의점) · VEN-EP-xxx(E+ 가상) · VEN-REAL-xxx(실 설비)",
+      "pattern": "^VEN-(STORE|EP|REAL|TEST|E2E|SHOP|A\\d+|B\\d+)-[A-Z0-9]+$"
+    },
+    "edge_type": {
+      "type": "string",
+      "enum": ["real_edge", "replay_edge", "energyplus_emulator"],
+      "description": "VW broker-architecture §4 호환. real_edge=실물 설비, replay_edge=DB replay 편의점, energyplus_emulator=E+ 가상 수용가"
+    },
+    "kind": {
+      "type": "string",
+      "enum": ["telemetry", "dispatch"],
+      "description": "운영 모드. telemetry=관측형(read-only), dispatch=제어형(양방향). 보통 replay_edge→telemetry, real_edge·energyplus_emulator→dispatch"
+    },
+    "backend": {
+      "type": "string",
+      "enum": ["replay", "energyplus", "real_bas", "virtual"],
+      "description": "구현 기술"
+    },
+    "building_type": {
+      "type": "string",
+      "enum": ["office_large","office_medium","office_small","hospital","school","retail","convenience_store","apartment","other"]
+    },
+    "group_id": {
+      "type": "string",
+      "description": "ESG 그룹. 예: ESG-STORE-100, ESG-STORE-120, ESG-EP-OFFICE, ESG-EP-APT"
+    },
+    "pnu": { "type": "string" },
+    "building_name": { "type": "string" },
+    "location": {
+      "type": "object",
+      "properties": {
+        "lat": { "type": "number" },
+        "lng": { "type": "number" }
+      }
+    },
+    "ep_model": {
+      "type": "string",
+      "description": "backend=energyplus 일 때 IDF 템플릿 식별자(예: medium_office_2010_RC)"
+    },
+    "baseline_kw": { "type": "number", "minimum": 0 },
+    "max_reduction_kw": { "type": "number", "minimum": 0 },
+    "capabilities": {
+      "type": "object",
+      "required": ["supported_strategies"],
+      "properties": {
+        "supported_strategies": {
+          "type": "array",
+          "items": { "type": "string", "pattern": "^M[0-8]$" }
+        },
+        "controllable_points": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "예: ['hvac_setpoint','lighting_pct','ess_discharge']"
+        },
+        "has_ess": { "type": "boolean", "default": false },
+        "has_pv": { "type": "boolean", "default": false },
+        "step_seconds": { "type": "integer", "minimum": 60, "description": "시뮬/계측 최소 타임스텝" }
+      }
+    },
+    "software": {
+      "type": "object",
+      "properties": {
+        "firmware_version": { "type": "string" },
+        "edge_agent_version": { "type": "string" },
+        "driver_types": {
+          "type": "array",
+          "items": { "type": "string", "enum": ["virtual","replay","energyplus","bacnet","modbus","matter"] }
+        }
+      }
+    },
+    "hardware": {
+      "type": "object",
+      "properties": {
+        "platform": { "type": "string", "description": "예: rpi5, x86-industrial, container" },
+        "cpu_cores": { "type": "integer" },
+        "memory_mb": { "type": "integer" }
+      }
+    },
+    "mqtt_client_id": { "type": "string" },
+    "registered_at": { "type": "string", "format": "date-time" }
+  }
+}
