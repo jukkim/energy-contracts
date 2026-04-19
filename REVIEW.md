@@ -180,6 +180,74 @@ Edge 측 Phase B+ 가 구현·실측 검증까지 완료된 시점에서, **VW·
 
 ---
 
+## 2026-04-19 라운드 4 — 모노레포 vs 독립 repo 동기화 정책 (Edge 팀 제안)
+
+### 배경
+
+라운드 3 H3-2 오판의 근본 원인은 같은 서비스가 두 경로에 공존한다는 사실 자체.
+
+| 경로 | 이번 세션 내 활동 |
+|------|------------------|
+| `projects/gridbridge/` (독립) | Edge 팀 · MqttBridge(`995a8aa`)·DR dispatch(`431afa4`)·AI Oracle(`32768f3`)·monitor(`539861f`)·control.html(`df2ceaf`) |
+| `projects/building-energy-3d/services/gridbridge/` (모노레포) | VW/GB 팀 · DESIGN.md(`59bc610`)·CLAUDE.md(`339a646`)·control_router text import(`4dc84f5`) |
+| `projects/edge-agent/` (독립) | Edge 팀 · Phase A/B/B+ 전부(약 20 커밋) |
+| `projects/building-energy-3d/services/edge-agent/` (모노레포) | (미확인 — 추측: 오래된 복제본) |
+
+두 경로가 각자 진화 중이며 **어느 쪽이 정식(authoritative)인지 합의 없음**. 조기 합의 안 하면:
+- 기능이 한 쪽에만 들어가 다른 쪽이 낙후
+- 배포 시 어느 이미지를 쓰는지 모호
+- 리뷰 검증 시 범위 오판 반복
+
+### 옵션 비교
+
+| 옵션 | 설명 | 장점 | 단점 |
+|:---:|------|------|------|
+| A | **모노레포 정식** — 독립 repo 는 배포 미러 (CI 가 push) | 단일 편집 지점, 문서·코드 통합 | 독립 배포 단위(Edge RPi·GB 서비스)가 거대 repo에 묶임. clone 부담 |
+| B | **독립 repo 정식** — 모노레포는 `services/` 삭제 또는 submodule 로 전환 | 배포 독립성 유지, Edge 하드웨어 이미지 경량 | 통합 개발 편의 일부 상실 |
+| C | **하이브리드** — 코드는 독립, 문서는 모노레포 집중. `services/` 는 git submodule | 각 장점 일부 취함 | submodule 운영 복잡, CI 이중화 |
+| D | **현행 이중 관리** — 필요 시 수동 sync | 단기 제약 없음 | 장기적 분기·혼란(지금) |
+
+### Edge 팀 엔지니어링 답변
+
+**권고: 옵션 B (독립 repo 정식)**
+
+근거 4가지:
+
+1. **배포 독립성이 구조적 제약**. Edge 는 RPi·산업 게이트웨이 N개에 독립 배포되는 실물 컴포넌트. GridBridge 도 권역별 멀티 인스턴스로 배포. 모노레포 자체가 배포 단위일 수 없다. 독립 repo 는 이 현실을 이미 반영 중.
+
+2. **모노레포 가치는 *도구*로 대체 가능**. 통합 개발·디버깅 편의는 `docker-compose.all.yml`(이미 존재)·`requirements-dev.txt` meta·IDE 워크스페이스로 충분. 모노레포가 제공하는 "한번에 보기" 는 `build-energy-3d/services/*` 를 **submodule 로 전환** 하면 유지된다.
+
+3. **이번 세션의 혼란 자체가 옵션 B 필요성의 증거**. Edge 팀이 `projects/gridbridge/` 에 작업한 것은 **직관적이고 정상**. 모노레포 복제본 존재를 몰랐던 건 "Edge 는 독립 서비스" 라는 올바른 멘탈 모델이 있었기 때문. 그 멘탈을 구조로 확정해야.
+
+4. **공통 스펙은 이미 `energy-contracts/` 로 분리**돼 있음. 두 경로 차이는 **구현**에만 존재. 구현을 하나로 통일하면 두 경로가 자동 수렴.
+
+**구체 실행 계획 (제안)**:
+
+| 단계 | 작업 | 담당 |
+|:---:|------|:---:|
+| 1 | `projects/gridbridge/` vs `services/gridbridge/` diff 확인 — 무엇이 어긋나 있는지 전수 | 양팀 |
+| 2 | 어긋난 부분을 독립 repo 쪽으로 forward-port (또는 반대) 합의 | 양팀 |
+| 3 | 모노레포 `services/gridbridge/` 를 `projects/gridbridge/` git submodule 로 교체 (또는 삭제 + README.md 에 링크) | VW 팀 (모노레포 관할) |
+| 4 | edge-agent 도 동일 원칙 적용 | VW 팀 |
+| 5 | CI 에 "양쪽 커밋 경고" 훅 설정 — 실수로 `services/` 에 코드 커밋 시 경고 | VW 팀 |
+
+### 라운드 4 질의
+
+| # | 질문 | 수신 팀 | 상태 |
+|---|------|:---:|:---:|
+| R4-1 | **옵션 A/B/C/D 중 선호는?** Edge 팀은 B 권고. 반대 근거 있으면 기재. | VW · GB | [ ] |
+| R4-2 | `projects/gridbridge/` 와 `services/gridbridge/` **현재 diff 는 무엇인가?** (VW 팀이 main 기준으로 보고) | VW | [ ] |
+| R4-3 | `services/edge-agent/` 는 현재 어떤 상태? 최신 Phase B+ 반영됐는가, 아니면 오래된 복제본인가? | VW | [ ] |
+| R4-4 | 옵션 B 채택 시 독립 repo 의 release 주기는 어떻게 (semver? 배포일자?) | 양팀 | [ ] |
+
+### Edge 팀 선제 조치
+
+- 본 세션에서 Edge 가 만든 `projects/gridbridge/` 커밋 **목록** 공유 (위 표).
+  VW 팀이 모노레포로 forward-port 하거나, 반대로 모노레포 쪽 변경을 Edge 가 미러하는 데 활용.
+- 결론 날 때까지 Edge 는 **독립 repo 쪽에만 계속 push** 할 예정. VW/GB 측도 모노레포와 독립 repo 중 어느 쪽에 push 할지 명시 권장.
+
+---
+
 ## 리뷰 요청 템플릿
 
 ```
