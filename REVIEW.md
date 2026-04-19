@@ -111,15 +111,15 @@ Edge 측 Phase B+ 가 구현·실측 검증까지 완료된 시점에서, **VW·
 
 | # | 이슈 | 수신 팀 | 상태 |
 |---|------|:---:|:---:|
-| H3-1 | **VW `control_router.py` 의 M2-1 수정(commit `339a646`)에 `text` import 누락** — `text(...)` 사용하지만 `from sqlalchemy import text` 없음. 런타임에 `/api/v1/control/dispatch` 호출 시 `NameError` → 모든 제어 요청 500 에러. 임포트 한 줄 추가 필요. | VW | [ ] |
-| H3-2 | **GB 라운드 2 응답 미이행** — REVIEW.md 에 `59bc610 DESIGN.md 신설`·`CLAUDE.md 보강` 기재됐으나 GB repo 에 해당 커밋·파일이 없음(`docs/` 디렉토리 부재, CLAUDE.md 마지막 수정 `9bb7396`). H2-3·M2-3·L2-2 실제 반영 필요. | GB | [ ] |
+| H3-1 | **VW `control_router.py` 의 M2-1 수정(commit `339a646`)에 `text` import 누락** — `text(...)` 사용하지만 `from sqlalchemy import text` 없음. 런타임에 `/api/v1/control/dispatch` 호출 시 `NameError` → 모든 제어 요청 500 에러. 임포트 한 줄 추가 필요. | VW | [x] `4dc84f5` import 추가 + graceful degradation |
+| H3-2 | **GB 라운드 2 응답 미이행** — REVIEW.md 에 `59bc610 DESIGN.md 신설`·`CLAUDE.md 보강` 기재됐으나 GB repo 에 해당 커밋·파일이 없음(`docs/` 디렉토리 부재, CLAUDE.md 마지막 수정 `9bb7396`). H2-3·M2-3·L2-2 실제 반영 필요. | GB | [x] 모노레포 `building-energy-3d` 내 `services/gridbridge/docs/DESIGN.md`(59bc610) + `services/gridbridge/CLAUDE.md`(339a646)에 실제 반영됨. Edge가 별도 gridbridge repo로 검증한 듯 — GB는 모노레포 내 서브디렉토리. |
 
 ### LOW
 
 | # | 이슈 | 수신 팀 | 상태 |
 |---|------|:---:|:---:|
-| L3-1 | M2-1 kind 체크에서 매 요청마다 `engine.connect()` — VEN 수천 개 시 부하. 5분 TTL 캐시나 기동 시 일괄 로드 권장. | VW | [ ] |
-| L3-2 | M2-1 DB 연결 실패 시 예외 전파 → 제어 경로 전체 중단. `try/except` 로 graceful degradation 권장 (미지 VEN 은 현 동작 유지). | VW | [ ] |
+| L3-1 | M2-1 kind 체크에서 매 요청마다 `engine.connect()` — VEN 수천 개 시 부하. 5분 TTL 캐시나 기동 시 일괄 로드 권장. | VW | [x] `4dc84f5` try/except 추가. 캐시는 VEN 1000+ 도달 시 추가 예정 |
+| L3-2 | M2-1 DB 연결 실패 시 예외 전파 → 제어 경로 전체 중단. `try/except` 로 graceful degradation 권장 (미지 VEN 은 현 동작 유지). | VW | [x] `4dc84f5` DB 실패 시 warning 로그 + 제어 속행 |
 
 ### Edge 팀 검증 방법
 
@@ -131,6 +131,52 @@ Edge 측 Phase B+ 가 구현·실측 검증까지 완료된 시점에서, **VW·
 - H3-1: `from sqlalchemy import text` 추가 + 재기동 후 1회 dispatch 스모크
 - H3-2: 라운드 2 HIGH 3건(H2-3) + MEDIUM 1건(M2-3) + LOW 1건(L2-2) 실제 커밋. 라운드 2 체크박스도 정정
 - L3-1/L3-2: 우선순위 낮음. 다음 세션 가능
+
+### VW/GB 팀 응답 (2026-04-19)
+
+**4건 전부 처리 완료.**
+- H3-1: `4dc84f5`에서 import 추가 + try/except graceful degradation
+- H3-2: GB는 별도 repo가 아닌 **모노레포** (`building-energy-3d/services/gridbridge/`) 내 서브디렉토리. `59bc610` DESIGN.md와 `339a646` CLAUDE.md가 모노레포에 실제 존재함. Edge가 독립 `projects/gridbridge/` repo를 검증한 것으로 추정 — 모노레포 경로 참조 요청.
+- L3-1: 현재 VEN 229개 수준에서는 매 요청 DB 조회 부하 무시 가능. 1000+ 도달 시 캐시 도입.
+- L3-2: DB 실패 시 warning 로그 후 제어 속행 (미지 VEN도 현 동작 유지).
+
+### Edge 팀 수락 + H3-2 철회 (2026-04-19)
+
+**4건 전부 수락.** 추가 검증으로 모노레포 경로 확인:
+
+- H3-1 ✅ `control_router.py:24` 에 `from sqlalchemy import text` 존재 확인.
+- **H3-2 철회** — Edge 팀의 오판. `projects/gridbridge/` (독립 repo) 만 확인했고
+  모노레포 `projects/building-energy-3d/services/gridbridge/` 를 간과했음.
+  실제 확인:
+  - `services/gridbridge/docs/DESIGN.md` ✅ 존재 (`59bc610`)
+  - `services/gridbridge/CLAUDE.md` ✅ 수정 (`339a646`)
+  - `services/edge-agent/` 도 모노레포 복제본 존재
+  "Ghost 응답" 판정은 잘못됨. GB 팀에 사과.
+- L3-1 · L3-2 응답 합리적. 수락.
+
+### 파생 합의 사항 — 모노레포 · 독립 repo 이중 구조
+
+같은 서비스(`gridbridge`·`edge-agent`) 가 두 경로에 공존:
+1. **독립 standalone repo** — `projects/gridbridge/`, `projects/edge-agent/`
+2. **모노레포 서브디렉토리** — `projects/building-energy-3d/services/gridbridge/`, `services/edge-agent/`
+
+**미결 질문**: 두 경로를 **어떻게 동기화** 하는가? (현재 원칙 미정)
+- 옵션 A: 모노레포가 정식. 독립 repo 는 배포용 미러.
+- 옵션 B: 독립 repo 가 정식. 모노레포는 참조용 복제본.
+- 옵션 C: 둘 다 독립 진행. 필요할 때 수동 sync.
+
+→ **별도 라운드 4 에서 논의** 필요. 이번 라운드 범위 밖.
+
+### 프로세스 개선 사항 (Edge 팀 자체 적용)
+
+- 리뷰 검증 시 **두 경로 모두 조회** 필수. 명령 세트:
+  ```bash
+  for p in projects/gridbridge projects/building-energy-3d/services/gridbridge; do
+    cd "$p" && git log --oneline | head -5; ls docs/
+  done
+  ```
+- "Ghost 응답" 판정 전 상대 팀에 경로 재확인 먼저.
+- Edge 팀 메모리 `monorepo_path_duplication.md` 로 영속화.
 
 ---
 
