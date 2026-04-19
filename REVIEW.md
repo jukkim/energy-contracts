@@ -412,6 +412,65 @@ VW PRD 제어사슬 다이어그램 주석에 추가할 표기 규칙 — `energ
 
 ---
 
+## 2026-04-19 라운드 6 — ESG 설정 워크플로우 리뷰 (Edge 팀 응답)
+
+**대상**: VW 측 RFC `projects/building-energy-3d/docs/RFC-ESG-SETUP-WORKFLOW.md` (VW-ESG-01 v0.1) + VW 7개 포인트 요약.
+
+### 배경
+
+VW 가 ESG 그룹 생성→활성화→VEN 매핑→건물 정보→연결 설정→가상 수용가 선택→대규모 엔지니어링→분산 배포 의 7개 포인트로 리서치 요구. Edge 팀이 각 포인트를 스펙·구현 관점에서 검토했고 **7건 신규 이슈** 를 제기.
+
+### 🔴 HIGH
+
+| # | 이슈 | 파일/항목 | 수신 팀 | 상태 |
+|---|------|----------|:---:|:---:|
+| R6-1 | **ESG 그룹 VEN 매핑 주체 = 관리자 전용** 확정 필요. Edge 자동 등록(`fleet/register`)은 `dr_venues` INSERT 만, `esg_group_venues` 는 관리자 승인 후에만 INSERT. 자동화 시 정산 오염. | RFC §2 Phase 2 step 7 | VW·GB | [ ] |
+| R6-2 | **`building_envelope.json` 스키마 신설** — 현재 Edge 는 외피 정보 오버라이드 수단 없음. 건축물대장 부정확 문제 해결 위해 `wall_uvalue`·`roof_uvalue`·`window_uvalue`·`wwr`·`floor_area_m2`·`source_of_truth` (`field`\|`register`\|`archetype`) 필드 포함. `edge_registration.json` 에 `envelope: {$ref}` 로 embed. | energy-contracts/schemas/ | Edge·VW | [ ] |
+| R6-3 | **가상 관측 데이터 경로 결정** — RFC §4.2 가 `store_energy_hourly.energy_w` 로 Edge→VW DB 직접 접근 암시. **Edge 는 MQTT 외 경로 사용 금지 원칙**. 옵션: (a) GB 가 `fleet/provision` 으로 CSV 사전 배포 (b) GB→Edge MQTT `data/replay/{ven_id}` 스트리밍. **Edge 권고: 옵션 a**. | RFC §4.2 Tier 2 | VW·GB | [ ] |
+
+### 🟡 MEDIUM
+
+| # | 이슈 | 파일/항목 | 수신 팀 | 상태 |
+|---|------|----------|:---:|:---:|
+| R6-4 | **`fleet/provision` MQTT 토픽 미정의** — RFC §6.3 에서 언급되지만 `energy-contracts/protocols/mqtt-topics.md` 에 명세 없음. 페이로드 스키마·QoS·retain 정책 합의 필요. | mqtt-topics.md | Edge·GB | [ ] |
+| R6-5 | **엑셀 표준 양식 — Edge 가 템플릿 제공** — RFC §6.1 의 3 시트 구조(기본/외피/연결) 를 `edge_registration.json` + R6-2 `building_envelope.json` 기반으로 Edge 가 공식 XLSX 템플릿 + 컨버터(xlsx→YAML) + 검증기 제공. | edge-agent/tools/ | Edge | [ ] |
+| R6-6 | **RFC §4.2 Tier 2 용어 혼용** — `protocols: [virtual]` 와 `backend: virtual` 이 같은 의미인데 필드명이 다름. `common.json §Backend` 에 통일. RFC 수정 권고. | RFC §4.2 | VW | [ ] |
+
+### 🟢 LOW
+
+| # | 이슈 | 파일/항목 | 수신 팀 | 상태 |
+|---|------|----------|:---:|:---:|
+| R6-7 | **Edge YAML 템플릿 20+ 조합 작성** — `convenience_store_100.yaml`·`convenience_store_120.yaml`·`office_medium_<era>.yaml`·`apt_<era>.yaml`·`real_bas_modbus.yaml`·`real_bas_bacnet.yaml` 등. Edge Phase C 로드맵에 편입. | edge-agent/templates/ | Edge | [ ] |
+| R6-8 | **mTLS 프로비저닝 실증** — `broker-architecture.md §3` 설계만 있고 미실증. Edge RPi 5 실기 + 인증서 자동 발급 검증 필요. Phase C. | broker-architecture.md §3 | Edge·GB | [ ] |
+| R6-9 | **RFC §6.1 PNU 포맷 혼동** — Sheet 1 예시 `9900100000000010000` (19자리) vs 가상 PNU 규칙 `99001xxxxx` (10자리) 표기 불일치. 가상 PNU 는 `99` + 그룹 2자리 + 지자체 5자리 + 일련 10자리 = 19자리 표준으로 RFC 수정. | RFC §6.1 | VW | [ ] |
+| R6-10 | **Q3 Edge→VW 설정 동기화** — `fleet/heartbeat` payload 에 `config_hash` 필드 추가하면 감지 가능. 별도 `fleet/config_changed` 이벤트 토픽은 옵션. Edge 구현 가능. | fleet/heartbeat | Edge | [ ] |
+
+### VW 7 포인트 Edge 답변 요약
+
+| VW 포인트 | Edge 답 | 관련 이슈 |
+|:-:|--------|----------|
+| 1. VW→GB 활성화 | ✅ 기존 구현으로 충분 | - |
+| 2. GB↔Edge 매핑 | 하이브리드 (데모=Edge자동, 프로덕션=엑셀 선행). ESG 매핑은 관리자 전용 | R6-1 |
+| 3. 외피 재설정 | 스키마 공백 — `building_envelope.json` 신설 | R6-2 |
+| 4. 연결/포인트/주기/kind | YAML per-VEN. kind 변경은 재배포 원칙 | R6-5 |
+| 5. 가상 데이터 소스 | Edge 는 DB 직결 금지, GB 경유 | R6-3 |
+| 6. 대규모 도구 | 엑셀+YAML 하이브리드. 커스텀 도구 반대 | R6-5 |
+| 7. 분산 배포 | Edge 실증 미완 — mTLS·RPi·권역 브로커 | R6-8 |
+
+### Edge 우선순위 제안
+
+| 즉시 | 중기 | 장기 |
+|------|------|------|
+| R6-1 합의 / R6-2 스키마 초안 / R6-4 토픽 명세 | R6-3 결정 / R6-5 엑셀 템플릿 / R6-6 용어 통일 | R6-7 YAML 20+ / R6-8 mTLS 실증 / R6-9 PNU 표기 / R6-10 config_hash |
+
+### 라운드 6 finalize 조건
+
+- [ ] VW: R6-1·R6-3·R6-6·R6-9 응답 + RFC v0.2 업데이트
+- [ ] GB: R6-1·R6-3·R6-4·R6-8 응답
+- [ ] Edge: R6-2 스키마 초안 PR · R6-5 템플릿 · R6-10 heartbeat 확장
+
+---
+
 ## 리뷰 요청 템플릿
 
 ```
