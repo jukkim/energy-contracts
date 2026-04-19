@@ -89,6 +89,10 @@
       }
     },
     "mqtt_client_id": { "type": "string" },
-    "registered_at": { "type": "string", "format": "date-time" }
+    "registered_at": { "type": "string", "format": "date-time" },
+    "envelope": {
+      "type": "object",
+      "description": "건물 외피·기하·설비 메타 (선택). 전체 스키마는 building_envelope.json v1.0 SSOT 참조. Edge 가 현장 실측값 보유 시 등록 페이로드에 embed — VW 측 포트폴리오 UI 에서 편집 가능."
+    }
   }
 }

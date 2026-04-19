@@ -4,6 +4,24 @@
 
 ---
 
+## v1.2 — 2026-04-19 (R6-2)
+
+### 개요
+VW RFC-ESG-SETUP-WORKFLOW.md §5 "건축물대장 부정확" 문제 해결용 외피 스키마 신설. 리뷰 라운드 6 대응.
+
+### 신규 스키마
+- `schemas/building_envelope.json` **v1.0** — 건물 외피·기하·설비 메타. `source_of_truth` (field/register/archetype) 우선순위, geometry(면적·층수·준공년도·방위·구조), envelope(U-value 4종·WWR·SHGC·VLT·기밀도), systems(HVAC·조명·기기부하·ESS·PV).
+
+### 갱신
+- `edge_registration.json` — `envelope` 필드 추가 (building_envelope.json 참조). Edge 가 현장 실측 보유 시 등록 페이로드에 embed 가능.
+
+### 리뷰 연계
+| 라운드 | 항목 | 해결 |
+|:---:|------|:---:|
+| R6 | R6-2 building_envelope.json 스키마 신설 | ✅ |
+
+---
+
 ## v1.1 — 2026-04-19
 
 ### 개요

@@ -1,0 +1,202 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "energy-contracts/building_envelope.json",
+  "title": "BuildingEnvelope",
+  "description": "건물 외피·기하·설비 메타. 건축물대장 부정확 문제 해결용 — 현장 실측(field) 우선, 대장(register) 차선, 원형(archetype) 최후. Edge 등록 시 fleet/register 페이로드에 embed 가능하며 VW 측에서 포트폴리오 UI 로 편집.",
+  "version": "1.0",
+  "type": "object",
+  "required": ["source_of_truth"],
+  "properties": {
+    "source_of_truth": {
+      "type": "string",
+      "enum": ["field", "register", "archetype"],
+      "description": "정확성 출처. field=현장 실측 / 에너지진단 / 준공도면, register=건축물대장, archetype=용도·연대별 원형 추정치. 우선순위: field > register > archetype."
+    },
+    "measured_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "source_of_truth=field 일 때 실측 일시. register 는 대장 발급일, archetype 은 생략."
+    },
+    "measured_by": {
+      "type": "string",
+      "description": "실측 주체. 예: '2024 에너지진단 — 한국에너지공단', '준공도면 — 성동구청'."
+    },
+    "geometry": {
+      "type": "object",
+      "description": "건물 기하. floor_area_m2 는 시뮬레이션 baseline_kw 계산의 핵심 입력.",
+      "properties": {
+        "floor_area_m2": {
+          "type": "number",
+          "minimum": 1,
+          "description": "연면적 m². 대장 vs 실측 차이 최대 30% 가능."
+        },
+        "conditioned_area_m2": {
+          "type": "number",
+          "minimum": 1,
+          "description": "냉난방 공조면적 m². 보통 연면적 × 0.7~0.9."
+        },
+        "floor_count": {
+          "type": "integer",
+          "minimum": 1,
+          "description": "지상 층수. 지하 제외."
+        },
+        "basement_count": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "지하 층수."
+        },
+        "built_year": {
+          "type": "integer",
+          "minimum": 1900,
+          "maximum": 2100,
+          "description": "준공 연도. archetype 선택의 핵심 키."
+        },
+        "orientation_deg": {
+          "type": "number",
+          "minimum": 0,
+          "exclusiveMaximum": 360,
+          "description": "정면 방위각 (북=0, 동=90, 남=180, 서=270)."
+        },
+        "structure": {
+          "type": "string",
+          "enum": ["RC", "SRC", "wood", "steel", "masonry", "other"],
+          "description": "구조 분류. RC=철근콘크리트, SRC=철골철근콘크리트."
+        }
+      }
+    },
+    "envelope": {
+      "type": "object",
+      "description": "외피 열성능. 단위: U-value = W/m²·K, WWR/SHGC/VLT = 0~1 비율.",
+      "properties": {
+        "wall_uvalue": {
+          "type": "number",
+          "minimum": 0.1,
+          "maximum": 5.0,
+          "description": "외벽 열관류율 W/m²·K. 건축물대장 미기재 → archetype 추정. 실측은 열화상·열류계."
+        },
+        "roof_uvalue": {
+          "type": "number",
+          "minimum": 0.1,
+          "maximum": 5.0,
+          "description": "지붕 열관류율 W/m²·K."
+        },
+        "floor_uvalue": {
+          "type": "number",
+          "minimum": 0.1,
+          "maximum": 5.0,
+          "description": "하부 바닥(외기·지반 접촉) 열관류율 W/m²·K."
+        },
+        "window_uvalue": {
+          "type": "number",
+          "minimum": 0.5,
+          "maximum": 7.0,
+          "description": "창호 열관류율 W/m²·K. Low-E 복층=1.8~2.4, 일반 복층=2.8~3.3, 단층=5.8+."
+        },
+        "wwr": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1,
+          "description": "Window-to-Wall Ratio. 오피스 평균 0.4, 편의점 0.25~0.35."
+        },
+        "shgc": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1,
+          "description": "Solar Heat Gain Coefficient. Low-E=0.3~0.5, 일반=0.7~0.85."
+        },
+        "vlt": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1,
+          "description": "Visible Light Transmittance. 주광 활용 해석용."
+        },
+        "infiltration_ach50": {
+          "type": "number",
+          "minimum": 0,
+          "description": "기밀도 ACH @ 50 Pa. 신축 강화=1.5, 일반=4~8, 노후=10+."
+        }
+      }
+    },
+    "systems": {
+      "type": "object",
+      "description": "설비 메타. COP/효율은 EnergyPlus 시뮬 baseline 설정에 사용.",
+      "properties": {
+        "hvac_type": {
+          "type": "string",
+          "enum": ["VRF", "EHP", "GHP", "chiller_boiler", "district_heating", "individual_ac", "packaged_rooftop", "none"],
+          "description": "주 공조 방식. VRF=냉매 가변유량, EHP=전기 히트펌프, GHP=가스 히트펌프."
+        },
+        "hvac_cop_cooling": {
+          "type": "number",
+          "minimum": 1,
+          "maximum": 10,
+          "description": "냉방 COP. VRF 신형=4.0+, 일반=3.0~3.5."
+        },
+        "hvac_cop_heating": {
+          "type": "number",
+          "minimum": 1,
+          "maximum": 10,
+          "description": "난방 COP. 히트펌프 3.0~4.0."
+        },
+        "boiler_efficiency": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1,
+          "description": "보일러 열효율. 콘덴싱=0.92+, 일반=0.85."
+        },
+        "lighting_lpd_w_m2": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 50,
+          "description": "조명 밀도 W/m². LED 교체 후=5~8, 형광등=12~15."
+        },
+        "plug_load_w_m2": {
+          "type": "number",
+          "minimum": 0,
+          "description": "기기부하 밀도 W/m². 오피스=10~15, 편의점 냉장설비 포함=30+."
+        },
+        "has_ess": { "type": "boolean", "default": false },
+        "ess_capacity_kwh": {
+          "type": "number",
+          "minimum": 0,
+          "description": "ESS 정격 용량 kWh. has_ess=true 일 때 필수."
+        },
+        "ess_power_kw": {
+          "type": "number",
+          "minimum": 0,
+          "description": "ESS 정격 출력 kW."
+        },
+        "has_pv": { "type": "boolean", "default": false },
+        "pv_capacity_kw": {
+          "type": "number",
+          "minimum": 0,
+          "description": "태양광 정격 kW-DC. has_pv=true 일 때 필수."
+        }
+      }
+    },
+    "weather_zone": {
+      "type": "string",
+      "description": "기후대. ASHRAE 90.1 (예: '4A') 또는 한국 지역코드 (예: 'seoul', 'busan', 'jeju'). EnergyPlus EPW 파일 선택의 근거."
+    },
+    "archetype_reference": {
+      "type": "string",
+      "description": "source_of_truth=archetype 일 때 참조 원형 ID. 예: 'DOE_MediumOffice_2010', 'KR_ConvStore_2015', 'KR_Apt_1990'."
+    },
+    "overrides": {
+      "type": "object",
+      "description": "VEN 개별 오버라이드 메모. 기본 archetype 대비 변경된 필드만 기록. YAML Tier 3 (RFC §4.2) 대응.",
+      "properties": {
+        "base_archetype": { "type": "string" },
+        "changed_fields": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "오버라이드된 필드 경로. 예: ['envelope.wall_uvalue', 'systems.hvac_cop_cooling']."
+        }
+      }
+    },
+    "notes": {
+      "type": "string",
+      "description": "자유 메모. 비정형 정보 (예: '2023 창호 교체', '지하주차장 BMS 연계 없음')."
+    }
+  }
+}
