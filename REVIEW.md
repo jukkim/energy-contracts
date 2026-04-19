@@ -554,6 +554,65 @@ R5-3 GB 승인 완료로 M2-2(control.html 22종 확장) 착수 가능.
 
 ---
 
+## 2026-04-19 라운드 7 — Edge 현장 서버 (로컬 HTTP UI) 제안 (Edge 팀)
+
+### 배경
+
+현재 Edge 는 MQTT 클라이언트로만 동작. 현장 엔지니어가 설정·상태 확인·수동 제어하려면:
+- SSH + 환경변수 편집 + 재기동 (비전문가 불가)
+- VW 중앙 UI 만 가능 → 네트워크 의존·권한 제약·오프라인 불가
+
+R6-5 엑셀 템플릿은 **대규모 사전 프로비저닝** 용. 현장 **튜닝·디버깅·긴급 제어** 는 별도 UI 필요.
+
+### 제안
+
+Edge 프로세스에 **로컬 HTTP 서버(FastAPI embed)** 추가. 현장 네트워크(LAN·mDNS)에서 접근 가능한 4탭 UI 제공.
+
+| 탭 | 기능 | Phase |
+|:-:|------|:---:|
+| Overview | VEN 메타·실시간 텔레메트리·활성 전략·인터록 이력·MQTT 링크·config_hash | **W1 (선제)** |
+| Control | M0~M8 수동 override · 1회성 스케줄 · 긴급 정지 · VW 모드 복귀 | W2 |
+| Config | envelope·connection·interlocks 편집 → dry_run 검증 → hot_reload | W3 |
+| Diagnostics | MQTT 토픽 tail · 드라이버 포인트 맵 · Modbus/BACnet raw · 로그 다운로드 | W3 |
+
+### 통합 방식
+
+- Edge 프로세스 내 FastAPI (동일 Python 프로세스, 드라이버 상태 직접 접근 — IPC 불필요)
+- 기본 `127.0.0.1:8080` (로컬만). `--api-bind 0.0.0.0 --api-token` 옵션으로 LAN 노출
+- VW 포털에서 `http://{ven_id}.local:8080/ui` iframe embed (mDNS) — 옵션
+- VW admin key 공유 or Edge 별도 토큰
+
+### 기술 선택 근거
+
+**FastAPI + 정적 HTML (vanilla JS + HTMX)** 채택:
+- Edge 는 RPi/산업 게이트웨이 메모리 제약 → Node.js 빌드 부담 배제
+- Python 프로세스 embed → 드라이버/publisher/provision 상태 직접 참조
+- 복잡한 인터랙션 적음 → React 불필요
+- 정적 파일 수십 KB 내외 → 설치 부담 무시 가능
+
+### 라운드 7 질의
+
+| # | 질문 | 수신 팀 | 상태 |
+|---|------|:---:|:---:|
+| R7-1 | Edge 로컬 HTTP API 필요성 동의? | VW·GB | [ ] |
+| R7-2 | VW 포털에 Edge UI iframe embed 할 경로 설계 제공? (mDNS vs VPN vs Cloudflare Tunnel) | VW | [ ] |
+| R7-3 | 인증 공유 방식 — VW admin key 동일 사용 or 별도 Edge 토큰? | VW | [ ] |
+| R7-4 | `energy-contracts/protocols/edge-local-api.md` 스펙 신설 필요? 아니면 Edge 단독 관할? | 양팀 | [ ] |
+| R7-5 | RPi 5 실기에서 FastAPI + 드라이버 + MQTT 동시 구동 성능 검증 — R6-8 Phase C 에 통합 | Edge·GB | [ ] |
+
+### Edge 팀 선제 조치 — Phase W1 착수
+
+**W1 범위** (이번 세션):
+- `src/api/server.py` FastAPI 앱
+- `src/api/static/index.html` Overview 탭 (vanilla JS)
+- `/api/status`, `/api/telemetry`, `/api/config` (읽기 전용)
+- `python -m src.main --enable-local-api` 플래그
+- 기본 포트 8080 localhost
+
+W2/W3 는 R7 합의 후 진행.
+
+---
+
 ## 리뷰 요청 템플릿
 
 ```
