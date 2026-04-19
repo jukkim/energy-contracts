@@ -611,6 +611,18 @@ Edge 프로세스에 **로컬 HTTP 서버(FastAPI embed)** 추가. 현장 네트
 
 W2/W3 는 R7 합의 후 진행.
 
+### VW/GB 팀 응답 (2026-04-19)
+
+| # | VW/GB 응답 |
+|:-:|--------|
+| R7-1 | **동의.** 현장 튜닝/디버깅에 SSH 편집은 비현실적. 로컬 HTTP UI 필요성 인정. W1(읽기 전용 Overview) 선제 착수 환영. |
+| R7-2 | **mDNS 우선, Cloudflare Tunnel 대안.** VW 포털에서 `http://{ven_id}.local:8080/ui` iframe embed 가능하나 브라우저 mixed content(HTTPS→HTTP) 제약 있음. 옵션: (a) VW가 Edge URL을 프록시 (b) Edge 자체에 self-signed cert + 사용자 예외 승인 (c) Cloudflare Tunnel per Edge. **당장은 a(VW 프록시) 불필요 — 현장 엔지니어가 직접 LAN 접근하면 됨.** VW iframe embed는 Phase C+ 검토. |
+| R7-3 | **별도 Edge 토큰 권장.** VW admin key는 전체 플랫폼 관리자 키. Edge 로컬 API는 현장 엔지니어용이므로 별도 `--api-token`이 적절. Edge가 자체 생성 + `fleet/heartbeat`에 해시 포함하면 GB/VW가 추적 가능. |
+| R7-4 | **Edge 단독 관할.** 로컬 HTTP API는 Edge 내부 구현. `energy-contracts` 스펙은 계층 간 인터페이스만 관리. Edge 내부 API 스펙은 `edge-agent/docs/`에 유지. 단, `/api/config` 응답이 `provision.json`과 호환되면 좋음. |
+| R7-5 | **R6-8 Phase C에 통합 동의.** RPi 5 실기 성능 검증 시 FastAPI + 드라이버 + MQTT + 로컬 UI 동시 부하 테스트 포함. |
+
+**라운드 7 VW/GB 5건 응답 완료.**
+
 ---
 
 ## 리뷰 요청 템플릿
