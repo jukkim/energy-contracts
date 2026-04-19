@@ -11,19 +11,20 @@
     "kind": {
       "type": "string",
       "enum": ["telemetry", "dispatch"],
-      "description": "운영 모드. telemetry=관측형(read-only 리플레이), dispatch=제어형(양방향, 명령 적용)."
+      "description": "운영 모드 — common.json §Kind SSOT 와 동기화. telemetry=관측형(read-only), dispatch=제어형(양방향)."
     },
     "backend": {
       "type": "string",
       "enum": ["replay", "energyplus", "real_bas", "virtual"],
-      "description": "데이터 출처. replay=과거 데이터 재생, energyplus=E+ 코시뮬, real_bas=실 설비, virtual=가상 드라이버"
+      "description": "구현 기술 — common.json §Backend SSOT 와 동기화."
     },
     "group_id": { "type": "string", "description": "ESG·권역 그룹 식별자 (선택)" },
     "pnu": { "type": "string", "description": "PNU (건축물 공간코드, 선택)" },
     "building_name": { "type": "string" },
     "building_type": {
       "type": "string",
-      "enum": ["office_large","office_medium","office_small","hospital","school","retail","convenience_store","apartment","other"]
+      "enum": ["office_large","office_medium","office_small","hospital","school","retail","convenience_store","apartment","other"],
+      "description": "common.json §BuildingType SSOT 와 동기화."
     },
     "baseline_kw": { "type": "number", "minimum": 0 },
     "max_reduction_kw": { "type": "number", "minimum": 0, "description": "제어형만 의미 있음" },

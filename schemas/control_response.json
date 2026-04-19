@@ -15,7 +15,11 @@
       "description": "applied=요청대로, clamped=인터록으로 일부 제한, rejected=거부, queued=로컬 큐 적재, failed=드라이버 오류"
     },
     "applied_at": { "type": "string", "format": "date-time" },
-    "strategy": { "type": "string", "pattern": "^M[0-8]$" },
+    "strategy": {
+      "type": "string",
+      "pattern": "^M[0-8]$",
+      "description": "적용된 EMS 전략. control_command 에서는 required 이지만 여기선 optional — status=failed/rejected 시 전략이 적용되지 않았으므로 생략 가능. common.json §Strategy 와 동기화 유지."
+    },
     "strategy_name": { "type": "string" },
     "requested": {
       "type": "object",

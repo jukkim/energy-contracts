@@ -15,21 +15,22 @@
     "edge_type": {
       "type": "string",
       "enum": ["real_edge", "replay_edge", "energyplus_emulator"],
-      "description": "VW broker-architecture §4 호환. real_edge=실물 설비, replay_edge=DB replay 편의점, energyplus_emulator=E+ 가상 수용가"
+      "description": "VW broker-architecture §4 + common.json §EdgeType SSOT. 보통 replay→replay_edge, energyplus→energyplus_emulator, 그 외→real_edge."
     },
     "kind": {
       "type": "string",
       "enum": ["telemetry", "dispatch"],
-      "description": "운영 모드. telemetry=관측형(read-only), dispatch=제어형(양방향). 보통 replay_edge→telemetry, real_edge·energyplus_emulator→dispatch"
+      "description": "운영 모드 — common.json §Kind SSOT. 보통 replay_edge→telemetry, real_edge·energyplus_emulator→dispatch."
     },
     "backend": {
       "type": "string",
       "enum": ["replay", "energyplus", "real_bas", "virtual"],
-      "description": "구현 기술"
+      "description": "구현 기술 — common.json §Backend SSOT."
     },
     "building_type": {
       "type": "string",
-      "enum": ["office_large","office_medium","office_small","hospital","school","retail","convenience_store","apartment","other"]
+      "enum": ["office_large","office_medium","office_small","hospital","school","retail","convenience_store","apartment","other"],
+      "description": "common.json §BuildingType SSOT."
     },
     "group_id": {
       "type": "string",

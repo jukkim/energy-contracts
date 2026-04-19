@@ -8,10 +8,15 @@
   "required": ["ven_id", "backend", "observable", "controllable", "step_seconds"],
   "properties": {
     "ven_id": { "type": "string" },
-    "backend": { "type": "string", "enum": ["energyplus", "virtual", "real_bas"] },
+    "backend": {
+      "type": "string",
+      "enum": ["energyplus", "virtual", "real_bas"],
+      "description": "구현 기술 — common.json §Backend SSOT (여기선 replay 제외)."
+    },
     "building_type": {
       "type": "string",
-      "enum": ["office_large","office_medium","office_small","hospital","school","retail","convenience_store","apartment","other"]
+      "enum": ["office_large","office_medium","office_small","hospital","school","retail","convenience_store","apartment","other"],
+      "description": "common.json §BuildingType SSOT."
     },
     "idf_path": { "type": "string", "description": "backend=energyplus 시 IDF 경로" },
     "epw_path": { "type": "string", "description": "기상파일(EPW) 경로" },

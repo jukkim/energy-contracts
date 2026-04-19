@@ -1,0 +1,67 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "energy-contracts/common.json",
+  "title": "CommonDefinitions",
+  "description": "공용 enum · 패턴 정의 SSOT. 다른 스키마가 복제하더라도 이 파일과 동기화 유지.",
+  "version": "1.0",
+  "$defs": {
+    "Strategy": {
+      "type": "string",
+      "enum": ["M0", "M1", "M2", "M3", "M4", "M5", "M6", "M7", "M8"],
+      "description": "EMS 전략 ID. control_command 는 required, control_response 는 status=failed/rejected 시 생략 허용."
+    },
+    "StrategyPattern": {
+      "type": "string",
+      "pattern": "^M[0-8]$",
+      "description": "미래 확장성을 위한 pattern 표기 (동일 enum 집합). control_response·reduction_schedule 에서 사용."
+    },
+    "Kind": {
+      "type": "string",
+      "enum": ["telemetry", "dispatch"],
+      "description": "수용가 운영 모드. telemetry=관측형(read-only), dispatch=제어형(양방향)."
+    },
+    "Backend": {
+      "type": "string",
+      "enum": ["replay", "energyplus", "real_bas", "virtual"],
+      "description": "구현 기술. replay=과거 데이터 재생, energyplus=E+ 코시뮬, real_bas=실 설비, virtual=가상 드라이버."
+    },
+    "BuildingType": {
+      "type": "string",
+      "enum": [
+        "office_large", "office_medium", "office_small",
+        "hospital", "school", "retail", "convenience_store",
+        "apartment", "other"
+      ],
+      "description": "건물 유형 (DOE Reference Building 분류 기반)."
+    },
+    "EdgeType": {
+      "type": "string",
+      "enum": ["real_edge", "replay_edge", "energyplus_emulator"],
+      "description": "VW broker-architecture §4 호환. real_edge=실물 설비, replay_edge=DB replay, energyplus_emulator=E+ 가상."
+    },
+    "SignalLevel": {
+      "type": "string",
+      "enum": ["NORMAL", "MODERATE", "HIGH", "EMERGENCY"],
+      "description": "DR 신호 강도. signal_level → strategy 매핑: NORMAL→M2 · MODERATE→M5 · HIGH→M7 · EMERGENCY→M8."
+    },
+    "VenId": {
+      "type": "string",
+      "pattern": "^VEN-(STORE|EP|REAL|TEST|E2E|SHOP)-[A-Z0-9][A-Z0-9\\-]*$",
+      "description": "VEN 식별자. 접두 5종 + 영숫자·하이픈. 예: VEN-STORE-B001, VEN-EP-OFFICE-01, VEN-REAL-BLDG-A-01."
+    },
+    "ESGGroupId": {
+      "type": "string",
+      "description": "ESG 사전 정의 그룹. CLAUDE.md §ESG 사전 정의 그룹 참조.",
+      "examples": ["ESG-STORE-100", "ESG-STORE-120", "ESG-EP-OFFICE", "ESG-EP-APT"]
+    },
+    "VirtualPNU": {
+      "type": "string",
+      "description": "가상 PNU: 99001xxxxx=ESG-STORE-100 그룹, 99002xxxxx=ESG-STORE-120 그룹. 실 PNU는 일반 형식.",
+      "pattern": "^[0-9]{10,19}$"
+    },
+    "Interlock": {
+      "type": "string",
+      "description": "안전 인터록 발동 메시지. 예: 'HVAC 상한 제한: 28°C', 'ESS SOC 10% 하한 도달'."
+    }
+  }
+}

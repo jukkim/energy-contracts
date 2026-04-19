@@ -7,7 +7,11 @@
   "type": "object",
   "required": ["strategy"],
   "properties": {
-    "strategy": { "type": "string", "enum": ["M0", "M1", "M2", "M3", "M4", "M5", "M6", "M7", "M8"] },
+    "strategy": {
+      "type": "string",
+      "enum": ["M0", "M1", "M2", "M3", "M4", "M5", "M6", "M7", "M8"],
+      "description": "EMS 전략 ID — required. common.json §Strategy SSOT 와 동기화 유지. control_response 는 status=failed/rejected 시 생략 허용(pattern)."
+    },
     "strategy_name": { "type": "string" },
     "hvac_setpoint": { "type": "number", "minimum": 18, "maximum": 30 },
     "lighting_pct": { "type": "number", "minimum": 0, "maximum": 100 },
@@ -15,12 +19,13 @@
     "duration_minutes": { "type": "integer", "minimum": 10, "maximum": 480 },
     "constraints": {
       "type": "object",
+      "description": "안전 인터록 동적 덮어쓰기. 모든 필드 optional — 미기재 시 Edge 기본값 사용. 의도적으로 required 없음(필요한 것만 재정의).",
       "properties": {
-        "max_indoor_temp_c": { "type": "number", "default": 28 },
-        "min_indoor_temp_c": { "type": "number", "default": 18 },
-        "min_ess_soc_pct": { "type": "number", "default": 10 },
-        "min_lighting_pct": { "type": "number", "default": 20 },
-        "emergency_lighting_exempt": { "type": "boolean", "default": true }
+        "max_indoor_temp_c": { "type": "number", "default": 28, "description": "HVAC setpoint 상한 °C" },
+        "min_indoor_temp_c": { "type": "number", "default": 18, "description": "HVAC setpoint 하한 °C" },
+        "min_ess_soc_pct": { "type": "number", "default": 10, "description": "ESS 방전 SOC 하한 %" },
+        "min_lighting_pct": { "type": "number", "default": 20, "description": "조명 디밍 하한 %" },
+        "emergency_lighting_exempt": { "type": "boolean", "default": true, "description": "비상조명 제외 여부" }
       }
     }
   }
