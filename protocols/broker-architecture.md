@@ -172,6 +172,7 @@ control_command.json  →  IDF 수정 → EP 실행 → 결과  →  control_res
 - [x] ven_id 네이밍 규칙 확정 — **mqtt-topics.md §ven_id 네이밍 규칙 + edge_registration.json pattern에 반영**. 접두 5종(`VEN-STORE-`/`VEN-EP-`/`VEN-REAL-`/`VEN-TEST-`/`VEN-E2E-`), 접두 뒤는 영숫자·하이픈 자유.
 - [x] mqtt-topics.md에 본 문서의 토픽 설계 통합 — **반영됨**
 - [ ] **가상 PNU 네이밍 규칙** — Edge 팀 제안: 시도코드 `99`(가상) + 시군구 `99`(임의) + 순번. 예 `9999000000010000`(E+ 가상 오피스) / `9999100000000001`(편의점 가상 1번). 최종 결정은 VW 팀.
+- [ ] **IDF Actuator 주입** — Edge 팀 요청(2026-04-19) · `ems_simulation` 팀 관할. `generate_idf.py --enable-python-plugin` 플래그로 `EnergyManagementSystem:Actuator` 선언 3종(HVAC Cool/Heat Setpoint, Lighting Fraction) 자동 주입. Phase B Step 4 (양방향 제어) 차단. 상세: `edge-agent/docs/RFC-CUSTOMER-SIMULATION.md §7.1`.
 - [ ] **EP 에뮬레이터 real_time_factor 운영 값** — Edge 팀 제안: PoC `60x`(1분→1초, 1시간 시뮬≈1분 벽시계), 파일럿 `1x`(실시간), 검증용 `300x`(1시간≈12초). `virtual_prosumer.json.real_time_factor`로 VEN별 설정 가능.
 - [ ] **브로커 인증 방식 PoC** — Edge 팀 제안: `username/password` + ACL 파일(위 예시). mosquitto-go-auth 플러그인은 파일럿으로 지연. mTLS는 프로덕션. `MQTT_USER`·`MQTT_PASS` 환경변수로 Edge에 주입.
 
