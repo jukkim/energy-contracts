@@ -4,21 +4,27 @@
 
 ---
 
-## v1.2 — 2026-04-19 (R6-2)
+## v1.2 — 2026-04-19 (R6-2·R6-4·R6-10)
 
 ### 개요
-VW RFC-ESG-SETUP-WORKFLOW.md §5 "건축물대장 부정확" 문제 해결용 외피 스키마 신설. 리뷰 라운드 6 대응.
+VW RFC-ESG-SETUP-WORKFLOW.md §5 "건축물대장 부정확" 문제 해결용 외피 스키마 신설 + 프로비저닝 채널 명세. 리뷰 라운드 6 대응.
 
 ### 신규 스키마
 - `schemas/building_envelope.json` **v1.0** — 건물 외피·기하·설비 메타. `source_of_truth` (field/register/archetype) 우선순위, geometry(면적·층수·준공년도·방위·구조), envelope(U-value 4종·WWR·SHGC·VLT·기밀도), systems(HVAC·조명·기기부하·ESS·PV).
+- `schemas/provision.json` **v1.0** — GB → Edge 프로비저닝 페이로드. provisioning_id(UUID) + revision(단조증가) + config(전체 Edge 설정) + apply_mode(hot_reload/restart_required/dry_run) + expected_config_hash.
+- `schemas/provision_ack.json` **v1.0** — Edge → GB ack. applied/pending_restart/rejected/validated/hash_mismatch 상태 + actual_config_hash + reason + warnings.
 
 ### 갱신
-- `edge_registration.json` — `envelope` 필드 추가 (building_envelope.json 참조). Edge 가 현장 실측 보유 시 등록 페이로드에 embed 가능.
+- `edge_registration.json` — `envelope` 필드 추가 (building_envelope.json 참조).
+- `edge_status.json` v1.1 — `config_hash` (16자리 hex) + `config_updated_at` 추가. VW 중앙 설정과 drift 감지.
+- `protocols/mqtt-topics.md` — `fleet/provision/{ven_id}` (GB→Edge, QoS 2, Retain) + `fleet/provision_ack/{ven_id}` (Edge→GB) 추가. ACL 예시 갱신.
 
 ### 리뷰 연계
 | 라운드 | 항목 | 해결 |
 |:---:|------|:---:|
 | R6 | R6-2 building_envelope.json 스키마 신설 | ✅ |
+| R6 | R6-4 fleet/provision 토픽 + provision.json·provision_ack.json | ✅ (Edge 초안 — GB 수락 대기) |
+| R6 | R6-10 edge_status.json v1.1 config_hash | ✅ |
 
 ---
 

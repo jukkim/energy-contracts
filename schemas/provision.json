@@ -1,0 +1,188 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "energy-contracts/provision.json",
+  "title": "Provision",
+  "description": "GB → Edge 프로비저닝 페이로드. VW 엑셀 업로드 또는 관리자 UI 편집의 결과로 GB 가 `fleet/provision/{ven_id}` 토픽에 발행. Edge 는 수신 후 로컬 YAML 적용 → 재기동 또는 핫리로드. R6-3 옵션 a (관측형 replay 데이터 배포) 도 같은 토픽으로 CSV 참조 전달.",
+  "version": "1.0",
+  "type": "object",
+  "required": ["provisioning_id", "ven_id", "revision", "issued_at", "config"],
+  "properties": {
+    "provisioning_id": {
+      "type": "string",
+      "description": "프로비저닝 이벤트 고유 ID (UUIDv4 권장). 중복 수신 시 Edge 는 idempotent 처리 — 동일 ID 는 한 번만 적용.",
+      "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$"
+    },
+    "ven_id": {
+      "type": "string",
+      "description": "대상 VEN. 토픽의 {ven_id} 와 일치해야 함. common.json §VenId SSOT.",
+      "pattern": "^VEN-(STORE|EP|REAL|TEST|E2E|SHOP)-[A-Z0-9][A-Z0-9\\-]*$"
+    },
+    "revision": {
+      "type": "integer",
+      "minimum": 1,
+      "description": "설정 개정 번호. VW 중앙 저장소에서 단조증가. Edge 는 현재 revision < 수신 revision 일 때만 적용."
+    },
+    "issued_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "VW/관리자가 발행한 시각 (ISO 8601)."
+    },
+    "issued_by": {
+      "type": "string",
+      "description": "발행자 식별. 관리자 이메일·계정 ID·'system' 등. 감사로그용."
+    },
+    "source": {
+      "type": "string",
+      "enum": ["xlsx_upload", "ui_edit", "api", "bulk_replay"],
+      "description": "발행 경로. xlsx_upload=엑셀 업로드, ui_edit=관리자 UI, api=VW API, bulk_replay=R6-3 관측 데이터 배포."
+    },
+    "expected_config_hash": {
+      "type": "string",
+      "pattern": "^[a-f0-9]{16}$",
+      "description": "Edge 가 이 provision 적용 후 생성할 예상 config_hash (edge_status.json v1.1 §config_hash). Edge 가 적용 후 계산한 해시와 일치하지 않으면 ack 에 mismatch 플래그."
+    },
+    "config": {
+      "type": "object",
+      "description": "Edge 설정 본문. edge-agent/templates/ 의 YAML 구조와 동일.",
+      "required": ["ven_id", "kind", "backend"],
+      "properties": {
+        "schema_version": {
+          "type": "string",
+          "description": "energy-contracts 버전. 예: '1.2'."
+        },
+        "ven_id": { "type": "string" },
+        "building_name": { "type": "string" },
+        "pnu": { "type": "string" },
+        "building_type": {
+          "type": "string",
+          "enum": ["office_large","office_medium","office_small","hospital","school",
+                   "retail","convenience_store","apartment","other"],
+          "description": "common.json §BuildingType SSOT."
+        },
+        "group_id": { "type": "string" },
+        "kind": {
+          "type": "string",
+          "enum": ["telemetry", "dispatch"]
+        },
+        "backend": {
+          "type": "string",
+          "enum": ["replay", "energyplus", "real_bas", "virtual"]
+        },
+        "baseline_kw": { "type": "number", "minimum": 0 },
+        "max_reduction_kw": { "type": "number", "minimum": 0 },
+        "envelope": {
+          "type": "object",
+          "description": "building_envelope.json v1.0 구조. 전체 스키마 참조."
+        },
+        "connection": {
+          "type": "object",
+          "description": "연결 설정. protocol·data_points·interval + backend별 상세 (replay/energyplus/modbus/bacnet).",
+          "required": ["protocol"],
+          "properties": {
+            "protocol": {
+              "type": "string",
+              "enum": ["replay", "energyplus", "modbus", "bacnet", "matter", "virtual"],
+              "description": "설비 통신 방법 (backend 와 다름 — RFC R6-6 용어 통일)."
+            },
+            "data_points": {
+              "type": "array",
+              "items": { "type": "string" }
+            },
+            "interval_sec": { "type": "integer", "minimum": 1 },
+            "replay": {
+              "type": "object",
+              "description": "backend=replay 시 필수. R6-3 옵션 a 로 GB 가 CSV 경로·URL 전달 가능.",
+              "properties": {
+                "csv": { "type": "string", "description": "로컬 CSV 경로 또는 GB 서빙 URL" },
+                "csv_url": { "type": "string", "format": "uri", "description": "GB 가 HTTP 로 서빙하는 CSV. Edge 가 다운로드 후 로컬 캐시." },
+                "col_ts": { "type": "string" },
+                "col_power_w": { "type": "string" },
+                "year_shift_to": { "type": "integer" },
+                "speed": { "type": "number" }
+              }
+            },
+            "energyplus": {
+              "type": "object",
+              "properties": {
+                "idf": { "type": "string" },
+                "epw": { "type": "string" },
+                "step_seconds": { "type": "integer", "minimum": 60 },
+                "rt_factor": { "type": "number" }
+              }
+            },
+            "modbus": {
+              "type": "object",
+              "properties": {
+                "host": { "type": "string" },
+                "port": { "type": "integer" },
+                "slave_id": { "type": "integer" }
+              }
+            },
+            "bacnet": {
+              "type": "object",
+              "properties": {
+                "ip": { "type": "string" },
+                "device_id": { "type": "integer" },
+                "object_list": { "type": "array" }
+              }
+            }
+          }
+        },
+        "interlocks": {
+          "type": "object",
+          "description": "안전 인터록 오버라이드. 지정 안 하면 Edge 기본값 사용.",
+          "properties": {
+            "max_indoor_temp_c": { "type": "number" },
+            "min_indoor_temp_c": { "type": "number" },
+            "min_ess_soc_pct": { "type": "number" },
+            "min_lighting_pct": { "type": "number" }
+          }
+        }
+      }
+    },
+    "apply_mode": {
+      "type": "string",
+      "enum": ["hot_reload", "restart_required", "dry_run"],
+      "default": "hot_reload",
+      "description": "적용 방식. hot_reload=무중단 반영(드라이버 재생성 불필요 필드만), restart_required=재기동 필요(backend·kind 변경 등), dry_run=검증만 하고 ack 만 보냄."
+    },
+    "secrets_ref": {
+      "type": "string",
+      "description": "민감정보(BACnet 비밀키·API 토큰) 별도 전달 레퍼런스. 옵션 — 미래 mTLS R6-8 과 연계."
+    }
+  },
+  "examples": [
+    {
+      "provisioning_id": "7c9e6679-7425-40de-944b-e07fc1f90ae7",
+      "ven_id": "VEN-STORE-B001",
+      "revision": 3,
+      "issued_at": "2026-04-19T16:43:00+09:00",
+      "issued_by": "admin@vworld.com",
+      "source": "ui_edit",
+      "expected_config_hash": "c8cc461ee63a529a",
+      "config": {
+        "schema_version": "1.2",
+        "ven_id": "VEN-STORE-B001",
+        "building_name": "중리신우점",
+        "building_type": "convenience_store",
+        "group_id": "ESG-STORE-100",
+        "kind": "telemetry",
+        "backend": "replay",
+        "baseline_kw": 12.0,
+        "connection": {
+          "protocol": "replay",
+          "data_points": ["power_kw"],
+          "interval_sec": 3600,
+          "replay": {
+            "csv_url": "https://gb.example.com/replay/ESG-STORE-100/SITE-EMS-000001.csv",
+            "col_ts": "date",
+            "col_power_w": "ch1_inst",
+            "year_shift_to": 2026,
+            "speed": 3600
+          }
+        }
+      },
+      "apply_mode": "hot_reload"
+    }
+  ]
+}

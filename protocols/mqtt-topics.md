@@ -34,6 +34,8 @@
 | `fleet/register/{ven_id}` | EdgeAgent | GridBridge | 2 | Yes | `edge_registration.json` (VW broker-architecture §5) |
 | `fleet/heartbeat/{ven_id}` | EdgeAgent | GridBridge | 1 | Yes | `edge_status.json` |
 | `fleet/{ven_id}/ota` | GridBridge | EdgeAgent | 1 | Yes | OTA 업데이트 지시 (미래) |
+| `fleet/provision/{ven_id}` | GridBridge | EdgeAgent | 2 | Yes | `provision.json` (R6-4) — VW 엑셀/UI 편집 결과 배포. apply_mode 지정. R6-3 옵션 a 관측 데이터 배포도 이 토픽 사용 |
+| `fleet/provision_ack/{ven_id}` | EdgeAgent | GridBridge | 1 | No | `provision_ack.json` — provisioning_id 로 매칭. applied/pending_restart/rejected/validated/hash_mismatch |
 
 ### GB → VW
 
@@ -86,6 +88,8 @@ topic write fleet/heartbeat/VEN-STORE-001
 topic read  gridbridge/command/VEN-STORE-001
 topic read  gridbridge/schedule/VEN-STORE-001
 topic read  fleet/VEN-STORE-001/ota
+topic read  fleet/provision/VEN-STORE-001
+topic write fleet/provision_ack/VEN-STORE-001
 topic read  external/smp
 topic read  external/temp/VEN-STORE-001
 ```
