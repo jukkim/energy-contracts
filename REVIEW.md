@@ -792,10 +792,10 @@ Edge 는 위 응답 후 v1.3 확정·Phase 2~4 착수.
 
 | 단계 | 작업 | 담당 | 상태 |
 |:---:|------|:---:|:---:|
-| 1 | 자택 서버에 Tailscale 설치 + `tailscale up` | VW/GB | [ ] |
-| 2 | Docker compose MQTT 바인딩 `127.0.0.1:1883` → `0.0.0.0:1883` (Tailscale 네트워크에서 접근 가능하도록) | VW/GB | [ ] |
-| 3 | Tailscale ACL 정책: MQTT(1883) 접근을 Edge 태그 디바이스만 허용 | VW/GB | [ ] |
-| 4 | RPi 5에 Tailscale 설치 + Edge MQTT 브로커 주소를 Tailscale IP로 설정 | Edge | ⏳ RPi 5 실기 확보 대기 |
+| 1 | 자택 서버에 Tailscale 설치 + `tailscale up` | VW/GB | [x] `100.75.68.16` (2026-04-21) |
+| 2 | Docker compose MQTT 바인딩 `127.0.0.1:1883` → `0.0.0.0:1883` | VW/GB | [x] docker-compose.yml 수정 + mqtt 재시작 |
+| 3 | 방화벽: Tailscale 네트워크(100.64.0.0/10)만 MQTT 허용 | VW/GB | [x] Windows 방화벽 `MQTT-Tailscale-Allow` 규칙 |
+| 4 | RPi 5에 Tailscale 설치 + Edge MQTT 브로커 주소를 `100.75.68.16`로 설정 | Edge | ⏳ RPi 5 실기 확보 대기 |
 | 5 | E2E 통신 검증: Edge → MQTT → GridBridge 텔레메트리 + 명령 왕복 | 양팀 | ⏳ 단계 4 이후 |
 
 **대안 B(MQTT over WS) 보류 사유**: Cloudflare Tunnel은 HTTP/WS 전용이라 MQTT TCP를 직접 지원하지 않음. WS 모드 전환은 paho-mqtt 클라이언트 코드 변경 + WebSocket 오버헤드(프레이밍, 핸드셰이크) 추가. Tailscale이 더 간단.
@@ -837,6 +837,24 @@ Edge 는 위 응답 후 v1.3 확정·Phase 2~4 착수.
 - `scripts/bench_rpi5.py` Tailscale 상주 프로파일 추가 (R9-5 측정).
 - `broker-architecture.md §3` mTLS 는 R9-4 합의 후 VW/GB 가 Phase D 로 강등 편집.
 - **전제**: VW/GB 측 실행 단계 1~3 완료 (자택 서버 Tailscale 설치 + MQTT 바인딩 전환 + ACL) 이후 Edge 단계 4~5 착수 가능.
+
+### 라운드 9 finalize 조건
+
+- [x] R9-1 Tailscale 채택 (Edge 수락)
+- [x] R9-2 Headscale 선호 확인 (PoC는 공용 Tailscale)
+- [x] R9-3 방화벽 정책 합의
+- [ ] R9-4 mTLS Phase D 강등 — **VW/GB 수락 대기**
+- [x] R9-5 RPi 5 자원 낙관 추정 (실측은 Phase C)
+- [x] 실행 단계 1~3 완료 (Tailscale `100.75.68.16` + MQTT `0.0.0.0:1883` + 방화벽 ACL)
+
+### VW/GB 팀 R9-4 응답
+
+**R9-4 mTLS Phase D 강등 수락.** Edge 근거 동의:
+- Tailscale WireGuard가 전송 암호화 + peer 인증을 이미 제공
+- cert subject = ven_id 인증은 Tailscale ACL `tag:edge-{ven_id}`로 대체 가능
+- `broker-architecture.md §3` "Phase C mTLS" → "Phase D (선택)" 강등
+
+**라운드 9 finalize 완료.** 실행 단계 1~3은 VW/GB가 착수 가능한 시점에 진행.
 
 ---
 
