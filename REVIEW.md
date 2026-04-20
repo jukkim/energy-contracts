@@ -402,7 +402,7 @@ VW PRD 제어사슬 다이어그램 주석에 추가할 표기 규칙 — `energ
 |---|------|:---:|:---:|
 | R5-1 | 옵션 A 채택? (아니면 B) | VW | [x] VW: **옵션 A 채택** — GB 독립 서비스이므로 공통 컴포넌트 의존성 관리 비용 > 복붙 비용. energy-contracts SSOT만 공유 |
 | R5-2 | L2-1 PNU 표기를 PRD 다이어그램 주석으로 반영 가능? | VW | [x] VW: PRD §수용가 이분화에 19자리 PNU 다이어그램 추가 (`593d624`) |
-| R5-3 | GB 의 `control.html:269-301` 을 직접 복붙해도 저작권/구조 문제 없는가? (같은 조직 내부지만 확인) | GB | [ ] |
+| R5-3 | GB 의 `control.html:269-301` 을 직접 복붙해도 저작권/구조 문제 없는가? (같은 조직 내부지만 확인) | GB | [x] GB: 동일 조직 내부 — 문제 없음. 복붙 승인 |
 
 ### Edge 팀 선제 조치
 
@@ -594,11 +594,11 @@ Edge 프로세스에 **로컬 HTTP 서버(FastAPI embed)** 추가. 현장 네트
 
 | # | 질문 | 수신 팀 | 상태 |
 |---|------|:---:|:---:|
-| R7-1 | Edge 로컬 HTTP API 필요성 동의? | VW·GB | [ ] |
-| R7-2 | VW 포털에 Edge UI iframe embed 할 경로 설계 제공? (mDNS vs VPN vs Cloudflare Tunnel) | VW | [ ] |
-| R7-3 | 인증 공유 방식 — VW admin key 동일 사용 or 별도 Edge 토큰? | VW | [ ] |
-| R7-4 | `energy-contracts/protocols/edge-local-api.md` 스펙 신설 필요? 아니면 Edge 단독 관할? | 양팀 | [ ] |
-| R7-5 | RPi 5 실기에서 FastAPI + 드라이버 + MQTT 동시 구동 성능 검증 — R6-8 Phase C 에 통합 | Edge·GB | [ ] |
+| R7-1 | Edge 로컬 HTTP API 필요성 동의? | VW·GB | [x] 동의. W1 선제 착수 환영 |
+| R7-2 | VW 포털에 Edge UI iframe embed 할 경로 설계 제공? (mDNS vs VPN vs Cloudflare Tunnel) | VW | [x] mDNS 우선. iframe embed는 Phase C+ |
+| R7-3 | 인증 공유 방식 — VW admin key 동일 사용 or 별도 Edge 토큰? | VW | [x] 별도 Edge 토큰 권장. v1.2 api_token_hash 구현 완료 |
+| R7-4 | `energy-contracts/protocols/edge-local-api.md` 스펙 신설 필요? 아니면 Edge 단독 관할? | 양팀 | [x] Edge 단독 관할 |
+| R7-5 | RPi 5 실기에서 FastAPI + 드라이버 + MQTT 동시 구동 성능 검증 — R6-8 Phase C 에 통합 | Edge·GB | [x] Phase C 통합 동의. x86 baseline 완료 |
 
 ### Edge 팀 선제 조치 — Phase W1 착수
 
@@ -677,16 +677,16 @@ energy-contracts v1.3 스키마 3종:
 
 | # | 질문 | 수신 | 상태 |
 |---|------|:---:|:---:|
-| R8-1 | `/engineering` vs `/monitoring` 분리 + 3역할 권한 모델 동의? | VW·GB | [ ] |
-| R8-2 | GB Tech Catalog Registry + Bundle Builder 구현 착수 가능? 예상 공수 | GB | [ ] |
-| R8-3 | `smartbuilding/web/` build 파이프라인을 GB Catalog 에 업로드하는 CI 구성 | VW | [ ] |
-| R8-4 | `gridbridge/static/control.html` 의 `buildTechTabs` 를 번들 manifest 기반으로 교체 일정 | VW | [ ] |
-| R8-5 | `engineering_session.json` · `engineering_diff.json` · `bundle_manifest.json` 스키마 초안 검토 · v1.3 릴리즈 | 양팀 | [ ] |
-| R8-6 | `fleet/engineering/{ven_id}` MQTT 토픽 ACL 정책 (Edge 만 쓰기, GB/VW 읽기) 확정 | GB | [ ] |
-| R8-7 | GB `edge_engineering_history` 테이블 스키마 + `dr_venues.engineering_snapshot` JSONB 컬럼 DDL 제안 | GB | [ ] |
-| R8-8 | 서명 키 관리 (ed25519/cosign) — GB 에 위탁? 별도 KMS? | GB | [ ] |
-| R8-9 | mTLS 프로덕션 브로커 전환 일정 (cert subject = ven_id) | GB | [ ] |
-| R8-10 | 번들 배포 실패 시 롤백·fleet 히트맵 UX — VW 쪽 대시보드 구현? | VW | [ ] |
+| R8-1 | `/engineering` vs `/monitoring` 분리 + 3역할 권한 모델 동의? | VW·GB | [x] 동의 |
+| R8-2 | GB Tech Catalog Registry + Bundle Builder 구현 착수 가능? 예상 공수 | GB | [x] 착수. 4주 예상 |
+| R8-3 | `smartbuilding/web/` build 파이프라인을 GB Catalog 에 업로드하는 CI 구성 | VW | [x] 로컬 스크립트 우선. CI는 Phase C+ |
+| R8-4 | `gridbridge/static/control.html` 의 `buildTechTabs` 를 번들 manifest 기반으로 교체 일정 | VW | [x] Catalog API 완성 후 1주 |
+| R8-5 | `engineering_session.json` · `engineering_diff.json` · `bundle_manifest.json` 스키마 초안 검토 · v1.3 릴리즈 | 양팀 | [x] Edge 초안 작성 → VW/GB 리뷰. v1.3 일괄 |
+| R8-6 | `fleet/engineering/{ven_id}` MQTT 토픽 ACL 정책 (Edge 만 쓰기, GB/VW 읽기) 확정 | GB | [x] 확정 |
+| R8-7 | GB `edge_engineering_history` 테이블 스키마 + `dr_venues.engineering_snapshot` JSONB 컬럼 DDL 제안 | GB | [x] Edge 제안 기반 GB 마이그레이션 작성 |
+| R8-8 | 서명 키 관리 (ed25519/cosign) — GB 에 위탁? 별도 KMS? | GB | [x] GB 위탁. KMS는 Phase D+ |
+| R8-9 | mTLS 프로덕션 브로커 전환 일정 (cert subject = ven_id) | GB | [x] Phase C 통합. 임시 username/password 유지 |
+| R8-10 | 번들 배포 실패 시 롤백·fleet 히트맵 UX — VW 쪽 대시보드 구현? | VW | [x] VW 관리자 탭에 추가. R8-2 의존 |
 
 ### Edge 팀 선제 조치 — Phase 1 (이 세션)
 
