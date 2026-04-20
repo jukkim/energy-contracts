@@ -68,8 +68,11 @@
           },
           "applicable_building_types": {
             "type": "array",
-            "description": "적용 가능한 건물 유형 (common.json §BuildingType). 비어있으면 모든 유형.",
-            "items": { "type": "string" }
+            "description": "적용 가능한 건물 유형. 비어있으면 모든 유형 (범용 기술).",
+            "items": {
+              "type": "string",
+              "description": "common.json §BuildingType 값 (예: convenience_store, office_medium, apartment). R8-5-d Minor."
+            }
           }
         }
       }

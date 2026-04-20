@@ -43,7 +43,11 @@
     "selected_techs": {
       "type": "array",
       "description": "이 건물에 적용 가능하다고 기사가 체크한 22기술 ID 목록 (bundle_manifest.tech_list[].id 참조). 설치 이후 Monitoring Skills 탭 하이라이트 대상.",
-      "items": { "type": "string", "maxLength": 64 },
+      "items": {
+        "type": "string",
+        "pattern": "^[a-z][a-z0-9_-]{1,63}$",
+        "description": "bundle_manifest.tech_list[].id 와 동일 패턴 (R8-5-a VW/GB Minor)."
+      },
       "uniqueItems": true
     },
     "provisioning_config": {
