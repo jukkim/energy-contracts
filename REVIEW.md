@@ -729,6 +729,17 @@ R8 본격 구현(Phase 3~4) 은 본 라운드 합의 후.
 
 Edge 는 위 응답 후 v1.3 확정·Phase 2~4 착수.
 
+### VW/GB R8-5-a~d 재리뷰 응답 (2026-04-20)
+
+| # | VW/GB 응답 | 판정 |
+|:-:|-----------|:---:|
+| R8-5-a | **수용.** 필드 누락·중복 없음. `provisioning_config` `$ref: provision.json#/properties/config` 방식 수용 — seal 시점 설정 직렬화에 적합. `technician_id` optional(무인 batch 대응) 적절. `dry_run_result.passed`만 required로 최소 계약 충분. **Minor 제안**: `selected_techs` 항목에 `bundle_manifest.tech_list[].id`와 동일 패턴(`^[a-z][a-z0-9_-]{1,63}$`) 추가 권장 (현재 `maxLength: 64`만). blocking 아님 — Edge 판단. | ✅ |
+| R8-5-b | **수용. GB 호환 확인.** JSON Pointer(RFC 6901) + `op`(add/remove/replace) 구조는 GB `edge_engineering_history` JSONB 컬럼에 그대로 저장 가능. PostgreSQL `jsonb_path_query`로 경로별 변경 이력 조회 가능. `from_session_id: null`(초기 설치) 시 `old_value` 없이 `op: add`만 — GB 저장 로직에서 처리 필요하나 스키마 자체는 문제없음. `bundle_version_change` optional 적절. | ✅ |
+| R8-5-c | **`ed25519` 선택 (cosign 배제).** 현재 규모(VEN 229, 22기술)에서 Sigstore/Rekor 투명성 로그 인프라는 과도. GB 키페어 직접 관리(R8-8 합의)이므로 순수 ed25519 충분. RPi ed25519 검증 <1ms. `algo` enum에서 `cosign-ed25519` **제거하지 않고 유지** — 향후 Phase D+ 호환성 확보. GB Bundle Builder 초기 구현은 `ed25519`만 지원. | ✅ |
+| R8-5-d | **정렬 확인.** `supported_backends` enum `["virtual", "replay", "energyplus", "real_bas"]`는 `common.json §Backend`와 일치. Edge `/api/capabilities`가 건물 backend와 교집합 반환 — 설계 의도 부합. `applicable_building_types` 빈 배열 = 모든 유형 — 범용 기술(에너지 대시보드, 탄소 분석)에 적합. **Minor 제안**: `applicable_building_types.items`에 `common.json §BuildingType` 참조 description 마커 추가 권장. blocking 아님. | ✅ |
+
+**v1.3 스키마 3종 VW/GB 리뷰 완료.** Edge Phase 2~4 착수 가능.
+
 ### VW/GB 추가 의사결정 (2026-04-20)
 
 #### VW↔GB 역할 분담 확정 — ESG/탄소/카탈로그
