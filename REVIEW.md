@@ -636,6 +636,67 @@ W2/W3 는 R7 합의 후 진행.
 
 ---
 
+## 2026-04-20 라운드 8 — R8 Engineering/Monitoring 분리 + 번들·세션 (Edge 팀 제안)
+
+### 배경
+
+Edge 가 편의점 220채·사무실·공장 등 이질적 건물 현장에서 **기사가 GB 도움 없이** 설치·설정하고, **운영자가** 22기술 애니메이션·제어·모니터링을 사용해야 함. 현재 단일 `/ui` 4탭 은 운영자용이며 설치 마법사·세션 관리·기사 권한이 없다.
+
+상세 설계: `edge-agent/docs/DESIGN-EDGE-ENGINEERING.md` · `AUDIT-2026-04-20.md`
+
+### 제안
+
+Edge 에:
+- `/engineering` — 기사 설치 마법사 (LAN + 기사 JWT 30일)
+- `/monitoring` — 운영자 + 22기술 Skills 탭 (LAN + RO/Control)
+- `/api/capabilities` — 이 건물 지원 기술 리스트
+- `/var/lib/edge-agent/engineering/sessions/` — 세션 3계층 저장 (Edge SoR + GB Replica + 기사 Cache)
+- `bundle_store/` A/B 슬롯 — GB 서명 번들 atomic swap
+
+GB 에:
+- **Tech Catalog Registry** (22기술 manifest v.X.Y 저장)
+- **Bundle Builder** — `smartbuilding/web/` 빌드를 서명된 tar.gz 로 패키징
+- 4 신규 API: `/api/v1/bundle/latest`, `/provision/{ven_id}`, `/fleet/engineering`, 서명 키 관리
+- 2 신규 테이블: `dr_venues.engineering_snapshot` JSONB + `edge_engineering_history`
+- Fleet 버전 히트맵 대시보드
+
+VW 에:
+- `smartbuilding/web/` export 스크립트 → GB Catalog CI 업로드
+- `gridbridge/static/control.html::buildTechTabs` 를 GB manifest 기반으로 교체 (vercel.app iframe 제거)
+
+MQTT:
+- `fleet/engineering/{ven_id}` (Edge → GB, retain=True) — 최신 세션 요약
+- `fleet/engineering_diff/{ven_id}` — 변경 이벤트
+
+energy-contracts v1.3 스키마 3종:
+- `engineering_session.json` — session_id, technician_id, selected_techs, commissioning_hash, previous_session_id
+- `engineering_diff.json` — session 간 변경 체인
+- `bundle_manifest.json` — version, min_edge_schema, tech_list[], signature
+
+### 라운드 8 질의
+
+| # | 질문 | 수신 | 상태 |
+|---|------|:---:|:---:|
+| R8-1 | `/engineering` vs `/monitoring` 분리 + 3역할 권한 모델 동의? | VW·GB | [ ] |
+| R8-2 | GB Tech Catalog Registry + Bundle Builder 구현 착수 가능? 예상 공수 | GB | [ ] |
+| R8-3 | `smartbuilding/web/` build 파이프라인을 GB Catalog 에 업로드하는 CI 구성 | VW | [ ] |
+| R8-4 | `gridbridge/static/control.html` 의 `buildTechTabs` 를 번들 manifest 기반으로 교체 일정 | VW | [ ] |
+| R8-5 | `engineering_session.json` · `engineering_diff.json` · `bundle_manifest.json` 스키마 초안 검토 · v1.3 릴리즈 | 양팀 | [ ] |
+| R8-6 | `fleet/engineering/{ven_id}` MQTT 토픽 ACL 정책 (Edge 만 쓰기, GB/VW 읽기) 확정 | GB | [ ] |
+| R8-7 | GB `edge_engineering_history` 테이블 스키마 + `dr_venues.engineering_snapshot` JSONB 컬럼 DDL 제안 | GB | [ ] |
+| R8-8 | 서명 키 관리 (ed25519/cosign) — GB 에 위탁? 별도 KMS? | GB | [ ] |
+| R8-9 | mTLS 프로덕션 브로커 전환 일정 (cert subject = ven_id) | GB | [ ] |
+| R8-10 | 번들 배포 실패 시 롤백·fleet 히트맵 UX — VW 쪽 대시보드 구현? | VW | [ ] |
+
+### Edge 팀 선제 조치 — Phase 1 (이 세션)
+
+보안·동작 결함 Quick Wins 먼저:
+- `/metrics` 인증 · heartbeat config_hash 캐싱 · mqtt_retain_cleaner 안전성 · schedule duration 하한 · innerHTML XSS · HEALTHCHECK · /metrics label escape
+
+R8 본격 구현(Phase 3~4) 은 본 라운드 합의 후.
+
+---
+
 ## 리뷰 요청 템플릿
 
 ```
