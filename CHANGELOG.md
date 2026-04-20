@@ -4,6 +4,19 @@
 
 ---
 
+## v1.3.1 — 2026-04-20 (ARCH-R8-1 AUDIT-R2)
+
+### 개요
+Edge 감사 P1 반영. Edge·GB·VW 3계층에서 `commissioning_hash` 알고리즘이 드리프트할 위험 차단.
+
+### 신규 프로토콜 문서
+- `protocols/commissioning-hash.md` — `commissioning_hash` 알고리즘 SSOT. canonical JSON(`sort_keys=True, separators=(",",":"), ensure_ascii=False`) + UTF-8 + SHA-256. Edge/GB/VW 구현 모두 이 문서 참조 필수.
+
+### 스키마 갱신
+- `schemas/engineering_session.json` — `commissioning_hash.description` 에 알고리즘 SSOT 링크 명시.
+
+---
+
 ## v1.3 — 2026-04-20 (R8-5)
 
 ### 개요

@@ -78,7 +78,7 @@
     },
     "commissioning_hash": {
       "type": "string",
-      "description": "provisioning_config + selected_techs + bundle_version + technician_id 를 결정론적으로 직렬화 후 SHA-256. seal 무결성 봉인.",
+      "description": "seal 무결성 봉인 해시. 알고리즘 SSOT 는 `protocols/commissioning-hash.md` (ARCH-R8-1, 2026-04-20). 요약: 입력 = {selected_techs(정렬), provisioning_config, bundle_version, technician_id or ''} → JSON canonical (sort_keys=True, separators=(',',':'), ensure_ascii=False, UTF-8 인코딩) → SHA-256 → `sha256:` 접두. VW/GB/Edge 구현은 반드시 동일 바이트를 입력해야 재현 가능.",
       "pattern": "^sha256:[a-f0-9]{64}$"
     },
     "previous_session_id": {
