@@ -4,6 +4,19 @@
 
 ---
 
+## (unversioned) — 2026-04-21 라운드 9 Edge 응답
+
+Edge 팀이 VW/GB 의 Tailscale 경로 제안(라운드 9) 에 일괄 답변. 스키마 변경 없음, REVIEW.md 만 갱신.
+
+- R9-1 Tailscale 옵션 A **수락**
+- R9-2 PoC 는 공용 Tailscale, 정식 운영은 Headscale (self-hosted) 선호
+- R9-3 Docker `0.0.0.0:1883` + iptables (`tailscale0` only) 2중 방어
+- R9-4 **R6-8 mTLS Phase D 강등 제안** — Tailscale 이 전송 암호화 + peer 인증 제공, ACL 은 Tailscale tag 로 대체
+- R9-5 RPi 5 Tailscale 추정 30~50 MB · CPU <2% — `bench_rpi5.py` 에서 실측 예정
+- 실행 단계 4 (RPi 5 Tailscale 설치) — Edge 담당 · RPi 5 실기 확보 대기
+
+---
+
 ## v1.3.1 — 2026-04-20 (ARCH-R8-1 AUDIT-R2)
 
 ### 개요

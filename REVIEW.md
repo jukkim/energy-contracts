@@ -755,6 +755,91 @@ Edge 는 위 응답 후 v1.3 확정·Phase 2~4 착수.
 
 ---
 
+## 2026-04-21 라운드 9 — Edge↔GridBridge 원격 통신 경로 설계 (VW/GB 팀 제안)
+
+### 배경
+
+현재 MQTT 브로커(Mosquitto)는 Docker 내부(`127.0.0.1:1883`)에서만 접근 가능. EdgeAgent가 건물 현장(원격 네트워크)에 배포되면 GridBridge MQTT 브로커에 연결할 수 없다.
+
+**현재 구조 (동일 호스트만 동작)**:
+```
+[GridBridge + Mosquitto]          [EdgeAgent]
+  Docker (자택 서버)                RPi 5 (건물 현장)
+  MQTT: 127.0.0.1:1883             → NAT/방화벽 차단
+  WS:   127.0.0.1:9001             → 접근 불가
+```
+
+### 옵션 비교
+
+| 옵션 | 설명 | 장점 | 단점 |
+|:---:|------|------|------|
+| **A** | **Tailscale VPN** — 양쪽에 설치, 사설 IP로 직접 MQTT 연결 | 설치 5분, NAT 관통, E2E 암호화, 무료(100대), 지연 최소 | 양쪽 Tailscale 데몬 필요 |
+| **B** | **MQTT over WebSocket + Cloudflare Tunnel** — Mosquitto WS(9001)를 CF Tunnel에 추가, `wss://mqtt.building-energy.xyz` | 추가 인프라 없음, 기존 CF Tunnel 활용 | MQTT 클라이언트를 WS 모드로 변경 필요, WS 오버헤드, CF 제한 |
+| **C** | **클라우드 MQTT 브로커** (HiveMQ Cloud / EMQX Cloud / AWS IoT Core) | 양쪽 모두 outbound만, 고가용성, 관리 불필요 | 무료 제한(25연결), 지연 증가, 데이터 외부 경유 |
+| **D** | **포트 포워딩** — 라우터에서 1883 직접 오픈 | 가장 단순 | 보안 취약, 동적 IP 문제, 방화벽 정책 위반 가능 |
+
+### VW/GB 팀 권고: 옵션 A (Tailscale)
+
+**근거**:
+
+1. **배포 독립성**: RPi 5 N개 + 자택 서버 간 사설 네트워크. Edge 추가 시 `tailscale up` 한 줄이면 자동 연결.
+2. **보안**: WireGuard 기반 E2E 암호화. 포트 오픈 불필요. mTLS(R6-8) 전까지 충분한 전송 보안.
+3. **운영 비용**: 무료 (개인 100대). 상용 전환 시 Tailscale Business($6/device/month) 또는 self-hosted Headscale.
+4. **기존 아키텍처 무변경**: MQTT 클라이언트 코드 그대로. 브로커 주소만 `127.0.0.1` → Tailscale IP `100.x.x.1`로 변경.
+5. **R7(로컬 HTTP UI) 호환**: 현장 엔지니어가 Tailscale 네트워크 내에서 Edge 로컬 UI(`100.x.x.2:8080`)에도 접근 가능.
+
+**구현 계획**:
+
+| 단계 | 작업 | 담당 | 상태 |
+|:---:|------|:---:|:---:|
+| 1 | 자택 서버에 Tailscale 설치 + `tailscale up` | VW/GB | [ ] |
+| 2 | Docker compose MQTT 바인딩 `127.0.0.1:1883` → `0.0.0.0:1883` (Tailscale 네트워크에서 접근 가능하도록) | VW/GB | [ ] |
+| 3 | Tailscale ACL 정책: MQTT(1883) 접근을 Edge 태그 디바이스만 허용 | VW/GB | [ ] |
+| 4 | RPi 5에 Tailscale 설치 + Edge MQTT 브로커 주소를 Tailscale IP로 설정 | Edge | ⏳ RPi 5 실기 확보 대기 |
+| 5 | E2E 통신 검증: Edge → MQTT → GridBridge 텔레메트리 + 명령 왕복 | 양팀 | ⏳ 단계 4 이후 |
+
+**대안 B(MQTT over WS) 보류 사유**: Cloudflare Tunnel은 HTTP/WS 전용이라 MQTT TCP를 직접 지원하지 않음. WS 모드 전환은 paho-mqtt 클라이언트 코드 변경 + WebSocket 오버헤드(프레이밍, 핸드셰이크) 추가. Tailscale이 더 간단.
+
+### 라운드 9 질의
+
+| # | 질문 | 수신 | 상태 |
+|---|------|:---:|:---:|
+| R9-1 | **옵션 A(Tailscale) 채택?** 반대 근거 있으면 기재 | Edge | [x] 수락 (2026-04-21) |
+| R9-2 | **Tailscale vs Headscale**: 자체 서버 이미 있으므로 Headscale(self-hosted) 선호? | Edge | [x] Headscale 선호 — PoC 는 공용 Tailscale |
+| R9-3 | **Docker 내부 MQTT → 0.0.0.0 바인딩 시 보안**: Tailscale 인터페이스만 listen 가능? 아니면 방화벽 규칙 추가 필요? | Edge·GB | [x] iptables/ufw 로 eth0 차단 + tailscale0 허용 (Edge 가이드) |
+| R9-4 | **Phase C mTLS와의 관계**: Tailscale 암호화 + mTLS 이중화는 과도? Tailscale 있으면 mTLS 생략 가능? | Edge | [x] R6-8 Phase D 강등 제안 — Tailscale ACL 로 대체 |
+| R9-5 | **RPi 5 Tailscale 자원 사용량**: Edge 프로세스(FastAPI + MQTT + 드라이버) + Tailscale 데몬 동시 구동 가능? | Edge | [x] 추정 OK · bench_rpi5 에서 실측 예정 |
+
+### 참고
+
+- R6-8 (mTLS 실증): Phase C 합의. Tailscale 도입으로 전송 암호화는 해결되나, mTLS의 **인증** 기능(cert subject = ven_id)은 별도 가치.
+- R7-2 (Edge 로컬 UI 접근): Tailscale 네트워크 내에서 `http://100.x.x.2:8080` 으로 중앙에서도 Edge UI 접근 가능.
+- docker-compose.yml 현재: `127.0.0.1:1883->1883/tcp`, `127.0.0.1:9001->9001/tcp`
+
+### Edge 팀 응답 (2026-04-21)
+
+옵션 A (Tailscale) **수락**. DESIGN-VIRTUAL-EDGE.md §Phase 3 에 이미 Tailscale mesh 를 Phase 3 대표 전략으로 명시해 뒀고, IoT 생태계 레퍼런스 (ESP32-tailbridge, Tailscale IoT use-case docs) 와도 정합. VW/GB 권고에 동의하며 Edge 측 미답 7 건 일괄 답변.
+
+| # | Edge 팀 답변 |
+|---|---|
+| **R9-1 Tailscale 채택** | **수락**. 옵션 B (Cloudflare Tunnel + WS) 는 paho-mqtt 코드 수정 + WS 프레이밍 오버헤드로 반대 근거. 옵션 A 로 확정. |
+| **R9-2 Tailscale vs Headscale** | **Headscale 선호**. VW 자체 서버 기존 활용 가능 + 상용 전환 비용 회피 + 100대 이상 fleet 대비. Phase 3 초기엔 공용 Tailscale 로 PoC, 정식 운영은 Headscale 로 전환. Edge 측은 양쪽 호환 — 차이는 control plane 주소뿐. |
+| **R9-3 Docker MQTT 바인딩 + 방화벽** | Tailscale 는 기본적으로 `tailscale0` 인터페이스 하나만 올리므로 `docker run -p 0.0.0.0:1883` 후 **iptables / ufw 로 `eth0` 인바운드 차단 + `tailscale0` 허용** 이 표준. Tailscale ACL 정책 (R9 실행 단계 3) 이 이중 방어. Edge 측 운영 가이드는 `docs/DEPLOYMENT.md §Tailscale` 로 Phase 3 착수 시 추가 예정. |
+| **R9-4 mTLS 이중화** | **R6-8 mTLS 스코프 축소 제안**. Tailscale 이 WireGuard 기반 전송 암호화 + peer 인증(노드 키)을 이미 제공하므로 전송층 mTLS 는 중복. mTLS 가 남는 가치는 **cert subject == ven_id** 로 브로커 ACL 을 지정하는 인증 레이어 하나. 이는 Tailscale ACL (`tag:edge-{ven_id}`) 로 대체 가능. 따라서 R6-8 은 **보류 (Phase D 후보)** 로 재분류 제안. GB 동의 시 `broker-architecture.md §3` 의 "Phase C mTLS" 섹션을 "Phase D (선택)" 로 강등. |
+| **R9-5 RPi 5 자원** | **측정 계획 있음 · 낙관적 추정**. x86 baseline (RSS 73.5 MB, p95 5.05 ms, `scripts/bench_rpi5.py` harness) 에 Tailscale 데몬 상주 메모리 30~50 MB · CPU <2% 가산 예상 (ESP32-tailbridge 벤치 인용). Phase C RPi 5 실기 확보 시 `bench_rpi5.py` 에 Tailscale 케이스 추가 후 `docs/phase-c-results/` 에 결과 기록. 임계: RSS < 180 MB · p95 < 50 ms 유지 목표. |
+| **실행 단계 4 (RPi 5 Tailscale 설치 + MQTT IP 전환)** | **Edge 담당 — RPi 5 실기 확보 대기**. `config.py` 는 `MQTT_BROKER` 환경변수 기반이라 코드 변경 없이 `MQTT_BROKER=100.x.x.1` 지정만으로 전환. 이미지 내 `tailscale up` 은 `docker-entrypoint` 에 `TS_AUTHKEY` 환경 시 실행하는 init hook 추가 고려 (Phase 3). |
+| **실행 단계 5 (E2E 왕복 검증)** | **공동**. Edge 측은 가상 엣지 fleet (compose smoke 224채 동작 확인) + ReplayDriver 로 E2E telemetry 발행, GB 가 Tailscale IP 바인딩 MQTT 에서 수신 확인. `scripts/compose_smoke.py` 를 Tailscale 네트워크 케이스로 확장. |
+
+### Phase 3 로드맵 영향
+
+- `docs/DESIGN-VIRTUAL-EDGE.md §Phase 3` 를 "Tailscale mesh" 로 구체화 (이미 초안) — Headscale 옵션 추가 필요.
+- `docs/DEPLOYMENT.md` 에 Tailscale 섹션 추가 (실행 단계 4 수반).
+- `scripts/bench_rpi5.py` Tailscale 상주 프로파일 추가 (R9-5 측정).
+- `broker-architecture.md §3` mTLS 는 R9-4 합의 후 VW/GB 가 Phase D 로 강등 편집.
+- **전제**: VW/GB 측 실행 단계 1~3 완료 (자택 서버 Tailscale 설치 + MQTT 바인딩 전환 + ACL) 이후 Edge 단계 4~5 착수 가능.
+
+---
+
 ## 리뷰 요청 템플릿
 
 ```
