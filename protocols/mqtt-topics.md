@@ -36,6 +36,8 @@
 | `fleet/{ven_id}/ota` | GridBridge | EdgeAgent | 1 | Yes | OTA 업데이트 지시 (미래) |
 | `fleet/provision/{ven_id}` | GridBridge | EdgeAgent | 2 | Yes | `provision.json` (R6-4) — VW 엑셀/UI 편집 결과 배포. apply_mode 지정. R6-3 옵션 a 관측 데이터 배포도 이 토픽 사용 |
 | `fleet/provision_ack/{ven_id}` | EdgeAgent | GridBridge | 1 | No | `provision_ack.json` — provisioning_id 로 매칭. applied/pending_restart/rejected/validated/hash_mismatch |
+| `fleet/engineering/{ven_id}` | EdgeAgent | GridBridge · VWorld | 1 | Yes | `engineering_session.json` (R8-5, 2026-04-20) — 기사 seal 완료 시 최신 세션 요약. Edge pub / GB sub(edge_engineering_history 저장) / VW sub(fleet 히트맵 RO) |
+| `fleet/engineering_diff/{ven_id}` | EdgeAgent | GridBridge · VWorld | 1 | No | `engineering_diff.json` (R8-5) — 이전 세션 대비 변경 이벤트 (techs_added/removed + config_changes JSON Pointer). GB 가 append-only 이력 저장 |
 
 ### GB → VW
 
@@ -90,9 +92,16 @@ topic read  gridbridge/schedule/VEN-STORE-001
 topic read  fleet/VEN-STORE-001/ota
 topic read  fleet/provision/VEN-STORE-001
 topic write fleet/provision_ack/VEN-STORE-001
+topic write fleet/engineering/VEN-STORE-001
+topic write fleet/engineering_diff/VEN-STORE-001
 topic read  external/smp
 topic read  external/temp/VEN-STORE-001
 ```
+
+GB·VW 쪽 ACL:
+- GB: `topic read fleet/engineering/+` + `topic read fleet/engineering_diff/+` (edge_engineering_history 저장)
+- VW: `topic read fleet/engineering/+` (fleet 히트맵 RO)
+- Phase C mTLS 전환 시 cert subject = ven_id 로 쓰기 권한 자동 제한.
 
 ## 협업 규칙 — 스펙 변경 프로토콜
 

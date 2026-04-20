@@ -1,0 +1,85 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "energy-contracts/engineering_diff.json",
+  "title": "EngineeringDiff",
+  "description": "두 engineering_session 사이 변경 내역. Edge 가 seal 직후 `fleet/engineering_diff/{ven_id}` (QoS 1, retain=False) 로 발행 — GB 가 `edge_engineering_history` 테이블에 append. UI 재방문 뷰에서 타임라인 diff 표시에도 사용. R8-5 (2026-04-20).",
+  "version": "1.0",
+  "type": "object",
+  "required": ["ven_id", "from_session_id", "to_session_id", "generated_at"],
+  "properties": {
+    "ven_id": {
+      "type": "string",
+      "pattern": "^VEN-(STORE|EP|REAL|TEST|E2E|SHOP)-[A-Z0-9][A-Z0-9\\-]*$"
+    },
+    "from_session_id": {
+      "description": "이전 세션 UUID. 초기 설치면 null (to_session_id 가 first).",
+      "oneOf": [
+        { "type": "string",
+          "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$" },
+        { "type": "null" }
+      ]
+    },
+    "to_session_id": {
+      "type": "string",
+      "description": "새 세션 UUID.",
+      "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$"
+    },
+    "generated_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "technician_id": {
+      "type": "string",
+      "maxLength": 64
+    },
+    "techs_added": {
+      "type": "array",
+      "description": "새 세션에 추가된 기술 ID 목록.",
+      "items": { "type": "string", "maxLength": 64 },
+      "uniqueItems": true
+    },
+    "techs_removed": {
+      "type": "array",
+      "items": { "type": "string", "maxLength": 64 },
+      "uniqueItems": true
+    },
+    "config_changes": {
+      "type": "array",
+      "description": "provisioning_config 의 JSON Pointer 기반 변경 기록. 깊은 경로는 `/envelope/geometry/floor_area_m2` 형식.",
+      "items": {
+        "type": "object",
+        "required": ["path", "op"],
+        "properties": {
+          "path": {
+            "type": "string",
+            "description": "RFC 6901 JSON Pointer. 예: `/interlocks/max_indoor_temp_c`.",
+            "pattern": "^(/[^/]*)+$"
+          },
+          "op": {
+            "type": "string",
+            "enum": ["add", "remove", "replace"]
+          },
+          "old_value": {
+            "description": "op=remove/replace 일 때 이전 값."
+          },
+          "new_value": {
+            "description": "op=add/replace 일 때 새 값."
+          }
+        }
+      }
+    },
+    "bundle_version_change": {
+      "type": "object",
+      "description": "번들 버전이 세션 간 달라졌을 때만 채움.",
+      "properties": {
+        "from": { "type": "string", "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$" },
+        "to":   { "type": "string", "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$" }
+      }
+    },
+    "reason": {
+      "type": "string",
+      "description": "변경 사유 (기사 자유 기입, 유지보수 티켓 번호 등).",
+      "maxLength": 1024
+    }
+  }
+}

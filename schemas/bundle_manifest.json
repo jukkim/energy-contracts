@@ -1,0 +1,97 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "energy-contracts/bundle_manifest.json",
+  "title": "BundleManifest",
+  "description": "GB Bundle Builder 가 22기술 정적 자산을 서명된 `.tar.gz` 로 패키징할 때 루트에 포함하는 manifest. Edge 가 `bundle_store/{version}/` 에 풀어 `active` 심볼릭 링크로 A/B atomic swap. Edge 는 `min_edge_schema` 로 역호환을 검증. R8-5 (2026-04-20).",
+  "version": "1.0",
+  "type": "object",
+  "required": ["version", "min_edge_schema", "tech_list", "built_at"],
+  "properties": {
+    "version": {
+      "type": "string",
+      "description": "번들 시맨틱 버전 (semver). Bundle Builder 가 발급. 예: `1.3.0`.",
+      "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$"
+    },
+    "min_edge_schema": {
+      "type": "string",
+      "description": "이 번들이 요구하는 최소 Edge 계약 버전 (energy-contracts 릴리즈). Edge 가 본인 버전보다 크면 번들 로드 거부 → 이전 슬롯 유지.",
+      "pattern": "^[0-9]+\\.[0-9]+$"
+    },
+    "built_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Bundle Builder 빌드 완료 시각."
+    },
+    "source_commit": {
+      "type": "string",
+      "description": "`smartbuilding/web/` 소스 리포 커밋 해시 (추적용).",
+      "pattern": "^[0-9a-f]{7,40}$"
+    },
+    "tech_list": {
+      "type": "array",
+      "description": "번들에 포함된 22기술 (또는 부분집합) 메타.",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": ["id", "version", "sha256"],
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "기술 식별자 (경로·URL 안전). 예: `pre-cooling`, `ess-discharge`, `lighting-dim`.",
+            "pattern": "^[a-z][a-z0-9_-]{1,63}$"
+          },
+          "title_ko": {
+            "type": "string",
+            "description": "UI 표시용 한국어 이름."
+          },
+          "version": {
+            "type": "string",
+            "pattern": "^[0-9]+\\.[0-9]+(\\.[0-9]+)?$"
+          },
+          "sha256": {
+            "type": "string",
+            "description": "이 기술 폴더(`tech/{id}/`) 전체 파일 정규화 해시. Edge 가 tar 해제 후 재계산·검증.",
+            "pattern": "^[a-f0-9]{64}$"
+          },
+          "assets": {
+            "type": "array",
+            "description": "번들 내 상대경로 (예: `tech/pre-cooling/index.html`). 디버그·감사용.",
+            "items": { "type": "string" }
+          },
+          "supported_backends": {
+            "type": "array",
+            "description": "이 기술이 실제로 작동하는 백엔드 목록. Edge `/api/capabilities` 에서 이 건물 backend 와 교집합 계산.",
+            "items": {
+              "type": "string",
+              "enum": ["virtual", "replay", "energyplus", "real_bas"]
+            }
+          },
+          "applicable_building_types": {
+            "type": "array",
+            "description": "적용 가능한 건물 유형 (common.json §BuildingType). 비어있으면 모든 유형.",
+            "items": { "type": "string" }
+          }
+        }
+      }
+    },
+    "signature": {
+      "type": "object",
+      "description": "번들 전체 무결성 서명. GB 가 ed25519 개인키로 발급, Edge 는 공개키 embed 로 검증.",
+      "required": ["algo", "value"],
+      "properties": {
+        "algo": {
+          "type": "string",
+          "enum": ["ed25519", "cosign-ed25519"]
+        },
+        "value": {
+          "type": "string",
+          "description": "서명 대상: canonical(manifest) + tar 해시. base64 인코딩."
+        },
+        "key_id": {
+          "type": "string",
+          "description": "공개키 fingerprint (로테이션 대비)."
+        }
+      }
+    }
+  }
+}

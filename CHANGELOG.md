@@ -4,6 +4,36 @@
 
 ---
 
+## v1.3 — 2026-04-20 (R8-5)
+
+### 개요
+Edge Engineering/Monitoring 분리 + 22기술 번들·세션 저장. 라운드 8 VW/GB 합의 후 Edge 팀이 작성한 3 스키마 초안 + MQTT 토픽 2종. GB Tech Catalog Registry + Bundle Builder 구현 대기 (R8-2, 4주 공수).
+
+### 신규 스키마
+- `schemas/engineering_session.json` **v1.0** — 기사 설치 세션 (session_id, technician_id, selected_techs, provisioning_config $ref provision.json#/config, dry_run_result, commissioning_hash, previous_session_id). Edge seal 시 로컬 `sessions/*.yaml` + `fleet/engineering/{ven_id}` retain 발행.
+- `schemas/engineering_diff.json` **v1.0** — 세션 간 변경 체인. techs_added/removed + config_changes (JSON Pointer 기반) + bundle_version_change. Edge `fleet/engineering_diff/{ven_id}` 발행, GB append-only 이력 저장.
+- `schemas/bundle_manifest.json` **v1.0** — 22기술 번들 루트 manifest. version(semver), min_edge_schema, tech_list[](id, sha256, supported_backends, applicable_building_types), signature (ed25519). Edge A/B atomic swap + 서명 검증.
+
+### 프로토콜 갱신
+- `protocols/mqtt-topics.md`:
+  - `fleet/engineering/{ven_id}` — Edge pub (QoS 1, retain=True) · GB+VW sub
+  - `fleet/engineering_diff/{ven_id}` — Edge pub (QoS 1, retain=False) · GB+VW sub
+  - ACL 예시 갱신 + mTLS Phase C cert subject 정책 명시
+
+### VW/GB 합의 (라운드 8, `5d596d5`)
+- Engineering/Monitoring 분리 + 3역할 권한 (R8-1)
+- GB Tech Catalog Registry + Bundle Builder 4주 착수 (R8-2)
+- 서명 키 GB 위탁, Edge 공개키 embed (R8-8)
+- mTLS Phase C RPi 5 완료 후 (R8-9)
+- Fleet 히트맵 VW 포털 관리자 탭 (R8-10)
+
+### 참조
+- Edge 설계: `edge-agent/docs/DESIGN-EDGE-ENGINEERING.md`
+- Edge 로드맵: `edge-agent/docs/ROADMAP-R8.md`
+- 감사: `edge-agent/docs/AUDIT-2026-04-20.md`
+
+---
+
 ## v1.2 — 2026-04-19 (R6-2·R6-4·R6-10·R7-3)
 
 ### 개요

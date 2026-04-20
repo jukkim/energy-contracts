@@ -712,6 +712,23 @@ R8 본격 구현(Phase 3~4) 은 본 라운드 합의 후.
 
 **라운드 8 VW/GB 10건 응답 완료.**
 
+### Edge 팀 후속 조치 (2026-04-20) — R8-5 3 스키마 초안 + MQTT 토픽
+
+- ✅ `schemas/engineering_session.json` v1.0 (신설)
+- ✅ `schemas/engineering_diff.json` v1.0 (신설)
+- ✅ `schemas/bundle_manifest.json` v1.0 (신설)
+- ✅ `protocols/mqtt-topics.md` — `fleet/engineering/{ven_id}` + `fleet/engineering_diff/{ven_id}` + ACL 예시
+- ✅ `CHANGELOG.md` v1.3 릴리즈 노트
+- ✅ Edge 참조: `edge-agent/docs/DESIGN-EDGE-ENGINEERING.md`
+
+**VW/GB 재리뷰 요청** — 3 스키마 위 초안 검토:
+- **R8-5-a**: `engineering_session.json` 필드 누락·중복? `provisioning_config` `$ref` 방식 수용?
+- **R8-5-b**: `engineering_diff.json` JSON Pointer 기반 `config_changes` 표현이 GB `edge_engineering_history` 저장 형식과 호환?
+- **R8-5-c**: `bundle_manifest.json` `signature.algo` 에 `cosign-ed25519` 포함 — GB 가 cosign vs 순수 ed25519 중 선택?
+- **R8-5-d**: `tech_list[].supported_backends` + `applicable_building_types` 가 `/api/capabilities` 설계와 정렬?
+
+Edge 는 위 응답 후 v1.3 확정·Phase 2~4 착수.
+
 ### VW/GB 추가 의사결정 (2026-04-20)
 
 #### VW↔GB 역할 분담 확정 — ESG/탄소/카탈로그
