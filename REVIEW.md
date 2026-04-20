@@ -695,6 +695,36 @@ energy-contracts v1.3 스키마 3종:
 
 R8 본격 구현(Phase 3~4) 은 본 라운드 합의 후.
 
+### VW/GB 응답 (2026-04-20)
+
+| # | 응답 |
+|:-:|------|
+| R8-1 | **동의.** `/engineering`(기사) vs `/monitoring`(운영자) 분리 합리적. 3역할(기사/운영자/관리자) 권한 모델 수용. 다만 관리자 역할은 VW admin key와 별도 — Edge 자체 `--api-token`(R7-3 합의) 활용. |
+| R8-2 | **동의 + 착수.** GB Tech Catalog Registry + Bundle Builder 구현 시작. 예상 공수: Catalog API 1주, Bundle Builder 2주, 서명 1주 = **총 4주**. 우선순위: Catalog API > Bundle > 서명. |
+| R8-3 | **동의.** `smartbuilding/web/` 빌드 결과물을 GB Catalog에 업로드하는 스크립트 VW 측에서 작성. CI는 로컬 스크립트 우선 (GitHub Actions는 Phase C+). |
+| R8-4 | **동의.** `control.html::buildTechTabs`의 vercel.app iframe을 GB manifest 기반 로드로 교체. Catalog API 완성 후 1주 내 가능. |
+| R8-5 | **초안 검토 수용.** `engineering_session.json`, `engineering_diff.json`, `bundle_manifest.json` 3종 스키마 — Edge 팀이 초안 작성, VW/GB가 리뷰. v1.3 릴리즈는 3종 합의 후 일괄. |
+| R8-6 | **ACL 확정.** `fleet/engineering/{ven_id}` — Edge만 pub(retain=True), GB sub(저장), VW sub(읽기 전용). mTLS Phase C에서 cert subject 기반 ACL 강제. Phase A/B는 토픽 네이밍 컨벤션으로 분리. |
+| R8-7 | **DDL 수용.** `dr_venues.engineering_snapshot JSONB DEFAULT '{}'` 컬럼 + `edge_engineering_history` 테이블 — GB 측에서 마이그레이션 작성. 스키마 초안 Edge 제안 기반. |
+| R8-8 | **GB 위탁.** 서명 키는 GB 서버에서 ed25519 키페어 생성·보관. Edge는 공개키만 embed. 별도 KMS는 Phase D+ 검토 (현재 규모에서 과도). |
+| R8-9 | **Phase C 통합.** mTLS 프로덕션 브로커 전환은 RPi 5 실기 검증(R7-5) 완료 후. cert subject=ven_id 방식 동의. 임시: username/password 인증 유지. |
+| R8-10 | **VW 대시보드 구현 수용.** Fleet 버전 히트맵 + 롤백 현황은 VW 포털의 관리자 탭에 추가. Catalog API 완성 후 착수 (R8-2 의존). |
+
+**라운드 8 VW/GB 10건 응답 완료.**
+
+### VW/GB 추가 의사결정 (2026-04-20)
+
+#### VW↔GB 역할 분담 확정 — ESG/탄소/카탈로그
+
+| 영역 | VW (L1) | GB (L2) | Edge (L3) |
+|------|---------|---------|-----------|
+| **ESG 그룹** | 요약 대시보드 + 집계 | 상세 관리 (VEN 할당, 감축 스케줄, 월별 리포트) | 관측자 (그룹 태그 수신) |
+| **Scope 1/2/3** | 포트폴리오 집계 차트 | 건물별 상세 입력 (냉매, 폐기물, 수동 오버라이드) | 텔레메트리 전송 |
+| **탄소 배출** | 집계 + NDC 목표 추적 | 상세 계산 + K-ETS 리포트 | 실측 전력 → GB 전달 |
+| **Tech Catalog** | — | 22기술 manifest 관리 + 번들 빌드·서명 | 번들 다운로드·적용 |
+| **랜딩페이지** | building-energy.xyz | **별도 필요** (서비스 소개 + API 문서 + Fleet 현황) | 로컬 UI (LAN) |
+| **데이터 흐름** | GB→VW: `push-to-vworld` (Tier 1 실측) | VW→GB: ESG 목표·그룹 설정 | Edge→GB: 텔레메트리·세션 |
+
 ---
 
 ## 리뷰 요청 템플릿
