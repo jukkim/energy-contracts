@@ -814,7 +814,7 @@ Edge 는 위 응답 후 v1.3 확정·Phase 2~4 착수.
 
 - R6-8 (mTLS 실증): Phase C 합의. Tailscale 도입으로 전송 암호화는 해결되나, mTLS의 **인증** 기능(cert subject = ven_id)은 별도 가치.
 - R7-2 (Edge 로컬 UI 접근): Tailscale 네트워크 내에서 `http://100.x.x.2:8080` 으로 중앙에서도 Edge UI 접근 가능.
-- docker-compose.yml 현재: `127.0.0.1:1883->1883/tcp`, `127.0.0.1:9001->9001/tcp`
+- docker-compose.yml 변경 완료: `0.0.0.0:1883->1883/tcp`, `0.0.0.0:9001->9001/tcp` (Tailscale 접근용)
 
 ### Edge 팀 응답 (2026-04-21)
 
@@ -843,7 +843,7 @@ Edge 는 위 응답 후 v1.3 확정·Phase 2~4 착수.
 - [x] R9-1 Tailscale 채택 (Edge 수락)
 - [x] R9-2 Headscale 선호 확인 (PoC는 공용 Tailscale)
 - [x] R9-3 방화벽 정책 합의
-- [ ] R9-4 mTLS Phase D 강등 — **VW/GB 수락 대기**
+- [x] R9-4 mTLS Phase D 강등 — VW/GB 수락 완료
 - [x] R9-5 RPi 5 자원 낙관 추정 (실측은 Phase C)
 - [x] 실행 단계 1~3 완료 (Tailscale `100.75.68.16` + MQTT `0.0.0.0:1883` + 방화벽 ACL)
 
@@ -854,7 +854,7 @@ Edge 는 위 응답 후 v1.3 확정·Phase 2~4 착수.
 - cert subject = ven_id 인증은 Tailscale ACL `tag:edge-{ven_id}`로 대체 가능
 - `broker-architecture.md §3` "Phase C mTLS" → "Phase D (선택)" 강등
 
-**라운드 9 finalize 완료.** 실행 단계 1~3은 VW/GB가 착수 가능한 시점에 진행.
+**라운드 9 finalize 완료.** 실행 단계 1~3 완료 (2026-04-21).
 
 ### Edge 팀 최종 확인 (2026-04-21)
 
@@ -894,6 +894,55 @@ GB   : ack 수신 + Grafana active_strategy=M5 확인
 **broker-architecture.md §3 mTLS 강등 편집**: VW/GB 관할 (Edge `edge_team_scope` 메모리 준수하여 미편집).
 
 **라운드 9 전면 종료 (Edge 측 확인).** RPi 5 실기 확보 즉시 단계 4 착수, 결과는 별도 라운드로 보고 예정.
+
+---
+
+## 2026-04-21 라운드 10 — inline 편집 · 생성기 SSOT · Monitoring Fleet tap (Edge 팀 제안)
+
+### 배경
+
+Edge Phase 4.1 (2026-04-21): Engineering graph UI 에 엣지·생성기 inline 편집 추가 + `_env_for()` 에 generator.source fallback 승격. 다음 Phase 4.2 (Monitoring 확장) 착수 전 VW/GB 조율 3 건.
+
+### R10-1 inline 편집과 commissioning_hash 재seal 정책
+
+기사가 `/engineering/` 5단계 마법사로 seal 한 엣지의 `provisioning_config` 를 graph 상세 패널에서 inline 수정할 때 `commissioning_hash` 재계산 정책.
+
+| 옵션 | 정책 |
+|---|---|
+| A | inline 편집 = seal 무효화, `commissioning_hash` 재seal 강제 + `seal_status=stale` 배지 |
+| B | inline 은 "draft" 로만 저장, 다음 마법사 실행 시 재seal |
+| C | inline 은 **런타임 파라미터** (`telemetry_interval_sec`·`baseline_kw`) 만 허용, `selected_techs`·`group_id` 는 마법사 전용 |
+
+**Edge 선호: C** — 운영 파라미터와 commissioning 대상 분리. A 는 과도, B 는 drift.
+
+### R10-2 generator.source CSV/IDF fallback (§11 P1 승격)
+
+`ComposeLauncher._env_for()`:
+- 이전: `edge.provisioning_config.connection.replay.csv` 만 사용, `generator.source` 는 시각 전용
+- 승격: `edge.connection` 비어 있을 때 연결된 `generator.source` 로 fallback
+- 우선순위: `edge.connection` > `generator.source` > (없음/synthetic)
+
+**질의**: GB Tech Catalog 에서 번들 내려줄 때 각 기술의 기본 CSV/IDF 경로를 `generator.source` 스키마로 내려줄 계획? 있으면 `bundle_manifest.json` 에 스키마 정의 필요.
+
+### R10-3 Monitoring Fleet tap — MQTT 중복 구독
+
+Edge Phase 4.2 (차후): Monitoring UI 단일 VEN → 여러 가상 엣지 선택 지원. Edge 내부 MQTT 구독 스레드 (`src/monitoring/fleet_tap.py`) 추가 → `gridbridge/telemetry/+` 구독 → 최근 텔레메트리 캐시 → `GET /api/monitoring/telemetry/{ven_id}`.
+
+**질의**: GB 측도 이미 동일 토픽 구독 중(`src.mqtt.client` 인벤토리 갱신). Edge 추가 구독이 mosquitto fan-out 에 영향? shared subscription (`$share/...`) 필요?
+
+### 질의 테이블
+
+| # | 질문 | 수신 | 상태 |
+|---|------|:---:|:---:|
+| R10-1 | inline 편집 정책 A/B/C — Edge 선호 C | VW/GB | [ ] |
+| R10-2 | GB Tech Catalog `bundle_manifest` 에 generator.source 기본 경로 포함 계획 | GB | [ ] |
+| R10-3 | Edge 추가 MQTT `telemetry/+` 구독이 GB brokers 에 영향 여부 + shared sub 필요성 | GB | [ ] |
+
+### Edge 측 선제 조치 (확정 전 가능, 커밋 반영됨)
+
+- [x] Phase 4.1 inline 편집 — 런타임 파라미터만 허용 (C 가정). `telemetry_interval_sec`·`baseline_kw`·`max_reduction_kw`·`group_id`·`kind`·`backend` 수정 가능
+- [x] `_env_for` generator fallback 구현 — R10-2 가정 (내려올 때 대비). 테스트 3 건 추가
+- [ ] Phase 4.2 Monitoring Fleet tap — R10-3 답변 후 착수
 
 ---
 
