@@ -856,6 +856,45 @@ Edge 는 위 응답 후 v1.3 확정·Phase 2~4 착수.
 
 **라운드 9 finalize 완료.** 실행 단계 1~3은 VW/GB가 착수 가능한 시점에 진행.
 
+### Edge 팀 최종 확인 (2026-04-21)
+
+GB R9-4 수락 + 실행 단계 1~3 완료 기록 모두 확인. 감사합니다.
+
+**finalize 체크리스트 재동기화** (원문의 R9-4 "대기" 표시는 오표기, 실제 GB 수락 완료):
+- [x] R9-1 Tailscale 채택
+- [x] R9-2 Headscale 선호
+- [x] R9-3 방화벽 정책 합의
+- [x] R9-4 mTLS Phase D 강등 — **GB 수락 확정**
+- [x] R9-5 RPi 5 자원 추정 (실측 Phase C)
+- [x] 실행 단계 1~3 — VW/GB 완료 (Tailscale IP `100.75.68.16` · MQTT `0.0.0.0:1883` · ACL)
+- [ ] 실행 단계 4 (RPi 5 Tailscale 설치 + MQTT IP 전환) — **Edge · RPi 5 실기 대기**
+- [ ] 실행 단계 5 (E2E 왕복 검증) — 양팀
+
+**Edge 단계 4 준비 현황**:
+1. `MQTT_BROKER` 환경변수 기반 설계 → 코드 변경 없이 `100.75.68.16` 지정만으로 전환
+2. `scripts/bench_rpi5.py --with-tailscale` 옵션 완료 — `tailscaled` 데몬 RSS/CPU 샘플링 + 3 추가 임계 (`tailscaled_rss_mb_max=80`, `tailscaled_cpu_pct_mean=5`, `total_rss_mb_max=260`)
+3. `docs/DEPLOYMENT.md §8` Tailscale 운영 가이드 신설 (설치·iptables·Headscale·자원·mTLS 관계·트러블슈팅)
+4. `docs/DESIGN-VIRTUAL-EDGE.md §Phase 3` Tailscale mesh + Headscale 두 축 + ACL 정책 구체화
+5. **후속 예정** (RPi 5 실기 확보 후):
+   - `Dockerfile` 에 tailscale 설치 레이어 추가 (선택 extras)
+   - `docker-entrypoint.sh` 에 `TS_AUTHKEY` 감지 시 `tailscale up --hostname=$VEN_ID` 실행 hook
+   - `scripts/compose_smoke.py --tailscale-target 100.75.68.16` 자동화 옵션
+
+**단계 5 E2E 왕복 검증 제안 시나리오**:
+```
+Edge (RPi 5)   : MQTT_BROKER=100.75.68.16 로 기동
+  → gridbridge/telemetry/{ven_id}      5초 주기 발행
+  → fleet/heartbeat/{ven_id}          30초 주기 발행
+GB (자택 서버) : mosquitto_sub 로 양 토픽 수신 확인
+  → gridbridge/command/{ven_id} 에 {strategy:M5} 발행
+Edge : apply_control 반영 → gridbridge/control_response/{ven_id} ack
+GB   : ack 수신 + Grafana active_strategy=M5 확인
+```
+
+**broker-architecture.md §3 mTLS 강등 편집**: VW/GB 관할 (Edge `edge_team_scope` 메모리 준수하여 미편집).
+
+**라운드 9 전면 종료 (Edge 측 확인).** RPi 5 실기 확보 즉시 단계 4 착수, 결과는 별도 라운드로 보고 예정.
+
 ---
 
 ## 리뷰 요청 템플릿
