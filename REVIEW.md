@@ -1032,9 +1032,31 @@ GB 랜딩페이지 리빌드 + ESG 그룹 자동 생성 + is_active enforcement 
 
 | # | 질문 | 수신 | 상태 |
 |---|------|:---:|:---:|
-| R11-Q1 | P3(ESG CRUD 이관) 시 VW portfolio 테이블의 `gridbridge_group_id` 유지? 아니면 GB에 portfolio_id→group_id 매핑 테이블 신설? | Edge | [ ] |
-| R11-Q2 | P4(Scope 단일화) 시 VW `portfolio_scope_emissions` 테이블 폐기? 아니면 GB 결과 캐시용 유지? | Edge | [ ] |
-| R11-Q3 | P1~P5 우선순위 동의? 다른 순서 제안? | Edge | [ ] |
+| R11-Q1 | P3(ESG CRUD 이관) 시 VW portfolio 테이블의 `gridbridge_group_id` 유지? 아니면 GB에 portfolio_id→group_id 매핑 테이블 신설? | Edge | [x] Edge 응답 (아래) |
+| R11-Q2 | P4(Scope 단일화) 시 VW `portfolio_scope_emissions` 테이블 폐기? 아니면 GB 결과 캐시용 유지? | Edge | [x] Edge 응답 (아래) |
+| R11-Q3 | P1~P5 우선순위 동의? 다른 순서 제안? | Edge | [x] Edge 응답 (아래) |
+
+### Edge 팀 응답 (2026-04-21)
+
+Edge 는 MQTT·드라이버·설비 제어 계층이라 VW↔GB 내부 재배치에 직접 영향이 크지 않다. 관할 범위 안에서만 의견 기록.
+
+| # | 답변 |
+|---|------|
+| R11-Q1 | **Edge 무관 — 양팀 결정 존중.** VW 내부 DB FK 설계는 Edge 관할 밖. 단 스펙 계약 제약: `bundle_manifest.group_id` 가 Edge 측 SSOT 로 이미 내려오므로, VW/GB 가 어떤 매핑 구조를 택하든 **`group_id` 는 문자열 식별자 그대로 유지**되어야 한다. commissioning_hash 재현성을 위해 group_id 포맷·대소문자 변환 금지. |
+| R11-Q2 | **Edge 무관 — 양팀 결정 존중.** Edge 는 Scope 1/2/3 계산에 참여하지 않으며 텔레메트리(`energy_kwh`·배출계수 입력값)만 발행. 캐시 유지/폐기는 VW 포트폴리오 성능 문제. 단 스펙 계약 제약: 현행 `telemetry.json` 페이로드 구조는 변경 없이 유지 확인 필요 (폐기 과정에서 텔레메트리 필드 삭제 금지). |
+| R11-Q3 | **P5(VEN 목록 통합) 먼저 처리 권장.** 이유: P3·P4 는 VW↔GB 내부 API 재배치라 Edge 영향 적지만, **P5 는 VEN 등록(`/register`)·heartbeat(`fleet/heartbeat/{ven_id}`)·provision_ack(`fleet/provision/ack/{ven_id}`) 경로와 직접 맞닿음**. VEN CRUD SSOT 가 GB 로 확정되어야 Edge 가 어느 endpoint 를 호출할지 모호성 해소. 현재 순서(P3→P4→P5)는 UI/DB 중심 관점이고, 하위 계층 영향도 관점에서는 P5 가 먼저. 단 양팀이 기존 순서 유지 원하면 수용 — Edge 는 현재 `gridbridge_proxy.py` 경유로 동작 중이라 블로커 아님. |
+
+### Edge 팀 추가 관찰
+
+- **R11-5 (GB ESG 편집 UI 완료)**: Edge Engineering 의 `/engineering/` 라우트에서 ESG 그룹 목록을 `GET /api/esg-groups` 로 GB 프록시 호출 중. GB 가 이제 편집까지 지원하면 향후 Edge UI 에서 "ESG 그룹 선택" → "그룹 목표 보기" 링크를 GB 로 deep-link 가능. Phase 6+ 후보 (현재 긴급도 낮음).
+- **R11-1/R11-2 완료 시점**: ESG CRUD·Scope 계산이 GB 로 일원화되면 Edge 의 `bundle_manifest` 수취 경로에는 변화 없음. 기존 MQTT `fleet/bundle/latest/{ven_id}` + HTTP `/api/v1/bundle/latest` pull 그대로.
+
+### 라운드 11 finalize 조건
+
+- [x] P1 (R11-4 데드코드 삭제) — VW 완료
+- [x] P2 (R11-5 GB ESG 편집 UI) — GB 완료
+- [x] R11-Q1~Q3 Edge 응답
+- [ ] P3·P4·P5 착수 (양팀, 중기)
 
 ---
 
