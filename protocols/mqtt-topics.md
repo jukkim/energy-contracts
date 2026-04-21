@@ -38,6 +38,7 @@
 | `fleet/provision_ack/{ven_id}` | EdgeAgent | GridBridge | 1 | No | `provision_ack.json` — provisioning_id 로 매칭. applied/pending_restart/rejected/validated/hash_mismatch |
 | `fleet/engineering/{ven_id}` | EdgeAgent | GridBridge · VWorld | 1 | Yes | `engineering_session.json` (R8-5, 2026-04-20) — 기사 seal 완료 시 최신 세션 요약. Edge pub / GB sub(edge_engineering_history 저장) / VW sub(fleet 히트맵 RO) |
 | `fleet/engineering_diff/{ven_id}` | EdgeAgent | GridBridge · VWorld | 1 | No | `engineering_diff.json` (R8-5) — 이전 세션 대비 변경 이벤트 (techs_added/removed + config_changes JSON Pointer). GB 가 append-only 이력 저장 |
+| `fleet/bundle/notify/{ven_id}` | GridBridge | EdgeAgent | 1 | No | 새 번들 버전 발행 알림 (R13-M1). Edge 수신 시 `BundleClient.sync()` 즉시 트리거. 페이로드: `{"version":"1.4.0","download_url":"...","sha256":"...","priority":"normal","published_at":"ISO8601"}`. retain=No (재기동 시 polling 으로 최신 확인) |
 
 ### GB → VW
 

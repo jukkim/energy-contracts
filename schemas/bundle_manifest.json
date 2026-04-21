@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "energy-contracts/bundle_manifest.json",
   "title": "BundleManifest",
-  "description": "GB Bundle Builder 가 22기술 정적 자산을 서명된 `.tar.gz` 로 패키징할 때 루트에 포함하는 manifest. Edge 가 `bundle_store/{version}/` 에 풀어 `active` 심볼릭 링크로 A/B atomic swap. Edge 는 `min_edge_schema` 로 역호환을 검증. R8-5 (2026-04-20).",
+  "description": "GB Bundle Builder 가 22기술 정적 자산을 서명된 `.tar.gz` 로 패키징할 때 루트에 포함하는 manifest. Edge 가 `bundle_store/{version}/` 에 풀어 `active` 심볼릭 링크로 A/B atomic swap. Edge 는 `min_edge_schema` 로 역호환을 검증. R8-5 (2026-04-20). **Delivery**: GB 노출 경로 `GET /api/v1/gridbridge/catalog/bundles/latest`. Edge 는 `GB_BUNDLE_MANIFEST_PATH` 환경변수로 오버라이드 가능. 다운로드: `GET /api/v1/gridbridge/catalog/bundles/{version}/download` (Bearer 토큰 필수). MQTT 알림: `fleet/bundle/notify/{ven_id}` (QoS 1, retain=false).",
   "version": "1.0",
   "type": "object",
   "required": ["version", "min_edge_schema", "tech_list", "built_at"],
