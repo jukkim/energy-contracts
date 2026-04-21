@@ -1056,7 +1056,41 @@ Edge 는 MQTT·드라이버·설비 제어 계층이라 VW↔GB 내부 재배치
 - [x] P1 (R11-4 데드코드 삭제) — VW 완료
 - [x] P2 (R11-5 GB ESG 편집 UI) — GB 완료
 - [x] R11-Q1~Q3 Edge 응답
-- [ ] P3·P4·P5 착수 (양팀, 중기)
+- [x] P3·P4·P5 완료 (2026-04-21) — VW→GB proxy 전환, Scope GB 단일화, VEN 통합
+
+---
+
+## 2026-04-21 R12: Edge↔GB 카탈로그 전달 메커니즘 감사 (VW 팀)
+
+### 배경
+Edge가 GB로부터 Tech Catalog(번들)을 수신하는 경로 감사.
+`bundle_manifest.json`, `edge_registration.json`, MQTT topics, GB catalog API, Edge bundle_client 교차 점검.
+
+### HIGH
+
+| # | 이슈 | 파일 | 상태 |
+|---|------|------|:---:|
+| R12-H1 | **엔드포인트 경로 불일치** — Edge `bundle_client.py`는 `GET /api/v1/bundle/latest` 호출, GB는 `GET /api/v1/gridbridge/catalog/bundles/latest` 제공. 연결 불가. → 공통 스펙에 canonical URL 명시 필요 | bundle_manifest.json (§delivery) 신설 | [ ] |
+
+### MEDIUM
+
+| # | 이슈 | 파일 | 상태 |
+|---|------|------|:---:|
+| R12-M1 | **MQTT 카탈로그 푸시 토픽 미정의** — 스펙에 `fleet/bundle/+` 토픽 없음. Edge가 offline-first인 경우 pull-only 불충분. → `fleet/bundle/notify/{ven_id}` (새 버전 알림) 토픽 추가 제안 | mqtt-topics.md | [ ] |
+| R12-M2 | **번들 다운로드 인증 미정의** — GB `/bundles/{ver}/download`에 인증 없음. Edge는 Bearer 토큰 지원하나 GB는 무시. → `bundle_manifest.json`에 auth 방식 명시 | bundle_manifest.json | [ ] |
+| R12-M3 | **공개키 배포/로테이션 미정의** — ed25519 서명 검증용 pubkey를 Edge가 어떻게 수신/갱신하는지 스펙 없음 → `protocols/bundle-signing.md` 신설 | (신규 문서) | [ ] |
+
+### LOW
+
+| # | 이슈 | 파일 | 상태 |
+|---|------|------|:---:|
+| R12-L1 | **Capability→Bundle 매칭 로직 미정의** — Edge 등록 시 `capabilities`를 보내지만 GB가 추천 번들을 응답하는 프로토콜 없음. 현재 수동 할당만 가능 → 향후 `fleet/provision/{ven_id}` 응답에 `recommended_bundle_version` 추가 | edge_registration.json, mqtt-topics.md | [ ] |
+
+### 참고: finalize 조건
+
+- [ ] R12-H1: bundle delivery URL 합의 → 스펙 문서화
+- [ ] R12-M1~M3: 양팀 논의 후 v1.2 포함 여부 결정
+- [ ] Edge 팀 응답 대기
 
 ---
 
