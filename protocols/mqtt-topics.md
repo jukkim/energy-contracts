@@ -40,6 +40,13 @@
 | `fleet/engineering_diff/{ven_id}` | EdgeAgent | GridBridge · VWorld | 1 | No | `engineering_diff.json` (R8-5) — 이전 세션 대비 변경 이벤트 (techs_added/removed + config_changes JSON Pointer). GB 가 append-only 이력 저장 |
 | `fleet/bundle/notify/{ven_id}` | GridBridge | EdgeAgent | 1 | No | 새 번들 버전 발행 알림 (R13-M1). Edge 수신 시 `BundleClient.sync()` 즉시 트리거. 페이로드: `{"version":"1.4.0","download_url":"...","sha256":"...","priority":"normal","published_at":"ISO8601"}`. retain=No (재기동 시 polling 으로 최신 확인) |
 
+### 데모 관리 (R15)
+
+| 토픽 | 발행자 | 구독자 | QoS | Retain | 설명 |
+|------|:---:|:---:|:---:|:---:|------|
+| `fleet/demo/reset/all` | GridBridge | EdgeAgent | 2 | No | 데모 데이터 전체 리셋. 페이로드: `{"action":"reset","scope":"all","timestamp":"ISO8601","reason":"manual"}`. Edge 수신 시 ReplayDriver 상태 초기화 + 큐 폐기 |
+| `fleet/demo/reset/{ven_id}` | GridBridge | EdgeAgent | 2 | No | 특정 VEN 데모 리셋. scope=ven 또는 scope=group(그룹 VEN 일괄) |
+
 ### GB → VW
 
 | 토픽 | QoS | Retain | 설명 |
