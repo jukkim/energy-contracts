@@ -1024,7 +1024,7 @@ GB 랜딩페이지 리빌드 + ESG 그룹 자동 생성 + is_active enforcement 
 |:---:|------|:---:|:---:|:---:|
 | **P1** | R11-4: `gridbridge.py` 데드코드 삭제 (611행) | 즉시 | VW | [x] 2026-04-21 |
 | **P2** | R11-5: GB 랜딩에 ESG 목표 편집 + 활성화 토글 UI | 높음 | GB | [x] 2026-04-21 |
-| **P3** | R11-1: ESG 그룹 CRUD를 GB로 이관 — VW는 GB API를 proxy 호출 | 중기 | 양팀 | [ ] |
+| **P3** | R11-1: ESG 그룹 CRUD를 GB로 이관 — GB PATCH/activate/venues 4 API + 랜딩 전환 | 중기 | 양팀 | [x] GB API 완료 (2026-04-21). VW proxy 전환은 P3 후속 |
 | **P4** | R11-2: Scope 계산 GB 단일화 — VW는 GB `/scope/summary` 호출 후 집계 | 중기 | 양팀 | [ ] |
 | **P5** | R11-3: VEN 목록 통합 — GB 소유, VW는 proxy+포트폴리오 필터 | 중기 | 양팀 | [ ] |
 
