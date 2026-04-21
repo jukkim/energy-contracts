@@ -1,0 +1,16 @@
+# Review Index
+
+> 이 파일은 append-only. 신규 라운드 추가 시 아래 테이블에 1행 추가.
+> 상세 내용은 각 `R{N}.md` 파일 참조.
+
+| Round | Date | Author | Receiver | Title | Open | ACK | Resolved | Closed | Stale? |
+|-------|------|--------|----------|-------|:----:|:---:|:--------:|:------:|:------:|
+| R13 | 2026-04-21 | VW/GB | Edge | Edge↔GB 카탈로그 전달 메커니즘 | 5 | 0 | 0 | 0 | |
+
+---
+
+**범례**:
+- Author: 리뷰 등록팀
+- Receiver: 응답 책임팀
+- Open/ACK/Resolved/Closed: 해당 상태 아이템 수
+- Stale?: 3일 초과 미응답 시 날짜 표시
