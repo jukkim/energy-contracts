@@ -1,0 +1,106 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://building-energy.xyz/schemas/forecast_response.json",
+  "title": "ForecastResponse",
+  "description": "PatchTST 168h→24h 에너지 예측 API 응답 (GET /api/v1/smart-building/{pnu}/forecast)",
+  "type": "object",
+  "required": ["pnu", "model", "input_hours", "forecast"],
+  "properties": {
+    "pnu": {
+      "type": "string",
+      "description": "건물 PNU (19자리)",
+      "pattern": "^\\d{19}$"
+    },
+    "model": {
+      "type": "string",
+      "description": "사용된 예측 모델 식별자",
+      "enum": ["patchtst_v5", "korean_bb_fallback", "archetype_fallback"],
+      "examples": ["patchtst_v5"]
+    },
+    "input_hours": {
+      "type": "integer",
+      "description": "예측에 사용된 과거 시계열 길이 (시간)",
+      "const": 168
+    },
+    "input_source": {
+      "type": "string",
+      "description": "입력 시계열 출처",
+      "enum": ["telemetry", "store_energy", "synthetic"],
+      "examples": ["telemetry"]
+    },
+    "forecast": {
+      "type": "array",
+      "description": "24시간 예측값 배열",
+      "minItems": 24,
+      "maxItems": 24,
+      "items": {
+        "type": "object",
+        "required": ["hour", "energy_kwh"],
+        "properties": {
+          "hour": {
+            "type": "integer",
+            "description": "예측 시각 (0~23)",
+            "minimum": 0,
+            "maximum": 23
+          },
+          "energy_kwh": {
+            "type": "number",
+            "description": "예측 에너지 소비량 (kWh)",
+            "minimum": 0
+          },
+          "lower_bound": {
+            "type": "number",
+            "description": "90% 신뢰구간 하한 (kWh)"
+          },
+          "upper_bound": {
+            "type": "number",
+            "description": "90% 신뢰구간 상한 (kWh)"
+          }
+        }
+      }
+    },
+    "metrics": {
+      "type": "object",
+      "description": "예측 품질 지표 (캘리브레이션 데이터 있을 때만)",
+      "properties": {
+        "cvrmse_pct": {
+          "type": "number",
+          "description": "ASHRAE G14 CVRMSE (%)",
+          "minimum": 0
+        },
+        "nmbe_pct": {
+          "type": "number",
+          "description": "ASHRAE G14 NMBE (%)"
+        },
+        "mape_pct": {
+          "type": "number",
+          "description": "MAPE (%)",
+          "minimum": 0
+        }
+      }
+    },
+    "generated_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "예측 생성 시각 (ISO 8601, UTC)"
+    }
+  },
+  "examples": [
+    {
+      "pnu": "1168010300100140000",
+      "model": "patchtst_v5",
+      "input_hours": 168,
+      "input_source": "telemetry",
+      "forecast": [
+        {"hour": 0, "energy_kwh": 12.3, "lower_bound": 10.1, "upper_bound": 14.5},
+        {"hour": 1, "energy_kwh": 11.8, "lower_bound": 9.6, "upper_bound": 14.0}
+      ],
+      "metrics": {
+        "cvrmse_pct": 8.2,
+        "nmbe_pct": 1.4,
+        "mape_pct": 7.5
+      },
+      "generated_at": "2026-04-23T11:00:00Z"
+    }
+  ]
+}

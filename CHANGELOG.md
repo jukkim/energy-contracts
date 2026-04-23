@@ -4,6 +4,23 @@
 
 ---
 
+## v1.4.0 — 2026-04-23 (R16/R17 + VW forecast/anomaly + GB bulk sync)
+
+### 개요
+VW 에너지 예측(PatchTST 168→24h) + 이상탐지 API 및 GB ESG VEN 일괄 동기화 스키마 추가.
+R16 Phase A 완료(5 VEN 실측 검증), R17 Item 1~5 RESOLVED.
+
+### 신규 스키마
+- `schemas/forecast_response.json` — PatchTST 168h→24h 예측 응답 (entity_id, model, forecast[24], metrics)
+- `schemas/anomaly_response.json` — 이상탐지 응답 (z_score/isolation_forest/forecast_residual, status, score 0~1)
+- `schemas/esg_venue_bulk_sync.json` — PUT /esg/groups/{id}/venues 요청·응답 (R14-8 BulkVenueSync)
+
+### 리뷰 라운드 상태 갱신
+- R16: Phase A 완료 (5 VEN × 실측 데이터 MQTT 적재 검증) · Phase B(168→24 예측), Phase C(이상탐지) 대기
+- R17: Item 1~5 RESOLVED · Item 6(UI regression) ACK(중기)
+
+---
+
 ## (unversioned) — 2026-04-21 라운드 9 Edge 응답
 
 Edge 팀이 VW/GB 의 Tailscale 경로 제안(라운드 9) 에 일괄 답변. 스키마 변경 없음, REVIEW.md 만 갱신.

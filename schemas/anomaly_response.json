@@ -1,0 +1,109 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://building-energy.xyz/schemas/anomaly_response.json",
+  "title": "AnomalyResponse",
+  "description": "건물/VEN 이상탐지 API 응답. VW: GET /api/v1/smart-building/{pnu}/anomaly, GB MQTT: _check_anomaly()",
+  "type": "object",
+  "required": ["entity_id", "entity_type", "method", "status", "score"],
+  "properties": {
+    "entity_id": {
+      "type": "string",
+      "description": "건물 PNU(19자리) 또는 VEN ID",
+      "examples": ["1168010300100140000", "VEN-STORE-B008"]
+    },
+    "entity_type": {
+      "type": "string",
+      "enum": ["building", "ven"],
+      "description": "분석 대상 유형"
+    },
+    "method": {
+      "type": "string",
+      "description": "이상탐지 알고리즘",
+      "enum": ["z_score", "isolation_forest", "forecast_residual", "lstm_ae"],
+      "examples": ["z_score"]
+    },
+    "status": {
+      "type": "string",
+      "enum": ["normal", "warning", "anomaly"],
+      "description": "이상 상태 분류"
+    },
+    "score": {
+      "type": "number",
+      "description": "이상 점수 (0.0 = 정상, 1.0 = 최대 이상)",
+      "minimum": 0.0,
+      "maximum": 1.0
+    },
+    "threshold": {
+      "type": "number",
+      "description": "이상 판정 임계값 (score > threshold → anomaly)",
+      "examples": [0.7]
+    },
+    "details": {
+      "type": "object",
+      "description": "알고리즘별 상세 지표",
+      "properties": {
+        "z_score": {
+          "type": "number",
+          "description": "z-score 값 (|z| ≥ 3.0 → anomaly)"
+        },
+        "window_hours": {
+          "type": "integer",
+          "description": "슬라이딩 윈도우 크기 (시간)"
+        },
+        "mean_kw": {
+          "type": "number",
+          "description": "윈도우 평균 전력 (kW)"
+        },
+        "std_kw": {
+          "type": "number",
+          "description": "윈도우 표준편차 (kW)"
+        },
+        "current_kw": {
+          "type": "number",
+          "description": "현재 측정 전력 (kW)"
+        },
+        "forecast_residual_kwh": {
+          "type": "number",
+          "description": "예측값과 실측값의 차이 (kWh, forecast_residual 방법 시)"
+        }
+      }
+    },
+    "triggered_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "이상 감지 시각 (ISO 8601, UTC)"
+    },
+    "window": {
+      "type": "object",
+      "description": "분석에 사용된 시계열 구간",
+      "properties": {
+        "start": {"type": "string", "format": "date-time"},
+        "end": {"type": "string", "format": "date-time"},
+        "points": {"type": "integer", "description": "데이터 포인트 수"}
+      }
+    }
+  },
+  "examples": [
+    {
+      "entity_id": "VEN-STORE-B008",
+      "entity_type": "ven",
+      "method": "z_score",
+      "status": "anomaly",
+      "score": 0.92,
+      "threshold": 0.7,
+      "details": {
+        "z_score": 4.1,
+        "window_hours": 24,
+        "mean_kw": 5.2,
+        "std_kw": 0.8,
+        "current_kw": 12.5
+      },
+      "triggered_at": "2026-04-23T03:15:00Z",
+      "window": {
+        "start": "2026-04-22T03:00:00Z",
+        "end": "2026-04-23T03:00:00Z",
+        "points": 24
+      }
+    }
+  ]
+}
