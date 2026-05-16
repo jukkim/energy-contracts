@@ -44,7 +44,7 @@
       "type": "object",
       "description": "현재 EMS 실행 상태.",
       "properties": {
-        "active_strategy": { "type": "string", "pattern": "^M[0-8]$" },
+        "active_strategy": { "type": "string", "pattern": "^M(0[0-9]|1[0-5])$" },
         "schedule_slot_idx": { "type": "integer" },
         "schedule_id": { "type": "string" },
         "interlocks_fired_1h": { "type": "integer", "minimum": 0 }

@@ -17,7 +17,7 @@
     "applied_at": { "type": "string", "format": "date-time" },
     "strategy": {
       "type": "string",
-      "pattern": "^M[0-8]$",
+      "pattern": "^M(0[0-9]|1[0-5])$",
       "description": "적용된 EMS 전략. control_command 에서는 required 이지만 여기선 optional — status=failed/rejected 시 전략이 적용되지 않았으므로 생략 가능. common.json §Strategy 와 동기화 유지."
     },
     "strategy_name": { "type": "string" },

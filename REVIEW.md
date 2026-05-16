@@ -571,7 +571,7 @@ Edge 프로세스에 **로컬 HTTP 서버(FastAPI embed)** 추가. 현장 네트
 | 탭 | 기능 | Phase |
 |:-:|------|:---:|
 | Overview | VEN 메타·실시간 텔레메트리·활성 전략·인터록 이력·MQTT 링크·config_hash | **W1 (선제)** |
-| Control | M0~M8 수동 override · 1회성 스케줄 · 긴급 정지 · VW 모드 복귀 | W2 |
+| Control | M00~M13 수동 override · 1회성 스케줄 · 긴급 정지 · VW 모드 복귀 | W2 |
 | Config | envelope·connection·interlocks 편집 → dry_run 검증 → hot_reload | W3 |
 | Diagnostics | MQTT 토픽 tail · 드라이버 포인트 맵 · Modbus/BACnet raw · 로그 다운로드 | W3 |
 

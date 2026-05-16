@@ -70,7 +70,7 @@ topic read  external/temp/VEN-STORE-001
 |------|------|-----------|----------|
 | **실물 Edge** | RPi 5 + BACnet/Modbus 센서 | 실시간 설비 계측 | O (릴레이/BMS) |
 | **가상 Edge (편의점)** | Python 스크립트, DB replay | store_energy_hourly | X (읽기 전용) |
-| **가상 수용가 (EP)** | EnergyPlus 에뮬레이션 | 시뮬레이션 결과 | O (EMS 전략 M0~M8) |
+| **가상 수용가 (EP)** | EnergyPlus 에뮬레이션 | 시뮬레이션 결과 | O (EMS 전략 M00~M13) |
 
 ### 가상 수용가 (EnergyPlus 에뮬레이션)
 
@@ -161,7 +161,7 @@ control_command.json  →  IDF 수정 → EP 실행 → 결과  →  control_res
 | `schemas/edge_registration.json` | **완료** | kind, backend, capabilities, hardware/software |
 | `schemas/virtual_prosumer.json` | **완료** | observable/controllable 포인트, step_seconds, real_time_factor |
 | `schemas/control_response.json` | **완료** | status(applied/clamped/rejected), interlocks, reduction_kw |
-| `schemas/control_command.json` | **완료** | M0~M8 전략, 제어 파라미터 |
+| `schemas/control_command.json` | **완료** | M00~M13 전략, 제어 파라미터 |
 | `schemas/telemetry.json` | **완료** | Edge→GB 계측 데이터 |
 | `schemas/edge_status.json` | **완료** | heartbeat + 상태 |
 

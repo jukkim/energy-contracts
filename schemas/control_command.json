@@ -9,8 +9,8 @@
   "properties": {
     "strategy": {
       "type": "string",
-      "enum": ["M0", "M1", "M2", "M3", "M4", "M5", "M6", "M7", "M8"],
-      "description": "EMS 전략 ID — required. common.json §Strategy SSOT 와 동기화 유지. control_response 는 status=failed/rejected 시 생략 허용(pattern)."
+      "enum": ["M00", "M01", "M02", "M03", "M04", "M05", "M06", "M07", "M08", "M09", "M10", "M11", "M12", "M13", "M14", "M15"],
+      "description": "통일 EMS 전략 코드 (16종) — required. common.json §Strategy SSOT. v2.0에서 M0~M8 → M00~M15 확장. control_response 는 status=failed/rejected 시 생략 허용(pattern)."
     },
     "strategy_name": { "type": "string" },
     "hvac_setpoint": { "type": "number", "minimum": 18, "maximum": 30 },

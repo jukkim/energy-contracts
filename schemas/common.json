@@ -3,17 +3,21 @@
   "$id": "energy-contracts/common.json",
   "title": "CommonDefinitions",
   "description": "공용 enum · 패턴 정의 SSOT. 다른 스키마가 복제하더라도 이 파일과 동기화 유지.",
-  "version": "1.0",
+  "version": "2.0",
   "$defs": {
     "Strategy": {
       "type": "string",
-      "enum": ["M0", "M1", "M2", "M3", "M4", "M5", "M6", "M7", "M8"],
-      "description": "EMS 전략 ID. control_command 는 required, control_response 는 status=failed/rejected 시 생략 허용."
+      "enum": [
+        "M00", "M01", "M02", "M03", "M04", "M05",
+        "M06", "M07", "M08", "M09", "M10",
+        "M11", "M12", "M13", "M14", "M15"
+      ],
+      "description": "통일 EMS 전략 코드 (16종). M00=Baseline, M01=Night Setback, M02=Economizer, M03=Chiller Staging, M04=PMV±0.5, M05=PMV±0.7, M06=Optimal Start, M07=Lighting Control, M08=Pre-cooling, M09=ESS Peak Shaving, M10=(reserved), M11~M15=combined. 상세: ems_strategies.json."
     },
     "StrategyPattern": {
       "type": "string",
-      "pattern": "^M[0-8]$",
-      "description": "미래 확장성을 위한 pattern 표기 (동일 enum 집합). control_response·reduction_schedule 에서 사용."
+      "pattern": "^M(0[0-9]|1[0-5])$",
+      "description": "통일 코드 패턴 (M00~M15). v2.0에서 ^M[0-8]$ → ^M(0[0-9]|1[0-5])$ 확장."
     },
     "Kind": {
       "type": "string",
@@ -28,11 +32,11 @@
     "BuildingType": {
       "type": "string",
       "enum": [
-        "office_large", "office_medium", "office_small",
-        "hospital", "school", "retail", "convenience_store",
+        "large_office", "medium_office", "small_office",
+        "hospital", "primary_school", "standalone_retail", "convenience_store",
         "apartment", "other"
       ],
-      "description": "건물 유형 (DOE Reference Building 분류 기반)."
+      "description": "건물 유형 (DOE Reference Building 분류 기반). v2.0: code-first 네이밍 통일."
     },
     "EdgeType": {
       "type": "string",
@@ -42,7 +46,7 @@
     "SignalLevel": {
       "type": "string",
       "enum": ["NORMAL", "MODERATE", "HIGH", "EMERGENCY"],
-      "description": "DR 신호 강도. signal_level → strategy 매핑: NORMAL→M2 · MODERATE→M5 · HIGH→M7 · EMERGENCY→M8."
+      "description": "DR 신호 강도. signal_level → strategy 매핑: NORMAL→M07(Lighting) · MODERATE→M04(PMV±0.5) · HIGH→M14(DR통합최적화) · EMERGENCY→M15(DR긴급감축). 상세: ems_strategies.json."
     },
     "VenId": {
       "type": "string",

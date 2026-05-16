@@ -57,7 +57,7 @@
       "properties": {
         "supported_strategies": {
           "type": "array",
-          "items": { "type": "string", "pattern": "^M[0-8]$" }
+          "items": { "type": "string", "pattern": "^M(0[0-9]|1[0-5])$" }
         },
         "controllable_points": {
           "type": "array",

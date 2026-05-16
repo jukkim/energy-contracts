@@ -35,7 +35,7 @@
         "start_time": { "type": "string", "pattern": "^\\d{2}:\\d{2}$" },
         "end_time": { "type": "string", "pattern": "^\\d{2}:\\d{2}$" },
         "reduction_kw": { "type": "number", "minimum": 0 },
-        "strategy": { "type": "string", "description": "EMS 전략 ID (M0~M8)" },
+        "strategy": { "type": "string", "pattern": "^M(0[0-9]|1[0-5])$", "description": "EMS 전략 ID (M00~M15)" },
         "constraints": { "type": "object", "description": "{max_temp, min_lighting, ...}" },
         "condition": { "type": "object", "description": "활성화 조건 {smp_above, temp_above}" },
         "priority": { "type": "integer", "minimum": 1, "maximum": 10, "default": 1 }
