@@ -1,0 +1,92 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "energy-contracts/test_classification.json",
+  "title": "Test Classification SSOT (Phase G)",
+  "description": "테스트 분류 3축 (Tier × Group × Stage). pytest marker로 활용. 프로젝트는 opt-in 채택.",
+  "version": "1.0",
+  "updated": "2026-05-17",
+  "$comment": "myjob/docs/MODES_AND_DATA_RESEARCH.md §2.4 산출물.",
+
+  "$defs": {
+    "TestTier": {
+      "type": "string",
+      "enum": ["T0", "T1", "T2", "T3", "T4", "T5"],
+      "description": "T0=workspace fixture, T1=contract(schema), T2=unit, T3=integration(DB/MQTT), T4=e2e cross-project, T5=UI(Playwright)"
+    },
+    "TestGroup": {
+      "type": "string",
+      "enum": ["G1", "G2", "G3", "G4", "G5", "G6", "G7"],
+      "description": "G1=3D-Vis, G2=Backend, G3=Sim, G4=DR-Control, G5=Agents, G6=Auth-RBAC, G7=Cross-Project"
+    },
+    "TestStage": {
+      "type": "string",
+      "enum": ["S1", "S2", "S3", "S4", "S5", "S6"],
+      "description": "S1=pre-commit, S2=PR fast, S3=PR full, S4=merge, S5=nightly, S6=pre-release"
+    }
+  },
+
+  "type": "object",
+  "properties": {
+    "tiers":  {"type": "object", "additionalProperties": {"type": "object"}},
+    "groups": {"type": "object", "additionalProperties": {"type": "object"}},
+    "stages": {"type": "object", "additionalProperties": {"type": "object"}},
+    "project_default_groups": {
+      "type": "object",
+      "description": "프로젝트별 기본 그룹 (marker 미부여 시 자동 추정용)"
+    }
+  },
+
+  "default": {
+    "tiers": {
+      "T0": {"name": "Workspace Fixture", "max_runtime_ms": 1,       "deps": ["pure-python"],            "description": "공유 fixture 자체 검증. 가장 빠름"},
+      "T1": {"name": "Contract",          "max_runtime_ms": 10,      "deps": ["jsonschema"],             "description": "JSON Schema 정합 검증"},
+      "T2": {"name": "Unit",              "max_runtime_ms": 100,     "deps": ["same-process"],           "description": "단일 프로젝트 함수/클래스 단위"},
+      "T3": {"name": "Integration",       "max_runtime_ms": 5000,    "deps": ["postgres", "redis", "mqtt"], "description": "DB·MQTT·Redis 실제 사용"},
+      "T4": {"name": "E2E",               "max_runtime_ms": 60000,   "deps": ["all-services"],           "description": "프로젝트 간 cross 통합"},
+      "T5": {"name": "UI",                "max_runtime_ms": 300000,  "deps": ["browser", "playwright"],  "description": "Playwright 브라우저 자동화"}
+    },
+    "groups": {
+      "G1": {"name": "3D-Vis",        "owner": ["building-energy-3d", "building-energy-id"]},
+      "G2": {"name": "Backend",       "owner": ["building-energy-3d", "agentleague", "eduarena"]},
+      "G3": {"name": "Simulation",    "owner": ["8.simulation/Korean_BB", "8.simulation/ems_transformer", "8.simulation/building_ai"]},
+      "G4": {"name": "DR-Control",    "owner": ["edge-agent", "gridbridge"]},
+      "G5": {"name": "Agents",        "owner": ["building-energy-3d/src/agents"]},
+      "G6": {"name": "Auth-RBAC",     "owner": ["all (cross-cutting)"]},
+      "G7": {"name": "Cross-Project", "owner": ["energy-contracts"]}
+    },
+    "stages": {
+      "S1": {"name": "pre-commit",   "trigger": "git commit",         "runs": ["T0", "T1"],                "use": "validate_ssot.py"},
+      "S2": {"name": "PR fast",      "trigger": "PR open",            "runs": ["T2"],                      "use": "각 프로젝트 unit"},
+      "S3": {"name": "PR full",      "trigger": "PR ready-for-review","runs": ["T2", "T3"],                "use": "integration with docker-compose"},
+      "S4": {"name": "merge",        "trigger": "main에 머지",         "runs": ["T2", "T3", "T4"],          "use": "전 시스템 가동"},
+      "S5": {"name": "nightly",      "trigger": "cron",               "runs": ["T0", "T1", "T2", "T3", "T4", "T5"], "use": "전수 + UI"},
+      "S6": {"name": "pre-release",  "trigger": "tag 생성",            "runs": ["T0", "T1", "T2", "T3", "T4", "T5"], "use": "전수 + 회귀 + 성능"}
+    },
+    "project_default_groups": {
+      "building-energy-3d": ["G1", "G2", "G5"],
+      "building-energy-id": ["G1", "G2"],
+      "edge-agent":         ["G4"],
+      "gridbridge":         ["G4"],
+      "agentleague":        ["G2", "G6"],
+      "eduarena":           ["G2", "G6"],
+      "energy-contracts":   ["G7"],
+      "Korean_BB":          ["G3"],
+      "ems_transformer":    ["G3"],
+      "building_ai":        ["G3"]
+    },
+    "pytest_marker_example": {
+      "comment": "각 프로젝트 pytest.ini에 등록 + 테스트에 부여",
+      "ini_config": [
+        "markers =",
+        "    tier(value): T0~T5",
+        "    group(value): G1~G7",
+        "    stage(value): S1~S6"
+      ],
+      "usage": [
+        "@pytest.mark.tier('T2')",
+        "@pytest.mark.group('G5')",
+        "pytest -m \"tier == 'T2' and group == 'G5'\""
+      ]
+    }
+  }
+}

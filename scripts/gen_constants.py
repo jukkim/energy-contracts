@@ -52,8 +52,16 @@ def load_schemas() -> dict:
     intents_fp = SCHEMAS_DIR / "nl_intents.json"
     agents = json.loads(agents_fp.read_text(encoding="utf-8")) if agents_fp.exists() else {}
     intents = json.loads(intents_fp.read_text(encoding="utf-8")) if intents_fp.exists() else {}
+    # Phase E/F/G 신규
+    modes_fp = SCHEMAS_DIR / "run_modes.json"
+    data_fp = SCHEMAS_DIR / "data_classification.json"
+    tests_fp = SCHEMAS_DIR / "test_classification.json"
+    modes = json.loads(modes_fp.read_text(encoding="utf-8")) if modes_fp.exists() else {}
+    dataclass = json.loads(data_fp.read_text(encoding="utf-8")) if data_fp.exists() else {}
+    tests = json.loads(tests_fp.read_text(encoding="utf-8")) if tests_fp.exists() else {}
     return {"ems": ems, "ports": ports, "common": common,
-            "agents": agents, "intents": intents}
+            "agents": agents, "intents": intents,
+            "modes": modes, "dataclass": dataclass, "tests": tests}
 
 
 def schemas_hash(data: dict) -> str:
@@ -149,6 +157,33 @@ def gen_python(schemas: dict) -> str:
                      f"{intents.get('gate_tokens', [])!r}")
         lines.append(f"NL_PATTERNS: dict = {intents.get('patterns', {})!r}")
         lines.append(f"NL_CONSTRAINTS: dict = {intents.get('constraints', {})!r}")
+        lines.append("")
+
+    # Phase E — Run Modes
+    modes = schemas.get("modes", {}).get("default", {}).get("modes", {})
+    if modes:
+        lines.append("# ─ Run Modes (Phase E SSOT) ─────────────────────────────────")
+        lines.append('RUN_MODES: tuple[str, ...] = ("prod", "demo", "dev", "test")')
+        lines.append(f"RUN_MODE_BEHAVIOR: dict[str, dict] = {modes!r}")
+        lines.append("")
+
+    # Phase F — Data Classification
+    dataclass = schemas.get("dataclass", {}).get("default", {})
+    if dataclass:
+        lines.append("# ─ Data Classification (Phase F SSOT) ───────────────────────")
+        lines.append(f"DATA_SOURCES: dict[str, dict] = {dataclass.get('sources', {})!r}")
+        lines.append('DATA_SOURCE_LABELS: tuple[str, ...] = ("measured", "certified", "simulated", "predicted", "external", "synthetic", "mock")')
+        lines.append("")
+
+    # Phase G — Test Classification
+    tests = schemas.get("tests", {}).get("default", {})
+    if tests:
+        lines.append("# ─ Test Classification (Phase G SSOT) ───────────────────────")
+        lines.append(f"TEST_TIERS: dict[str, dict] = {tests.get('tiers', {})!r}")
+        lines.append(f"TEST_GROUPS: dict[str, dict] = {tests.get('groups', {})!r}")
+        lines.append(f"TEST_STAGES: dict[str, dict] = {tests.get('stages', {})!r}")
+        lines.append(f"TEST_PROJECT_DEFAULT_GROUPS: dict[str, list[str]] = "
+                     f"{tests.get('project_default_groups', {})!r}")
         lines.append("")
 
     return "\n".join(lines) + "\n"
@@ -247,6 +282,38 @@ def gen_typescript(schemas: dict) -> str:
                      f"{json.dumps(intents.get('patterns', {}), ensure_ascii=False)} as const;")
         lines.append(f"export const NL_CONSTRAINTS = "
                      f"{json.dumps(intents.get('constraints', {}))} as const;")
+        lines.append("")
+
+    # Phase E
+    modes = schemas.get("modes", {}).get("default", {}).get("modes", {})
+    if modes:
+        lines.append("// ─ Run Modes (Phase E) ──────────────────────────────────")
+        lines.append('export const RUN_MODES = ["prod", "demo", "dev", "test"] as const;')
+        lines.append("export type RunMode = (typeof RUN_MODES)[number];")
+        lines.append(f"export const RUN_MODE_BEHAVIOR = "
+                     f"{json.dumps(modes, ensure_ascii=False)} as const;")
+        lines.append("")
+
+    # Phase F
+    dataclass = schemas.get("dataclass", {}).get("default", {})
+    if dataclass:
+        lines.append("// ─ Data Classification (Phase F) ────────────────────────")
+        lines.append(f"export const DATA_SOURCES = "
+                     f"{json.dumps(dataclass.get('sources', {}), ensure_ascii=False)} as const;")
+        lines.append('export const DATA_SOURCE_LABELS = ["measured", "certified", "simulated", "predicted", "external", "synthetic", "mock"] as const;')
+        lines.append("export type DataSource = (typeof DATA_SOURCE_LABELS)[number];")
+        lines.append("")
+
+    # Phase G
+    tests = schemas.get("tests", {}).get("default", {})
+    if tests:
+        lines.append("// ─ Test Classification (Phase G) ────────────────────────")
+        lines.append(f"export const TEST_TIERS = "
+                     f"{json.dumps(tests.get('tiers', {}), ensure_ascii=False)} as const;")
+        lines.append(f"export const TEST_GROUPS = "
+                     f"{json.dumps(tests.get('groups', {}), ensure_ascii=False)} as const;")
+        lines.append(f"export const TEST_STAGES = "
+                     f"{json.dumps(tests.get('stages', {}), ensure_ascii=False)} as const;")
         lines.append("")
 
     return "\n".join(lines)
