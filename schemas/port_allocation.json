@@ -1,0 +1,256 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "energy-contracts/port_allocation.json",
+  "title": "PortAllocationSSOT",
+  "description": "myjob 워크스페이스 전체 포트 할당 SSOT. Tier 1 (myjob/CLAUDE.md Port Allocation) 의 머신리더블 버전. 변경 시 양쪽 동시 갱신 필수.",
+  "version": "1.0.0",
+  "updated": "2026-05-16",
+  "$comment": "SSOT_GOVERNANCE.md Phase A1 산출물. 헬스체크 스크립트·CI 검증·신규 서비스 포트 배정 시 이 파일을 단일 진실로 사용한다.",
+
+  "ranges": {
+    "http_api": {
+      "range": "8000-8999",
+      "description": "HTTP API / 백엔드 서비스"
+    },
+    "frontend_dev": {
+      "range": "3000-3999",
+      "description": "Next.js / Vite 개발 서버"
+    },
+    "vite_hmr": {
+      "range": "5170-5199",
+      "description": "Vite Hot Module Replacement"
+    },
+    "postgres": {
+      "range": "5432-5499",
+      "description": "PostgreSQL 인스턴스"
+    },
+    "redis": {
+      "range": "6379-6399",
+      "description": "Redis 인스턴스"
+    },
+    "mqtt": {
+      "range": "1883, 9001",
+      "description": "MQTT TCP + WebSocket"
+    }
+  },
+
+  "machines": {
+    "A": {
+      "gdrive_root": "H:/내 드라이브",
+      "docker_occupied_ports": [8001, 8002],
+      "gridbridge_host_port": 8003,
+      "note": "호스트 8001/8002는 Docker가 점유. GB는 호스트 8003으로 노출."
+    },
+    "B": {
+      "gdrive_root": "G:/내 드라이브",
+      "docker_occupied_ports": [],
+      "gridbridge_host_port": 8001,
+      "note": "Docker 점유 없음. 코드 기본값 그대로."
+    }
+  },
+
+  "services": [
+    {
+      "port": 8000,
+      "name": "building-energy-3d API",
+      "folder": "projects/building-energy-3d/",
+      "purpose": "VWorld 메인 백엔드 (FastAPI)",
+      "status": "deployed",
+      "env_var": null
+    },
+    {
+      "port": 8001,
+      "name": "GridBridge (code default)",
+      "folder": "projects/gridbridge/",
+      "purpose": "DR 중개 — 코드 기본값. 다른 컴퓨터/CI 호환용",
+      "status": "default",
+      "env_var": "GRIDBRIDGE_PORT",
+      "machine_override": {
+        "A": "blocked (Docker)"
+      }
+    },
+    {
+      "port": 8002,
+      "name": "GridBridge Monitor / EdgeAgent HTTP",
+      "folder": "projects/gridbridge/scripts/, projects/edge-agent/",
+      "purpose": "GB monitor 스크립트, EdgeAgent HTTP API",
+      "status": "deployed",
+      "env_var": null,
+      "machine_override": {
+        "A": "blocked (Docker)"
+      }
+    },
+    {
+      "port": 8003,
+      "name": "GridBridge (Computer A canonical)",
+      "folder": "projects/gridbridge/",
+      "purpose": "Docker가 8001/8002 점유 시 호스트 노출 포트. GRIDBRIDGE_URL=http://localhost:8003",
+      "status": "deployed",
+      "env_var": "GRIDBRIDGE_URL",
+      "applies_to_machines": ["A"]
+    },
+    {
+      "port": 8004,
+      "name": "BuildWise (reserved)",
+      "folder": "8.simulation/blender/",
+      "purpose": "건물 SaaS MVP. 기존 8001 충돌 해소를 위해 예약",
+      "status": "reserved",
+      "env_var": "BUILDWISE_PORT"
+    },
+    {
+      "port": 8010,
+      "name": "AgentLeague Backend",
+      "folder": "projects/agentleague/backend/",
+      "purpose": "AI 에이전트 챌린지 (FastAPI)",
+      "status": "deployed",
+      "env_var": null
+    },
+    {
+      "port_range": "8011-8016",
+      "name": "GridBridge 권역 멀티",
+      "folder": "projects/gridbridge/",
+      "purpose": "Metro(8011) / Gangwon(8012) / Chungnam(8013) / Honam(8014) / 예약(8015,8016)",
+      "status": "multi-mode",
+      "compose_file": "docker-compose.multi.yml"
+    },
+    {
+      "port": 8100,
+      "name": "EduArena Backend (dev)",
+      "folder": "projects/eduarena/backend/",
+      "purpose": "AI 교육 게임 개발용",
+      "status": "dev",
+      "env_var": null
+    },
+    {
+      "port": 8600,
+      "name": "EduArena Backend (prod)",
+      "folder": "projects/eduarena/backend/",
+      "purpose": "AI 교육 게임 배포",
+      "status": "deployed",
+      "env_var": null
+    },
+    {
+      "port": 8800,
+      "name": "Debate Arena Server",
+      "folder": "9.교재/대학원 수업/debate_arena/server/",
+      "purpose": "대학원 에이전트 토론 메시지 허브",
+      "status": "deployed",
+      "env_var": null
+    },
+    {
+      "port": 8801,
+      "name": "Debate Arena Host Launcher",
+      "folder": "9.교재/대학원 수업/debate_arena/",
+      "purpose": "SDK 봇 관리",
+      "status": "deployed",
+      "env_var": null
+    },
+    {
+      "port": 3001,
+      "name": "EduArena Frontend",
+      "folder": "projects/eduarena/frontend/",
+      "purpose": "Next.js 개발 서버",
+      "status": "dev",
+      "env_var": null
+    },
+    {
+      "port": 3011,
+      "name": "AgentLeague Frontend",
+      "folder": "projects/agentleague/frontend/",
+      "purpose": "Next.js 개발 서버",
+      "status": "dev",
+      "env_var": null
+    },
+    {
+      "port": 5173,
+      "name": "Vite HMR (building-energy-3d)",
+      "folder": "projects/building-energy-3d/frontend/",
+      "purpose": "Vite 개발 핫리로드",
+      "status": "dev",
+      "warning": "Docker frontend(5173)와 동시 가동 금지. 동시 가동 시 --port 5174 사용"
+    },
+    {
+      "port": 5432,
+      "name": "PostgreSQL (EduArena)",
+      "folder": "projects/eduarena/",
+      "purpose": "EduArena 독립 DB",
+      "status": "deployed"
+    },
+    {
+      "port": 5433,
+      "name": "PostgreSQL (AgentLeague)",
+      "folder": "projects/agentleague/",
+      "purpose": "챌린지 DB",
+      "status": "deployed"
+    },
+    {
+      "port": 5434,
+      "name": "PostgreSQL (VWorld+GridBridge 공유)",
+      "folder": "projects/building-energy-3d/, projects/gridbridge/",
+      "purpose": "Layer 1↔Layer 2 통신용 의도된 공유 DB",
+      "status": "deployed"
+    },
+    {
+      "port": 6379,
+      "name": "Redis (VWorld+GridBridge 공유)",
+      "folder": "projects/building-energy-3d/, projects/gridbridge/",
+      "purpose": "캐시·MQTT Pub/Sub",
+      "status": "deployed"
+    },
+    {
+      "port": 6380,
+      "name": "Redis (EduArena)",
+      "folder": "projects/eduarena/",
+      "purpose": "독립 캐시",
+      "status": "deployed"
+    },
+    {
+      "port": 6381,
+      "name": "Redis (AgentLeague)",
+      "folder": "projects/agentleague/",
+      "purpose": "독립 캐시",
+      "status": "deployed"
+    },
+    {
+      "port": 1883,
+      "name": "MQTT Broker (TCP)",
+      "folder": "projects/building-energy-3d/",
+      "purpose": "Edge 통신 전역 공유",
+      "status": "deployed"
+    },
+    {
+      "port": 9001,
+      "name": "MQTT WebSocket",
+      "folder": "projects/building-energy-3d/",
+      "purpose": "Edge 보조 (브라우저용)",
+      "status": "deployed"
+    }
+  ],
+
+  "conflicts": [
+    {
+      "id": "CONF-001",
+      "date": "2026-05-16",
+      "ports": [8001],
+      "services": ["GridBridge", "BuildWise"],
+      "resolution": "BuildWise → 8004 이동 (BuildWise 재가동 시점에 적용)",
+      "status": "pending"
+    },
+    {
+      "id": "CONF-002",
+      "date": "2026-05-16",
+      "ports": [8001, 8002],
+      "services": ["GridBridge", "EdgeAgent", "GB Monitor"],
+      "resolution": "이 컴퓨터(A)에서 Docker가 8001/8002 점유 → GB는 호스트 8003으로 노출. env_var GRIDBRIDGE_URL=http://localhost:8003",
+      "status": "resolved"
+    }
+  ],
+
+  "rules": [
+    "신규 서비스는 이 표에서 빈 슬롯 찾아 추가",
+    "환경변수로 오버라이드 가능하게 설계 (예: GRIDBRIDGE_PORT)",
+    "해당 프로젝트 CLAUDE.md에 명시 + 이 파일 즉시 갱신",
+    "변경 시 myjob/CLAUDE.md Port Allocation 섹션도 동시 갱신",
+    "Phase B2: gen_constants.py가 이 파일에서 자동으로 상수 생성"
+  ]
+}

@@ -1,5 +1,7 @@
 # CLAUDE.md — Energy Contracts (공유 스펙)
 
+> **SSOT 허브** — Tier 2 도메인 계약. 변경 시 `myjob/docs/SSOT_GOVERNANCE.md` 절차 준수. 검증: `python scripts/validate_ssot.py`.
+
 ## 목적
 
 VWorld(L1), GridBridge(L2), EdgeAgent(L3) 3개 프로젝트 간 **인터페이스 계약서**.
