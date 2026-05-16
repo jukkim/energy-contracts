@@ -98,6 +98,15 @@
       "env_var": "BUILDWISE_PORT"
     },
     {
+      "port": 8011,
+      "name": "building-energy-id Backend",
+      "folder": "projects/building-energy-id/",
+      "purpose": "ASEAN 6 테넌트 통합 (ID/MY/TH/SG/VN/PH) FastAPI",
+      "status": "deployed",
+      "conflict_with": "GridBridge Metro 권역 (멀티모드)",
+      "resolution": "Computer A는 GB 단일모드(8003) 사용 중이므로 GB Metro 8011은 dormant. 만약 GB 멀티모드 가동 시 building-energy-id 또는 GB Metro 중 하나를 변경 필요."
+    },
+    {
       "port": 8010,
       "name": "AgentLeague Backend",
       "folder": "projects/agentleague/backend/",
@@ -119,7 +128,16 @@
       "folder": "projects/eduarena/backend/",
       "purpose": "AI 교육 게임 개발용",
       "status": "dev",
-      "env_var": null
+      "env_var": null,
+      "note": "프론트 fallback NEXT_PUBLIC_API_URL 미설정 시 8200을 보는 코드 있음 — 차후 통일 필요"
+    },
+    {
+      "port": 8200,
+      "name": "EduArena Frontend Fallback (deprecated)",
+      "folder": "projects/eduarena/frontend/",
+      "purpose": "frontend/src/lib/api/{base,classroom}.ts, ws.ts, scenario_*.py 의 fallback. 8100 또는 8600으로 통일 필요.",
+      "status": "deprecated",
+      "resolution": "NEXT_PUBLIC_API_URL env 명시 또는 코드에서 8100/8600으로 변경"
     },
     {
       "port": 8600,
@@ -168,6 +186,35 @@
       "purpose": "Vite 개발 핫리로드",
       "status": "dev",
       "warning": "Docker frontend(5173)와 동시 가동 금지. 동시 가동 시 --port 5174 사용"
+    },
+    {
+      "port": 5174,
+      "name": "Vite HMR fallback / building-energy-id landing",
+      "folder": "projects/building-energy-id/frontend/",
+      "purpose": "building-energy-id 랜딩 페이지 dev. 또는 building-energy-3d HMR 보조",
+      "status": "dev",
+      "conflict_note": "building-energy-3d 와 building-energy-id 동시 dev 시 한쪽이 변경 필요"
+    },
+    {
+      "port": 5175,
+      "name": "building-energy-id 3D map",
+      "folder": "projects/building-energy-id/frontend/",
+      "purpose": "Cesium 3D map dev",
+      "status": "dev"
+    },
+    {
+      "port": 8088,
+      "name": "Keycloak (building-energy-id)",
+      "folder": "projects/building-energy-id/infra/keycloak/",
+      "purpose": "OIDC realm-bei 인증 서버",
+      "status": "deployed"
+    },
+    {
+      "port": 8080,
+      "name": "building-energy-3d 로컬 dev (대체)",
+      "folder": "projects/building-energy-3d/",
+      "purpose": "vworld.html 로컬 nginx 대체 포트 (docs/USAGE.md 안내)",
+      "status": "dev-alt"
     },
     {
       "port": 5432,
@@ -243,6 +290,30 @@
       "services": ["GridBridge", "EdgeAgent", "GB Monitor"],
       "resolution": "이 컴퓨터(A)에서 Docker가 8001/8002 점유 → GB는 호스트 8003으로 노출. env_var GRIDBRIDGE_URL=http://localhost:8003",
       "status": "resolved"
+    },
+    {
+      "id": "CONF-003",
+      "date": "2026-05-17",
+      "ports": [8011],
+      "services": ["building-energy-id Backend", "GridBridge Metro (멀티모드)"],
+      "resolution": "Computer A는 GB 단일모드(8003) 사용 → GB Metro 8011 dormant → 충돌 없음. GB 멀티모드 가동 시 한쪽 변경 필요.",
+      "status": "dormant"
+    },
+    {
+      "id": "CONF-004",
+      "date": "2026-05-17",
+      "ports": [8200],
+      "services": ["EduArena Frontend fallback (8200)", "Backend 실제 (8100 dev / 8600 prod)"],
+      "resolution": "frontend/src/lib/api/{base,classroom}.ts 의 fallback 8200을 8100으로 통일하거나 NEXT_PUBLIC_API_URL env 명시.",
+      "status": "pending"
+    },
+    {
+      "id": "CONF-005",
+      "date": "2026-05-17",
+      "ports": [5174],
+      "services": ["building-energy-id landing", "Vite HMR fallback (building-energy-3d)"],
+      "resolution": "두 프로젝트 동시 dev 시 한쪽이 다른 포트 사용. 현재는 동시 가동 빈도 낮음.",
+      "status": "low-risk"
     }
   ],
 
