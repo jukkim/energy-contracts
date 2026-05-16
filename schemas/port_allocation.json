@@ -98,6 +98,15 @@
       "env_var": "BUILDWISE_PORT"
     },
     {
+      "port": 8005,
+      "name": "smartbuilding API (dev)",
+      "folder": "projects/smartbuilding/api/",
+      "purpose": "EduArena E3 surrogate_ems 의존. BUILDING_AI_URL=http://localhost:8005",
+      "status": "dev",
+      "env_var": "BUILDING_AI_URL",
+      "history": "이전 8004(BuildWise 예약)에서 충돌 회피로 8005로 이동 (CONF-006, 2026-05-17)"
+    },
+    {
       "port": 8011,
       "name": "building-energy-id Backend",
       "folder": "projects/building-energy-id/",

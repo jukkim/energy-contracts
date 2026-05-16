@@ -47,7 +47,13 @@ def load_schemas() -> dict:
     ems = json.loads((SCHEMAS_DIR / "ems_strategies.json").read_text(encoding="utf-8"))
     ports = json.loads((SCHEMAS_DIR / "port_allocation.json").read_text(encoding="utf-8"))
     common = json.loads((SCHEMAS_DIR / "common.json").read_text(encoding="utf-8"))
-    return {"ems": ems, "ports": ports, "common": common}
+    # Phase C 신규
+    agents_fp = SCHEMAS_DIR / "agent_contracts.json"
+    intents_fp = SCHEMAS_DIR / "nl_intents.json"
+    agents = json.loads(agents_fp.read_text(encoding="utf-8")) if agents_fp.exists() else {}
+    intents = json.loads(intents_fp.read_text(encoding="utf-8")) if intents_fp.exists() else {}
+    return {"ems": ems, "ports": ports, "common": common,
+            "agents": agents, "intents": intents}
 
 
 def schemas_hash(data: dict) -> str:
@@ -124,6 +130,27 @@ def gen_python(schemas: dict) -> str:
     lines.append('GRIDBRIDGE_URL_COMPUTER_A: str = "http://localhost:8003"')
     lines.append("")
 
+    # Phase C1 — Agent Contracts
+    agents = schemas.get("agents", {}).get("default", {}).get("registry", {})
+    if agents:
+        lines.append("# ─ Agent Registry (Phase C1 SSOT) ──────────────────────────")
+        lines.append(f"AGENT_REGISTRY: dict[str, dict] = {agents!r}")
+        lines.append("")
+
+    # Phase C2 — NL Intents
+    intents = schemas.get("intents", {}).get("default", {})
+    if intents:
+        lines.append("# ─ NL Intents (Phase C2 SSOT) ──────────────────────────────")
+        lines.append(f"NL_STRATEGIES_BY_KEYWORD: dict[str, list[str]] = "
+                     f"{intents.get('strategies_by_keyword', {})!r}")
+        lines.append(f"NL_CONTROL_KEYWORDS: list[str] = "
+                     f"{intents.get('control_keywords', [])!r}")
+        lines.append(f"NL_GATE_TOKENS: list[str] = "
+                     f"{intents.get('gate_tokens', [])!r}")
+        lines.append(f"NL_PATTERNS: dict = {intents.get('patterns', {})!r}")
+        lines.append(f"NL_CONSTRAINTS: dict = {intents.get('constraints', {})!r}")
+        lines.append("")
+
     return "\n".join(lines) + "\n"
 
 
@@ -197,6 +224,30 @@ def gen_typescript(schemas: dict) -> str:
     lines.append('export const GRIDBRIDGE_URL_DEFAULT = "http://localhost:8001";')
     lines.append('export const GRIDBRIDGE_URL_COMPUTER_A = "http://localhost:8003";')
     lines.append("")
+
+    # Phase C1
+    agents = schemas.get("agents", {}).get("default", {}).get("registry", {})
+    if agents:
+        lines.append("// ─ Agent Registry (Phase C1) ────────────────────────────")
+        lines.append(f"export const AGENT_REGISTRY = "
+                     f"{json.dumps(agents, ensure_ascii=False)} as const;")
+        lines.append("")
+
+    # Phase C2
+    intents = schemas.get("intents", {}).get("default", {})
+    if intents:
+        lines.append("// ─ NL Intents (Phase C2) ────────────────────────────────")
+        lines.append(f"export const NL_STRATEGIES_BY_KEYWORD: Record<string, string[]> = "
+                     f"{json.dumps(intents.get('strategies_by_keyword', {}), ensure_ascii=False)};")
+        lines.append(f"export const NL_CONTROL_KEYWORDS = "
+                     f"{json.dumps(intents.get('control_keywords', []), ensure_ascii=False)} as const;")
+        lines.append(f"export const NL_GATE_TOKENS = "
+                     f"{json.dumps(intents.get('gate_tokens', []), ensure_ascii=False)} as const;")
+        lines.append(f"export const NL_PATTERNS = "
+                     f"{json.dumps(intents.get('patterns', {}), ensure_ascii=False)} as const;")
+        lines.append(f"export const NL_CONSTRAINTS = "
+                     f"{json.dumps(intents.get('constraints', {}))} as const;")
+        lines.append("")
 
     return "\n".join(lines)
 

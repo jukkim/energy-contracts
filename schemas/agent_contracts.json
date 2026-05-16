@@ -1,0 +1,108 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "energy-contracts/agent_contracts.json",
+  "title": "AgentContract SSOT (AI 챔피언 멀티에이전트)",
+  "description": "A01~A10 에이전트 입출력 Protocol. building-energy-3d/src/agents/core/contract.py 와 동기. AI 챔피언 본선 카르테 시스템의 단일 진실.",
+  "version": "1.0",
+  "updated": "2026-05-17",
+  "$comment": "Phase C1 산출물 (myjob/docs/SSOT_GOVERNANCE.md). gen_constants.py 가 이 스키마를 Tier 3 코드로 자동 생성.",
+
+  "$defs": {
+    "BuildingContext": {
+      "type": "object",
+      "description": "에이전트 입력 — 건물 컨텍스트. A01(진단)이 PNU에서 생성, A03/A04/A07 등이 입력으로 받음.",
+      "required": ["pnu", "address", "usage_type", "gross_area", "floors",
+                   "built_year", "structure", "eui", "energy_tier", "energy_grade"],
+      "properties": {
+        "pnu":          {"type": "string",  "description": "법정 PNU 19자리"},
+        "address":      {"type": "string"},
+        "usage_type":   {"type": "string",  "description": "건축물대장 용도. constants.py BUILDING_USAGE_MAP 참조"},
+        "gross_area":   {"type": "number",  "description": "연면적 (m²)"},
+        "floors":       {"type": "integer"},
+        "built_year":   {"type": "integer"},
+        "structure":    {"type": "string"},
+        "eui":          {"type": "number",  "description": "Energy Use Intensity (kWh/m²·yr)"},
+        "energy_tier":  {"type": "integer", "minimum": 1, "maximum": 5,
+                         "description": "data_tier (1=measured, 5=ep_lookup)"},
+        "energy_grade": {"type": "string",  "description": "1+~7 또는 ZEB 등급"},
+        "has_kapt":     {"type": "boolean", "default": false},
+        "has_hourly":   {"type": "boolean", "default": false},
+        "has_fire_risk":{"type": "boolean", "default": false}
+      },
+      "additionalProperties": false
+    },
+
+    "AgentResult": {
+      "type": "object",
+      "description": "에이전트 출력 표준 — 카르테 카드/포트폴리오/SSE에 동일 형식.",
+      "required": ["agent_name", "version", "confidence", "summary"],
+      "properties": {
+        "agent_name":  {"type": "string",  "description": "예: 'a01_diagnosis'"},
+        "version":     {"type": "string",  "description": "에이전트 버전 (semver)"},
+        "confidence":  {"type": "number",  "minimum": 0, "maximum": 1,
+                        "description": "결과 신뢰도. 5-Tier 데이터 품질 기반 계산"},
+        "summary":     {"type": "string",  "description": "한 문장 요약 (카드 헤더)"},
+        "payload":     {"type": "object",  "description": "에이전트별 자유 형식 데이터"},
+        "method_used": {"type": "string",  "description": "사용된 방법 라벨 (예: 'L0_template' / 'L2_llm')"},
+        "elapsed_sec": {"type": "number",  "minimum": 0,
+                        "description": "실행 시간 (초)"},
+        "warnings":    {"type": "array",   "items": {"type": "string"}},
+        "error":       {"type": ["string", "null"]}
+      },
+      "additionalProperties": false
+    },
+
+    "AgentCapability": {
+      "type": "string",
+      "enum": [
+        "diagnosis", "forecast", "optimization", "carbon",
+        "safety", "renewable", "benchmark", "market",
+        "policy", "coordination"
+      ],
+      "description": "A01~A10 핵심 능력 라벨"
+    },
+
+    "MaturityLevel": {
+      "type": "string",
+      "enum": ["L0_template", "L1_rule", "L2_llm", "L3_optimization"],
+      "description": "에이전트 성숙도 (RQ-AI 프레임). L0=정적 템플릿, L1=규칙 기반, L2=LLM, L3=최적화 알고리즘"
+    }
+  },
+
+  "type": "object",
+  "properties": {
+    "registry": {
+      "type": "object",
+      "description": "10개 에이전트 카탈로그",
+      "additionalProperties": {
+        "type": "object",
+        "required": ["id", "name_en", "name_kr", "capability", "phase"],
+        "properties": {
+          "id":          {"type": "string", "pattern": "^a(0[1-9]|10)$"},
+          "name_en":     {"type": "string"},
+          "name_kr":     {"type": "string"},
+          "capability":  {"$ref": "#/$defs/AgentCapability"},
+          "phase":       {"type": "integer", "enum": [1, 2, 3, 4, 5]},
+          "maturity":    {"$ref": "#/$defs/MaturityLevel"},
+          "requires":    {"type": "array", "items": {"type": "string"},
+                          "description": "선행 에이전트 ID (예: A03/A04/A07은 A01 필요)"}
+        }
+      }
+    }
+  },
+
+  "default": {
+    "registry": {
+      "a01_diagnosis":   {"id": "a01", "name_en": "Diagnosis",       "name_kr": "진단",           "capability": "diagnosis",    "phase": 1, "maturity": "L0_template", "requires": []},
+      "a02_forecast":    {"id": "a02", "name_en": "Forecast",        "name_kr": "예측",           "capability": "forecast",     "phase": 2, "maturity": "L0_template", "requires": ["a01"]},
+      "a03_optimizer":   {"id": "a03", "name_en": "Optimizer",       "name_kr": "최적화",         "capability": "optimization", "phase": 1, "maturity": "L0_template", "requires": ["a01"]},
+      "a04_carbon":      {"id": "a04", "name_en": "Carbon",          "name_kr": "탄소",           "capability": "carbon",       "phase": 1, "maturity": "L0_template", "requires": ["a01"]},
+      "a05_safety":      {"id": "a05", "name_en": "Safety",          "name_kr": "안전",           "capability": "safety",       "phase": 2, "maturity": "L0_template", "requires": ["a01"]},
+      "a06_renewable":   {"id": "a06", "name_en": "Renewable",       "name_kr": "신재생",         "capability": "renewable",    "phase": 2, "maturity": "L0_template", "requires": ["a01"]},
+      "a07_benchmark":   {"id": "a07", "name_en": "Benchmark",       "name_kr": "벤치마크",       "capability": "benchmark",    "phase": 1, "maturity": "L0_template", "requires": ["a01"]},
+      "a08_market":      {"id": "a08", "name_en": "Market",          "name_kr": "시장",           "capability": "market",       "phase": 2, "maturity": "L0_template", "requires": ["a01"]},
+      "a09_policy":      {"id": "a09", "name_en": "Policy",          "name_kr": "정책",           "capability": "policy",       "phase": 2, "maturity": "L0_template", "requires": ["a01"]},
+      "a10_coordinator": {"id": "a10", "name_en": "Coordinator",     "name_kr": "코디네이터",     "capability": "coordination", "phase": 1, "maturity": "L0_template", "requires": ["a01"]}
+    }
+  }
+}
