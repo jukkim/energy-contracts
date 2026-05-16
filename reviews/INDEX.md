@@ -6,10 +6,10 @@
 | Round | Date | Author | Receiver | Title | Open | ACK | Resolved | Closed | Stale? |
 |-------|------|--------|----------|-------|:----:|:---:|:--------:|:------:|:------:|
 | R13 | 2026-04-21 | VW/GB | Edge | Edge↔GB 카탈로그 전달 메커니즘 | 0 | 0 | 0 | 5 | |
-| R14 | 2026-04-21 | Edge | VW, GB | 3계층 데이터 모델 1단계 정렬 — 실 건물 기준 통일 | 0 | 3 | 1 | 5 | **BLOCKED 05-16**: Item 2 GB 선행 · Item 6·8 VW 중기 (25일) |
+| R14 | 2026-04-21 | Edge | VW, GB | 3계층 데이터 모델 1단계 정렬 — 실 건물 기준 통일 | 0 | 1 | 0 | 8 | Item 2 ACK — GB ESG CRUD 이관 대기 |
 | R15 | 2026-04-21 | VW/GB | Edge, VW, GB | 데모 모드 데이터 관리 — 편의점 리플레이 + 리셋 | 0 | 0 | 0 | 7 | |
 | R16 | 2026-04-21 | VW/GB | Edge, VW, GB | 3계층 E2E 통합 테스트 — 데모 편의점 5개 | 0 | 0 | 0 | 5 | Phase A·B·C 완료 (5/5 VEN, G4 24pts, G5 이상탐지 정상) |
-| R17 | 2026-04-21 | VW/GB | Edge | 3-Phase 통합 테스트 — Edge 협조 요청 | 0 | 1 | 5 | 0 | **BLOCKED 05-16**: Item 6 UI Playwright (Edge 중기, 25일) |
+| R17 | 2026-04-21 | VW/GB | Edge | 3-Phase 통합 테스트 — Edge 협조 요청 | 0 | 0 | 6 | 0 | Edge 확인 완료 (05-16). VW/GB Author CLOSED 대기 |
 
 ---
 
