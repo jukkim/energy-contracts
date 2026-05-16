@@ -34,8 +34,11 @@ WORKSPACE_ROOT = CONTRACTS_ROOT.parents[1]  # myjob/
 # "M5", 'M5' 형태 (식별자 P3-M2 등은 제외)
 LEGACY_STRATEGY_RE = re.compile(r"""['"](M[0-8])['"]""")
 
-# 파일 레벨 면제 마커 — 의도된 negative test 파일에 주석으로 표기
-FILE_EXEMPT_MARKER = "SSOT_ALLOW_LEGACY_STRATEGY"
+# 파일 레벨 면제 마커
+FILE_EXEMPT_MARKERS = (
+    "SSOT_ALLOW_LEGACY_STRATEGY",  # 의도된 negative test 파일
+    "AUTO-GENERATED",              # gen_constants.py 산출물
+)
 
 # 예외 허용 경로 — 마이그레이션 주석/문서/CHANGELOG 등
 STRATEGY_EXEMPT_PATTERNS = [
@@ -76,7 +79,7 @@ def scan_legacy_strategies(paths: list[Path]) -> list[tuple[Path, int, str]]:
             except Exception:
                 continue
             # 파일 레벨 면제 마커
-            if FILE_EXEMPT_MARKER in text:
+            if any(marker in text for marker in FILE_EXEMPT_MARKERS):
                 continue
             for lineno, line in enumerate(text.splitlines(), 1):
                 # 주석 라인 건너뜀 (마이그레이션 메모 허용)
