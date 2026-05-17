@@ -51,18 +51,53 @@ TIER_IMPORT_HINT = [
     (re.compile(r"\bhttpx\.AsyncClient|TestClient.*localhost:\d+"), "T4"),
 ]
 
+# ── Mock 패턴 검출 (M-7a) ───────────────────────────────────────────────────
+# import hint 만으로는 mock 기반 unit 과 실 통합을 구분 못함
+# (예: paho.mqtt 를 import 하지만 MagicMock 으로 대체하는 경우).
+# folder hint (tests/integration/, tests/e2e/) 는 의도적 분리라 신뢰하되,
+# import hint 단독은 mock 패턴 검출 시 T2 로 강등한다.
+_MOCK_IMPORT_PATTERNS = (
+    re.compile(r"from\s+unittest\.mock\s+import"),
+    re.compile(r"\bimport\s+unittest\.mock\b"),
+    re.compile(r"\b(MagicMock|AsyncMock|PropertyMock)\s*\("),
+)
+_MOCK_INTENT_HINTS = (
+    "mock으로", "mock 으로", "magicmock", "asyncmock",
+    "브로커 없이", "broker 없이", "without broker",
+    "전부 mock", "모두 mock", "db 호출은",
+)
+
+
+def _is_mock_based(text: str) -> bool:
+    """파일이 mock 위주로 동작하는지 휴리스틱 검출.
+
+    True 인 케이스:
+      1) unittest.mock import + MagicMock/AsyncMock/PropertyMock 실호출
+      2) 모듈 docstring/주석 헤더에 mock 의도 키워드 포함
+    """
+    head = text[:4000]
+    for rx in _MOCK_IMPORT_PATTERNS:
+        if rx.search(head):
+            return True
+    head_lower = head.lower()
+    return any(hint in head_lower for hint in _MOCK_INTENT_HINTS)
+
 
 def estimate_tier(fp: Path, text: str) -> str:
-    """파일 경로 + import 로 tier 추정. default=T2."""
-    # 경로 hint
+    """파일 경로 + import 로 tier 추정. default=T2.
+
+    folder hint 는 항상 신뢰 (의도된 분리). import hint 는 mock 패턴 동시
+    검출 시 T3/T4 → T2 로 강등하여 false positive 차단.
+    """
     parts_lower = [p.lower() for p in fp.parts]
     for hint, tier in TIER_FOLDER_HINT.items():
         if hint in parts_lower:
             return tier
-    # import hint
     head = text[:3000]
     for rx, tier in TIER_IMPORT_HINT:
         if rx.search(head):
+            if tier in ("T3", "T4") and _is_mock_based(text):
+                return "T2"
             return tier
     return "T2"
 
@@ -217,14 +252,20 @@ def _build_marker_block(tier: str, groups: list[str] | str, stage: str) -> str:
     )
 
 
-_LEGACY_MARKER_HEAD = re.compile(r"#\s*─+\s*Phase G SSOT markers[^\n]*\n")
+_LEGACY_MARKER_HEAD = re.compile(
+    r"#\s*─+\s*Phase G SSOT markers"
+    r"(?! \(auto-applied by classify_tests\.py\))"
+    r"[^\n]*\n"
+)
 _LEGACY_MARKER_TAIL = re.compile(r"#\s*─+\s*End Phase G markers\s*─*\s*\n?")
 
 
 def _strip_legacy_marker_blocks(text: str) -> str:
-    """동일 파일에 변형 헤더(`(auto-applied by ...)` 누락 등)로 들어간 중복
-    marker 블록을 모두 제거. _apply_marker_to_file 가 단일 idempotent 블록을
-    유지하도록 보장한다.
+    """변형 헤더로 들어간 중복 marker 블록만 제거.
+
+    canonical 헤더(`(auto-applied by classify_tests.py)` 포함)는 보존하여
+    `_apply_marker_to_file` 가 in-place 교체로 주변 공백을 유지하도록 한다
+    (apply-all 시 무관 파일에 whitespace drift 방지).
     """
     while True:
         m_head = _LEGACY_MARKER_HEAD.search(text)
