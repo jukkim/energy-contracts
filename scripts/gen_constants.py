@@ -19,6 +19,7 @@ Tier 2 (energy-contracts/schemas/*.json) → Tier 3 (각 프로젝트/_generated
 from __future__ import annotations
 
 import argparse
+import ast
 import hashlib
 import json
 import re
@@ -29,16 +30,111 @@ CONTRACTS_ROOT = Path(__file__).resolve().parents[1]
 SCHEMAS_DIR = CONTRACTS_ROOT / "schemas"
 WORKSPACE_ROOT = CONTRACTS_ROOT.parents[1]
 
-# 표준 프로젝트별 출력 경로 (Tier 3)
-PROJECT_TARGETS: dict[str, dict[str, str]] = {
-    "edge-agent":         {"python": "projects/edge-agent/src/_generated_constants.py"},
-    "gridbridge":         {"python": "projects/gridbridge/src/_generated_constants.py"},
+# 표준 프로젝트별 출력 경로 (Tier 3) — Phase M-4: exports 화이트리스트 도입
+#
+# 각 프로젝트 항목 구조:
+#   {
+#     "python":  "<path>",                # Python 산출물 경로 (선택)
+#     "ts":      "<path>",                # TypeScript 산출물 경로 (선택)
+#     "exports": {"python": [...],        # Python 본문에서 keep 할 심볼
+#                 "ts":     [...]},       # TS 본문에서 keep 할 심볼
+#   }
+# `exports` 누락 시 전체 emit (backward compatible). 화이트리스트 외 symbol 은
+# 생성물에서 제거되어 dead-export 가 줄어든다 (M-4 H9 해결).
+#
+# 화이트리스트 → m4_survey_exports.py 산출 (`scratch/m4_exports_audit.json`)
+# 기반으로 결정. 새 symbol 필요 시 본 manifest 갱신 후 `--all` 재실행.
+PROJECT_TARGETS: dict[str, dict] = {
+    "edge-agent": {
+        "python": "projects/edge-agent/src/_generated_constants.py",
+        "exports": {
+            "python": [
+                "AI_MODELS", "AUTH_JWT_POLICY", "AUTH_PROJECT_DEFAULT_SCOPES",
+                "BUILDING_USAGES", "COMPUTER_PROFILES", "DATA_SOURCES",
+                "DATA_SOURCE_LABELS", "DB_MIGRATIONS", "ENERGY_CONVERSIONS",
+                "ERROR_CODES", "GRIDBRIDGE_URL_COMPUTER_A",
+                "GRIDBRIDGE_URL_DEFAULT", "I18N_KEYS", "INTENT_TYPES",
+                "LEGACY_MAPPING", "LINT_CONFIG", "LOGGING_FORMAT",
+                "MQTT_TOPIC_PATTERNS", "OPENAPI_RESPONSES", "PIPELINE_DATASETS",
+                "PORTS", "RUN_MODES", "RUN_MODE_BEHAVIOR", "SECURITY_HEADERS",
+                "SIGNAL_MAPPING", "SIM_EMS_PATTERNS", "STRATEGIES",
+                "STRATEGY_CODES", "STRATEGY_PATTERN", "TENANT_REGIONS",
+                "TESTS_SHARED", "TEST_GROUPS", "TEST_STAGES", "TEST_TIERS",
+            ],
+        },
+    },
+    "gridbridge": {
+        "python": "projects/gridbridge/src/_generated_constants.py",
+        "exports": {
+            "python": [
+                "AI_MODELS", "AUTH_JWT_POLICY", "AUTH_SCOPES", "COMPUTER_PROFILES",
+                "DATA_SOURCES", "DATA_SOURCE_LABELS", "DB_MIGRATIONS",
+                "EMISSION_FACTORS_KR", "ENERGY_CONVERSIONS", "ERROR_CODES",
+                "GRIDBRIDGE_URL_COMPUTER_A", "LOGGING_FORMAT", "MQTT_TOPIC_PATTERNS",
+                "OPENAPI_RESPONSES", "PIPELINE_DATASETS", "PORTS",
+                "RUN_MODES", "RUN_MODE_BEHAVIOR", "SECURITY_HEADERS",
+                "SIGNAL_MAPPING", "SIM_EMS_PATTERNS", "STRATEGY_CODES",
+                "STRATEGY_PATTERN", "TENANT_REGIONS", "TESTS_SHARED",
+                "TEST_GROUPS", "TEST_STAGES", "TEST_TIERS",
+            ],
+        },
+    },
     "building-energy-3d": {
         "python": "projects/building-energy-3d/src/shared/_generated_constants.py",
         "ts":     "projects/building-energy-3d/frontend/src/shared/_generated_constants.ts",
+        "exports": {
+            "python": [
+                "AGENT_REGISTRY", "AI_MODELS", "AUTH_JWT_POLICY", "AUTH_PERMISSIONS",
+                "AUTH_PROJECT_DEFAULT_SCOPES", "AUTH_SCOPES", "BUILDING_USAGES",
+                "COMPUTER_PROFILES", "DATA_SOURCES", "DATA_SOURCE_LABELS",
+                "DB_MIGRATIONS", "EMISSION_FACTORS_KR", "ENERGY_CONVERSIONS",
+                "ERROR_CODES", "ERROR_TYPE_PREFIX", "I18N_FALLBACK_LANG",
+                "I18N_KEYS", "INTENT_TYPES", "LINT_CONFIG", "LOGGING_FORMAT",
+                "MQTT_NAMESPACES", "MQTT_TOPIC_PATTERNS", "NL_CONSTRAINTS",
+                "NL_CONTROL_KEYWORDS", "NL_GATE_TOKENS", "NL_STRATEGIES_BY_KEYWORD",
+                "OPENAPI_RESPONSES", "PIPELINE_DATASETS", "PRIMARY_ENERGY_FACTORS",
+                "RUN_MODES", "RUN_MODE_BEHAVIOR", "SECURITY_CORS", "SECURITY_HEADERS",
+                "SIM_EMS_PATTERNS", "SIM_PMV_THRESHOLDS", "SIM_RUN_PERIODS",
+                "STRATEGIES", "STRATEGY_CODES", "TENANT_REGIONS", "TESTS_SHARED",
+                "TEST_GROUPS", "TEST_STAGES", "TEST_TIERS", "ZEB_THRESHOLDS",
+            ],
+            "ts": [
+                "I18N_FALLBACK_LANG", "I18N_KEYS",
+            ],
+        },
     },
-    "agentleague":        {"python": "projects/agentleague/backend/_generated_constants.py"},
-    "eduarena":           {"python": "projects/eduarena/backend/_generated_constants.py"},
+    "agentleague": {
+        "python": "projects/agentleague/backend/_generated_constants.py",
+        "exports": {
+            "python": [
+                "AI_MODELS", "AUTH_JWT_POLICY", "AUTH_PROJECT_DEFAULT_SCOPES",
+                "AUTH_SCOPES", "BUILDING_USAGES", "COMPUTER_PROFILES",
+                "DATA_SOURCE_LABELS", "ENERGY_CONVERSIONS", "ERROR_CODES",
+                "GRIDBRIDGE_URL_COMPUTER_A", "GRIDBRIDGE_URL_DEFAULT",
+                "I18N_KEYS", "LOGGING_FORMAT", "MQTT_NAMESPACES",
+                "OPENAPI_RESPONSES", "PIPELINE_DATASETS", "RUN_MODES",
+                "RUN_MODE_BEHAVIOR", "SECURITY_CORS", "SECURITY_HEADERS",
+                "STRATEGIES", "STRATEGY_CODES", "STRATEGY_PATTERN",
+                "TENANT_REGIONS", "TESTS_SHARED", "TEST_STAGES", "TEST_TIERS",
+            ],
+        },
+    },
+    "eduarena": {
+        "python": "projects/eduarena/backend/_generated_constants.py",
+        "exports": {
+            "python": [
+                "AI_MODELS", "AUTH_JWT_POLICY", "AUTH_PROJECT_DEFAULT_SCOPES",
+                "AUTH_SCOPES", "BUILDING_USAGES", "COMPUTER_PROFILES",
+                "DATA_SOURCE_LABELS", "ENERGY_CONVERSIONS", "ERROR_CODES",
+                "GRIDBRIDGE_URL_COMPUTER_A", "GRIDBRIDGE_URL_DEFAULT",
+                "I18N_KEYS", "LOGGING_FORMAT", "MQTT_NAMESPACES",
+                "OPENAPI_RESPONSES", "PIPELINE_DATASETS", "RUN_MODES",
+                "RUN_MODE_BEHAVIOR", "SECURITY_HEADERS", "STRATEGIES",
+                "STRATEGY_CODES", "STRATEGY_PATTERN", "TENANT_REGIONS",
+                "TESTS_SHARED", "TEST_STAGES", "TEST_TIERS", "ZEB_THRESHOLDS",
+            ],
+        },
+    },
 }
 
 
@@ -655,6 +751,159 @@ def gen_typescript(schemas: dict) -> str:
     return "\n".join(lines)
 
 
+# ── Phase M-4: dead exports 화이트리스트 필터 ─────────────────────────────
+
+# 산출물에 항상 보존되는 심볼 (헤더/엔트리포인트)
+_ALWAYS_KEEP_PY = {"SOURCE_HASH"}
+_ALWAYS_KEEP_TS = {"SOURCE_HASH"}
+
+
+def filter_python_output(content: str, whitelist: list[str]) -> str:
+    """Python 산출물에서 화이트리스트 외 top-level 심볼(assignment+function) 제거.
+
+    헤더(docstring/import) 및 section 주석은 보존 (cosmetic). 화이트리스트가
+    빈 list 면 필터링 안 함 (전체 emit).
+    """
+    if not whitelist:
+        return content
+    keep_set = set(whitelist) | _ALWAYS_KEEP_PY
+    try:
+        tree = ast.parse(content)
+    except SyntaxError:
+        return content
+    lines = content.splitlines(keepends=True)
+    keep = [True] * (len(lines) + 2)  # 1-indexed
+    for node in tree.body:
+        name = ""
+        if isinstance(node, ast.Assign):
+            if node.targets and isinstance(node.targets[0], ast.Name):
+                name = node.targets[0].id
+        elif isinstance(node, ast.AnnAssign):
+            if isinstance(node.target, ast.Name):
+                name = node.target.id
+        elif isinstance(node, ast.FunctionDef):
+            # 함수는 항상 보존 (detect_machine, gridbridge_url_for_machine 등
+            # 헬퍼는 화이트리스트 surveyor 가 못 잡는 lowercase 심볼 — 비용 대비
+            # 분석 이득이 작아 일괄 keep).
+            continue
+        elif isinstance(node, (ast.Import, ast.ImportFrom, ast.Expr)):
+            continue  # import/docstring 항상 유지
+        else:
+            continue
+        if not name or name in keep_set:
+            continue
+        start = node.lineno
+        end = node.end_lineno or start
+        for ln in range(start, end + 1):
+            keep[ln] = False
+    new_lines = [lines[i - 1] for i in range(1, len(lines) + 1) if keep[i]]
+    # 연속 빈 줄 3개 이상 → 1개로 축약 (cosmetic)
+    result: list[str] = []
+    blank = 0
+    for line in new_lines:
+        if line.strip() == "":
+            blank += 1
+            if blank <= 1:
+                result.append(line)
+        else:
+            blank = 0
+            result.append(line)
+    return "".join(result)
+
+
+# TS 한 줄 `export const NAME = ...;` 또는 다음 줄들에 걸친 `... } as const;` 케이스
+_TS_EXPORT_START = re.compile(
+    r"^export\s+(?:const|type|interface)\s+([A-Za-z_][A-Za-z_0-9]*)\b"
+)
+
+
+def filter_typescript_output(content: str, whitelist: list[str]) -> str:
+    """TS 산출물에서 화이트리스트 외 export 제거.
+
+    interface / type 은 의존 const 와 함께 keep/drop. 휴리스틱:
+      - `export type X = (typeof Y)[number]` → Y 가 keep 이면 X 도 keep
+      - `export interface Foo` 블록 → 항상 보존 (작아서 분석 비용 > 이득)
+    """
+    if not whitelist:
+        return content
+    keep_set = set(whitelist) | _ALWAYS_KEEP_TS
+    lines = content.splitlines(keepends=True)
+    n = len(lines)
+    keep = [True] * (n + 1)  # 0-indexed
+
+    # 1차 패스: top-level export 의 시작/끝/이름 식별
+    blocks: list[tuple[int, int, str, str]] = []  # (start, end, name, kind)
+    i = 0
+    while i < n:
+        line = lines[i]
+        m = _TS_EXPORT_START.match(line)
+        if not m:
+            i += 1
+            continue
+        name = m.group(1)
+        kind = line.lstrip().split()[1]  # const / type / interface
+        # 블록 끝: 짝맞춤 까지. interface 는 `}` 단독 줄까지. 일반 `;` 종결.
+        depth = 0
+        j = i
+        while j < n:
+            for ch in lines[j]:
+                if ch in "{[(":
+                    depth += 1
+                elif ch in "}])":
+                    depth -= 1
+            stripped = lines[j].rstrip()
+            if depth == 0 and (stripped.endswith(";") or
+                                stripped.endswith("}")):
+                break
+            j += 1
+        blocks.append((i, j, name, kind))
+        i = j + 1
+
+    # 2차 패스: keep 결정
+    # const/interface 는 화이트리스트 직접 매칭. type 은 의존 const 추적.
+    for start, end, name, kind in blocks:
+        if name in keep_set:
+            continue
+        if kind == "interface":
+            continue  # interface 는 보존 (저비용)
+        if kind == "type":
+            # `export type X = (typeof Y)[number]` 패턴 추출
+            block_text = "".join(lines[start:end + 1])
+            dep = re.search(r"\(typeof\s+([A-Za-z_][A-Za-z_0-9]*)\)",
+                            block_text)
+            if dep and dep.group(1) in keep_set:
+                continue
+        # drop
+        for k in range(start, end + 1):
+            keep[k] = False
+    new_lines = [lines[k] for k in range(n) if keep[k]]
+    # 연속 빈 줄 축약
+    result: list[str] = []
+    blank = 0
+    for line in new_lines:
+        if line.strip() == "":
+            blank += 1
+            if blank <= 1:
+                result.append(line)
+        else:
+            blank = 0
+            result.append(line)
+    return "".join(result)
+
+
+def apply_exports_filter(content: str, lang: str, project_cfg: dict) -> str:
+    """PROJECT_TARGETS[proj].exports[lang] 화이트리스트 적용."""
+    exports_cfg = project_cfg.get("exports", {})
+    whitelist = exports_cfg.get(lang, [])
+    if not whitelist:
+        return content
+    if lang == "python":
+        return filter_python_output(content, whitelist)
+    if lang == "ts":
+        return filter_typescript_output(content, whitelist)
+    return content
+
+
 # ── 작업 실행 ───────────────────────────────────────────────────────────────
 
 def write_target(content: str, out_path: Path) -> bool:
@@ -671,10 +920,14 @@ def write_target(content: str, out_path: Path) -> bool:
 def regenerate_all(check_only: bool = False) -> int:
     schemas = load_schemas()
     drift = 0
-    for proj, targets in PROJECT_TARGETS.items():
-        for lang, rel_path in targets.items():
+    for proj, project_cfg in PROJECT_TARGETS.items():
+        for lang in ("python", "ts"):
+            rel_path = project_cfg.get(lang)
+            if not rel_path:
+                continue
             out = WORKSPACE_ROOT / rel_path
-            content = gen_python(schemas) if lang == "python" else gen_typescript(schemas)
+            full = gen_python(schemas) if lang == "python" else gen_typescript(schemas)
+            content = apply_exports_filter(full, lang, project_cfg)
             if check_only:
                 if not out.exists():
                     print(f"[gen_constants] MISSING: {rel_path}")
