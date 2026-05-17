@@ -3,8 +3,17 @@
   "$id": "https://building-energy.xyz/schemas/forecast_response.json",
   "title": "ForecastResponse",
   "description": "PatchTST 168h→24h 에너지 예측 API 응답 (GET /api/v1/smart-building/{pnu}/forecast)",
+  "_usage": "reference-only",
+  "_consumers": [
+    "building-energy-3d"
+  ],
   "type": "object",
-  "required": ["pnu", "model", "input_hours", "forecast"],
+  "required": [
+    "pnu",
+    "model",
+    "input_hours",
+    "forecast"
+  ],
   "properties": {
     "pnu": {
       "type": "string",
@@ -14,8 +23,14 @@
     "model": {
       "type": "string",
       "description": "사용된 예측 모델 식별자",
-      "enum": ["patchtst_v5", "korean_bb_fallback", "archetype_fallback"],
-      "examples": ["patchtst_v5"]
+      "enum": [
+        "patchtst_v5",
+        "korean_bb_fallback",
+        "archetype_fallback"
+      ],
+      "examples": [
+        "patchtst_v5"
+      ]
     },
     "input_hours": {
       "type": "integer",
@@ -25,8 +40,14 @@
     "input_source": {
       "type": "string",
       "description": "입력 시계열 출처",
-      "enum": ["telemetry", "store_energy", "synthetic"],
-      "examples": ["telemetry"]
+      "enum": [
+        "telemetry",
+        "store_energy",
+        "synthetic"
+      ],
+      "examples": [
+        "telemetry"
+      ]
     },
     "forecast": {
       "type": "array",
@@ -35,7 +56,10 @@
       "maxItems": 24,
       "items": {
         "type": "object",
-        "required": ["hour", "energy_kwh"],
+        "required": [
+          "hour",
+          "energy_kwh"
+        ],
         "properties": {
           "hour": {
             "type": "integer",
@@ -92,8 +116,18 @@
       "input_hours": 168,
       "input_source": "telemetry",
       "forecast": [
-        {"hour": 0, "energy_kwh": 12.3, "lower_bound": 10.1, "upper_bound": 14.5},
-        {"hour": 1, "energy_kwh": 11.8, "lower_bound": 9.6, "upper_bound": 14.0}
+        {
+          "hour": 0,
+          "energy_kwh": 12.3,
+          "lower_bound": 10.1,
+          "upper_bound": 14.5
+        },
+        {
+          "hour": 1,
+          "energy_kwh": 11.8,
+          "lower_bound": 9.6,
+          "upper_bound": 14.0
+        }
       ],
       "metrics": {
         "cvrmse_pct": 8.2,

@@ -3,69 +3,167 @@
   "$id": "energy-contracts/ai_model_registry.json",
   "title": "AI Model Registry SSOT (Phase I-1)",
   "description": "8.simulation 13종 AI 모델 카탈로그 — Korean_BB, ems_transformer, building_ai 7종, factory_ai 13 등. 카르테 UI · 모델 마켓플레이스 · API /models/list SSOT.",
+  "_usage": "codegen",
+  "_consumers": [
+    "edge-agent",
+    "gridbridge",
+    "building-energy-3d",
+    "agentleague",
+    "eduarena"
+  ],
   "version": "1.0",
   "updated": "2026-05-17",
   "$comment": "Phase I-1 산출물. data_classification.json#/$defs/DataSource 참조.",
-
   "$defs": {
     "ModelTask": {
       "type": "string",
-      "enum": ["forecast", "anomaly", "predict", "classify", "rul", "optimize", "diagnose"]
+      "enum": [
+        "forecast",
+        "anomaly",
+        "predict",
+        "classify",
+        "rul",
+        "optimize",
+        "diagnose"
+      ]
     },
     "ModelFramework": {
       "type": "string",
-      "enum": ["xgboost", "lightgbm", "patchtst", "transformer", "isolation_forest",
-               "lstm_autoencoder", "sklearn", "prophet", "tabnet", "energyplus"]
+      "enum": [
+        "xgboost",
+        "lightgbm",
+        "patchtst",
+        "transformer",
+        "isolation_forest",
+        "lstm_autoencoder",
+        "sklearn",
+        "prophet",
+        "tabnet",
+        "energyplus"
+      ]
     },
     "ModelEntry": {
       "type": "object",
-      "required": ["id", "name", "version", "task", "framework"],
+      "required": [
+        "id",
+        "name",
+        "version",
+        "task",
+        "framework"
+      ],
       "properties": {
-        "id":          {"type": "string", "pattern": "^[a-z][a-z0-9_]*$"},
-        "name":        {"type": "string"},
-        "name_kr":     {"type": "string"},
-        "version":     {"type": "string"},
-        "path":        {"type": "string", "description": "체크포인트 상대 경로 (workspace root 기준)"},
-        "task":        {"$ref": "#/$defs/ModelTask"},
-        "framework":   {"$ref": "#/$defs/ModelFramework"},
-        "input_shape":  {"type": "array",  "items": {"type": ["integer", "string"]}},
-        "output_shape": {"type": "array",  "items": {"type": ["integer", "string"]}},
+        "id": {
+          "type": "string",
+          "pattern": "^[a-z][a-z0-9_]*$"
+        },
+        "name": {
+          "type": "string"
+        },
+        "name_kr": {
+          "type": "string"
+        },
+        "version": {
+          "type": "string"
+        },
+        "path": {
+          "type": "string",
+          "description": "체크포인트 상대 경로 (workspace root 기준)"
+        },
+        "task": {
+          "$ref": "#/$defs/ModelTask"
+        },
+        "framework": {
+          "$ref": "#/$defs/ModelFramework"
+        },
+        "input_shape": {
+          "type": "array",
+          "items": {
+            "type": [
+              "integer",
+              "string"
+            ]
+          }
+        },
+        "output_shape": {
+          "type": "array",
+          "items": {
+            "type": [
+              "integer",
+              "string"
+            ]
+          }
+        },
         "accuracy_metric": {
           "type": "object",
           "description": "지표명 → 값. 예: {nrmse_pct: 12.3, mae: 0.05, f1: 0.92}",
-          "additionalProperties": {"type": "number"}
+          "additionalProperties": {
+            "type": "number"
+          }
         },
-        "data_source": {"type": "string",
-                        "enum": ["measured", "certified", "simulated", "predicted",
-                                 "external", "synthetic", "mock"]},
-        "trained_at":  {"type": "string", "format": "date"},
-        "frozen":      {"type": "boolean", "default": false,
-                        "description": "true 시 변경 금지 (논문 투고·인증 중)"},
-        "project":     {"type": "string", "description": "8.simulation 하위 폴더"},
-        "description": {"type": "string"}
+        "data_source": {
+          "type": "string",
+          "enum": [
+            "measured",
+            "certified",
+            "simulated",
+            "predicted",
+            "external",
+            "synthetic",
+            "mock"
+          ]
+        },
+        "trained_at": {
+          "type": "string",
+          "format": "date"
+        },
+        "frozen": {
+          "type": "boolean",
+          "default": false,
+          "description": "true 시 변경 금지 (논문 투고·인증 중)"
+        },
+        "project": {
+          "type": "string",
+          "description": "8.simulation 하위 폴더"
+        },
+        "description": {
+          "type": "string"
+        }
       },
       "additionalProperties": true
     }
   },
-
   "type": "object",
   "properties": {
     "models": {
       "type": "object",
-      "additionalProperties": {"$ref": "#/$defs/ModelEntry"}
+      "additionalProperties": {
+        "$ref": "#/$defs/ModelEntry"
+      }
     }
   },
-
   "default": {
     "models": {
       "korean_bb": {
-        "id": "korean_bb", "name": "Korean BuildingsBench (commercial)",
+        "id": "korean_bb",
+        "name": "Korean BuildingsBench (commercial)",
         "name_kr": "한국형 BuildingsBench (상업)",
-        "version": "1.2", "path": "8.simulation/Korean_BB/checkpoints/",
-        "task": "forecast", "framework": "patchtst",
-        "input_shape": ["batch", 168, 8],
-        "output_shape": ["batch", 24, 1],
-        "accuracy_metric": {"nrmse_pct": 12.30},
+        "version": "1.2",
+        "path": "8.simulation/Korean_BB/checkpoints/",
+        "task": "forecast",
+        "framework": "patchtst",
+        "input_shape": [
+          "batch",
+          168,
+          8
+        ],
+        "output_shape": [
+          "batch",
+          24,
+          1
+        ],
+        "accuracy_metric": {
+          "nrmse_pct": 12.3
+        },
         "data_source": "predicted",
         "trained_at": "2026-03-15",
         "frozen": true,
@@ -73,121 +171,182 @@
         "description": "GS25 224채 실측 학습. Energy and AI 투고 중 — 변경 금지"
       },
       "korean_bb_residential": {
-        "id": "korean_bb_residential", "name": "Korean BB Residential",
+        "id": "korean_bb_residential",
+        "name": "Korean BB Residential",
         "name_kr": "한국 주거 건물 예측",
-        "version": "0.3", "path": "8.simulation/korean_bb_residential/checkpoints/",
-        "task": "forecast", "framework": "patchtst",
-        "accuracy_metric": {"nrmse_pct": 18.5},
+        "version": "0.3",
+        "path": "8.simulation/korean_bb_residential/checkpoints/",
+        "task": "forecast",
+        "framework": "patchtst",
+        "accuracy_metric": {
+          "nrmse_pct": 18.5
+        },
         "data_source": "predicted",
         "project": "korean_bb_residential",
         "description": "Korean_BB fork, K-apt 132MB 학습 중"
       },
       "ems_transformer": {
-        "id": "ems_transformer", "name": "EMS Transformer",
+        "id": "ems_transformer",
+        "name": "EMS Transformer",
         "name_kr": "EMS 절감 Transformer",
-        "version": "3.0", "path": "8.simulation/ems_transformer/checkpoints/",
-        "task": "optimize", "framework": "transformer",
-        "accuracy_metric": {"reduction_pct": 22.5, "mae_kwh": 0.18},
+        "version": "3.0",
+        "path": "8.simulation/ems_transformer/checkpoints/",
+        "task": "optimize",
+        "framework": "transformer",
+        "accuracy_metric": {
+          "reduction_pct": 22.5,
+          "mae_kwh": 0.18
+        },
         "data_source": "simulated",
         "trained_at": "2026-04-10",
         "project": "ems_transformer",
         "description": "M00~M15 전략 → 절감량 예측. EnergyPlus 1,500건 학습"
       },
       "ems_transformer_hybrid": {
-        "id": "ems_transformer_hybrid", "name": "EMS Transformer Hybrid (PatchTST+LLM)",
+        "id": "ems_transformer_hybrid",
+        "name": "EMS Transformer Hybrid (PatchTST+LLM)",
         "name_kr": "멀티모달 Hybrid",
-        "version": "1.0", "path": "8.simulation/ems_transformer/hybrid/checkpoints/",
-        "task": "optimize", "framework": "transformer",
+        "version": "1.0",
+        "path": "8.simulation/ems_transformer/hybrid/checkpoints/",
+        "task": "optimize",
+        "framework": "transformer",
         "data_source": "simulated",
         "project": "ems_transformer/hybrid"
       },
       "building_ai_forecast": {
-        "id": "building_ai_forecast", "name": "Building AI Forecast (XGBoost)",
+        "id": "building_ai_forecast",
+        "name": "Building AI Forecast (XGBoost)",
         "name_kr": "건물 에너지 예측",
-        "version": "2.1", "path": "8.simulation/building_ai/models/xgboost.json",
-        "task": "forecast", "framework": "xgboost",
-        "accuracy_metric": {"r2": 0.87, "mae_kwh": 0.32},
+        "version": "2.1",
+        "path": "8.simulation/building_ai/models/xgboost.json",
+        "task": "forecast",
+        "framework": "xgboost",
+        "accuracy_metric": {
+          "r2": 0.87,
+          "mae_kwh": 0.32
+        },
         "data_source": "predicted",
         "project": "building_ai"
       },
       "building_ai_anomaly": {
-        "id": "building_ai_anomaly", "name": "Building Anomaly Detection",
+        "id": "building_ai_anomaly",
+        "name": "Building Anomaly Detection",
         "name_kr": "건물 이상탐지",
-        "version": "1.0", "task": "anomaly", "framework": "isolation_forest",
-        "accuracy_metric": {"f1": 0.91},
+        "version": "1.0",
+        "task": "anomaly",
+        "framework": "isolation_forest",
+        "accuracy_metric": {
+          "f1": 0.91
+        },
         "data_source": "predicted",
         "project": "building_ai"
       },
       "building_ai_classify": {
-        "id": "building_ai_classify", "name": "Building Usage Classifier",
+        "id": "building_ai_classify",
+        "name": "Building Usage Classifier",
         "name_kr": "용도 분류",
-        "version": "1.0", "task": "classify", "framework": "lightgbm",
-        "accuracy_metric": {"accuracy": 0.89},
+        "version": "1.0",
+        "task": "classify",
+        "framework": "lightgbm",
+        "accuracy_metric": {
+          "accuracy": 0.89
+        },
         "data_source": "predicted",
         "project": "building_ai"
       },
       "building_ai_diagnose": {
-        "id": "building_ai_diagnose", "name": "Building Diagnosis",
+        "id": "building_ai_diagnose",
+        "name": "Building Diagnosis",
         "name_kr": "건물 진단",
-        "version": "1.0", "task": "diagnose", "framework": "sklearn",
+        "version": "1.0",
+        "task": "diagnose",
+        "framework": "sklearn",
         "data_source": "predicted",
         "project": "building_ai"
       },
       "building_ai_retrofit": {
-        "id": "building_ai_retrofit", "name": "Retrofit Recommender",
+        "id": "building_ai_retrofit",
+        "name": "Retrofit Recommender",
         "name_kr": "리트로핏 추천",
-        "version": "1.0", "task": "optimize", "framework": "xgboost",
+        "version": "1.0",
+        "task": "optimize",
+        "framework": "xgboost",
         "data_source": "predicted",
         "project": "building_ai"
       },
       "building_ai_pmv": {
-        "id": "building_ai_pmv", "name": "PMV Comfort Estimator",
+        "id": "building_ai_pmv",
+        "name": "PMV Comfort Estimator",
         "name_kr": "PMV 쾌적 예측",
-        "version": "1.0", "task": "predict", "framework": "sklearn",
+        "version": "1.0",
+        "task": "predict",
+        "framework": "sklearn",
         "data_source": "predicted",
         "project": "building_ai"
       },
       "building_ai_carbon": {
-        "id": "building_ai_carbon", "name": "Carbon Footprint Estimator",
+        "id": "building_ai_carbon",
+        "name": "Carbon Footprint Estimator",
         "name_kr": "탄소 배출 추정",
-        "version": "1.0", "task": "predict", "framework": "sklearn",
+        "version": "1.0",
+        "task": "predict",
+        "framework": "sklearn",
         "data_source": "certified",
         "project": "building_ai"
       },
       "factory_ai_anomaly_iforest": {
-        "id": "factory_ai_anomaly_iforest", "name": "Factory Anomaly (Isolation Forest)",
+        "id": "factory_ai_anomaly_iforest",
+        "name": "Factory Anomaly (Isolation Forest)",
         "name_kr": "공장 이상탐지",
-        "version": "1.0", "task": "anomaly", "framework": "isolation_forest",
-        "accuracy_metric": {"f1": 0.94},
+        "version": "1.0",
+        "task": "anomaly",
+        "framework": "isolation_forest",
+        "accuracy_metric": {
+          "f1": 0.94
+        },
         "data_source": "predicted",
         "project": "factory_ai"
       },
       "factory_ai_anomaly_lstm_ae": {
-        "id": "factory_ai_anomaly_lstm_ae", "name": "Factory Anomaly (LSTM-AE)",
+        "id": "factory_ai_anomaly_lstm_ae",
+        "name": "Factory Anomaly (LSTM-AE)",
         "name_kr": "공장 이상탐지 (시계열)",
-        "version": "1.0", "task": "anomaly", "framework": "lstm_autoencoder",
-        "accuracy_metric": {"auc": 0.96},
+        "version": "1.0",
+        "task": "anomaly",
+        "framework": "lstm_autoencoder",
+        "accuracy_metric": {
+          "auc": 0.96
+        },
         "data_source": "predicted",
         "project": "factory_ai"
       },
       "factory_ai_rul": {
-        "id": "factory_ai_rul", "name": "RUL (Remaining Useful Life) Predictor",
+        "id": "factory_ai_rul",
+        "name": "RUL (Remaining Useful Life) Predictor",
         "name_kr": "예지보전 잔여수명",
-        "version": "1.0", "task": "rul", "framework": "transformer",
+        "version": "1.0",
+        "task": "rul",
+        "framework": "transformer",
         "data_source": "predicted",
         "project": "factory_ai"
       },
       "factory_ai_quality": {
-        "id": "factory_ai_quality", "name": "Quality Defect Classifier",
+        "id": "factory_ai_quality",
+        "name": "Quality Defect Classifier",
         "name_kr": "품질 결함 분류",
-        "version": "1.0", "task": "classify", "framework": "xgboost",
+        "version": "1.0",
+        "task": "classify",
+        "framework": "xgboost",
         "data_source": "predicted",
         "project": "factory_ai"
       },
       "energyplus_simulator": {
-        "id": "energyplus_simulator", "name": "EnergyPlus Simulator",
+        "id": "energyplus_simulator",
+        "name": "EnergyPlus Simulator",
         "name_kr": "EnergyPlus 시뮬레이터",
-        "version": "9.6", "task": "predict", "framework": "energyplus",
+        "version": "9.6",
+        "task": "predict",
+        "framework": "energyplus",
         "data_source": "simulated",
         "project": "projects/energyplus",
         "description": "외피 1,512건 + EMS 1,500건 + 인도네시아 90건"

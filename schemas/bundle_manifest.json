@@ -3,9 +3,19 @@
   "$id": "energy-contracts/bundle_manifest.json",
   "title": "BundleManifest",
   "description": "GB Bundle Builder 가 22기술 정적 자산을 서명된 `.tar.gz` 로 패키징할 때 루트에 포함하는 manifest. Edge 가 `bundle_store/{version}/` 에 풀어 `active` 심볼릭 링크로 A/B atomic swap. Edge 는 `min_edge_schema` 로 역호환을 검증. R8-5 (2026-04-20). **Delivery**: GB 노출 경로 `GET /api/v1/gridbridge/catalog/bundles/latest`. Edge 는 `GB_BUNDLE_MANIFEST_PATH` 환경변수로 오버라이드 가능. 다운로드: `GET /api/v1/gridbridge/catalog/bundles/{version}/download` (Bearer 토큰 필수). MQTT 알림: `fleet/bundle/notify/{ven_id}` (QoS 1, retain=false).",
+  "_usage": "reference-only",
+  "_consumers": [
+    "edge-agent",
+    "gridbridge"
+  ],
   "version": "1.0",
   "type": "object",
-  "required": ["version", "min_edge_schema", "tech_list", "built_at"],
+  "required": [
+    "version",
+    "min_edge_schema",
+    "tech_list",
+    "built_at"
+  ],
   "properties": {
     "version": {
       "type": "string",
@@ -33,7 +43,11 @@
       "minItems": 1,
       "items": {
         "type": "object",
-        "required": ["id", "version", "sha256"],
+        "required": [
+          "id",
+          "version",
+          "sha256"
+        ],
         "properties": {
           "id": {
             "type": "string",
@@ -56,14 +70,21 @@
           "assets": {
             "type": "array",
             "description": "번들 내 상대경로 (예: `tech/pre-cooling/index.html`). 디버그·감사용.",
-            "items": { "type": "string" }
+            "items": {
+              "type": "string"
+            }
           },
           "supported_backends": {
             "type": "array",
             "description": "이 기술이 실제로 작동하는 백엔드 목록. Edge `/api/capabilities` 에서 이 건물 backend 와 교집합 계산.",
             "items": {
               "type": "string",
-              "enum": ["virtual", "replay", "energyplus", "real_bas"]
+              "enum": [
+                "virtual",
+                "replay",
+                "energyplus",
+                "real_bas"
+              ]
             }
           },
           "applicable_building_types": {
@@ -80,11 +101,17 @@
     "signature": {
       "type": "object",
       "description": "번들 전체 무결성 서명. GB 가 ed25519 개인키로 발급, Edge 는 공개키 embed 로 검증.",
-      "required": ["algo", "value"],
+      "required": [
+        "algo",
+        "value"
+      ],
       "properties": {
         "algo": {
           "type": "string",
-          "enum": ["ed25519", "cosign-ed25519"]
+          "enum": [
+            "ed25519",
+            "cosign-ed25519"
+          ]
         },
         "value": {
           "type": "string",

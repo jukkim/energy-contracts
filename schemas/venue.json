@@ -3,40 +3,106 @@
   "$id": "energy-contracts/venue.json",
   "title": "Venue",
   "description": "수용가(VEN) 레지스트리 항목 — Layer 2 GridBridge SSOT.",
+  "_usage": "reference-only",
+  "_consumers": [
+    "edge-agent",
+    "gridbridge"
+  ],
   "version": "1.1",
   "type": "object",
-  "required": ["ven_id", "kind"],
+  "required": [
+    "ven_id",
+    "kind"
+  ],
   "properties": {
-    "ven_id": { "type": "string", "description": "VEN 고유 식별자 (예: VEN-STORE-001, VEN-EPLUS-OFFICE-01)" },
+    "ven_id": {
+      "type": "string",
+      "description": "VEN 고유 식별자 (예: VEN-STORE-001, VEN-EPLUS-OFFICE-01)"
+    },
     "kind": {
       "type": "string",
-      "enum": ["telemetry", "dispatch"],
+      "enum": [
+        "telemetry",
+        "dispatch"
+      ],
       "description": "운영 모드 — common.json §Kind SSOT 와 동기화. telemetry=관측형(read-only), dispatch=제어형(양방향)."
     },
     "backend": {
       "type": "string",
-      "enum": ["replay", "energyplus", "real_bas", "virtual"],
+      "enum": [
+        "replay",
+        "energyplus",
+        "real_bas",
+        "virtual"
+      ],
       "description": "구현 기술 — common.json §Backend SSOT 와 동기화."
     },
-    "group_id": { "type": "string", "description": "ESG·권역 그룹 식별자 (선택)" },
-    "pnu": { "type": "string", "description": "PNU (건축물 공간코드, 선택)" },
-    "building_name": { "type": "string" },
+    "group_id": {
+      "type": "string",
+      "description": "ESG·권역 그룹 식별자 (선택)"
+    },
+    "pnu": {
+      "type": "string",
+      "description": "PNU (건축물 공간코드, 선택)"
+    },
+    "building_name": {
+      "type": "string"
+    },
     "building_type": {
       "type": "string",
-      "enum": ["office_large","office_medium","office_small","hospital","school","retail","convenience_store","apartment","other"],
+      "enum": [
+        "office_large",
+        "office_medium",
+        "office_small",
+        "hospital",
+        "school",
+        "retail",
+        "convenience_store",
+        "apartment",
+        "other"
+      ],
       "description": "common.json §BuildingType SSOT 와 동기화."
     },
-    "baseline_kw": { "type": "number", "minimum": 0 },
-    "max_reduction_kw": { "type": "number", "minimum": 0, "description": "제어형만 의미 있음" },
-    "is_active": { "type": "boolean", "default": true },
-    "idf_path": { "type": "string", "description": "backend=energyplus일 때 IDF 파일 경로" },
-    "epw_path": { "type": "string", "description": "backend=energyplus일 때 EPW 파일 경로" },
-    "data_source": { "type": "string", "description": "backend=replay일 때 원본 CSV/NPY 경로" }
+    "baseline_kw": {
+      "type": "number",
+      "minimum": 0
+    },
+    "max_reduction_kw": {
+      "type": "number",
+      "minimum": 0,
+      "description": "제어형만 의미 있음"
+    },
+    "is_active": {
+      "type": "boolean",
+      "default": true
+    },
+    "idf_path": {
+      "type": "string",
+      "description": "backend=energyplus일 때 IDF 파일 경로"
+    },
+    "epw_path": {
+      "type": "string",
+      "description": "backend=energyplus일 때 EPW 파일 경로"
+    },
+    "data_source": {
+      "type": "string",
+      "description": "backend=replay일 때 원본 CSV/NPY 경로"
+    }
   },
   "allOf": [
     {
-      "if": { "properties": { "kind": { "const": "dispatch" } } },
-      "then": { "required": ["backend"] }
+      "if": {
+        "properties": {
+          "kind": {
+            "const": "dispatch"
+          }
+        }
+      },
+      "then": {
+        "required": [
+          "backend"
+        ]
+      }
     }
   ]
 }

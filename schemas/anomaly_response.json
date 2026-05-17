@@ -3,28 +3,53 @@
   "$id": "https://building-energy.xyz/schemas/anomaly_response.json",
   "title": "AnomalyResponse",
   "description": "건물/VEN 이상탐지 API 응답. VW: GET /api/v1/smart-building/{pnu}/anomaly, GB MQTT: _check_anomaly()",
+  "_usage": "reference-only",
+  "_consumers": [],
   "type": "object",
-  "required": ["entity_id", "entity_type", "method", "status", "score"],
+  "required": [
+    "entity_id",
+    "entity_type",
+    "method",
+    "status",
+    "score"
+  ],
   "properties": {
     "entity_id": {
       "type": "string",
       "description": "건물 PNU(19자리) 또는 VEN ID",
-      "examples": ["1168010300100140000", "VEN-STORE-B008"]
+      "examples": [
+        "1168010300100140000",
+        "VEN-STORE-B008"
+      ]
     },
     "entity_type": {
       "type": "string",
-      "enum": ["building", "ven"],
+      "enum": [
+        "building",
+        "ven"
+      ],
       "description": "분석 대상 유형"
     },
     "method": {
       "type": "string",
       "description": "이상탐지 알고리즘",
-      "enum": ["z_score", "isolation_forest", "forecast_residual", "lstm_ae"],
-      "examples": ["z_score"]
+      "enum": [
+        "z_score",
+        "isolation_forest",
+        "forecast_residual",
+        "lstm_ae"
+      ],
+      "examples": [
+        "z_score"
+      ]
     },
     "status": {
       "type": "string",
-      "enum": ["normal", "warning", "anomaly"],
+      "enum": [
+        "normal",
+        "warning",
+        "anomaly"
+      ],
       "description": "이상 상태 분류"
     },
     "score": {
@@ -36,7 +61,9 @@
     "threshold": {
       "type": "number",
       "description": "이상 판정 임계값 (score > threshold → anomaly)",
-      "examples": [0.7]
+      "examples": [
+        0.7
+      ]
     },
     "details": {
       "type": "object",
@@ -77,9 +104,18 @@
       "type": "object",
       "description": "분석에 사용된 시계열 구간",
       "properties": {
-        "start": {"type": "string", "format": "date-time"},
-        "end": {"type": "string", "format": "date-time"},
-        "points": {"type": "integer", "description": "데이터 포인트 수"}
+        "start": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "end": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "points": {
+          "type": "integer",
+          "description": "데이터 포인트 수"
+        }
       }
     }
   },

@@ -3,9 +3,16 @@
   "$id": "energy-contracts/db_migrations.json",
   "title": "DB Migrations SSOT (Phase K-16)",
   "description": "각 프로젝트 Alembic 마이그레이션 head/현재 버전 추적. 다중 인스턴스 환경에서 DB 스키마 drift 방지.",
+  "_usage": "codegen",
+  "_consumers": [
+    "edge-agent",
+    "gridbridge",
+    "building-energy-3d",
+    "agentleague",
+    "eduarena"
+  ],
   "version": "1.0",
   "updated": "2026-05-17",
-
   "type": "object",
   "default": {
     "projects": {
@@ -42,8 +49,8 @@
       }
     },
     "policy": {
-      "additive_only":     true,
-      "drop_forbidden":    true,
+      "additive_only": true,
+      "drop_forbidden": true,
       "backfill_required": true,
       "deprecation_period_months": 6
     }

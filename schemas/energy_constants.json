@@ -3,6 +3,10 @@
   "$id": "energy-contracts/energy_constants.json",
   "title": "Energy Constants",
   "description": "에너지 기준값·등급·환산계수 SSOT. ENERGY_SSOT.md §2~§3 기반.",
+  "_usage": "reference-only",
+  "_consumers": [
+    "building-energy-3d"
+  ],
   "version": "2.0",
   "type": "object",
   "properties": {
@@ -10,25 +14,40 @@
       "type": "object",
       "description": "1차에너지 환산계수 (무차원). 국토부고시 제2024-1026호 (2025.1.1 시행)",
       "properties": {
-        "electricity":    { "type": "number" },
-        "gas":            { "type": "number" },
-        "district_heat":  { "type": "number" },
-        "district_cool":  { "type": "number" }
+        "electricity": {
+          "type": "number"
+        },
+        "gas": {
+          "type": "number"
+        },
+        "district_heat": {
+          "type": "number"
+        },
+        "district_cool": {
+          "type": "number"
+        }
       }
     },
     "zeb": {
       "type": "object",
       "description": "ZEB 등급 기준 (녹색건축법, 2025.1.1 시행)",
       "properties": {
-        "baseline_kwh_m2_yr": { "type": "number", "description": "에너지절약설계기준 1차에너지 상한" },
+        "baseline_kwh_m2_yr": {
+          "type": "number",
+          "description": "에너지절약설계기준 1차에너지 상한"
+        },
         "grades": {
           "type": "object",
           "description": "ZEB 등급별 상한 (kWh/m2/yr) 및 자립률",
           "additionalProperties": {
             "type": "object",
             "properties": {
-              "max_pe_kwh": { "type": "number" },
-              "min_self_sufficiency_pct": { "type": "number" }
+              "max_pe_kwh": {
+                "type": "number"
+              },
+              "min_self_sufficiency_pct": {
+                "type": "number"
+              }
             }
           }
         }
@@ -40,13 +59,17 @@
       "properties": {
         "labels": {
           "type": "array",
-          "items": { "type": "string" },
+          "items": {
+            "type": "string"
+          },
           "description": "등급 라벨 (순서: 최고→최저)"
         },
         "colors": {
           "type": "object",
           "description": "등급별 CSS hex 색상",
-          "additionalProperties": { "type": "string" }
+          "additionalProperties": {
+            "type": "string"
+          }
         }
       }
     },
@@ -56,7 +79,9 @@
       "properties": {
         "thresholds_kgco2_m2_yr": {
           "type": "array",
-          "items": { "type": "integer" },
+          "items": {
+            "type": "integer"
+          },
           "description": "4단계 분류 경계값"
         }
       }
@@ -65,15 +90,27 @@
       "type": "object",
       "description": "기후 관련 기준값",
       "properties": {
-        "hdd_base_temp_c":  { "type": "number" },
-        "cdd_base_temp_c":  { "type": "number" },
+        "hdd_base_temp_c": {
+          "type": "number"
+        },
+        "cdd_base_temp_c": {
+          "type": "number"
+        },
         "kr_bbox": {
           "type": "object",
           "properties": {
-            "lat_min": { "type": "number" },
-            "lat_max": { "type": "number" },
-            "lng_min": { "type": "number" },
-            "lng_max": { "type": "number" }
+            "lat_min": {
+              "type": "number"
+            },
+            "lat_max": {
+              "type": "number"
+            },
+            "lng_min": {
+              "type": "number"
+            },
+            "lng_max": {
+              "type": "number"
+            }
           }
         }
       }
@@ -82,68 +119,118 @@
       "type": "object",
       "description": "시뮬레이션 공통 파라미터. ENERGY_SSOT.md §6.",
       "properties": {
-        "cooling_setpoint_c":   { "type": "number" },
-        "heating_setpoint_c":   { "type": "number" },
-        "chiller_cop":          { "type": "number" },
-        "boiler_efficiency":    { "type": "number" },
-        "energyplus_version":   { "type": "string" },
-        "pv_efficiency_pct":    { "type": "number" },
-        "pv_performance_ratio": { "type": "number" },
-        "rooftop_utilization":  { "type": "number" }
+        "cooling_setpoint_c": {
+          "type": "number"
+        },
+        "heating_setpoint_c": {
+          "type": "number"
+        },
+        "chiller_cop": {
+          "type": "number"
+        },
+        "boiler_efficiency": {
+          "type": "number"
+        },
+        "energyplus_version": {
+          "type": "string"
+        },
+        "pv_efficiency_pct": {
+          "type": "number"
+        },
+        "pv_performance_ratio": {
+          "type": "number"
+        },
+        "rooftop_utilization": {
+          "type": "number"
+        }
       }
     }
   },
   "default": {
     "pe_factors": {
-      "electricity":    2.75,
-      "gas":            1.1,
-      "district_heat":  0.728,
-      "district_cool":  0.937
+      "electricity": 2.75,
+      "gas": 1.1,
+      "district_heat": 0.728,
+      "district_cool": 0.937
     },
     "zeb": {
       "baseline_kwh_m2_yr": 150.0,
       "grades": {
-        "1": { "max_pe_kwh": 30,  "min_self_sufficiency_pct": 100 },
-        "2": { "max_pe_kwh": 60,  "min_self_sufficiency_pct": 60 },
-        "3": { "max_pe_kwh": 90,  "min_self_sufficiency_pct": 40 },
-        "4": { "max_pe_kwh": 120, "min_self_sufficiency_pct": 20 },
-        "5": { "max_pe_kwh": 150, "min_self_sufficiency_pct": 0 },
-        "plus": { "max_pe_kwh": 0, "min_self_sufficiency_pct": 120 }
+        "1": {
+          "max_pe_kwh": 30,
+          "min_self_sufficiency_pct": 100
+        },
+        "2": {
+          "max_pe_kwh": 60,
+          "min_self_sufficiency_pct": 60
+        },
+        "3": {
+          "max_pe_kwh": 90,
+          "min_self_sufficiency_pct": 40
+        },
+        "4": {
+          "max_pe_kwh": 120,
+          "min_self_sufficiency_pct": 20
+        },
+        "5": {
+          "max_pe_kwh": 150,
+          "min_self_sufficiency_pct": 0
+        },
+        "plus": {
+          "max_pe_kwh": 0,
+          "min_self_sufficiency_pct": 120
+        }
       }
     },
     "energy_grades": {
-      "labels": ["1+++", "1++", "1+", "1", "2", "3", "4", "5"],
+      "labels": [
+        "1+++",
+        "1++",
+        "1+",
+        "1",
+        "2",
+        "3",
+        "4",
+        "5"
+      ],
       "colors": {
         "1+++": "#14532d",
-        "1++":  "#16a34a",
-        "1+":   "#4ade80",
-        "1":    "#a3e635",
-        "2":    "#facc15",
-        "3":    "#fb923c",
-        "4":    "#ef4444",
-        "5":    "#991b1b"
+        "1++": "#16a34a",
+        "1+": "#4ade80",
+        "1": "#a3e635",
+        "2": "#facc15",
+        "3": "#fb923c",
+        "4": "#ef4444",
+        "5": "#991b1b"
       }
     },
     "co2_grades": {
-      "thresholds_kgco2_m2_yr": [26, 31, 36, 42]
+      "thresholds_kgco2_m2_yr": [
+        26,
+        31,
+        36,
+        42
+      ]
     },
     "climate": {
       "hdd_base_temp_c": 18.0,
       "cdd_base_temp_c": 24.0,
       "kr_bbox": {
-        "lat_min": 33.0, "lat_max": 39.0,
-        "lng_min": 124.0, "lng_max": 132.0
+        "lat_min": 33.0,
+        "lat_max": 39.0,
+        "lng_min": 124.0,
+        "lng_max": 132.0
       }
     },
     "simulation": {
-      "cooling_setpoint_c":   24.0,
-      "heating_setpoint_c":   20.0,
-      "chiller_cop":          5.5,
-      "boiler_efficiency":    0.90,
-      "energyplus_version":   "24.1.0",
-      "pv_efficiency_pct":    20,
+      "cooling_setpoint_c": 24.0,
+      "heating_setpoint_c": 20.0,
+      "chiller_cop": 5.5,
+      "boiler_efficiency": 0.9,
+      "energyplus_version": "24.1.0",
+      "pv_efficiency_pct": 20,
       "pv_performance_ratio": 0.85,
-      "rooftop_utilization":  0.65
+      "rooftop_utilization": 0.65
     }
   }
 }

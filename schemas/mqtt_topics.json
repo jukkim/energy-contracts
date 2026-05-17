@@ -3,57 +3,232 @@
   "$id": "energy-contracts/mqtt_topics.json",
   "title": "MQTT Topics SSOT (Phase I-4)",
   "description": "워크스페이스 MQTT 토픽 통합. 기존 protocols/mqtt-topics.md (DR 3계층) + AgentLeague + EduArena 통합. 토픽 패턴 + QoS + retain + publisher/subscriber 명세.",
+  "_usage": "codegen",
+  "_consumers": [
+    "edge-agent",
+    "gridbridge",
+    "building-energy-3d",
+    "agentleague",
+    "eduarena"
+  ],
   "version": "1.0",
   "updated": "2026-05-17",
-
   "$defs": {
     "TopicEntry": {
       "type": "object",
-      "required": ["pattern", "qos", "namespace"],
+      "required": [
+        "pattern",
+        "qos",
+        "namespace"
+      ],
       "properties": {
-        "pattern":     {"type": "string", "description": "토픽 패턴 (변수는 {var_name} 형식)"},
-        "namespace":   {"type": "string"},
-        "qos":         {"type": "integer", "enum": [0, 1, 2]},
-        "retained":    {"type": "boolean", "default": false},
-        "publisher":   {"type": "string", "description": "발행자 프로젝트"},
-        "subscriber":  {"type": "string", "description": "구독자 프로젝트 (콤마 구분)"},
-        "payload_schema": {"type": "string", "description": "JSON Schema $id 참조 (선택)"},
-        "description": {"type": "string"}
+        "pattern": {
+          "type": "string",
+          "description": "토픽 패턴 (변수는 {var_name} 형식)"
+        },
+        "namespace": {
+          "type": "string"
+        },
+        "qos": {
+          "type": "integer",
+          "enum": [
+            0,
+            1,
+            2
+          ]
+        },
+        "retained": {
+          "type": "boolean",
+          "default": false
+        },
+        "publisher": {
+          "type": "string",
+          "description": "발행자 프로젝트"
+        },
+        "subscriber": {
+          "type": "string",
+          "description": "구독자 프로젝트 (콤마 구분)"
+        },
+        "payload_schema": {
+          "type": "string",
+          "description": "JSON Schema $id 참조 (선택)"
+        },
+        "description": {
+          "type": "string"
+        }
       }
     }
   },
-
   "type": "object",
   "properties": {
-    "namespaces": {"type": "object"},
-    "topics":     {"type": "array", "items": {"$ref": "#/$defs/TopicEntry"}}
+    "namespaces": {
+      "type": "object"
+    },
+    "topics": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/TopicEntry"
+      }
+    }
   },
-
   "default": {
     "namespaces": {
-      "gridbridge":  {"prefix": "gridbridge",  "domain": "DR 중개 (Layer 2 ↔ 3)"},
-      "vworld":      {"prefix": "vworld",      "domain": "VWorld 직접 피드백 (경로3)"},
-      "fleet":       {"prefix": "fleet",       "domain": "Edge 등록·heartbeat"},
-      "agentleague": {"prefix": "agentleague", "domain": "AI 에이전트 챌린지"},
-      "eduarena":    {"prefix": "eduarena",    "domain": "AI 교육 게임"}
+      "gridbridge": {
+        "prefix": "gridbridge",
+        "domain": "DR 중개 (Layer 2 ↔ 3)"
+      },
+      "vworld": {
+        "prefix": "vworld",
+        "domain": "VWorld 직접 피드백 (경로3)"
+      },
+      "fleet": {
+        "prefix": "fleet",
+        "domain": "Edge 등록·heartbeat"
+      },
+      "agentleague": {
+        "prefix": "agentleague",
+        "domain": "AI 에이전트 챌린지"
+      },
+      "eduarena": {
+        "prefix": "eduarena",
+        "domain": "AI 교육 게임"
+      }
     },
     "topics": [
-      {"pattern": "gridbridge/telemetry/{ven_id}",        "namespace": "gridbridge", "qos": 1, "retained": false, "publisher": "edge-agent",  "subscriber": "gridbridge",          "payload_schema": "energy-contracts/telemetry.json"},
-      {"pattern": "gridbridge/command/{ven_id}",          "namespace": "gridbridge", "qos": 1, "retained": false, "publisher": "gridbridge",  "subscriber": "edge-agent",          "payload_schema": "energy-contracts/control_command.json"},
-      {"pattern": "gridbridge/schedule/{ven_id}",         "namespace": "gridbridge", "qos": 1, "retained": false, "publisher": "gridbridge",  "subscriber": "edge-agent"},
-      {"pattern": "gridbridge/ack/{ven_id}",              "namespace": "gridbridge", "qos": 1, "retained": false, "publisher": "edge-agent",  "subscriber": "gridbridge"},
-      {"pattern": "gridbridge/alert/{ven_id}",            "namespace": "gridbridge", "qos": 1, "retained": false, "publisher": "edge-agent",  "subscriber": "gridbridge"},
-      {"pattern": "gridbridge/control_response/{ven_id}", "namespace": "gridbridge", "qos": 1, "retained": false, "publisher": "edge-agent",  "subscriber": "gridbridge",          "payload_schema": "energy-contracts/control_response.json"},
-      {"pattern": "vworld/telemetry/{ven_id}",            "namespace": "vworld",     "qos": 1, "retained": false, "publisher": "edge-agent",  "subscriber": "building-energy-3d"},
-      {"pattern": "vworld/alert/{ven_id}",                "namespace": "vworld",     "qos": 1, "retained": false, "publisher": "edge-agent",  "subscriber": "building-energy-3d"},
-      {"pattern": "fleet/register/{ven_id}",              "namespace": "fleet",      "qos": 1, "retained": true,  "publisher": "edge-agent",  "subscriber": "gridbridge",          "payload_schema": "energy-contracts/edge_registration.json"},
-      {"pattern": "fleet/heartbeat/{ven_id}",             "namespace": "fleet",      "qos": 0, "retained": false, "publisher": "edge-agent",  "subscriber": "gridbridge"},
-      {"pattern": "fleet/provision/{ven_id}",             "namespace": "fleet",      "qos": 1, "retained": true,  "publisher": "gridbridge",  "subscriber": "edge-agent",          "payload_schema": "energy-contracts/provision.json"},
-      {"pattern": "fleet/provision_ack/{ven_id}",         "namespace": "fleet",      "qos": 1, "retained": false, "publisher": "edge-agent",  "subscriber": "gridbridge",          "payload_schema": "energy-contracts/provision_ack.json"},
-      {"pattern": "agentleague/challenge/{challenge_id}/result", "namespace": "agentleague", "qos": 1, "retained": false, "publisher": "edge-agent or agent_bot", "subscriber": "agentleague"},
-      {"pattern": "agentleague/control/{ven_id}",         "namespace": "agentleague","qos": 1, "retained": false, "publisher": "agentleague", "subscriber": "edge-agent"},
-      {"pattern": "eduarena/match/{match_id}/event",      "namespace": "eduarena",   "qos": 1, "retained": false, "publisher": "eduarena_bot","subscriber": "eduarena"},
-      {"pattern": "eduarena/judge/{match_id}",            "namespace": "eduarena",   "qos": 1, "retained": false, "publisher": "eduarena",    "subscriber": "eduarena_bot"}
+      {
+        "pattern": "gridbridge/telemetry/{ven_id}",
+        "namespace": "gridbridge",
+        "qos": 1,
+        "retained": false,
+        "publisher": "edge-agent",
+        "subscriber": "gridbridge",
+        "payload_schema": "energy-contracts/telemetry.json"
+      },
+      {
+        "pattern": "gridbridge/command/{ven_id}",
+        "namespace": "gridbridge",
+        "qos": 1,
+        "retained": false,
+        "publisher": "gridbridge",
+        "subscriber": "edge-agent",
+        "payload_schema": "energy-contracts/control_command.json"
+      },
+      {
+        "pattern": "gridbridge/schedule/{ven_id}",
+        "namespace": "gridbridge",
+        "qos": 1,
+        "retained": false,
+        "publisher": "gridbridge",
+        "subscriber": "edge-agent"
+      },
+      {
+        "pattern": "gridbridge/ack/{ven_id}",
+        "namespace": "gridbridge",
+        "qos": 1,
+        "retained": false,
+        "publisher": "edge-agent",
+        "subscriber": "gridbridge"
+      },
+      {
+        "pattern": "gridbridge/alert/{ven_id}",
+        "namespace": "gridbridge",
+        "qos": 1,
+        "retained": false,
+        "publisher": "edge-agent",
+        "subscriber": "gridbridge"
+      },
+      {
+        "pattern": "gridbridge/control_response/{ven_id}",
+        "namespace": "gridbridge",
+        "qos": 1,
+        "retained": false,
+        "publisher": "edge-agent",
+        "subscriber": "gridbridge",
+        "payload_schema": "energy-contracts/control_response.json"
+      },
+      {
+        "pattern": "vworld/telemetry/{ven_id}",
+        "namespace": "vworld",
+        "qos": 1,
+        "retained": false,
+        "publisher": "edge-agent",
+        "subscriber": "building-energy-3d"
+      },
+      {
+        "pattern": "vworld/alert/{ven_id}",
+        "namespace": "vworld",
+        "qos": 1,
+        "retained": false,
+        "publisher": "edge-agent",
+        "subscriber": "building-energy-3d"
+      },
+      {
+        "pattern": "fleet/register/{ven_id}",
+        "namespace": "fleet",
+        "qos": 1,
+        "retained": true,
+        "publisher": "edge-agent",
+        "subscriber": "gridbridge",
+        "payload_schema": "energy-contracts/edge_registration.json"
+      },
+      {
+        "pattern": "fleet/heartbeat/{ven_id}",
+        "namespace": "fleet",
+        "qos": 0,
+        "retained": false,
+        "publisher": "edge-agent",
+        "subscriber": "gridbridge"
+      },
+      {
+        "pattern": "fleet/provision/{ven_id}",
+        "namespace": "fleet",
+        "qos": 1,
+        "retained": true,
+        "publisher": "gridbridge",
+        "subscriber": "edge-agent",
+        "payload_schema": "energy-contracts/provision.json"
+      },
+      {
+        "pattern": "fleet/provision_ack/{ven_id}",
+        "namespace": "fleet",
+        "qos": 1,
+        "retained": false,
+        "publisher": "edge-agent",
+        "subscriber": "gridbridge",
+        "payload_schema": "energy-contracts/provision_ack.json"
+      },
+      {
+        "pattern": "agentleague/challenge/{challenge_id}/result",
+        "namespace": "agentleague",
+        "qos": 1,
+        "retained": false,
+        "publisher": "edge-agent or agent_bot",
+        "subscriber": "agentleague"
+      },
+      {
+        "pattern": "agentleague/control/{ven_id}",
+        "namespace": "agentleague",
+        "qos": 1,
+        "retained": false,
+        "publisher": "agentleague",
+        "subscriber": "edge-agent"
+      },
+      {
+        "pattern": "eduarena/match/{match_id}/event",
+        "namespace": "eduarena",
+        "qos": 1,
+        "retained": false,
+        "publisher": "eduarena_bot",
+        "subscriber": "eduarena"
+      },
+      {
+        "pattern": "eduarena/judge/{match_id}",
+        "namespace": "eduarena",
+        "qos": 1,
+        "retained": false,
+        "publisher": "eduarena",
+        "subscriber": "eduarena_bot"
+      }
     ]
   }
 }

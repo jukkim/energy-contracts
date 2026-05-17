@@ -3,14 +3,29 @@
   "$id": "energy-contracts/data_classification.json",
   "title": "Data Classification SSOT (Phase F)",
   "description": "데이터 분류 2축 (출처 × 품질). building-energy-3d data_tier 호환 + 합성·외부·mock 카테고리 추가. 프로젝트는 extensions로 자체 카테고리 추가 가능.",
+  "_usage": "codegen",
+  "_consumers": [
+    "edge-agent",
+    "gridbridge",
+    "building-energy-3d",
+    "agentleague",
+    "eduarena"
+  ],
   "version": "1.0",
   "updated": "2026-05-17",
   "$comment": "myjob/docs/MODES_AND_DATA_RESEARCH.md §2.3 산출물.",
-
   "$defs": {
     "DataSource": {
       "type": "string",
-      "enum": ["measured", "certified", "simulated", "predicted", "external", "synthetic", "mock"],
+      "enum": [
+        "measured",
+        "certified",
+        "simulated",
+        "predicted",
+        "external",
+        "synthetic",
+        "mock"
+      ],
       "description": "출처 축. measured=실 계량, certified=공식 인증, simulated=시뮬 산출, predicted=ML 예측, external=외부 벤더, synthetic=합성/생성기, mock=의도적 모킹"
     },
     "DataTier": {
@@ -21,34 +36,62 @@
     },
     "DataCategory": {
       "type": "object",
-      "required": ["source"],
+      "required": [
+        "source"
+      ],
       "properties": {
-        "source": {"$ref": "#/$defs/DataSource"},
-        "tier":   {"$ref": "#/$defs/DataTier"},
-        "description": {"type": "string"},
-        "example":     {"type": "string"},
-        "is_runtime":  {"type": "boolean", "description": "true=운영 데이터, false=테스트 전용"}
+        "source": {
+          "$ref": "#/$defs/DataSource"
+        },
+        "tier": {
+          "$ref": "#/$defs/DataTier"
+        },
+        "description": {
+          "type": "string"
+        },
+        "example": {
+          "type": "string"
+        },
+        "is_runtime": {
+          "type": "boolean",
+          "description": "true=운영 데이터, false=테스트 전용"
+        }
       },
       "additionalProperties": true
     },
     "DataAvailability": {
       "type": "string",
-      "enum": ["immediate", "synthetic_generator", "external_static", "pipeline_ingested"],
+      "enum": [
+        "immediate",
+        "synthetic_generator",
+        "external_static",
+        "pipeline_ingested"
+      ],
       "description": "테스트 데이터 가용성. immediate=conftest fixture, synthetic_generator=동적 생성, external_static=사전 다운로드 정적, pipeline_ingested=파이프라인 단계적 입수"
     },
     "PipelineStage": {
       "type": "string",
-      "enum": ["raw", "downloaded", "normalized", "validated", "curated", "published"],
+      "enum": [
+        "raw",
+        "downloaded",
+        "normalized",
+        "validated",
+        "curated",
+        "published"
+      ],
       "description": "파이프라인 입수 단계. raw→curated→published 진행"
     }
   },
-
   "type": "object",
   "properties": {
     "sources": {
       "type": "object",
-      "propertyNames": {"$ref": "#/$defs/DataSource"},
-      "additionalProperties": {"$ref": "#/$defs/DataCategory"}
+      "propertyNames": {
+        "$ref": "#/$defs/DataSource"
+      },
+      "additionalProperties": {
+        "$ref": "#/$defs/DataCategory"
+      }
     },
     "tier_mapping": {
       "type": "object",
@@ -60,23 +103,62 @@
       "additionalProperties": true
     }
   },
-
   "default": {
     "sources": {
-      "measured":  {"source": "measured",  "tier": 1, "description": "실 계량/관측",       "example": "KEPCO, GS25, ASOS, K-apt", "is_runtime": true},
-      "certified": {"source": "certified", "tier": 2, "description": "공식 인증",          "example": "KEA, 건축물대장",         "is_runtime": true},
-      "predicted": {"source": "predicted", "tier": 3, "description": "ML 예측",            "example": "Korean_BB, XGBoost",      "is_runtime": true},
-      "simulated": {"source": "simulated", "tier": 4, "description": "시뮬 산출",          "example": "EnergyPlus 90건",         "is_runtime": true},
-      "external":  {"source": "external",  "tier": 5, "description": "외부 벤더/공공",     "example": "Cesium 3D Tiles, VWorld API, data.go.kr", "is_runtime": true},
-      "synthetic": {"source": "synthetic",             "description": "합성/생성기",       "example": "pytest fixtures, scenario gen", "is_runtime": false},
-      "mock":      {"source": "mock",                  "description": "의도적 mock",       "example": "LLM stub, MQTT broker stub",    "is_runtime": false}
+      "measured": {
+        "source": "measured",
+        "tier": 1,
+        "description": "실 계량/관측",
+        "example": "KEPCO, GS25, ASOS, K-apt",
+        "is_runtime": true
+      },
+      "certified": {
+        "source": "certified",
+        "tier": 2,
+        "description": "공식 인증",
+        "example": "KEA, 건축물대장",
+        "is_runtime": true
+      },
+      "predicted": {
+        "source": "predicted",
+        "tier": 3,
+        "description": "ML 예측",
+        "example": "Korean_BB, XGBoost",
+        "is_runtime": true
+      },
+      "simulated": {
+        "source": "simulated",
+        "tier": 4,
+        "description": "시뮬 산출",
+        "example": "EnergyPlus 90건",
+        "is_runtime": true
+      },
+      "external": {
+        "source": "external",
+        "tier": 5,
+        "description": "외부 벤더/공공",
+        "example": "Cesium 3D Tiles, VWorld API, data.go.kr",
+        "is_runtime": true
+      },
+      "synthetic": {
+        "source": "synthetic",
+        "description": "합성/생성기",
+        "example": "pytest fixtures, scenario gen",
+        "is_runtime": false
+      },
+      "mock": {
+        "source": "mock",
+        "description": "의도적 mock",
+        "example": "LLM stub, MQTT broker stub",
+        "is_runtime": false
+      }
     },
     "tier_mapping": {
-      "1_measured":     "source=measured,  tier=1",
-      "2_certified":    "source=certified, tier=2",
-      "3_ml_xgboost":   "source=predicted, tier=3",
-      "4_ep_simulation":"source=simulated, tier=4",
-      "5_ep_lookup":    "source=external,  tier=5  (또는 simulated, tier=5 if EP 사전계산)"
+      "1_measured": "source=measured,  tier=1",
+      "2_certified": "source=certified, tier=2",
+      "3_ml_xgboost": "source=predicted, tier=3",
+      "4_ep_simulation": "source=simulated, tier=4",
+      "5_ep_lookup": "source=external,  tier=5  (또는 simulated, tier=5 if EP 사전계산)"
     },
     "extensions": {
       "building-energy-3d": {

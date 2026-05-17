@@ -3,14 +3,35 @@
   "$id": "energy-contracts/common.json",
   "title": "CommonDefinitions",
   "description": "공용 enum · 패턴 정의 SSOT. 다른 스키마가 복제하더라도 이 파일과 동기화 유지.",
+  "_usage": "codegen",
+  "_consumers": [
+    "edge-agent",
+    "gridbridge",
+    "building-energy-3d",
+    "agentleague",
+    "eduarena"
+  ],
   "version": "2.0",
   "$defs": {
     "Strategy": {
       "type": "string",
       "enum": [
-        "M00", "M01", "M02", "M03", "M04", "M05",
-        "M06", "M07", "M08", "M09", "M10",
-        "M11", "M12", "M13", "M14", "M15"
+        "M00",
+        "M01",
+        "M02",
+        "M03",
+        "M04",
+        "M05",
+        "M06",
+        "M07",
+        "M08",
+        "M09",
+        "M10",
+        "M11",
+        "M12",
+        "M13",
+        "M14",
+        "M15"
       ],
       "description": "통일 EMS 전략 코드 (16종). M00=Baseline, M01=Night Setback, M02=Economizer, M03=Chiller Staging, M04=PMV±0.5, M05=PMV±0.7, M06=Optimal Start, M07=Lighting Control, M08=Pre-cooling, M09=ESS Peak Shaving, M10=(reserved), M11~M15=combined. 상세: ems_strategies.json."
     },
@@ -21,31 +42,54 @@
     },
     "Kind": {
       "type": "string",
-      "enum": ["telemetry", "dispatch"],
+      "enum": [
+        "telemetry",
+        "dispatch"
+      ],
       "description": "수용가 운영 모드. telemetry=관측형(read-only), dispatch=제어형(양방향)."
     },
     "Backend": {
       "type": "string",
-      "enum": ["replay", "energyplus", "real_bas", "virtual"],
+      "enum": [
+        "replay",
+        "energyplus",
+        "real_bas",
+        "virtual"
+      ],
       "description": "구현 기술. replay=과거 데이터 재생, energyplus=E+ 코시뮬, real_bas=실 설비, virtual=가상 드라이버."
     },
     "BuildingType": {
       "type": "string",
       "enum": [
-        "large_office", "medium_office", "small_office",
-        "hospital", "primary_school", "standalone_retail", "convenience_store",
-        "apartment", "other"
+        "large_office",
+        "medium_office",
+        "small_office",
+        "hospital",
+        "primary_school",
+        "standalone_retail",
+        "convenience_store",
+        "apartment",
+        "other"
       ],
       "description": "건물 유형 (DOE Reference Building 분류 기반). v2.0: code-first 네이밍 통일."
     },
     "EdgeType": {
       "type": "string",
-      "enum": ["real_edge", "replay_edge", "energyplus_emulator"],
+      "enum": [
+        "real_edge",
+        "replay_edge",
+        "energyplus_emulator"
+      ],
       "description": "VW broker-architecture §4 호환. real_edge=실물 설비, replay_edge=DB replay, energyplus_emulator=E+ 가상."
     },
     "SignalLevel": {
       "type": "string",
-      "enum": ["NORMAL", "MODERATE", "HIGH", "EMERGENCY"],
+      "enum": [
+        "NORMAL",
+        "MODERATE",
+        "HIGH",
+        "EMERGENCY"
+      ],
       "description": "DR 신호 강도. signal_level → strategy 매핑: NORMAL→M07(Lighting) · MODERATE→M04(PMV±0.5) · HIGH→M14(DR통합최적화) · EMERGENCY→M15(DR긴급감축). 상세: ems_strategies.json."
     },
     "VenId": {
@@ -56,7 +100,12 @@
     "ESGGroupId": {
       "type": "string",
       "description": "ESG 사전 정의 그룹. CLAUDE.md §ESG 사전 정의 그룹 참조.",
-      "examples": ["ESG-STORE-100", "ESG-STORE-120", "ESG-EP-OFFICE", "ESG-EP-APT"]
+      "examples": [
+        "ESG-STORE-100",
+        "ESG-STORE-120",
+        "ESG-EP-OFFICE",
+        "ESG-EP-APT"
+      ]
     },
     "VirtualPNU": {
       "type": "string",

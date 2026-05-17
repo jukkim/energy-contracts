@@ -3,10 +3,17 @@
   "$id": "energy-contracts/port_allocation.json",
   "title": "PortAllocationSSOT",
   "description": "myjob 워크스페이스 전체 포트 할당 SSOT. Tier 1 (myjob/CLAUDE.md Port Allocation) 의 머신리더블 버전. 변경 시 양쪽 동시 갱신 필수.",
+  "_usage": "codegen",
+  "_consumers": [
+    "edge-agent",
+    "gridbridge",
+    "building-energy-3d",
+    "agentleague",
+    "eduarena"
+  ],
   "version": "1.0.0",
   "updated": "2026-05-16",
   "$comment": "SSOT_GOVERNANCE.md Phase A1 산출물. 헬스체크 스크립트·CI 검증·신규 서비스 포트 배정 시 이 파일을 단일 진실로 사용한다.",
-
   "ranges": {
     "http_api": {
       "range": "8000-8999",
@@ -33,11 +40,13 @@
       "description": "MQTT TCP + WebSocket"
     }
   },
-
   "machines": {
     "A": {
       "gdrive_root": "H:/내 드라이브",
-      "docker_occupied_ports": [8001, 8002],
+      "docker_occupied_ports": [
+        8001,
+        8002
+      ],
       "gridbridge_host_port": 8003,
       "note": "호스트 8001/8002는 Docker가 점유. GB는 호스트 8003으로 노출."
     },
@@ -48,7 +57,6 @@
       "note": "Docker 점유 없음. 코드 기본값 그대로."
     }
   },
-
   "services": [
     {
       "port": 8000,
@@ -87,7 +95,9 @@
       "purpose": "Docker가 8001/8002 점유 시 호스트 노출 포트. GRIDBRIDGE_URL=http://localhost:8003",
       "status": "deployed",
       "env_var": "GRIDBRIDGE_URL",
-      "applies_to_machines": ["A"]
+      "applies_to_machines": [
+        "A"
+      ]
     },
     {
       "port": 8004,
@@ -282,50 +292,75 @@
       "status": "deployed"
     }
   ],
-
   "conflicts": [
     {
       "id": "CONF-001",
       "date": "2026-05-16",
-      "ports": [8001],
-      "services": ["GridBridge", "BuildWise"],
+      "ports": [
+        8001
+      ],
+      "services": [
+        "GridBridge",
+        "BuildWise"
+      ],
       "resolution": "BuildWise → 8004 이동 (BuildWise 재가동 시점에 적용)",
       "status": "pending"
     },
     {
       "id": "CONF-002",
       "date": "2026-05-16",
-      "ports": [8001, 8002],
-      "services": ["GridBridge", "EdgeAgent", "GB Monitor"],
+      "ports": [
+        8001,
+        8002
+      ],
+      "services": [
+        "GridBridge",
+        "EdgeAgent",
+        "GB Monitor"
+      ],
       "resolution": "이 컴퓨터(A)에서 Docker가 8001/8002 점유 → GB는 호스트 8003으로 노출. env_var GRIDBRIDGE_URL=http://localhost:8003",
       "status": "resolved"
     },
     {
       "id": "CONF-003",
       "date": "2026-05-17",
-      "ports": [8011],
-      "services": ["building-energy-id Backend", "GridBridge Metro (멀티모드)"],
+      "ports": [
+        8011
+      ],
+      "services": [
+        "building-energy-id Backend",
+        "GridBridge Metro (멀티모드)"
+      ],
       "resolution": "Computer A는 GB 단일모드(8003) 사용 → GB Metro 8011 dormant → 충돌 없음. GB 멀티모드 가동 시 한쪽 변경 필요.",
       "status": "dormant"
     },
     {
       "id": "CONF-004",
       "date": "2026-05-17",
-      "ports": [8200],
-      "services": ["EduArena Frontend fallback (8200)", "Backend 실제 (8100 dev / 8600 prod)"],
+      "ports": [
+        8200
+      ],
+      "services": [
+        "EduArena Frontend fallback (8200)",
+        "Backend 실제 (8100 dev / 8600 prod)"
+      ],
       "resolution": "frontend/src/lib/api/{base,classroom}.ts 의 fallback 8200을 8100으로 통일하거나 NEXT_PUBLIC_API_URL env 명시.",
       "status": "pending"
     },
     {
       "id": "CONF-005",
       "date": "2026-05-17",
-      "ports": [5174],
-      "services": ["building-energy-id landing", "Vite HMR fallback (building-energy-3d)"],
+      "ports": [
+        5174
+      ],
+      "services": [
+        "building-energy-id landing",
+        "Vite HMR fallback (building-energy-3d)"
+      ],
       "resolution": "두 프로젝트 동시 dev 시 한쪽이 다른 포트 사용. 현재는 동시 가동 빈도 낮음.",
       "status": "low-risk"
     }
   ],
-
   "rules": [
     "신규 서비스는 이 표에서 빈 슬롯 찾아 추가",
     "환경변수로 오버라이드 가능하게 설계 (예: GRIDBRIDGE_PORT)",

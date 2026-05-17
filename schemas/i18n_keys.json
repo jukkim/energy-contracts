@@ -3,55 +3,189 @@
   "$id": "energy-contracts/i18n_keys.json",
   "title": "i18n Keys SSOT (Phase J-8)",
   "description": "다국어 번역 키 SSOT. ko/en/id (한국·영어·인도네시아). EduArena + BEMS 6 테넌트 + 인도네시아 랜딩 공유. 키 충돌 방지.",
+  "_usage": "codegen",
+  "_consumers": [
+    "edge-agent",
+    "gridbridge",
+    "building-energy-3d",
+    "agentleague",
+    "eduarena"
+  ],
   "version": "1.0",
   "updated": "2026-05-17",
-
   "$defs": {
-    "Lang": {"type": "string", "enum": ["ko", "en", "id", "ms", "th", "vi", "tl"]}
+    "Lang": {
+      "type": "string",
+      "enum": [
+        "ko",
+        "en",
+        "id",
+        "ms",
+        "th",
+        "vi",
+        "tl"
+      ]
+    }
   },
-
   "type": "object",
   "default": {
-    "supported_langs": ["ko", "en", "id"],
+    "supported_langs": [
+      "ko",
+      "en",
+      "id"
+    ],
     "fallback_lang": "en",
     "keys": {
-      "common.save":     {"ko": "저장", "en": "Save",    "id": "Simpan"},
-      "common.cancel":   {"ko": "취소", "en": "Cancel",  "id": "Batal"},
-      "common.confirm":  {"ko": "확인", "en": "Confirm", "id": "Konfirmasi"},
-      "common.delete":   {"ko": "삭제", "en": "Delete",  "id": "Hapus"},
-      "common.edit":     {"ko": "편집", "en": "Edit",    "id": "Ubah"},
-      "common.loading":  {"ko": "로딩 중...", "en": "Loading...", "id": "Memuat..."},
-      "common.error":    {"ko": "오류", "en": "Error",   "id": "Kesalahan"},
-      "common.search":   {"ko": "검색", "en": "Search",  "id": "Cari"},
-
-      "auth.login":           {"ko": "로그인",      "en": "Sign in",   "id": "Masuk"},
-      "auth.logout":          {"ko": "로그아웃",    "en": "Sign out",  "id": "Keluar"},
-      "auth.invalid_token":   {"ko": "토큰이 유효하지 않습니다", "en": "Invalid token", "id": "Token tidak valid"},
-
-      "demo.banner":          {"ko": "DEMO 환경 — 시연용 데이터", "en": "DEMO mode — sample data only", "id": "Mode DEMO — data sampel saja"},
-      "demo.guest_only":      {"ko": "데모 모드는 읽기 전용입니다", "en": "Demo is read-only",  "id": "Demo hanya bisa dibaca"},
-
-      "energy.consumption":   {"ko": "에너지 소비량", "en": "Energy Consumption", "id": "Konsumsi Energi"},
-      "energy.heating":       {"ko": "난방",         "en": "Heating",   "id": "Pemanas"},
-      "energy.cooling":       {"ko": "냉방",         "en": "Cooling",   "id": "Pendingin"},
-      "energy.lighting":      {"ko": "조명",         "en": "Lighting",  "id": "Pencahayaan"},
-      "energy.ventilation":   {"ko": "환기",         "en": "Ventilation","id": "Ventilasi"},
-      "energy.hot_water":     {"ko": "급탕",         "en": "Hot Water", "id": "Air Panas"},
-
-      "building.usage":       {"ko": "용도",         "en": "Usage",     "id": "Penggunaan"},
-      "building.area":        {"ko": "면적",         "en": "Area",      "id": "Luas"},
-      "building.floors":      {"ko": "층수",         "en": "Floors",    "id": "Lantai"},
-      "building.built_year":  {"ko": "준공년도",     "en": "Built Year","id": "Tahun Dibangun"},
-
-      "agent.diagnose":       {"ko": "진단",         "en": "Diagnose",  "id": "Diagnosis"},
-      "agent.forecast":       {"ko": "예측",         "en": "Forecast",  "id": "Prakiraan"},
-      "agent.optimize":       {"ko": "최적화",       "en": "Optimize",  "id": "Optimasi"},
-      "agent.carbon":         {"ko": "탄소",         "en": "Carbon",    "id": "Karbon"},
-
-      "control.apply":        {"ko": "전략 적용",    "en": "Apply Strategy", "id": "Terapkan Strategi"},
-      "control.dispatch":     {"ko": "제어 송신",    "en": "Dispatch",  "id": "Kirim"},
-
-      "ssot.violation":       {"ko": "SSOT 계약 위반", "en": "SSOT contract violation", "id": "Pelanggaran kontrak SSOT"}
+      "common.save": {
+        "ko": "저장",
+        "en": "Save",
+        "id": "Simpan"
+      },
+      "common.cancel": {
+        "ko": "취소",
+        "en": "Cancel",
+        "id": "Batal"
+      },
+      "common.confirm": {
+        "ko": "확인",
+        "en": "Confirm",
+        "id": "Konfirmasi"
+      },
+      "common.delete": {
+        "ko": "삭제",
+        "en": "Delete",
+        "id": "Hapus"
+      },
+      "common.edit": {
+        "ko": "편집",
+        "en": "Edit",
+        "id": "Ubah"
+      },
+      "common.loading": {
+        "ko": "로딩 중...",
+        "en": "Loading...",
+        "id": "Memuat..."
+      },
+      "common.error": {
+        "ko": "오류",
+        "en": "Error",
+        "id": "Kesalahan"
+      },
+      "common.search": {
+        "ko": "검색",
+        "en": "Search",
+        "id": "Cari"
+      },
+      "auth.login": {
+        "ko": "로그인",
+        "en": "Sign in",
+        "id": "Masuk"
+      },
+      "auth.logout": {
+        "ko": "로그아웃",
+        "en": "Sign out",
+        "id": "Keluar"
+      },
+      "auth.invalid_token": {
+        "ko": "토큰이 유효하지 않습니다",
+        "en": "Invalid token",
+        "id": "Token tidak valid"
+      },
+      "demo.banner": {
+        "ko": "DEMO 환경 — 시연용 데이터",
+        "en": "DEMO mode — sample data only",
+        "id": "Mode DEMO — data sampel saja"
+      },
+      "demo.guest_only": {
+        "ko": "데모 모드는 읽기 전용입니다",
+        "en": "Demo is read-only",
+        "id": "Demo hanya bisa dibaca"
+      },
+      "energy.consumption": {
+        "ko": "에너지 소비량",
+        "en": "Energy Consumption",
+        "id": "Konsumsi Energi"
+      },
+      "energy.heating": {
+        "ko": "난방",
+        "en": "Heating",
+        "id": "Pemanas"
+      },
+      "energy.cooling": {
+        "ko": "냉방",
+        "en": "Cooling",
+        "id": "Pendingin"
+      },
+      "energy.lighting": {
+        "ko": "조명",
+        "en": "Lighting",
+        "id": "Pencahayaan"
+      },
+      "energy.ventilation": {
+        "ko": "환기",
+        "en": "Ventilation",
+        "id": "Ventilasi"
+      },
+      "energy.hot_water": {
+        "ko": "급탕",
+        "en": "Hot Water",
+        "id": "Air Panas"
+      },
+      "building.usage": {
+        "ko": "용도",
+        "en": "Usage",
+        "id": "Penggunaan"
+      },
+      "building.area": {
+        "ko": "면적",
+        "en": "Area",
+        "id": "Luas"
+      },
+      "building.floors": {
+        "ko": "층수",
+        "en": "Floors",
+        "id": "Lantai"
+      },
+      "building.built_year": {
+        "ko": "준공년도",
+        "en": "Built Year",
+        "id": "Tahun Dibangun"
+      },
+      "agent.diagnose": {
+        "ko": "진단",
+        "en": "Diagnose",
+        "id": "Diagnosis"
+      },
+      "agent.forecast": {
+        "ko": "예측",
+        "en": "Forecast",
+        "id": "Prakiraan"
+      },
+      "agent.optimize": {
+        "ko": "최적화",
+        "en": "Optimize",
+        "id": "Optimasi"
+      },
+      "agent.carbon": {
+        "ko": "탄소",
+        "en": "Carbon",
+        "id": "Karbon"
+      },
+      "control.apply": {
+        "ko": "전략 적용",
+        "en": "Apply Strategy",
+        "id": "Terapkan Strategi"
+      },
+      "control.dispatch": {
+        "ko": "제어 송신",
+        "en": "Dispatch",
+        "id": "Kirim"
+      },
+      "ssot.violation": {
+        "ko": "SSOT 계약 위반",
+        "en": "SSOT contract violation",
+        "id": "Pelanggaran kontrak SSOT"
+      }
     }
   }
 }

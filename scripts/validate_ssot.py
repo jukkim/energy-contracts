@@ -6,6 +6,9 @@
   3. JSON Schema 일관성 (common.json $defs 와 다른 스키마 정합)
   4. _generated_constants.* SOURCE_HASH drift (Phase H 추가)
   5. port_range 슬롯과 단일 port 항목의 잠복 충돌 (Phase H 추가)
+  6. SSOT _usage / _consumers 헤더 (Phase M-3 추가)
+     - 모든 schema 가 _usage ∈ {codegen, runtime-validate, reference-only, hybrid} 보유
+     - _usage=codegen 인데 gen_constants.py load_schemas() 미참조 시 위반
 
 사용법:
   python validate_ssot.py [--check strategy|ports|schemas|generated|all] [paths...]
@@ -249,6 +252,59 @@ def check_schema_strategy_patterns() -> list[str]:
     return violations
 
 
+# ── 6. SSOT _usage / _consumers 헤더 (Phase M-3) ────────────────────────────
+
+VALID_USAGE_VALUES = {"codegen", "runtime-validate", "reference-only", "hybrid"}
+
+
+def check_schema_usage_headers() -> list[str]:
+    """49 schemas 가 모두 `_usage` + `_consumers` 헤더를 가지는지 검사.
+
+    추가 검증:
+      - _usage ∈ {codegen, runtime-validate, reference-only, hybrid}
+      - _consumers 는 list[str]
+      - _usage=codegen / hybrid 인 schema 는 gen_constants.py load_schemas() 본문에서
+        파일명 문자열이 등장해야 한다 (codegen 미연결 검출)
+    """
+    violations: list[str] = []
+    gen_src = ""
+    gen_fp = CONTRACTS_ROOT / "scripts" / "gen_constants.py"
+    if gen_fp.exists():
+        gen_src = gen_fp.read_text(encoding="utf-8")
+
+    for fp in sorted(SCHEMAS_DIR.glob("*.json")):
+        try:
+            data = json.loads(fp.read_text(encoding="utf-8"))
+        except Exception as e:
+            violations.append(f"{fp.name}  JSON 파싱 실패: {e}")
+            continue
+        usage = data.get("_usage")
+        consumers = data.get("_consumers")
+        if usage is None:
+            violations.append(f"{fp.name}  `_usage` 필드 누락 (M-3)")
+            continue
+        if usage not in VALID_USAGE_VALUES:
+            violations.append(
+                f"{fp.name}  `_usage`={usage!r} 유효값 아님 "
+                f"(허용: {sorted(VALID_USAGE_VALUES)})")
+            continue
+        if not isinstance(consumers, list):
+            violations.append(
+                f"{fp.name}  `_consumers` 필드 누락 또는 list 아님 "
+                f"(타입={type(consumers).__name__})")
+            continue
+        if any(not isinstance(c, str) for c in consumers):
+            violations.append(f"{fp.name}  `_consumers` 항목은 str 이어야 함")
+            continue
+        # codegen / hybrid 는 gen_constants.py 본문에서 파일명이 참조돼야 한다
+        if usage in ("codegen", "hybrid") and gen_src:
+            if fp.name not in gen_src:
+                violations.append(
+                    f"{fp.name}  _usage={usage} 인데 gen_constants.py 에서 "
+                    f"`{fp.name}` 미참조 — load_schemas() 추가 또는 _usage 변경 필요")
+    return violations
+
+
 # ── 변경 파일 (pre-commit) ───────────────────────────────────────────────────
 
 def changed_files() -> list[Path]:
@@ -279,7 +335,8 @@ def changed_files() -> list[Path]:
 def main() -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument("--check",
-                    choices=["strategy", "ports", "schemas", "generated", "all"],
+                    choices=["strategy", "ports", "schemas", "generated",
+                             "usage", "all"],
                     default="all")
     ap.add_argument("--pre-commit", action="store_true",
                     help="git diff --cached 대상만 검사")
@@ -341,6 +398,15 @@ def main() -> int:
             failed = True
             total_violations += len(v)
             print(f"\n[SSOT] _generated_constants drift: {len(v)}건")
+            for line in v:
+                print(f"  {line}")
+
+    if args.check in ("usage", "all"):
+        v = check_schema_usage_headers()
+        if v:
+            failed = True
+            total_violations += len(v)
+            print(f"\n[SSOT] schema _usage 헤더 위반: {len(v)}건")
             for line in v:
                 print(f"  {line}")
 

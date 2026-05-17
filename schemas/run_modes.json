@@ -3,37 +3,76 @@
   "$id": "energy-contracts/run_modes.json",
   "title": "Run Modes SSOT (Phase E)",
   "description": "워크스페이스 공통 운영 모드 4종 (prod/demo/dev/test). 프로젝트는 extensions 필드로 자체 동작 추가. AgentLeague MODE_RESEARCH.md를 일반화한 것.",
+  "_usage": "codegen",
+  "_consumers": [
+    "edge-agent",
+    "gridbridge",
+    "building-energy-3d",
+    "agentleague",
+    "eduarena"
+  ],
   "version": "1.0",
   "updated": "2026-05-17",
   "$comment": "myjob/docs/MODES_AND_DATA_RESEARCH.md §2.1 + 2.2 산출물. 유연성 중심: 코어 enum + 자유 extensions.",
-
   "$defs": {
     "RunMode": {
       "type": "string",
-      "enum": ["prod", "demo", "dev", "test"],
+      "enum": [
+        "prod",
+        "demo",
+        "dev",
+        "test"
+      ],
       "description": "운영 모드 (4종)"
     },
     "AuthPolicy": {
       "type": "string",
-      "enum": ["enforced", "bypassable", "weak_default", "bypassed"]
+      "enum": [
+        "enforced",
+        "bypassable",
+        "weak_default",
+        "bypassed"
+      ]
     },
     "DataScope": {
       "type": "string",
-      "enum": ["real", "is_demo_only", "real_plus_fixtures", "isolated_db"]
+      "enum": [
+        "real",
+        "is_demo_only",
+        "real_plus_fixtures",
+        "isolated_db"
+      ]
     },
     "ExternalApiPolicy": {
       "type": "string",
-      "enum": ["live", "live_or_mock", "mocked"]
+      "enum": [
+        "live",
+        "live_or_mock",
+        "mocked"
+      ]
     },
     "ModeBehavior": {
       "type": "object",
-      "required": ["auth", "data_scope", "external_api"],
+      "required": [
+        "auth",
+        "data_scope",
+        "external_api"
+      ],
       "properties": {
-        "auth":         {"$ref": "#/$defs/AuthPolicy"},
-        "data_scope":   {"$ref": "#/$defs/DataScope"},
-        "external_api": {"$ref": "#/$defs/ExternalApiPolicy"},
+        "auth": {
+          "$ref": "#/$defs/AuthPolicy"
+        },
+        "data_scope": {
+          "$ref": "#/$defs/DataScope"
+        },
+        "external_api": {
+          "$ref": "#/$defs/ExternalApiPolicy"
+        },
         "visual": {
-          "type": ["string", "null"],
+          "type": [
+            "string",
+            "null"
+          ],
           "description": "UI 표시 라벨. 예: yellow_banner / gray_badge / red_badge / null"
         },
         "extensions": {
@@ -45,13 +84,16 @@
       "additionalProperties": true
     }
   },
-
   "type": "object",
   "properties": {
     "modes": {
       "type": "object",
-      "propertyNames": {"$ref": "#/$defs/RunMode"},
-      "additionalProperties": {"$ref": "#/$defs/ModeBehavior"}
+      "propertyNames": {
+        "$ref": "#/$defs/RunMode"
+      },
+      "additionalProperties": {
+        "$ref": "#/$defs/ModeBehavior"
+      }
     },
     "env_vars": {
       "type": "object",
@@ -59,7 +101,6 @@
       "additionalProperties": true
     }
   },
-
   "default": {
     "modes": {
       "prod": {
@@ -75,9 +116,18 @@
         "external_api": "live_or_mock",
         "visual": "yellow_banner",
         "extensions": {
-          "agentleague": {"runtime_toggle": true, "endpoint": "PATCH /api/v1/config/demo-mode"},
-          "building-energy-3d": {"sample_pnu_count": 3, "banner_text": "DEMO 환경 — 시연용 데이터"},
-          "eduarena": {"llm_mock": true, "is_demo_filter": true}
+          "agentleague": {
+            "runtime_toggle": true,
+            "endpoint": "PATCH /api/v1/config/demo-mode"
+          },
+          "building-energy-3d": {
+            "sample_pnu_count": 3,
+            "banner_text": "DEMO 환경 — 시연용 데이터"
+          },
+          "eduarena": {
+            "llm_mock": true,
+            "is_demo_filter": true
+          }
         }
       },
       "dev": {
@@ -86,7 +136,10 @@
         "external_api": "live",
         "visual": "gray_badge",
         "extensions": {
-          "default": {"hot_reload": true, "log_level": "DEBUG"}
+          "default": {
+            "hot_reload": true,
+            "log_level": "DEBUG"
+          }
         }
       },
       "test": {
@@ -95,19 +148,39 @@
         "external_api": "mocked",
         "visual": "red_badge",
         "extensions": {
-          "edge-agent": {"mqtt": "in-memory", "driver": "virtual"},
-          "gridbridge": {"db_isolation": "transactional_rollback"},
-          "building-energy-3d": {"cesium": "mocked", "vworld": "mocked"},
-          "eduarena": {"llm_mock": true},
-          "agentleague": {"db": "sqlite test.db"}
+          "edge-agent": {
+            "mqtt": "in-memory",
+            "driver": "virtual"
+          },
+          "gridbridge": {
+            "db_isolation": "transactional_rollback"
+          },
+          "building-energy-3d": {
+            "cesium": "mocked",
+            "vworld": "mocked"
+          },
+          "eduarena": {
+            "llm_mock": true
+          },
+          "agentleague": {
+            "db": "sqlite test.db"
+          }
         }
       }
     },
     "env_vars": {
-      "prod":  {"pattern": "(없음 — 기본)"},
-      "demo":  {"pattern": "{PROJECT}_DEMO_MODE=true 또는 런타임 토글"},
-      "dev":   {"pattern": "{PROJECT}_ENV=development"},
-      "test":  {"pattern": "{PROJECT}_TEST_MODE=true 또는 TEST_MODE=true"}
+      "prod": {
+        "pattern": "(없음 — 기본)"
+      },
+      "demo": {
+        "pattern": "{PROJECT}_DEMO_MODE=true 또는 런타임 토글"
+      },
+      "dev": {
+        "pattern": "{PROJECT}_ENV=development"
+      },
+      "test": {
+        "pattern": "{PROJECT}_TEST_MODE=true 또는 TEST_MODE=true"
+      }
     }
   }
 }

@@ -3,56 +3,151 @@
   "$id": "energy-contracts/error_response.json",
   "title": "Error Response SSOT (Phase I-3)",
   "description": "RFC 7807 application/problem+json 호환 통일 에러 응답. 6 프로젝트 FastAPI exception handler 가 공통 ProblemResponse 모델로 응답.",
+  "_usage": "codegen",
+  "_consumers": [
+    "edge-agent",
+    "gridbridge",
+    "building-energy-3d",
+    "agentleague",
+    "eduarena"
+  ],
   "version": "1.0",
   "updated": "2026-05-17",
   "$comment": "RFC 7807: https://www.rfc-editor.org/rfc/rfc7807",
-
   "$defs": {
     "Problem": {
       "type": "object",
-      "required": ["type", "title", "status", "code"],
+      "required": [
+        "type",
+        "title",
+        "status",
+        "code"
+      ],
       "properties": {
-        "type":     {"type": "string", "format": "uri"},
-        "title":    {"type": "string"},
-        "status":   {"type": "integer", "minimum": 400, "maximum": 599},
-        "detail":   {"type": "string"},
-        "instance": {"type": "string"},
-        "code":     {"type": "string",
-                     "pattern": "^[A-Z][A-Z0-9_]+$",
-                     "description": "안정적 식별자 (UPPER_SNAKE)"},
-        "trace_id": {"type": "string"},
-        "errors":   {"type": "array",
-                     "items": {"type": "object"},
-                     "description": "validation 다중 필드 에러용"}
+        "type": {
+          "type": "string",
+          "format": "uri"
+        },
+        "title": {
+          "type": "string"
+        },
+        "status": {
+          "type": "integer",
+          "minimum": 400,
+          "maximum": 599
+        },
+        "detail": {
+          "type": "string"
+        },
+        "instance": {
+          "type": "string"
+        },
+        "code": {
+          "type": "string",
+          "pattern": "^[A-Z][A-Z0-9_]+$",
+          "description": "안정적 식별자 (UPPER_SNAKE)"
+        },
+        "trace_id": {
+          "type": "string"
+        },
+        "errors": {
+          "type": "array",
+          "items": {
+            "type": "object"
+          },
+          "description": "validation 다중 필드 에러용"
+        }
       },
       "additionalProperties": false
     }
   },
-
   "type": "object",
   "properties": {
-    "type_prefix": {"type": "string"},
-    "codes":       {"type": "object"}
+    "type_prefix": {
+      "type": "string"
+    },
+    "codes": {
+      "type": "object"
+    }
   },
-
   "default": {
     "type_prefix": "https://errors.building-energy.xyz/v1/",
     "codes": {
-      "AUTH_INVALID_TOKEN":       {"status": 401, "title": "Invalid or missing token",        "category": "auth"},
-      "AUTH_INSUFFICIENT_SCOPE":  {"status": 403, "title": "Insufficient scope",              "category": "auth"},
-      "AUTH_TOKEN_EXPIRED":       {"status": 401, "title": "Token expired",                   "category": "auth"},
-      "VALIDATION_FAILED":        {"status": 422, "title": "Request validation failed",       "category": "validation"},
-      "RESOURCE_NOT_FOUND":       {"status": 404, "title": "Resource not found",              "category": "resource"},
-      "RESOURCE_CONFLICT":        {"status": 409, "title": "Resource conflict",               "category": "resource"},
-      "RATE_LIMITED":             {"status": 429, "title": "Rate limit exceeded",             "category": "rate"},
-      "INTERNAL_ERROR":           {"status": 500, "title": "Internal server error",           "category": "server"},
-      "SERVICE_UNAVAILABLE":      {"status": 503, "title": "Upstream service unavailable",    "category": "server"},
-      "SSOT_VIOLATION":           {"status": 400, "title": "SSOT contract violation",         "category": "ssot"},
-      "STRATEGY_UNKNOWN":         {"status": 400, "title": "Unknown EMS strategy code",       "category": "ssot"},
-      "VEN_INVALID":              {"status": 400, "title": "Invalid VEN identifier",          "category": "validation"},
-      "MODE_MISMATCH":            {"status": 403, "title": "Action forbidden in current RUN_MODE", "category": "auth"},
-      "AGENT_OUTPUT_INVALID":     {"status": 422, "title": "Agent output violates SSOT contract", "category": "agent"},
-      "DEMO_DATA_ONLY":           {"status": 403, "title": "Demo mode — read-only fixture",   "category": "auth"}
+      "AUTH_INVALID_TOKEN": {
+        "status": 401,
+        "title": "Invalid or missing token",
+        "category": "auth"
+      },
+      "AUTH_INSUFFICIENT_SCOPE": {
+        "status": 403,
+        "title": "Insufficient scope",
+        "category": "auth"
+      },
+      "AUTH_TOKEN_EXPIRED": {
+        "status": 401,
+        "title": "Token expired",
+        "category": "auth"
+      },
+      "VALIDATION_FAILED": {
+        "status": 422,
+        "title": "Request validation failed",
+        "category": "validation"
+      },
+      "RESOURCE_NOT_FOUND": {
+        "status": 404,
+        "title": "Resource not found",
+        "category": "resource"
+      },
+      "RESOURCE_CONFLICT": {
+        "status": 409,
+        "title": "Resource conflict",
+        "category": "resource"
+      },
+      "RATE_LIMITED": {
+        "status": 429,
+        "title": "Rate limit exceeded",
+        "category": "rate"
+      },
+      "INTERNAL_ERROR": {
+        "status": 500,
+        "title": "Internal server error",
+        "category": "server"
+      },
+      "SERVICE_UNAVAILABLE": {
+        "status": 503,
+        "title": "Upstream service unavailable",
+        "category": "server"
+      },
+      "SSOT_VIOLATION": {
+        "status": 400,
+        "title": "SSOT contract violation",
+        "category": "ssot"
+      },
+      "STRATEGY_UNKNOWN": {
+        "status": 400,
+        "title": "Unknown EMS strategy code",
+        "category": "ssot"
+      },
+      "VEN_INVALID": {
+        "status": 400,
+        "title": "Invalid VEN identifier",
+        "category": "validation"
+      },
+      "MODE_MISMATCH": {
+        "status": 403,
+        "title": "Action forbidden in current RUN_MODE",
+        "category": "auth"
+      },
+      "AGENT_OUTPUT_INVALID": {
+        "status": 422,
+        "title": "Agent output violates SSOT contract",
+        "category": "agent"
+      },
+      "DEMO_DATA_ONLY": {
+        "status": 403,
+        "title": "Demo mode — read-only fixture",
+        "category": "auth"
+      }
     }
   }
 }

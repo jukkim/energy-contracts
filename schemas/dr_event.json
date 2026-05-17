@@ -3,22 +3,88 @@
   "$id": "energy-contracts/dr_event.json",
   "title": "DREvent",
   "description": "DR 이벤트 — GridBridge가 생성, VWorld/EdgeAgent가 참조.",
+  "_usage": "reference-only",
+  "_consumers": [
+    "edge-agent",
+    "gridbridge",
+    "building-energy-3d"
+  ],
   "version": "1.0",
   "type": "object",
-  "required": ["event_id", "event_type", "start_time", "end_time"],
+  "required": [
+    "event_id",
+    "event_type",
+    "start_time",
+    "end_time"
+  ],
   "properties": {
-    "event_id": { "type": "string", "pattern": "^EVT-\\d{8}-\\w+$" },
-    "event_type": { "type": "string", "enum": ["LOAD_REDUCTION", "PRECOOL", "ESS_DISCHARGE"] },
-    "trigger_source": { "type": "string", "enum": ["smp_peak", "weather_heat", "manual", "kpx"] },
-    "target_area": { "type": "object", "properties": { "sido_cd": { "type": "string" }, "sgg_cd": { "type": "string" } } },
-    "signal_level": { "type": "string", "enum": ["NORMAL", "MODERATE", "HIGH", "EMERGENCY"] },
-    "reduction_target_kw": { "type": "integer", "minimum": 0 },
-    "start_time": { "type": "string", "format": "date-time", "description": "이벤트 예정 시작 시각." },
+    "event_id": {
+      "type": "string",
+      "pattern": "^EVT-\\d{8}-\\w+$"
+    },
+    "event_type": {
+      "type": "string",
+      "enum": [
+        "LOAD_REDUCTION",
+        "PRECOOL",
+        "ESS_DISCHARGE"
+      ]
+    },
+    "trigger_source": {
+      "type": "string",
+      "enum": [
+        "smp_peak",
+        "weather_heat",
+        "manual",
+        "kpx"
+      ]
+    },
+    "target_area": {
+      "type": "object",
+      "properties": {
+        "sido_cd": {
+          "type": "string"
+        },
+        "sgg_cd": {
+          "type": "string"
+        }
+      }
+    },
+    "signal_level": {
+      "type": "string",
+      "enum": [
+        "NORMAL",
+        "MODERATE",
+        "HIGH",
+        "EMERGENCY"
+      ]
+    },
+    "reduction_target_kw": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "start_time": {
+      "type": "string",
+      "format": "date-time",
+      "description": "이벤트 예정 시작 시각."
+    },
     "end_time": {
-      "type": "string", "format": "date-time",
+      "type": "string",
+      "format": "date-time",
       "description": "이벤트 예정 종료 시각. status=CANCELLED 시에도 원래 예정 종료 시각을 그대로 보존(참고용). 실제 종료는 updated_at 로 추적."
     },
-    "status": { "type": "string", "enum": ["PENDING", "ACTIVE", "COMPLETED", "CANCELLED"] },
-    "schedule": { "$ref": "reduction_schedule.json", "description": "상세 감축 스케줄 (Optional)" }
+    "status": {
+      "type": "string",
+      "enum": [
+        "PENDING",
+        "ACTIVE",
+        "COMPLETED",
+        "CANCELLED"
+      ]
+    },
+    "schedule": {
+      "$ref": "reduction_schedule.json",
+      "description": "상세 감축 스케줄 (Optional)"
+    }
   }
 }

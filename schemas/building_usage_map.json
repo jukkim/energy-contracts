@@ -3,48 +3,224 @@
   "$id": "energy-contracts/building_usage_map.json",
   "title": "Building Usage Map SSOT (Phase J-7)",
   "description": "건축물대장 용도 코드 ↔ archetype ↔ 에너지 사용패턴 매핑. 한국(627만 건물) + 인도네시아 BEMS(12.5M ASEAN 건물).",
+  "_usage": "codegen",
+  "_consumers": [
+    "edge-agent",
+    "gridbridge",
+    "building-energy-3d",
+    "agentleague",
+    "eduarena"
+  ],
   "version": "1.0",
   "updated": "2026-05-17",
-
   "$defs": {
     "UsageEntry": {
       "type": "object",
-      "required": ["code", "name_kr", "name_en", "archetype"],
+      "required": [
+        "code",
+        "name_kr",
+        "name_en",
+        "archetype"
+      ],
       "properties": {
-        "code":      {"type": "string", "description": "건축물대장 code (예: 02000)"},
-        "name_kr":   {"type": "string"},
-        "name_en":   {"type": "string"},
-        "archetype": {"type": "string", "description": "EnergyPlus archetype 매핑"},
-        "default_eui_kwh_m2": {"type": "number"},
+        "code": {
+          "type": "string",
+          "description": "건축물대장 code (예: 02000)"
+        },
+        "name_kr": {
+          "type": "string"
+        },
+        "name_en": {
+          "type": "string"
+        },
+        "archetype": {
+          "type": "string",
+          "description": "EnergyPlus archetype 매핑"
+        },
+        "default_eui_kwh_m2": {
+          "type": "number"
+        },
         "energy_pattern": {
           "type": "object",
           "description": "에너지 사용 분담 (collect_energy.py _FRACS 호환)",
           "properties": {
-            "heating":     {"type": "number"},
-            "cooling":     {"type": "number"},
-            "hot_water":   {"type": "number"},
-            "lighting":    {"type": "number"},
-            "ventilation": {"type": "number"}
+            "heating": {
+              "type": "number"
+            },
+            "cooling": {
+              "type": "number"
+            },
+            "hot_water": {
+              "type": "number"
+            },
+            "lighting": {
+              "type": "number"
+            },
+            "ventilation": {
+              "type": "number"
+            }
           }
         }
       }
     }
   },
-
   "type": "object",
   "default": {
     "usages": {
-      "residential_apt":   {"code": "02001", "name_kr": "아파트",       "name_en": "Apartment",      "archetype": "MidriseApartment",   "default_eui_kwh_m2": 120, "energy_pattern": {"heating": 0.45, "cooling": 0.10, "hot_water": 0.20, "lighting": 0.15, "ventilation": 0.10}},
-      "residential_house": {"code": "01000", "name_kr": "단독주택",     "name_en": "Detached House", "archetype": "SmallHotel",         "default_eui_kwh_m2": 150, "energy_pattern": {"heating": 0.50, "cooling": 0.08, "hot_water": 0.20, "lighting": 0.12, "ventilation": 0.10}},
-      "office":            {"code": "14000", "name_kr": "업무시설",     "name_en": "Office",         "archetype": "MediumOffice",       "default_eui_kwh_m2": 180, "energy_pattern": {"heating": 0.25, "cooling": 0.30, "hot_water": 0.05, "lighting": 0.25, "ventilation": 0.15}},
-      "retail":            {"code": "07000", "name_kr": "판매시설",     "name_en": "Retail",         "archetype": "RetailStripmall",    "default_eui_kwh_m2": 220, "energy_pattern": {"heating": 0.20, "cooling": 0.35, "hot_water": 0.05, "lighting": 0.30, "ventilation": 0.10}},
-      "convenience_store": {"code": "07100", "name_kr": "편의점",       "name_en": "Convenience",    "archetype": "QuickServiceRestaurant", "default_eui_kwh_m2": 380, "energy_pattern": {"heating": 0.10, "cooling": 0.30, "hot_water": 0.10, "lighting": 0.20, "ventilation": 0.30}},
-      "education":         {"code": "10000", "name_kr": "교육연구시설", "name_en": "Education",      "archetype": "SecondarySchool",    "default_eui_kwh_m2": 140, "energy_pattern": {"heating": 0.40, "cooling": 0.15, "hot_water": 0.08, "lighting": 0.27, "ventilation": 0.10}},
-      "medical":           {"code": "09000", "name_kr": "의료시설",     "name_en": "Hospital",       "archetype": "Hospital",           "default_eui_kwh_m2": 350, "energy_pattern": {"heating": 0.25, "cooling": 0.25, "hot_water": 0.15, "lighting": 0.20, "ventilation": 0.15}},
-      "lodging":           {"code": "15000", "name_kr": "숙박시설",     "name_en": "Hotel",          "archetype": "LargeHotel",         "default_eui_kwh_m2": 250, "energy_pattern": {"heating": 0.30, "cooling": 0.20, "hot_water": 0.25, "lighting": 0.15, "ventilation": 0.10}},
-      "factory":           {"code": "17000", "name_kr": "공장",         "name_en": "Factory",        "archetype": "Warehouse",          "default_eui_kwh_m2": 200, "energy_pattern": {"heating": 0.20, "cooling": 0.10, "hot_water": 0.05, "lighting": 0.20, "ventilation": 0.45}},
-      "warehouse":         {"code": "18000", "name_kr": "창고",         "name_en": "Warehouse",      "archetype": "Warehouse",          "default_eui_kwh_m2": 80,  "energy_pattern": {"heating": 0.30, "cooling": 0.05, "hot_water": 0.02, "lighting": 0.20, "ventilation": 0.43}},
-      "other":             {"code": "99999", "name_kr": "기타",         "name_en": "Other",          "archetype": "MediumOffice",       "default_eui_kwh_m2": 150, "energy_pattern": {"heating": 0.35, "cooling": 0.18, "hot_water": 0.18, "lighting": 0.16, "ventilation": 0.13}}
+      "residential_apt": {
+        "code": "02001",
+        "name_kr": "아파트",
+        "name_en": "Apartment",
+        "archetype": "MidriseApartment",
+        "default_eui_kwh_m2": 120,
+        "energy_pattern": {
+          "heating": 0.45,
+          "cooling": 0.1,
+          "hot_water": 0.2,
+          "lighting": 0.15,
+          "ventilation": 0.1
+        }
+      },
+      "residential_house": {
+        "code": "01000",
+        "name_kr": "단독주택",
+        "name_en": "Detached House",
+        "archetype": "SmallHotel",
+        "default_eui_kwh_m2": 150,
+        "energy_pattern": {
+          "heating": 0.5,
+          "cooling": 0.08,
+          "hot_water": 0.2,
+          "lighting": 0.12,
+          "ventilation": 0.1
+        }
+      },
+      "office": {
+        "code": "14000",
+        "name_kr": "업무시설",
+        "name_en": "Office",
+        "archetype": "MediumOffice",
+        "default_eui_kwh_m2": 180,
+        "energy_pattern": {
+          "heating": 0.25,
+          "cooling": 0.3,
+          "hot_water": 0.05,
+          "lighting": 0.25,
+          "ventilation": 0.15
+        }
+      },
+      "retail": {
+        "code": "07000",
+        "name_kr": "판매시설",
+        "name_en": "Retail",
+        "archetype": "RetailStripmall",
+        "default_eui_kwh_m2": 220,
+        "energy_pattern": {
+          "heating": 0.2,
+          "cooling": 0.35,
+          "hot_water": 0.05,
+          "lighting": 0.3,
+          "ventilation": 0.1
+        }
+      },
+      "convenience_store": {
+        "code": "07100",
+        "name_kr": "편의점",
+        "name_en": "Convenience",
+        "archetype": "QuickServiceRestaurant",
+        "default_eui_kwh_m2": 380,
+        "energy_pattern": {
+          "heating": 0.1,
+          "cooling": 0.3,
+          "hot_water": 0.1,
+          "lighting": 0.2,
+          "ventilation": 0.3
+        }
+      },
+      "education": {
+        "code": "10000",
+        "name_kr": "교육연구시설",
+        "name_en": "Education",
+        "archetype": "SecondarySchool",
+        "default_eui_kwh_m2": 140,
+        "energy_pattern": {
+          "heating": 0.4,
+          "cooling": 0.15,
+          "hot_water": 0.08,
+          "lighting": 0.27,
+          "ventilation": 0.1
+        }
+      },
+      "medical": {
+        "code": "09000",
+        "name_kr": "의료시설",
+        "name_en": "Hospital",
+        "archetype": "Hospital",
+        "default_eui_kwh_m2": 350,
+        "energy_pattern": {
+          "heating": 0.25,
+          "cooling": 0.25,
+          "hot_water": 0.15,
+          "lighting": 0.2,
+          "ventilation": 0.15
+        }
+      },
+      "lodging": {
+        "code": "15000",
+        "name_kr": "숙박시설",
+        "name_en": "Hotel",
+        "archetype": "LargeHotel",
+        "default_eui_kwh_m2": 250,
+        "energy_pattern": {
+          "heating": 0.3,
+          "cooling": 0.2,
+          "hot_water": 0.25,
+          "lighting": 0.15,
+          "ventilation": 0.1
+        }
+      },
+      "factory": {
+        "code": "17000",
+        "name_kr": "공장",
+        "name_en": "Factory",
+        "archetype": "Warehouse",
+        "default_eui_kwh_m2": 200,
+        "energy_pattern": {
+          "heating": 0.2,
+          "cooling": 0.1,
+          "hot_water": 0.05,
+          "lighting": 0.2,
+          "ventilation": 0.45
+        }
+      },
+      "warehouse": {
+        "code": "18000",
+        "name_kr": "창고",
+        "name_en": "Warehouse",
+        "archetype": "Warehouse",
+        "default_eui_kwh_m2": 80,
+        "energy_pattern": {
+          "heating": 0.3,
+          "cooling": 0.05,
+          "hot_water": 0.02,
+          "lighting": 0.2,
+          "ventilation": 0.43
+        }
+      },
+      "other": {
+        "code": "99999",
+        "name_kr": "기타",
+        "name_en": "Other",
+        "archetype": "MediumOffice",
+        "default_eui_kwh_m2": 150,
+        "energy_pattern": {
+          "heating": 0.35,
+          "cooling": 0.18,
+          "hot_water": 0.18,
+          "lighting": 0.16,
+          "ventilation": 0.13
+        }
+      }
     }
   }
 }

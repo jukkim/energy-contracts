@@ -3,106 +3,239 @@
   "$id": "energy-contracts/nl_intents.json",
   "title": "Natural Language Intents SSOT",
   "description": "자연어 → 제어/조회/시뮬 의도 매핑. control_intent.py·voice_assistant·LLM 라우터·에이전트가 공유.",
+  "_usage": "codegen",
+  "_consumers": [
+    "edge-agent",
+    "gridbridge",
+    "building-energy-3d",
+    "agentleague",
+    "eduarena"
+  ],
   "version": "1.0",
   "updated": "2026-05-17",
   "$comment": "Phase C2 산출물 (myjob/docs/SSOT_GOVERNANCE.md). building-energy-3d/src/visualization/control_intent.py 패턴을 추출 + 다국어 확장 가능 구조.",
-
   "$defs": {
     "IntentType": {
       "type": "string",
-      "enum": ["edgeControl", "query", "simulate", "analyze", "report"],
+      "enum": [
+        "edgeControl",
+        "query",
+        "simulate",
+        "analyze",
+        "report"
+      ],
       "description": "최상위 의도 유형. edgeControl=설비 제어, query=조회, simulate=시뮬레이션, analyze=에이전트 호출, report=리포트 생성"
     },
-
     "Language": {
       "type": "string",
-      "enum": ["ko", "en", "id"],
+      "enum": [
+        "ko",
+        "en",
+        "id"
+      ],
       "description": "지원 언어. ko=한국어, en=영어, id=인도네시아어 (BEMS 테넌트)"
     }
   },
-
   "type": "object",
   "properties": {
     "strategies_by_keyword": {
       "type": "object",
       "description": "전략 코드 ↔ 한국어 키워드 매핑. control_intent.py CONTROL_STRATEGIES SSOT.",
-      "propertyNames": {"pattern": "^M(0[0-9]|1[0-5])$"},
+      "propertyNames": {
+        "pattern": "^M(0[0-9]|1[0-5])$"
+      },
       "additionalProperties": {
         "type": "array",
-        "items": {"type": "string"}
+        "items": {
+          "type": "string"
+        }
       }
     },
     "control_keywords": {
       "type": "array",
-      "items": {"type": "string"},
+      "items": {
+        "type": "string"
+      },
       "description": "제어 의도 게이트 키워드 (이 중 하나라도 있어야 detect_control_intent 통과)"
     },
     "gate_tokens": {
       "type": "array",
-      "items": {"type": "string"},
+      "items": {
+        "type": "string"
+      },
       "description": "추가 게이트 토큰 (CONTROL_KEYWORDS + 단위·M00~M15)"
     },
     "patterns": {
       "type": "object",
       "description": "정규식 추출 패턴 (한국어 기준)",
       "properties": {
-        "ven_id":        {"type": "string"},
-        "strategy_code": {"type": "string"},
-        "hvac_setpoint": {"type": "string"},
-        "lighting_pct":  {"type": "string"},
-        "ess_keywords":  {"type": "array", "items": {"type": "string"}}
+        "ven_id": {
+          "type": "string"
+        },
+        "strategy_code": {
+          "type": "string"
+        },
+        "hvac_setpoint": {
+          "type": "string"
+        },
+        "lighting_pct": {
+          "type": "string"
+        },
+        "ess_keywords": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
       }
     },
     "constraints": {
       "type": "object",
       "description": "추출값 범위 제약",
       "properties": {
-        "hvac_setpoint_min_c": {"type": "number"},
-        "hvac_setpoint_max_c": {"type": "number"},
-        "lighting_pct_max":    {"type": "number"}
+        "hvac_setpoint_min_c": {
+          "type": "number"
+        },
+        "hvac_setpoint_max_c": {
+          "type": "number"
+        },
+        "lighting_pct_max": {
+          "type": "number"
+        }
       }
     }
   },
-
   "default": {
     "strategies_by_keyword": {
-      "M00": ["기준", "무제어", "해제"],
-      "M01": ["야간 setback", "야간 셋백", "야간모드", "나이트 모드"],
-      "M02": ["외기냉방"],
-      "M03": ["냉동기 대수", "냉동기 제어", "칠러 스테이징", "chiller staging"],
-      "M04": ["PMV", "쾌적", "보통 감축"],
-      "M05": ["PMV 0.7", "약한 감축", "넓은 쾌적범위"],
-      "M06": ["최적 기동", "최적기동", "optimal start", "조기 가동"],
-      "M07": ["주간 조명", "조명 절감"],
-      "M08": ["예냉", "프리쿨"],
-      "M09": ["ESS 피크", "피크셰이빙"],
+      "M00": [
+        "기준",
+        "무제어",
+        "해제"
+      ],
+      "M01": [
+        "야간 setback",
+        "야간 셋백",
+        "야간모드",
+        "나이트 모드"
+      ],
+      "M02": [
+        "외기냉방"
+      ],
+      "M03": [
+        "냉동기 대수",
+        "냉동기 제어",
+        "칠러 스테이징",
+        "chiller staging"
+      ],
+      "M04": [
+        "PMV",
+        "쾌적",
+        "보통 감축"
+      ],
+      "M05": [
+        "PMV 0.7",
+        "약한 감축",
+        "넓은 쾌적범위"
+      ],
+      "M06": [
+        "최적 기동",
+        "최적기동",
+        "optimal start",
+        "조기 가동"
+      ],
+      "M07": [
+        "주간 조명",
+        "조명 절감"
+      ],
+      "M08": [
+        "예냉",
+        "프리쿨"
+      ],
+      "M09": [
+        "ESS 피크",
+        "피크셰이빙"
+      ],
       "M10": [],
-      "M11": ["통합 EMS", "통합 운영"],
-      "M12": ["통합 PMV0.5", "통합 PMV"],
-      "M13": ["통합 PMV0.7"],
-      "M14": ["통합 최적화", "통합 감축", "강한 감축"],
-      "M15": ["긴급 감축", "최대 감축", "DR 긴급"]
+      "M11": [
+        "통합 EMS",
+        "통합 운영"
+      ],
+      "M12": [
+        "통합 PMV0.5",
+        "통합 PMV"
+      ],
+      "M13": [
+        "통합 PMV0.7"
+      ],
+      "M14": [
+        "통합 최적화",
+        "통합 감축",
+        "강한 감축"
+      ],
+      "M15": [
+        "긴급 감축",
+        "최대 감축",
+        "DR 긴급"
+      ]
     },
     "control_keywords": [
-      "제어", "감축", "낮춰", "올려", "켜", "꺼", "적용", "전략", "셋업", "세트포인트"
+      "제어",
+      "감축",
+      "낮춰",
+      "올려",
+      "켜",
+      "꺼",
+      "적용",
+      "전략",
+      "셋업",
+      "세트포인트"
     ],
     "gate_tokens": [
-      "제어", "감축", "낮춰", "올려", "켜", "꺼", "적용", "전략", "셋업", "세트포인트",
-      "도로", "°C", "℃", "VEN",
-      "M00", "M01", "M02", "M03", "M04", "M05", "M06",
-      "M07", "M08", "M09", "M11", "M12", "M13", "M14", "M15"
+      "제어",
+      "감축",
+      "낮춰",
+      "올려",
+      "켜",
+      "꺼",
+      "적용",
+      "전략",
+      "셋업",
+      "세트포인트",
+      "도로",
+      "°C",
+      "℃",
+      "VEN",
+      "M00",
+      "M01",
+      "M02",
+      "M03",
+      "M04",
+      "M05",
+      "M06",
+      "M07",
+      "M08",
+      "M09",
+      "M11",
+      "M12",
+      "M13",
+      "M14",
+      "M15"
     ],
     "patterns": {
-      "ven_id":        "(VEN-[A-Z0-9\\-]+)",
+      "ven_id": "(VEN-[A-Z0-9\\-]+)",
       "strategy_code": "(?<![A-Za-z0-9])(M(?:0[0-9]|1[0-5]))(?![0-9])",
       "hvac_setpoint": "(\\d{1,2}(?:\\.\\d)?)\\s*(?:도|°C|℃|degree)",
-      "lighting_pct":  "(?:조명|전등|라이트)\\s*(\\d{1,3})\\s*%",
-      "ess_keywords":  ["ESS 방전", "배터리 방전", "배터리로"]
+      "lighting_pct": "(?:조명|전등|라이트)\\s*(\\d{1,3})\\s*%",
+      "ess_keywords": [
+        "ESS 방전",
+        "배터리 방전",
+        "배터리로"
+      ]
     },
     "constraints": {
       "hvac_setpoint_min_c": 18.0,
       "hvac_setpoint_max_c": 30.0,
-      "lighting_pct_max":    100.0
+      "lighting_pct_max": 100.0
     }
   }
 }

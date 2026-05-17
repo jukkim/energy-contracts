@@ -3,6 +3,10 @@
   "$id": "energy-contracts/region_codes.json",
   "title": "Region Codes",
   "description": "도시·기후구역·일사량 SSOT. NAMING_UNIFICATION.md §4 + ENERGY_SSOT.md §6 기반.",
+  "_usage": "reference-only",
+  "_consumers": [
+    "building-energy-3d"
+  ],
   "version": "2.0",
   "type": "object",
   "properties": {
@@ -12,10 +16,20 @@
       "additionalProperties": {
         "type": "object",
         "properties": {
-          "name_en":       { "type": "string" },
-          "name_kr":       { "type": "string" },
-          "climate_zone":  { "type": "string", "description": "한국 기후구역 (중부1/중부2/남부/제주)" },
-          "solar_kwh_m2_yr": { "type": "number", "description": "연평균 수평면 전일사량" }
+          "name_en": {
+            "type": "string"
+          },
+          "name_kr": {
+            "type": "string"
+          },
+          "climate_zone": {
+            "type": "string",
+            "description": "한국 기후구역 (중부1/중부2/남부/제주)"
+          },
+          "solar_kwh_m2_yr": {
+            "type": "number",
+            "description": "연평균 수평면 전일사량"
+          }
         }
       }
     },
@@ -25,39 +39,165 @@
       "additionalProperties": {
         "type": "object",
         "properties": {
-          "sim_id":    { "type": "string", "description": "sim_id 내 2자리 코드" },
-          "name_en":   { "type": "string" },
-          "name_kr":   { "type": "string" },
-          "cooling":   { "type": "string" },
-          "heating":   { "type": "string" },
-          "staging_m03":    { "type": "boolean" },
-          "economizer_m02": { "type": "boolean" }
+          "sim_id": {
+            "type": "string",
+            "description": "sim_id 내 2자리 코드"
+          },
+          "name_en": {
+            "type": "string"
+          },
+          "name_kr": {
+            "type": "string"
+          },
+          "cooling": {
+            "type": "string"
+          },
+          "heating": {
+            "type": "string"
+          },
+          "staging_m03": {
+            "type": "boolean"
+          },
+          "economizer_m02": {
+            "type": "boolean"
+          }
         }
       }
     }
   },
   "default": {
     "simulation_cities": {
-      "C01": { "name_en": "Seoul",     "name_kr": "서울",   "climate_zone": "중부2", "solar_kwh_m2_yr": 1314 },
-      "C02": { "name_en": "Busan",     "name_kr": "부산",   "climate_zone": "남부",  "solar_kwh_m2_yr": 1380 },
-      "C03": { "name_en": "Daegu",     "name_kr": "대구",   "climate_zone": "남부",  "solar_kwh_m2_yr": 1395 },
-      "C04": { "name_en": "Incheon",   "name_kr": "인천",   "climate_zone": "중부2", "solar_kwh_m2_yr": 1298 },
-      "C05": { "name_en": "Gwangju",   "name_kr": "광주",   "climate_zone": "남부",  "solar_kwh_m2_yr": 1355 },
-      "C06": { "name_en": "Daejeon",   "name_kr": "대전",   "climate_zone": "중부2", "solar_kwh_m2_yr": 1338 },
-      "C07": { "name_en": "Ulsan",     "name_kr": "울산",   "climate_zone": "남부",  "solar_kwh_m2_yr": 1382 },
-      "C08": { "name_en": "Gangneung", "name_kr": "강릉",   "climate_zone": "중부2", "solar_kwh_m2_yr": 1406 },
-      "C09": { "name_en": "Jeju",      "name_kr": "제주",   "climate_zone": "제주",  "solar_kwh_m2_yr": 1400 },
-      "C10": { "name_en": "Cheongju",  "name_kr": "청주",   "climate_zone": "중부2", "solar_kwh_m2_yr": 1332 },
-      "C11": { "name_en": "Chuncheon", "name_kr": "춘천",   "climate_zone": "중부1", "solar_kwh_m2_yr": 1312 }
+      "C01": {
+        "name_en": "Seoul",
+        "name_kr": "서울",
+        "climate_zone": "중부2",
+        "solar_kwh_m2_yr": 1314
+      },
+      "C02": {
+        "name_en": "Busan",
+        "name_kr": "부산",
+        "climate_zone": "남부",
+        "solar_kwh_m2_yr": 1380
+      },
+      "C03": {
+        "name_en": "Daegu",
+        "name_kr": "대구",
+        "climate_zone": "남부",
+        "solar_kwh_m2_yr": 1395
+      },
+      "C04": {
+        "name_en": "Incheon",
+        "name_kr": "인천",
+        "climate_zone": "중부2",
+        "solar_kwh_m2_yr": 1298
+      },
+      "C05": {
+        "name_en": "Gwangju",
+        "name_kr": "광주",
+        "climate_zone": "남부",
+        "solar_kwh_m2_yr": 1355
+      },
+      "C06": {
+        "name_en": "Daejeon",
+        "name_kr": "대전",
+        "climate_zone": "중부2",
+        "solar_kwh_m2_yr": 1338
+      },
+      "C07": {
+        "name_en": "Ulsan",
+        "name_kr": "울산",
+        "climate_zone": "남부",
+        "solar_kwh_m2_yr": 1382
+      },
+      "C08": {
+        "name_en": "Gangneung",
+        "name_kr": "강릉",
+        "climate_zone": "중부2",
+        "solar_kwh_m2_yr": 1406
+      },
+      "C09": {
+        "name_en": "Jeju",
+        "name_kr": "제주",
+        "climate_zone": "제주",
+        "solar_kwh_m2_yr": 1400
+      },
+      "C10": {
+        "name_en": "Cheongju",
+        "name_kr": "청주",
+        "climate_zone": "중부2",
+        "solar_kwh_m2_yr": 1332
+      },
+      "C11": {
+        "name_en": "Chuncheon",
+        "name_kr": "춘천",
+        "climate_zone": "중부1",
+        "solar_kwh_m2_yr": 1312
+      }
     },
     "hvac_types": {
-      "H_A": { "sim_id": "HA", "name_en": "Central Plant VAV",              "name_kr": "중앙식 VAV",           "cooling": "Chiller x2+", "heating": "Boiler",              "staging_m03": true,  "economizer_m02": true },
-      "H_B": { "sim_id": "HB", "name_en": "Central Plant FCU",              "name_kr": "중앙식 FCU",           "cooling": "Chiller 2단", "heating": "Boiler",              "staging_m03": false, "economizer_m02": true },
-      "H_C": { "sim_id": "HC", "name_en": "Package/PSZ",                    "name_kr": "패키지/개별공조",      "cooling": "DX/HP xN",    "heating": "내장 HP",              "staging_m03": false, "economizer_m02": true },
-      "H_D": { "sim_id": "HD", "name_en": "VRF/EHP",                        "name_kr": "VRF/EHP",              "cooling": "실외기",      "heating": "내장 HP",              "staging_m03": false, "economizer_m02": false },
-      "H_E": { "sim_id": "HE", "name_en": "Ondol+Gas Boiler+Wall AC",       "name_kr": "온돌+가스보일러+벽걸이","cooling": "벽걸이 스플릿","heating": "온돌 바닥복사(가스)",  "staging_m03": false, "economizer_m02": false },
-      "H_F": { "sim_id": "HF", "name_en": "EHP Cassette+Gas Boiler",        "name_kr": "시스템에어컨+가스보일러","cooling": "천장 카세트 VRF","heating": "가스보일러",         "staging_m03": false, "economizer_m02": false },
-      "H_G": { "sim_id": "HG", "name_en": "District Heating+Individual Cool","name_kr": "지역난방+개별냉방",   "cooling": "건물별 냉방",  "heating": "DistrictHeating:Water","staging_m03": false, "economizer_m02": false }
+      "H_A": {
+        "sim_id": "HA",
+        "name_en": "Central Plant VAV",
+        "name_kr": "중앙식 VAV",
+        "cooling": "Chiller x2+",
+        "heating": "Boiler",
+        "staging_m03": true,
+        "economizer_m02": true
+      },
+      "H_B": {
+        "sim_id": "HB",
+        "name_en": "Central Plant FCU",
+        "name_kr": "중앙식 FCU",
+        "cooling": "Chiller 2단",
+        "heating": "Boiler",
+        "staging_m03": false,
+        "economizer_m02": true
+      },
+      "H_C": {
+        "sim_id": "HC",
+        "name_en": "Package/PSZ",
+        "name_kr": "패키지/개별공조",
+        "cooling": "DX/HP xN",
+        "heating": "내장 HP",
+        "staging_m03": false,
+        "economizer_m02": true
+      },
+      "H_D": {
+        "sim_id": "HD",
+        "name_en": "VRF/EHP",
+        "name_kr": "VRF/EHP",
+        "cooling": "실외기",
+        "heating": "내장 HP",
+        "staging_m03": false,
+        "economizer_m02": false
+      },
+      "H_E": {
+        "sim_id": "HE",
+        "name_en": "Ondol+Gas Boiler+Wall AC",
+        "name_kr": "온돌+가스보일러+벽걸이",
+        "cooling": "벽걸이 스플릿",
+        "heating": "온돌 바닥복사(가스)",
+        "staging_m03": false,
+        "economizer_m02": false
+      },
+      "H_F": {
+        "sim_id": "HF",
+        "name_en": "EHP Cassette+Gas Boiler",
+        "name_kr": "시스템에어컨+가스보일러",
+        "cooling": "천장 카세트 VRF",
+        "heating": "가스보일러",
+        "staging_m03": false,
+        "economizer_m02": false
+      },
+      "H_G": {
+        "sim_id": "HG",
+        "name_en": "District Heating+Individual Cool",
+        "name_kr": "지역난방+개별냉방",
+        "cooling": "건물별 냉방",
+        "heating": "DistrictHeating:Water",
+        "staging_m03": false,
+        "economizer_m02": false
+      }
     }
   }
 }

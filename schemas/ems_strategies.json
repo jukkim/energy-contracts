@@ -3,14 +3,35 @@
   "$id": "energy-contracts/ems_strategies.json",
   "title": "EMS Strategies",
   "description": "EMS 전략 코드 SSOT (M00~M15). NAMING_UNIFICATION.md §1 기반. 모든 모듈은 이 정의를 참조.",
+  "_usage": "codegen",
+  "_consumers": [
+    "edge-agent",
+    "gridbridge",
+    "building-energy-3d",
+    "agentleague",
+    "eduarena"
+  ],
   "version": "2.0",
   "$defs": {
     "StrategyCode": {
       "type": "string",
       "enum": [
-        "M00", "M01", "M02", "M03", "M04", "M05",
-        "M06", "M07", "M08", "M09", "M10",
-        "M11", "M12", "M13", "M14", "M15"
+        "M00",
+        "M01",
+        "M02",
+        "M03",
+        "M04",
+        "M05",
+        "M06",
+        "M07",
+        "M08",
+        "M09",
+        "M10",
+        "M11",
+        "M12",
+        "M13",
+        "M14",
+        "M15"
       ],
       "description": "통일 EMS 전략 코드 (16종)"
     }
@@ -19,86 +40,247 @@
   "properties": {
     "strategies": {
       "type": "object",
-      "propertyNames": { "$ref": "#/$defs/StrategyCode" },
+      "propertyNames": {
+        "$ref": "#/$defs/StrategyCode"
+      },
       "additionalProperties": {
         "type": "object",
         "properties": {
-          "name_en": { "type": "string" },
-          "name_kr": { "type": "string" },
-          "description": { "type": "string" },
+          "name_en": {
+            "type": "string"
+          },
+          "name_kr": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          },
           "type": {
             "type": "string",
-            "enum": ["single", "combined"],
+            "enum": [
+              "single",
+              "combined"
+            ],
             "description": "단일 전략 vs 복합 전략"
           },
           "components": {
             "type": "array",
-            "items": { "$ref": "#/$defs/StrategyCode" },
+            "items": {
+              "$ref": "#/$defs/StrategyCode"
+            },
             "description": "복합 전략의 구성 요소 (single은 빈 배열)"
           }
         },
-        "required": ["name_en", "name_kr", "type", "components"]
+        "required": [
+          "name_en",
+          "name_kr",
+          "type",
+          "components"
+        ]
       }
     },
     "signal_mapping": {
       "type": "object",
       "description": "DR SignalLevel → 기본 전략 매핑",
       "properties": {
-        "NORMAL":    { "$ref": "#/$defs/StrategyCode" },
-        "MODERATE":  { "$ref": "#/$defs/StrategyCode" },
-        "HIGH":      { "$ref": "#/$defs/StrategyCode" },
-        "EMERGENCY": { "$ref": "#/$defs/StrategyCode" }
+        "NORMAL": {
+          "$ref": "#/$defs/StrategyCode"
+        },
+        "MODERATE": {
+          "$ref": "#/$defs/StrategyCode"
+        },
+        "HIGH": {
+          "$ref": "#/$defs/StrategyCode"
+        },
+        "EMERGENCY": {
+          "$ref": "#/$defs/StrategyCode"
+        }
       }
     },
     "legacy_mapping": {
       "type": "object",
       "description": "구 코드 → 통일 코드 매핑 (읽기 전용, 신규 작성 금지)",
       "properties": {
-        "ems_simulation": { "type": "object" },
-        "gcs_e_codes": { "type": "object" },
-        "ems_transformer_sc": { "type": "object" }
+        "ems_simulation": {
+          "type": "object"
+        },
+        "gcs_e_codes": {
+          "type": "object"
+        },
+        "ems_transformer_sc": {
+          "type": "object"
+        }
       }
     }
   },
   "default": {
     "strategies": {
-      "M00": { "name_en": "Baseline",                    "name_kr": "Baseline (무제어)",           "type": "single",   "components": [] },
-      "M01": { "name_en": "Night Setback",               "name_kr": "야간 Setback",               "type": "single",   "components": [] },
-      "M02": { "name_en": "Economizer",                  "name_kr": "외기냉방 (Economizer)",      "type": "single",   "components": [] },
-      "M03": { "name_en": "Chiller Staging",             "name_kr": "냉동기 대수 제어",           "type": "single",   "components": [] },
-      "M04": { "name_en": "PMV Comfort ±0.5",            "name_kr": "PMV 설정온도 ±0.5",          "type": "single",   "components": [] },
-      "M05": { "name_en": "PMV Comfort ±0.7",            "name_kr": "PMV 설정온도 ±0.7",          "type": "single",   "components": [] },
-      "M06": { "name_en": "Optimal Start",               "name_kr": "최적 기동 (OptimalStart)",   "type": "single",   "components": [] },
-      "M07": { "name_en": "Lighting Control",            "name_kr": "조명/콘센트 제어",           "type": "single",   "components": [] },
-      "M08": { "name_en": "Pre-cooling",                 "name_kr": "예냉 (Pre-cooling)",         "type": "single",   "components": [] },
-      "M09": { "name_en": "ESS Peak Shaving",            "name_kr": "ESS 피크셰이빙",             "type": "single",   "components": [] },
-      "M10": { "name_en": "(reserved)",                  "name_kr": "(예약)",                     "type": "single",   "components": [] },
-      "M11": { "name_en": "Integrated EMS",              "name_kr": "통합 EMS",                   "type": "combined", "components": ["M06", "M02", "M03"] },
-      "M12": { "name_en": "Integrated+PMV0.5",           "name_kr": "통합+PMV0.5",                "type": "combined", "components": ["M06", "M02", "M03", "M04"] },
-      "M13": { "name_en": "Integrated+PMV0.7",           "name_kr": "통합+PMV0.7",                "type": "combined", "components": ["M06", "M02", "M03", "M05"] },
-      "M14": { "name_en": "DR Integrated Optimization",  "name_kr": "DR 통합 최적화",             "type": "combined", "components": ["M02", "M04", "M07", "M09"] },
-      "M15": { "name_en": "DR Emergency Curtailment",    "name_kr": "DR 긴급 감축",               "type": "combined", "components": ["M01", "M02", "M04", "M07", "M08", "M09"] }
+      "M00": {
+        "name_en": "Baseline",
+        "name_kr": "Baseline (무제어)",
+        "type": "single",
+        "components": []
+      },
+      "M01": {
+        "name_en": "Night Setback",
+        "name_kr": "야간 Setback",
+        "type": "single",
+        "components": []
+      },
+      "M02": {
+        "name_en": "Economizer",
+        "name_kr": "외기냉방 (Economizer)",
+        "type": "single",
+        "components": []
+      },
+      "M03": {
+        "name_en": "Chiller Staging",
+        "name_kr": "냉동기 대수 제어",
+        "type": "single",
+        "components": []
+      },
+      "M04": {
+        "name_en": "PMV Comfort ±0.5",
+        "name_kr": "PMV 설정온도 ±0.5",
+        "type": "single",
+        "components": []
+      },
+      "M05": {
+        "name_en": "PMV Comfort ±0.7",
+        "name_kr": "PMV 설정온도 ±0.7",
+        "type": "single",
+        "components": []
+      },
+      "M06": {
+        "name_en": "Optimal Start",
+        "name_kr": "최적 기동 (OptimalStart)",
+        "type": "single",
+        "components": []
+      },
+      "M07": {
+        "name_en": "Lighting Control",
+        "name_kr": "조명/콘센트 제어",
+        "type": "single",
+        "components": []
+      },
+      "M08": {
+        "name_en": "Pre-cooling",
+        "name_kr": "예냉 (Pre-cooling)",
+        "type": "single",
+        "components": []
+      },
+      "M09": {
+        "name_en": "ESS Peak Shaving",
+        "name_kr": "ESS 피크셰이빙",
+        "type": "single",
+        "components": []
+      },
+      "M10": {
+        "name_en": "(reserved)",
+        "name_kr": "(예약)",
+        "type": "single",
+        "components": []
+      },
+      "M11": {
+        "name_en": "Integrated EMS",
+        "name_kr": "통합 EMS",
+        "type": "combined",
+        "components": [
+          "M06",
+          "M02",
+          "M03"
+        ]
+      },
+      "M12": {
+        "name_en": "Integrated+PMV0.5",
+        "name_kr": "통합+PMV0.5",
+        "type": "combined",
+        "components": [
+          "M06",
+          "M02",
+          "M03",
+          "M04"
+        ]
+      },
+      "M13": {
+        "name_en": "Integrated+PMV0.7",
+        "name_kr": "통합+PMV0.7",
+        "type": "combined",
+        "components": [
+          "M06",
+          "M02",
+          "M03",
+          "M05"
+        ]
+      },
+      "M14": {
+        "name_en": "DR Integrated Optimization",
+        "name_kr": "DR 통합 최적화",
+        "type": "combined",
+        "components": [
+          "M02",
+          "M04",
+          "M07",
+          "M09"
+        ]
+      },
+      "M15": {
+        "name_en": "DR Emergency Curtailment",
+        "name_kr": "DR 긴급 감축",
+        "type": "combined",
+        "components": [
+          "M01",
+          "M02",
+          "M04",
+          "M07",
+          "M08",
+          "M09"
+        ]
+      }
     },
     "signal_mapping": {
-      "NORMAL":    "M07",
-      "MODERATE":  "M04",
-      "HIGH":      "M14",
+      "NORMAL": "M07",
+      "MODERATE": "M04",
+      "HIGH": "M14",
       "EMERGENCY": "M15"
     },
     "legacy_mapping": {
       "ems_simulation": {
-        "M0": "M00", "M1": "M06", "M2": "M02", "M3": "M03",
-        "M4": "M04", "M5": "M05", "M6": "M11", "M7": "M12", "M8": "M13"
+        "M0": "M00",
+        "M1": "M06",
+        "M2": "M02",
+        "M3": "M03",
+        "M4": "M04",
+        "M5": "M05",
+        "M6": "M11",
+        "M7": "M12",
+        "M8": "M13"
       },
       "gcs_e_codes": {
-        "E0": "M00", "E1": "M01", "E2": "M06", "E3": "M02", "E4": "M03",
-        "E6": "M04", "E7": "M05", "E8": "M11", "E9": "M12",
-        "E10": "M14", "E11": "M15"
+        "E0": "M00",
+        "E1": "M01",
+        "E2": "M06",
+        "E3": "M02",
+        "E4": "M03",
+        "E6": "M04",
+        "E7": "M05",
+        "E8": "M11",
+        "E9": "M12",
+        "E10": "M14",
+        "E11": "M15"
       },
       "ems_transformer_sc": {
-        "S1": "M03", "S2": "M08", "S3": "M02", "S4": "M01",
-        "S5": "M00", "S6_05": "M04", "S6_07": "M05", "S7": "M10",
-        "C1": "M11", "C4": "M12", "C6": "M14"
+        "S1": "M03",
+        "S2": "M08",
+        "S3": "M02",
+        "S4": "M01",
+        "S5": "M00",
+        "S6_05": "M04",
+        "S6_07": "M05",
+        "S7": "M10",
+        "C1": "M11",
+        "C4": "M12",
+        "C6": "M14"
       }
     }
   }

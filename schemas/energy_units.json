@@ -3,63 +3,84 @@
   "$id": "energy-contracts/energy_units.json",
   "title": "Energy Units & Conversion SSOT (Phase J-12)",
   "description": "kWh ↔ MJ ↔ kg-CO2 ↔ 1차 에너지 변환계수. ~/.claude/ENERGY_SSOT.md + CARBON_EMISSION_FACTORS.yaml 의 머신리더블 추출. 계산 코드는 본 SSOT를 사용.",
+  "_usage": "codegen",
+  "_consumers": [
+    "edge-agent",
+    "gridbridge",
+    "building-energy-3d",
+    "agentleague",
+    "eduarena"
+  ],
   "version": "1.0",
   "updated": "2026-05-17",
-
   "type": "object",
   "default": {
     "base_units": {
-      "energy":        "kWh",
-      "power":         "kW",
-      "carbon":        "kg_CO2",
-      "primary_energy":"kWh_pe",
-      "area":          "m2",
-      "temperature":   "celsius"
+      "energy": "kWh",
+      "power": "kW",
+      "carbon": "kg_CO2",
+      "primary_energy": "kWh_pe",
+      "area": "m2",
+      "temperature": "celsius"
     },
     "conversions": {
-      "kwh_to_mj":      3.6,
-      "mj_to_kwh":      0.27778,
-      "kwh_to_kcal":    860.421,
-      "kwh_to_tj":      3.6e-6,
-      "kwh_to_toe":     0.000086,
-      "kwh_to_btu":     3412.14,
-      "kwh_to_joule":   3600000
+      "kwh_to_mj": 3.6,
+      "mj_to_kwh": 0.27778,
+      "kwh_to_kcal": 860.421,
+      "kwh_to_tj": 3.6e-06,
+      "kwh_to_toe": 8.6e-05,
+      "kwh_to_btu": 3412.14,
+      "kwh_to_joule": 3600000
     },
     "primary_energy_factors": {
-      "electricity":      2.75,
-      "city_gas":         1.10,
+      "electricity": 2.75,
+      "city_gas": 1.1,
       "district_heating": 0.728,
       "district_cooling": 0.937,
-      "diesel":           1.10,
-      "lpg":              1.10,
-      "kerosene":         1.10,
-      "_comment":         "한국 에너지효율등급 인증제도 1차 에너지 환산계수. ~/.claude/ENERGY_SSOT.md §3.2"
+      "diesel": 1.1,
+      "lpg": 1.1,
+      "kerosene": 1.1,
+      "_comment": "한국 에너지효율등급 인증제도 1차 에너지 환산계수. ~/.claude/ENERGY_SSOT.md §3.2"
     },
     "emission_factors_kr": {
       "electricity_kg_co2_per_kwh": 0.4594,
-      "city_gas_kg_co2_per_nm3":    2.176,
-      "city_gas_kg_co2_per_kwh":    0.202,
+      "city_gas_kg_co2_per_nm3": 2.176,
+      "city_gas_kg_co2_per_kwh": 0.202,
       "district_heating_kg_co2_per_kwh": 0.115,
-      "diesel_kg_co2_per_l":        2.681,
-      "lpg_kg_co2_per_kg":          3.000,
-      "_comment":                   "KEA 2024 기준. CARBON_EMISSION_FACTORS.yaml 의 KR-2024 셀렉션"
+      "diesel_kg_co2_per_l": 2.681,
+      "lpg_kg_co2_per_kg": 3.0,
+      "_comment": "KEA 2024 기준. CARBON_EMISSION_FACTORS.yaml 의 KR-2024 셀렉션"
     },
     "zeb_thresholds_kwh_m2_yr": {
-      "1+":  0,
-      "1":   20,
-      "2":   40,
-      "3":   60,
-      "4":   80,
-      "5":   100,
+      "1+": 0,
+      "1": 20,
+      "2": 40,
+      "3": 60,
+      "4": 80,
+      "5": 100,
       "_comment": "ZEB 등급 1차에너지 소요량 (kWh/m²·yr). 적은 값이 더 좋은 등급."
     },
     "energy_grade_thresholds": {
       "type": "object",
       "non_residential": {
-        "1+": 80, "1": 140, "2": 200, "3": 260, "4": 320, "5": 380, "6": 450, "7": 520
+        "1+": 80,
+        "1": 140,
+        "2": 200,
+        "3": 260,
+        "4": 320,
+        "5": 380,
+        "6": 450,
+        "7": 520
       },
       "residential": {
-        "1+": 60, "1": 90, "2": 120, "3": 150, "4": 190, "5": 230, "6": 270, "7": 320
+        "1+": 60,
+        "1": 90,
+        "2": 120,
+        "3": 150,
+        "4": 190,
+        "5": 230,
+        "6": 270,
+        "7": 320
       },
       "_comment": "건물 에너지효율등급 1차에너지 소요량 (kWh/m²·yr)"
     }

@@ -3,13 +3,23 @@
   "$id": "energy-contracts/building_envelope.json",
   "title": "BuildingEnvelope",
   "description": "건물 외피·기하·설비 메타. 건축물대장 부정확 문제 해결용 — 현장 실측(field) 우선, 대장(register) 차선, 원형(archetype) 최후. Edge 등록 시 fleet/register 페이로드에 embed 가능하며 VW 측에서 포트폴리오 UI 로 편집.",
+  "_usage": "reference-only",
+  "_consumers": [
+    "edge-agent"
+  ],
   "version": "1.0",
   "type": "object",
-  "required": ["source_of_truth"],
+  "required": [
+    "source_of_truth"
+  ],
   "properties": {
     "source_of_truth": {
       "type": "string",
-      "enum": ["field", "register", "archetype"],
+      "enum": [
+        "field",
+        "register",
+        "archetype"
+      ],
       "description": "정확성 출처. field=현장 실측 / 에너지진단 / 준공도면, register=건축물대장, archetype=용도·연대별 원형 추정치. 우선순위: field > register > archetype."
     },
     "measured_at": {
@@ -59,7 +69,14 @@
         },
         "structure": {
           "type": "string",
-          "enum": ["RC", "SRC", "wood", "steel", "masonry", "other"],
+          "enum": [
+            "RC",
+            "SRC",
+            "wood",
+            "steel",
+            "masonry",
+            "other"
+          ],
           "description": "구조 분류. RC=철근콘크리트, SRC=철골철근콘크리트."
         }
       }
@@ -123,7 +140,16 @@
       "properties": {
         "hvac_type": {
           "type": "string",
-          "enum": ["VRF", "EHP", "GHP", "chiller_boiler", "district_heating", "individual_ac", "packaged_rooftop", "none"],
+          "enum": [
+            "VRF",
+            "EHP",
+            "GHP",
+            "chiller_boiler",
+            "district_heating",
+            "individual_ac",
+            "packaged_rooftop",
+            "none"
+          ],
           "description": "주 공조 방식. VRF=냉매 가변유량, EHP=전기 히트펌프, GHP=가스 히트펌프."
         },
         "hvac_cop_cooling": {
@@ -155,7 +181,10 @@
           "minimum": 0,
           "description": "기기부하 밀도 W/m². 오피스=10~15, 편의점 냉장설비 포함=30+."
         },
-        "has_ess": { "type": "boolean", "default": false },
+        "has_ess": {
+          "type": "boolean",
+          "default": false
+        },
         "ess_capacity_kwh": {
           "type": "number",
           "minimum": 0,
@@ -166,7 +195,10 @@
           "minimum": 0,
           "description": "ESS 정격 출력 kW."
         },
-        "has_pv": { "type": "boolean", "default": false },
+        "has_pv": {
+          "type": "boolean",
+          "default": false
+        },
         "pv_capacity_kw": {
           "type": "number",
           "minimum": 0,
@@ -186,10 +218,14 @@
       "type": "object",
       "description": "VEN 개별 오버라이드 메모. 기본 archetype 대비 변경된 필드만 기록. YAML Tier 3 (RFC §4.2) 대응.",
       "properties": {
-        "base_archetype": { "type": "string" },
+        "base_archetype": {
+          "type": "string"
+        },
         "changed_fields": {
           "type": "array",
-          "items": { "type": "string" },
+          "items": {
+            "type": "string"
+          },
           "description": "오버라이드된 필드 경로. 예: ['envelope.wall_uvalue', 'systems.hvac_cop_cooling']."
         }
       }

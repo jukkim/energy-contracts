@@ -3,6 +3,10 @@
   "$id": "energy-contracts/building_archetypes.json",
   "title": "Building Archetypes",
   "description": "건물 유형·용도 매핑·BUILDWISE EUI SSOT. NAMING_UNIFICATION.md §2 + constants.py 기반.",
+  "_usage": "reference-only",
+  "_consumers": [
+    "building-energy-3d"
+  ],
   "version": "2.0",
   "type": "object",
   "properties": {
@@ -12,24 +16,39 @@
       "additionalProperties": {
         "type": "object",
         "properties": {
-          "name_en":     { "type": "string" },
-          "area_m2":     { "type": "number" },
-          "hvac_types":  { "type": "array", "items": { "type": "string" } }
+          "name_en": {
+            "type": "string"
+          },
+          "area_m2": {
+            "type": "number"
+          },
+          "hvac_types": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
         }
       }
     },
     "usage_to_buildwise": {
       "type": "object",
       "description": "한국 건축 용도 → BuildWise 건물 유형 매핑",
-      "additionalProperties": { "type": "string" }
+      "additionalProperties": {
+        "type": "string"
+      }
     },
-    "default_buildwise_type": { "type": "string" },
+    "default_buildwise_type": {
+      "type": "string"
+    },
     "buildwise_eui_seoul": {
       "type": "object",
       "description": "BuildWise EUI 룩업 (kWh/m2/yr, 서울 기준). 키=건물유형, 값=전략별 EUI",
       "additionalProperties": {
         "type": "object",
-        "additionalProperties": { "type": "number" }
+        "additionalProperties": {
+          "type": "number"
+        }
       }
     },
     "retrofit_scenarios": {
@@ -38,17 +57,27 @@
       "items": {
         "type": "object",
         "properties": {
-          "name_kr":            { "type": "string" },
-          "name_en":            { "type": "string" },
-          "eui_reduction_pct":  { "type": "number" },
-          "cost_per_m2_krw":    { "type": "integer" }
+          "name_kr": {
+            "type": "string"
+          },
+          "name_en": {
+            "type": "string"
+          },
+          "eui_reduction_pct": {
+            "type": "number"
+          },
+          "cost_per_m2_krw": {
+            "type": "integer"
+          }
         }
       }
     },
     "usage_retrofit_factor": {
       "type": "object",
       "description": "용도별 리트로핏 절감률 보정 계수 (업무시설=1.0 기준)",
-      "additionalProperties": { "type": "number" }
+      "additionalProperties": {
+        "type": "number"
+      }
     },
     "energy_mix": {
       "type": "object",
@@ -56,77 +85,319 @@
       "additionalProperties": {
         "type": "object",
         "properties": {
-          "electricity": { "type": "number" },
-          "gas":         { "type": "number" },
-          "district_heat": { "type": "number" }
+          "electricity": {
+            "type": "number"
+          },
+          "gas": {
+            "type": "number"
+          },
+          "district_heat": {
+            "type": "number"
+          }
         }
       }
     }
   },
   "default": {
     "doe_buildings": {
-      "B01": { "name_en": "LargeOffice",             "area_m2": 46320, "hvac_types": ["HA", "HB", "HG"] },
-      "B02": { "name_en": "MediumOffice",             "area_m2": 4982,  "hvac_types": ["HC", "HD", "HF"] },
-      "B03": { "name_en": "SmallOffice",              "area_m2": 511,   "hvac_types": ["HC", "HE"] },
-      "B04": { "name_en": "Warehouse",                "area_m2": 4835,  "hvac_types": ["HC"] },
-      "B05": { "name_en": "StandaloneRetail",         "area_m2": 2294,  "hvac_types": ["HC"] },
-      "B06": { "name_en": "StripMall",                "area_m2": 2090,  "hvac_types": ["HC"] },
-      "B07": { "name_en": "PrimarySchool",            "area_m2": 6871,  "hvac_types": ["HA", "HF"] },
-      "B08": { "name_en": "SecondarySchool",          "area_m2": 19592, "hvac_types": ["HA", "HB", "HF"] },
-      "B09": { "name_en": "Supermarket",              "area_m2": 4181,  "hvac_types": ["HC"] },
-      "B10": { "name_en": "FullServiceRestaurant",    "area_m2": 511,   "hvac_types": ["HC"] },
-      "B11": { "name_en": "QuickServiceRestaurant",   "area_m2": 232,   "hvac_types": ["HC", "HE"] },
-      "B12": { "name_en": "Hospital",                 "area_m2": 22422, "hvac_types": ["HA"] },
-      "B13": { "name_en": "OutpatientHealthcare",     "area_m2": 3804,  "hvac_types": ["HC", "HD"] },
-      "B14": { "name_en": "SmallHotel",               "area_m2": 4013,  "hvac_types": ["HC", "HD"] },
-      "B15": { "name_en": "LargeHotel",               "area_m2": 11345, "hvac_types": ["HA", "HD"] },
-      "B16": { "name_en": "MidRiseApartment",         "area_m2": 1457,  "hvac_types": ["HD", "HE", "HG"] },
-      "B17": { "name_en": "HighRiseApartment",        "area_m2": 3135,  "hvac_types": ["HE", "HG"] }
+      "B01": {
+        "name_en": "LargeOffice",
+        "area_m2": 46320,
+        "hvac_types": [
+          "HA",
+          "HB",
+          "HG"
+        ]
+      },
+      "B02": {
+        "name_en": "MediumOffice",
+        "area_m2": 4982,
+        "hvac_types": [
+          "HC",
+          "HD",
+          "HF"
+        ]
+      },
+      "B03": {
+        "name_en": "SmallOffice",
+        "area_m2": 511,
+        "hvac_types": [
+          "HC",
+          "HE"
+        ]
+      },
+      "B04": {
+        "name_en": "Warehouse",
+        "area_m2": 4835,
+        "hvac_types": [
+          "HC"
+        ]
+      },
+      "B05": {
+        "name_en": "StandaloneRetail",
+        "area_m2": 2294,
+        "hvac_types": [
+          "HC"
+        ]
+      },
+      "B06": {
+        "name_en": "StripMall",
+        "area_m2": 2090,
+        "hvac_types": [
+          "HC"
+        ]
+      },
+      "B07": {
+        "name_en": "PrimarySchool",
+        "area_m2": 6871,
+        "hvac_types": [
+          "HA",
+          "HF"
+        ]
+      },
+      "B08": {
+        "name_en": "SecondarySchool",
+        "area_m2": 19592,
+        "hvac_types": [
+          "HA",
+          "HB",
+          "HF"
+        ]
+      },
+      "B09": {
+        "name_en": "Supermarket",
+        "area_m2": 4181,
+        "hvac_types": [
+          "HC"
+        ]
+      },
+      "B10": {
+        "name_en": "FullServiceRestaurant",
+        "area_m2": 511,
+        "hvac_types": [
+          "HC"
+        ]
+      },
+      "B11": {
+        "name_en": "QuickServiceRestaurant",
+        "area_m2": 232,
+        "hvac_types": [
+          "HC",
+          "HE"
+        ]
+      },
+      "B12": {
+        "name_en": "Hospital",
+        "area_m2": 22422,
+        "hvac_types": [
+          "HA"
+        ]
+      },
+      "B13": {
+        "name_en": "OutpatientHealthcare",
+        "area_m2": 3804,
+        "hvac_types": [
+          "HC",
+          "HD"
+        ]
+      },
+      "B14": {
+        "name_en": "SmallHotel",
+        "area_m2": 4013,
+        "hvac_types": [
+          "HC",
+          "HD"
+        ]
+      },
+      "B15": {
+        "name_en": "LargeHotel",
+        "area_m2": 11345,
+        "hvac_types": [
+          "HA",
+          "HD"
+        ]
+      },
+      "B16": {
+        "name_en": "MidRiseApartment",
+        "area_m2": 1457,
+        "hvac_types": [
+          "HD",
+          "HE",
+          "HG"
+        ]
+      },
+      "B17": {
+        "name_en": "HighRiseApartment",
+        "area_m2": 3135,
+        "hvac_types": [
+          "HE",
+          "HG"
+        ]
+      }
     },
     "usage_to_buildwise": {
-      "업무시설":           "large_office",
-      "근린생활시설":       "small_office",
-      "제1종근린생활시설":  "small_office",
-      "제2종근린생활시설":  "small_office",
-      "판매시설":           "standalone_retail",
-      "교육연구시설":       "primary_school",
-      "의료시설":           "hospital",
-      "공동주택":           "medium_office",
-      "숙박시설":           "medium_office"
+      "업무시설": "large_office",
+      "근린생활시설": "small_office",
+      "제1종근린생활시설": "small_office",
+      "제2종근린생활시설": "small_office",
+      "판매시설": "standalone_retail",
+      "교육연구시설": "primary_school",
+      "의료시설": "hospital",
+      "공동주택": "medium_office",
+      "숙박시설": "medium_office"
     },
     "default_buildwise_type": "small_office",
     "buildwise_eui_seoul": {
-      "large_office":      { "M00": 119.75, "M01": 117.95, "M06": 118.10, "M02": 111.72, "M03": 114.47, "M04": 113.17, "M05": 112.81, "M11": 109.83, "M12": 110.57, "M13": 110.29 },
-      "medium_office":     { "M00": 77.57,  "M01": 77.57,  "M04": 76.32,  "M05": 75.74 },
-      "small_office":      { "M00": 97.78,  "M02": 90.50,  "M04": 87.88,  "M05": 86.58,  "M11": 90.50,  "M12": 86.32,  "M13": 85.02 },
-      "standalone_retail": { "M00": 130.36, "M01": 151.83, "M02": 130.83, "M04": 119.08, "M05": 115.59, "M11": 130.83, "M12": 118.46, "M13": 114.98 },
-      "primary_school":    { "M00": 143.30, "M01": 143.21, "M06": 143.85, "M02": 139.50, "M03": 143.03, "M04": 136.92, "M05": 134.80, "M11": 139.50, "M12": 134.22, "M13": 132.16 },
-      "hospital":          { "M00": 340.20 }
+      "large_office": {
+        "M00": 119.75,
+        "M01": 117.95,
+        "M06": 118.1,
+        "M02": 111.72,
+        "M03": 114.47,
+        "M04": 113.17,
+        "M05": 112.81,
+        "M11": 109.83,
+        "M12": 110.57,
+        "M13": 110.29
+      },
+      "medium_office": {
+        "M00": 77.57,
+        "M01": 77.57,
+        "M04": 76.32,
+        "M05": 75.74
+      },
+      "small_office": {
+        "M00": 97.78,
+        "M02": 90.5,
+        "M04": 87.88,
+        "M05": 86.58,
+        "M11": 90.5,
+        "M12": 86.32,
+        "M13": 85.02
+      },
+      "standalone_retail": {
+        "M00": 130.36,
+        "M01": 151.83,
+        "M02": 130.83,
+        "M04": 119.08,
+        "M05": 115.59,
+        "M11": 130.83,
+        "M12": 118.46,
+        "M13": 114.98
+      },
+      "primary_school": {
+        "M00": 143.3,
+        "M01": 143.21,
+        "M06": 143.85,
+        "M02": 139.5,
+        "M03": 143.03,
+        "M04": 136.92,
+        "M05": 134.8,
+        "M11": 139.5,
+        "M12": 134.22,
+        "M13": 132.16
+      },
+      "hospital": {
+        "M00": 340.2
+      }
     },
     "retrofit_scenarios": [
-      { "name_kr": "외벽 단열 강화", "name_en": "wall_insulation",    "eui_reduction_pct": 12.0, "cost_per_m2_krw": 120000 },
-      { "name_kr": "창호 교체",      "name_en": "window_replacement", "eui_reduction_pct": 8.0,  "cost_per_m2_krw": 80000 },
-      { "name_kr": "LED 조명 교체",  "name_en": "led_lighting",       "eui_reduction_pct": 5.0,  "cost_per_m2_krw": 15000 },
-      { "name_kr": "고효율 보일러",  "name_en": "boiler_upgrade",     "eui_reduction_pct": 8.0,  "cost_per_m2_krw": 35000 },
-      { "name_kr": "옥상 PV 설치",   "name_en": "rooftop_pv",         "eui_reduction_pct": 5.0,  "cost_per_m2_krw": 50000 }
+      {
+        "name_kr": "외벽 단열 강화",
+        "name_en": "wall_insulation",
+        "eui_reduction_pct": 12.0,
+        "cost_per_m2_krw": 120000
+      },
+      {
+        "name_kr": "창호 교체",
+        "name_en": "window_replacement",
+        "eui_reduction_pct": 8.0,
+        "cost_per_m2_krw": 80000
+      },
+      {
+        "name_kr": "LED 조명 교체",
+        "name_en": "led_lighting",
+        "eui_reduction_pct": 5.0,
+        "cost_per_m2_krw": 15000
+      },
+      {
+        "name_kr": "고효율 보일러",
+        "name_en": "boiler_upgrade",
+        "eui_reduction_pct": 8.0,
+        "cost_per_m2_krw": 35000
+      },
+      {
+        "name_kr": "옥상 PV 설치",
+        "name_en": "rooftop_pv",
+        "eui_reduction_pct": 5.0,
+        "cost_per_m2_krw": 50000
+      }
     ],
     "usage_retrofit_factor": {
-      "업무시설": 1.0, "공동주택": 0.7, "단독주택": 0.5,
-      "교육연구시설": 0.85, "의료시설": 0.6, "판매시설": 1.1,
-      "숙박시설": 0.7, "공장": 0.4, "종교시설": 0.8,
-      "근린생활시설": 0.9, "제1종근린생활시설": 0.9, "제2종근린생활시설": 0.9
+      "업무시설": 1.0,
+      "공동주택": 0.7,
+      "단독주택": 0.5,
+      "교육연구시설": 0.85,
+      "의료시설": 0.6,
+      "판매시설": 1.1,
+      "숙박시설": 0.7,
+      "공장": 0.4,
+      "종교시설": 0.8,
+      "근린생활시설": 0.9,
+      "제1종근린생활시설": 0.9,
+      "제2종근린생활시설": 0.9
     },
     "energy_mix": {
-      "공동주택":     { "electricity": 0.35, "gas": 0.65, "district_heat": 0.00 },
-      "공동주택_DH":  { "electricity": 0.35, "gas": 0.55, "district_heat": 0.10 },
-      "단독주택":     { "electricity": 0.30, "gas": 0.70, "district_heat": 0.00 },
-      "업무시설":     { "electricity": 0.80, "gas": 0.20, "district_heat": 0.00 },
-      "업무시설_DH":  { "electricity": 0.60, "gas": 0.25, "district_heat": 0.15 },
-      "판매시설":     { "electricity": 0.85, "gas": 0.15, "district_heat": 0.00 },
-      "교육연구":     { "electricity": 0.60, "gas": 0.40, "district_heat": 0.00 },
-      "의료시설":     { "electricity": 0.55, "gas": 0.35, "district_heat": 0.10 },
-      "공장":         { "electricity": 0.60, "gas": 0.40, "district_heat": 0.00 },
-      "default":      { "electricity": 0.65, "gas": 0.35, "district_heat": 0.00 }
+      "공동주택": {
+        "electricity": 0.35,
+        "gas": 0.65,
+        "district_heat": 0.0
+      },
+      "공동주택_DH": {
+        "electricity": 0.35,
+        "gas": 0.55,
+        "district_heat": 0.1
+      },
+      "단독주택": {
+        "electricity": 0.3,
+        "gas": 0.7,
+        "district_heat": 0.0
+      },
+      "업무시설": {
+        "electricity": 0.8,
+        "gas": 0.2,
+        "district_heat": 0.0
+      },
+      "업무시설_DH": {
+        "electricity": 0.6,
+        "gas": 0.25,
+        "district_heat": 0.15
+      },
+      "판매시설": {
+        "electricity": 0.85,
+        "gas": 0.15,
+        "district_heat": 0.0
+      },
+      "교육연구": {
+        "electricity": 0.6,
+        "gas": 0.4,
+        "district_heat": 0.0
+      },
+      "의료시설": {
+        "electricity": 0.55,
+        "gas": 0.35,
+        "district_heat": 0.1
+      },
+      "공장": {
+        "electricity": 0.6,
+        "gas": 0.4,
+        "district_heat": 0.0
+      },
+      "default": {
+        "electricity": 0.65,
+        "gas": 0.35,
+        "district_heat": 0.0
+      }
     }
   }
 }

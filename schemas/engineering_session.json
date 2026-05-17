@@ -3,11 +3,19 @@
   "$id": "energy-contracts/engineering_session.json",
   "title": "EngineeringSession",
   "description": "Edge 현장 기사가 건물 엔지니어링 (설치·시운전·수정) 을 한 번 수행한 세션 기록. Edge 가 설치 마법사 완료 (seal) 시점에 로컬 `engineering/sessions/{session_id}.yaml` 에 저장하고, `fleet/engineering/{ven_id}` (retain=True) 로 최신 세션을 GB 에 복제. 재방문 시 기사가 previous_session_id 체인으로 타임라인을 조회. R8-5 (2026-04-20).",
+  "_usage": "reference-only",
+  "_consumers": [
+    "edge-agent"
+  ],
   "version": "1.0",
   "type": "object",
   "required": [
-    "session_id", "ven_id", "started_at", "sealed_at",
-    "bundle_version", "commissioning_hash"
+    "session_id",
+    "ven_id",
+    "started_at",
+    "sealed_at",
+    "bundle_version",
+    "commissioning_hash"
   ],
   "properties": {
     "session_id": {
@@ -58,15 +66,21 @@
       "type": "object",
       "description": "Dry-run (4단계) 결과. seal 전 반드시 passed=true 여야 함.",
       "properties": {
-        "passed": { "type": "boolean" },
+        "passed": {
+          "type": "boolean"
+        },
         "tested_techs": {
           "type": "array",
-          "items": { "type": "string" },
+          "items": {
+            "type": "string"
+          },
           "description": "실제로 프리뷰·시뮬을 돌린 기술 ID 목록."
         },
         "warnings": {
           "type": "array",
-          "items": { "type": "string" }
+          "items": {
+            "type": "string"
+          }
         },
         "elapsed_sec": {
           "type": "number",
@@ -74,7 +88,9 @@
           "description": "Dry-run 총 소요 시간."
         }
       },
-      "required": ["passed"]
+      "required": [
+        "passed"
+      ]
     },
     "commissioning_hash": {
       "type": "string",
@@ -84,9 +100,13 @@
     "previous_session_id": {
       "description": "직전 세션 UUID (재방문·수정 시). 초기 설치면 null. engineering_diff.json 로 변경 내역 기록.",
       "oneOf": [
-        { "type": "string",
-          "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$" },
-        { "type": "null" }
+        {
+          "type": "string",
+          "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$"
+        },
+        {
+          "type": "null"
+        }
       ]
     },
     "notes": {

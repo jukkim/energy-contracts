@@ -3,9 +3,20 @@
   "$id": "energy-contracts/edge_registration.json",
   "title": "EdgeRegistration",
   "description": "EdgeAgent 기동 시 MQTT `fleet/register/{ven_id}` 또는 `gridbridge/registration/{ven_id}` 토픽으로 발행하는 자동 등록 메타. Edge → GB. VW broker-architecture §5 호환.",
+  "_usage": "runtime-validate",
+  "_consumers": [
+    "edge-agent"
+  ],
   "version": "1.1",
   "type": "object",
-  "required": ["ven_id", "edge_type", "kind", "backend", "capabilities", "registered_at"],
+  "required": [
+    "ven_id",
+    "edge_type",
+    "kind",
+    "backend",
+    "capabilities",
+    "registered_at"
+  ],
   "properties": {
     "ven_id": {
       "type": "string",
@@ -14,82 +25,161 @@
     },
     "edge_type": {
       "type": "string",
-      "enum": ["real_edge", "replay_edge", "energyplus_emulator"],
+      "enum": [
+        "real_edge",
+        "replay_edge",
+        "energyplus_emulator"
+      ],
       "description": "VW broker-architecture §4 + common.json §EdgeType SSOT. 보통 replay→replay_edge, energyplus→energyplus_emulator, 그 외→real_edge."
     },
     "kind": {
       "type": "string",
-      "enum": ["telemetry", "dispatch"],
+      "enum": [
+        "telemetry",
+        "dispatch"
+      ],
       "description": "운영 모드 — common.json §Kind SSOT. 보통 replay_edge→telemetry, real_edge·energyplus_emulator→dispatch."
     },
     "backend": {
       "type": "string",
-      "enum": ["replay", "energyplus", "real_bas", "virtual"],
+      "enum": [
+        "replay",
+        "energyplus",
+        "real_bas",
+        "virtual"
+      ],
       "description": "구현 기술 — common.json §Backend SSOT."
     },
     "building_type": {
       "type": "string",
-      "enum": ["office_large","office_medium","office_small","hospital","school","retail","convenience_store","apartment","other"],
+      "enum": [
+        "office_large",
+        "office_medium",
+        "office_small",
+        "hospital",
+        "school",
+        "retail",
+        "convenience_store",
+        "apartment",
+        "other"
+      ],
       "description": "common.json §BuildingType SSOT."
     },
     "group_id": {
       "type": "string",
       "description": "ESG 그룹. 예: ESG-STORE-100, ESG-STORE-120, ESG-EP-OFFICE, ESG-EP-APT"
     },
-    "pnu": { "type": "string" },
-    "building_name": { "type": "string" },
+    "pnu": {
+      "type": "string"
+    },
+    "building_name": {
+      "type": "string"
+    },
     "location": {
       "type": "object",
       "properties": {
-        "lat": { "type": "number" },
-        "lng": { "type": "number" }
+        "lat": {
+          "type": "number"
+        },
+        "lng": {
+          "type": "number"
+        }
       }
     },
     "ep_model": {
       "type": "string",
       "description": "backend=energyplus 일 때 IDF 템플릿 식별자(예: medium_office_2010_RC)"
     },
-    "baseline_kw": { "type": "number", "minimum": 0 },
-    "max_reduction_kw": { "type": "number", "minimum": 0 },
+    "baseline_kw": {
+      "type": "number",
+      "minimum": 0
+    },
+    "max_reduction_kw": {
+      "type": "number",
+      "minimum": 0
+    },
     "capabilities": {
       "type": "object",
-      "required": ["supported_strategies"],
+      "required": [
+        "supported_strategies"
+      ],
       "properties": {
         "supported_strategies": {
           "type": "array",
-          "items": { "type": "string", "pattern": "^M(0[0-9]|1[0-5])$" }
+          "items": {
+            "type": "string",
+            "pattern": "^M(0[0-9]|1[0-5])$"
+          }
         },
         "controllable_points": {
           "type": "array",
-          "items": { "type": "string" },
+          "items": {
+            "type": "string"
+          },
           "description": "예: ['hvac_setpoint','lighting_pct','ess_discharge']"
         },
-        "has_ess": { "type": "boolean", "default": false },
-        "has_pv": { "type": "boolean", "default": false },
-        "step_seconds": { "type": "integer", "minimum": 60, "description": "시뮬/계측 최소 타임스텝" }
+        "has_ess": {
+          "type": "boolean",
+          "default": false
+        },
+        "has_pv": {
+          "type": "boolean",
+          "default": false
+        },
+        "step_seconds": {
+          "type": "integer",
+          "minimum": 60,
+          "description": "시뮬/계측 최소 타임스텝"
+        }
       }
     },
     "software": {
       "type": "object",
       "properties": {
-        "firmware_version": { "type": "string" },
-        "edge_agent_version": { "type": "string" },
+        "firmware_version": {
+          "type": "string"
+        },
+        "edge_agent_version": {
+          "type": "string"
+        },
         "driver_types": {
           "type": "array",
-          "items": { "type": "string", "enum": ["virtual","replay","energyplus","bacnet","modbus","matter"] }
+          "items": {
+            "type": "string",
+            "enum": [
+              "virtual",
+              "replay",
+              "energyplus",
+              "bacnet",
+              "modbus",
+              "matter"
+            ]
+          }
         }
       }
     },
     "hardware": {
       "type": "object",
       "properties": {
-        "platform": { "type": "string", "description": "예: rpi5, x86-industrial, container" },
-        "cpu_cores": { "type": "integer" },
-        "memory_mb": { "type": "integer" }
+        "platform": {
+          "type": "string",
+          "description": "예: rpi5, x86-industrial, container"
+        },
+        "cpu_cores": {
+          "type": "integer"
+        },
+        "memory_mb": {
+          "type": "integer"
+        }
       }
     },
-    "mqtt_client_id": { "type": "string" },
-    "registered_at": { "type": "string", "format": "date-time" },
+    "mqtt_client_id": {
+      "type": "string"
+    },
+    "registered_at": {
+      "type": "string",
+      "format": "date-time"
+    },
     "envelope": {
       "type": "object",
       "description": "건물 외피·기하·설비 메타 (선택). 전체 스키마는 building_envelope.json v1.0 SSOT 참조. Edge 가 현장 실측값 보유 시 등록 페이로드에 embed — VW 측 포트폴리오 UI 에서 편집 가능."

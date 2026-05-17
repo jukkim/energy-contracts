@@ -3,8 +3,14 @@
   "$id": "https://building-energy.xyz/schemas/esg_venue_bulk_sync.json",
   "title": "EsgVenueBulkSync",
   "description": "ESG 그룹 VEN 일괄 동기화. PUT /api/v1/gridbridge/esg/groups/{group_id}/venues (R14-8)",
+  "_usage": "reference-only",
+  "_consumers": [
+    "gridbridge"
+  ],
   "type": "object",
-  "required": ["venue_ids"],
+  "required": [
+    "venue_ids"
+  ],
   "properties": {
     "venue_ids": {
       "type": "array",
@@ -12,37 +18,56 @@
       "items": {
         "type": "string",
         "description": "VEN ID",
-        "examples": ["VEN-STORE-B008", "VEN-STORE-B009"]
+        "examples": [
+          "VEN-STORE-B008",
+          "VEN-STORE-B009"
+        ]
       },
       "uniqueItems": true
     },
     "sync_mode": {
       "type": "string",
       "description": "동기화 모드",
-      "enum": ["replace", "upsert"],
+      "enum": [
+        "replace",
+        "upsert"
+      ],
       "default": "replace",
-      "examples": ["replace"]
+      "examples": [
+        "replace"
+      ]
     }
   },
   "definitions": {
     "BulkVenueSyncResponse": {
       "type": "object",
-      "required": ["group_id", "added", "removed", "unchanged"],
+      "required": [
+        "group_id",
+        "added",
+        "removed",
+        "unchanged"
+      ],
       "properties": {
         "group_id": {
           "type": "string",
           "description": "ESG 그룹 ID",
-          "examples": ["ESG-PF-7"]
+          "examples": [
+            "ESG-PF-7"
+          ]
         },
         "added": {
           "type": "array",
           "description": "새로 추가된 VEN ID 목록",
-          "items": {"type": "string"}
+          "items": {
+            "type": "string"
+          }
         },
         "removed": {
           "type": "array",
           "description": "그룹에서 제거된 VEN ID 목록",
-          "items": {"type": "string"}
+          "items": {
+            "type": "string"
+          }
         },
         "unchanged": {
           "type": "integer",

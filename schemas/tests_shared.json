@@ -3,41 +3,95 @@
   "$id": "energy-contracts/tests_shared.json",
   "title": "Shared Test Fixtures SSOT (Phase K-13)",
   "description": "워크스페이스 공통 테스트 fixture. M00~M15 케이스, sample VEN/PNU/Building. 6 프로젝트 중복 제거.",
+  "_usage": "codegen",
+  "_consumers": [
+    "edge-agent",
+    "gridbridge",
+    "building-energy-3d",
+    "agentleague",
+    "eduarena"
+  ],
   "version": "1.0",
   "updated": "2026-05-17",
-
   "type": "object",
   "default": {
     "sample_vens": [
-      {"ven_id": "VEN-STORE-001",  "kind": "telemetry", "backend": "virtual", "group_id": "default"},
-      {"ven_id": "VEN-OFFICE-001", "kind": "dispatch",  "backend": "energyplus", "group_id": "default"},
-      {"ven_id": "VEN-FACTORY-A1", "kind": "dispatch",  "backend": "real_bas", "group_id": "kepco-metro"}
+      {
+        "ven_id": "VEN-STORE-001",
+        "kind": "telemetry",
+        "backend": "virtual",
+        "group_id": "default"
+      },
+      {
+        "ven_id": "VEN-OFFICE-001",
+        "kind": "dispatch",
+        "backend": "energyplus",
+        "group_id": "default"
+      },
+      {
+        "ven_id": "VEN-FACTORY-A1",
+        "kind": "dispatch",
+        "backend": "real_bas",
+        "group_id": "kepco-metro"
+      }
     ],
     "sample_pnus": [
-      {"pnu": "1168010100100090000",  "usage": "office",       "name": "강남 테헤란로 90"},
-      {"pnu": "1168010100100100000",  "usage": "residential_apt", "name": "강남 아파트 100"},
-      {"pnu": "1162010500100200000",  "usage": "convenience_store", "name": "관악 편의점 200"}
+      {
+        "pnu": "1168010100100090000",
+        "usage": "office",
+        "name": "강남 테헤란로 90"
+      },
+      {
+        "pnu": "1168010100100100000",
+        "usage": "residential_apt",
+        "name": "강남 아파트 100"
+      },
+      {
+        "pnu": "1162010500100200000",
+        "usage": "convenience_store",
+        "name": "관악 편의점 200"
+      }
     ],
-    "sample_strategies": ["M00", "M01", "M04", "M14", "M15"],
-    "sample_signal_levels": ["NORMAL", "MODERATE", "HIGH", "EMERGENCY"],
+    "sample_strategies": [
+      "M00",
+      "M01",
+      "M04",
+      "M14",
+      "M15"
+    ],
+    "sample_signal_levels": [
+      "NORMAL",
+      "MODERATE",
+      "HIGH",
+      "EMERGENCY"
+    ],
     "sample_building_context": {
-      "pnu":          "1168010100100090000",
-      "address":      "서울 강남구 테헤란로 90",
-      "usage_type":   "office",
-      "gross_area":   5000.0,
-      "floors":       10,
-      "built_year":   2015,
-      "structure":    "RC",
-      "eui":          150.0,
-      "energy_tier":  2,
+      "pnu": "1168010100100090000",
+      "address": "서울 강남구 테헤란로 90",
+      "usage_type": "office",
+      "gross_area": 5000.0,
+      "floors": 10,
+      "built_year": 2015,
+      "structure": "RC",
+      "eui": 150.0,
+      "energy_tier": 2,
       "energy_grade": "3",
-      "has_kapt":     false,
-      "has_hourly":   true,
+      "has_kapt": false,
+      "has_hourly": true,
       "has_fire_risk": false
     },
     "sample_mqtt_payloads": {
-      "telemetry": {"ven_id": "VEN-STORE-001", "ts": "2026-05-17T12:00:00+09:00", "power_kw": 12.5, "temp_c": 24.0},
-      "command":   {"ven_id": "VEN-STORE-001", "strategy": "M04", "hvac_setpoint": 26.0}
+      "telemetry": {
+        "ven_id": "VEN-STORE-001",
+        "ts": "2026-05-17T12:00:00+09:00",
+        "power_kw": 12.5,
+        "temp_c": 24.0
+      },
+      "command": {
+        "ven_id": "VEN-STORE-001",
+        "strategy": "M04",
+        "hvac_setpoint": 26.0
+      }
     }
   }
 }

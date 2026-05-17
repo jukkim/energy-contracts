@@ -3,9 +3,18 @@
   "$id": "energy-contracts/provision_ack.json",
   "title": "ProvisionAck",
   "description": "Edge → GB 프로비저닝 수신/적용 결과. Edge 가 `fleet/provision_ack/{ven_id}` 토픽에 발행. provisioning_id 로 원본 요청과 매칭.",
+  "_usage": "reference-only",
+  "_consumers": [
+    "edge-agent"
+  ],
   "version": "1.0",
   "type": "object",
-  "required": ["provisioning_id", "ven_id", "status", "acked_at"],
+  "required": [
+    "provisioning_id",
+    "ven_id",
+    "status",
+    "acked_at"
+  ],
   "properties": {
     "provisioning_id": {
       "type": "string",
@@ -15,13 +24,25 @@
       "type": "string",
       "pattern": "^VEN-(STORE|EP|REAL|TEST|E2E|SHOP)-[A-Z0-9][A-Z0-9\\-]*$"
     },
-    "revision": { "type": "integer", "minimum": 1 },
+    "revision": {
+      "type": "integer",
+      "minimum": 1
+    },
     "status": {
       "type": "string",
-      "enum": ["applied", "pending_restart", "rejected", "validated", "hash_mismatch"],
+      "enum": [
+        "applied",
+        "pending_restart",
+        "rejected",
+        "validated",
+        "hash_mismatch"
+      ],
       "description": "applied=적용 완료, pending_restart=수신 OK 이나 재기동 필요, rejected=검증 실패(이유는 reason), validated=dry_run 검증 통과, hash_mismatch=적용 후 config_hash 불일치(상세 actual_config_hash 참조)."
     },
-    "acked_at": { "type": "string", "format": "date-time" },
+    "acked_at": {
+      "type": "string",
+      "format": "date-time"
+    },
     "applied_at": {
       "type": "string",
       "format": "date-time",
@@ -38,7 +59,9 @@
     },
     "warnings": {
       "type": "array",
-      "items": { "type": "string" },
+      "items": {
+        "type": "string"
+      },
       "description": "적용은 됐지만 주의 사항. 예: 'source_of_truth=archetype — 실측 권장'."
     }
   }
