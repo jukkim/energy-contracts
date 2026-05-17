@@ -85,7 +85,16 @@
           "phase":       {"type": "integer", "enum": [1, 2, 3, 4, 5]},
           "maturity":    {"$ref": "#/$defs/MaturityLevel"},
           "requires":    {"type": "array", "items": {"type": "string"},
-                          "description": "선행 에이전트 ID (예: A03/A04/A07은 A01 필요)"}
+                          "description": "선행 에이전트 ID (예: A03/A04/A07은 A01 필요)"},
+          "output_strategies": {
+            "type": "array",
+            "items": {"type": "string", "pattern": "^M(0[0-9]|1[0-5])$"},
+            "description": "이 에이전트가 산출할 수 있는 EMS 전략 코드 (Phase H 추가). 비어있으면 전략을 산출하지 않음 (예: 진단·예측·벤치마크)."
+          },
+          "output_data_source": {
+            "$ref": "energy-contracts/data_classification.json#/$defs/DataSource",
+            "description": "이 에이전트 결과의 데이터 출처 분류 (Phase H 추가). measured/certified/simulated/predicted/external/synthetic/mock"
+          }
         }
       }
     }
@@ -93,16 +102,16 @@
 
   "default": {
     "registry": {
-      "a01_diagnosis":   {"id": "a01", "name_en": "Diagnosis",       "name_kr": "진단",           "capability": "diagnosis",    "phase": 1, "maturity": "L0_template", "requires": []},
-      "a02_forecast":    {"id": "a02", "name_en": "Forecast",        "name_kr": "예측",           "capability": "forecast",     "phase": 2, "maturity": "L0_template", "requires": ["a01"]},
-      "a03_optimizer":   {"id": "a03", "name_en": "Optimizer",       "name_kr": "최적화",         "capability": "optimization", "phase": 1, "maturity": "L0_template", "requires": ["a01"]},
-      "a04_carbon":      {"id": "a04", "name_en": "Carbon",          "name_kr": "탄소",           "capability": "carbon",       "phase": 1, "maturity": "L0_template", "requires": ["a01"]},
-      "a05_safety":      {"id": "a05", "name_en": "Safety",          "name_kr": "안전",           "capability": "safety",       "phase": 2, "maturity": "L0_template", "requires": ["a01"]},
-      "a06_renewable":   {"id": "a06", "name_en": "Renewable",       "name_kr": "신재생",         "capability": "renewable",    "phase": 2, "maturity": "L0_template", "requires": ["a01"]},
-      "a07_benchmark":   {"id": "a07", "name_en": "Benchmark",       "name_kr": "벤치마크",       "capability": "benchmark",    "phase": 1, "maturity": "L0_template", "requires": ["a01"]},
-      "a08_market":      {"id": "a08", "name_en": "Market",          "name_kr": "시장",           "capability": "market",       "phase": 2, "maturity": "L0_template", "requires": ["a01"]},
-      "a09_policy":      {"id": "a09", "name_en": "Policy",          "name_kr": "정책",           "capability": "policy",       "phase": 2, "maturity": "L0_template", "requires": ["a01"]},
-      "a10_coordinator": {"id": "a10", "name_en": "Coordinator",     "name_kr": "코디네이터",     "capability": "coordination", "phase": 1, "maturity": "L0_template", "requires": ["a01"]}
+      "a01_diagnosis":   {"id": "a01", "name_en": "Diagnosis",       "name_kr": "진단",           "capability": "diagnosis",    "phase": 1, "maturity": "L0_template", "requires": [],      "output_strategies": [],                                          "output_data_source": "predicted"},
+      "a02_forecast":    {"id": "a02", "name_en": "Forecast",        "name_kr": "예측",           "capability": "forecast",     "phase": 2, "maturity": "L0_template", "requires": ["a01"], "output_strategies": [],                                          "output_data_source": "predicted"},
+      "a03_optimizer":   {"id": "a03", "name_en": "Optimizer",       "name_kr": "최적화",         "capability": "optimization", "phase": 1, "maturity": "L0_template", "requires": ["a01"], "output_strategies": ["M03", "M06", "M11", "M12", "M13"],         "output_data_source": "simulated"},
+      "a04_carbon":      {"id": "a04", "name_en": "Carbon",          "name_kr": "탄소",           "capability": "carbon",       "phase": 1, "maturity": "L0_template", "requires": ["a01"], "output_strategies": [],                                          "output_data_source": "certified"},
+      "a05_safety":      {"id": "a05", "name_en": "Safety",          "name_kr": "안전",           "capability": "safety",       "phase": 2, "maturity": "L0_template", "requires": ["a01"], "output_strategies": [],                                          "output_data_source": "predicted"},
+      "a06_renewable":   {"id": "a06", "name_en": "Renewable",       "name_kr": "신재생",         "capability": "renewable",    "phase": 2, "maturity": "L0_template", "requires": ["a01"], "output_strategies": ["M09"],                                     "output_data_source": "simulated"},
+      "a07_benchmark":   {"id": "a07", "name_en": "Benchmark",       "name_kr": "벤치마크",       "capability": "benchmark",    "phase": 1, "maturity": "L0_template", "requires": ["a01"], "output_strategies": [],                                          "output_data_source": "certified"},
+      "a08_market":      {"id": "a08", "name_en": "Market",          "name_kr": "시장",           "capability": "market",       "phase": 2, "maturity": "L0_template", "requires": ["a01"], "output_strategies": [],                                          "output_data_source": "external"},
+      "a09_policy":      {"id": "a09", "name_en": "Policy",          "name_kr": "정책",           "capability": "policy",       "phase": 2, "maturity": "L0_template", "requires": ["a01"], "output_strategies": [],                                          "output_data_source": "certified"},
+      "a10_coordinator": {"id": "a10", "name_en": "Coordinator",     "name_kr": "코디네이터",     "capability": "coordination", "phase": 1, "maturity": "L0_template", "requires": ["a01"], "output_strategies": ["M14", "M15"],                              "output_data_source": "simulated"}
     }
   }
 }

@@ -1,0 +1,52 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "energy-contracts/computer_profile.json",
+  "title": "Computer Profile SSOT (Phase J-6)",
+  "description": "워크스페이스 컴퓨터 A/B identity SSOT. ~/.claude/CLAUDE.md Computer Identity 섹션을 머신리더블로. SessionStart hook 자동 로드 대상.",
+  "version": "1.0",
+  "updated": "2026-05-17",
+
+  "$defs": {
+    "Machine": {
+      "type": "string",
+      "enum": ["A", "B", "CI", "Linux-Dev"]
+    }
+  },
+
+  "type": "object",
+  "default": {
+    "machines": {
+      "A": {
+        "id": "A",
+        "gdrive_root": "H:/내 드라이브",
+        "gdrive_letter": "H:",
+        "platform": "win32",
+        "docker_occupied_ports": [8001, 8002],
+        "gridbridge_host_port": 8003,
+        "detection": {"method": "path_exists", "path": "H:/내 드라이브"}
+      },
+      "B": {
+        "id": "B",
+        "gdrive_root": "G:/내 드라이브",
+        "gdrive_letter": "G:",
+        "platform": "win32",
+        "docker_occupied_ports": [],
+        "gridbridge_host_port": 8001,
+        "detection": {"method": "path_exists", "path": "G:/내 드라이브"}
+      },
+      "CI": {
+        "id": "CI",
+        "gdrive_root": "",
+        "platform": "linux",
+        "docker_occupied_ports": [],
+        "gridbridge_host_port": 8001,
+        "detection": {"method": "env_var", "env": "CI", "value": "true"}
+      }
+    },
+    "shared_ssot_paths": {
+      "isbn_registry":    "{gdrive_root}/MyJob/ebook/catalog-kr.yaml",
+      "kdp_catalog":      "{gdrive_root}/MyJob/ebook/catalog-en.yaml",
+      "workspace_mirror": "{gdrive_root}/MyJob/CLAUDE.md"
+    }
+  }
+}

@@ -1,0 +1,52 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "energy-contracts/pipeline_status.json",
+  "title": "Data Pipeline Status SSOT (Phase J-11)",
+  "description": "데이터셋 입수·전처리 상태 추적. myjob/CLAUDE.md Shared Data Sources 표를 머신리더블화.",
+  "version": "1.0",
+  "updated": "2026-05-17",
+
+  "$defs": {
+    "Stage": {
+      "type": "string",
+      "enum": ["raw", "downloaded", "normalized", "validated", "curated", "published", "frozen"]
+    },
+    "DatasetEntry": {
+      "type": "object",
+      "required": ["id", "name", "stage", "size_bytes"],
+      "properties": {
+        "id":          {"type": "string", "pattern": "^[a-z][a-z0-9_]*$"},
+        "name":        {"type": "string"},
+        "stage":       {"$ref": "#/$defs/Stage"},
+        "size_bytes":  {"type": "integer"},
+        "row_count":   {"type": "integer"},
+        "path":        {"type": "string"},
+        "source_url":  {"type": "string"},
+        "data_source": {"type": "string", "description": "data_classification.json#/$defs/DataSource"},
+        "updated":     {"type": "string", "format": "date"},
+        "frozen":      {"type": "boolean", "default": false},
+        "owner":       {"type": "string"}
+      }
+    }
+  },
+
+  "type": "object",
+  "default": {
+    "datasets": {
+      "korean_bb_gs25":     {"id": "korean_bb_gs25",  "name": "GS25 편의점 전력 224채",       "stage": "frozen",     "size_bytes": 0, "row_count": 0, "path": "8.simulation/Korean_BB/data/", "data_source": "measured", "frozen": true,  "owner": "Korean_BB"},
+      "tropical_ep_90":     {"id": "tropical_ep_90",  "name": "열대 EnergyPlus 90건",          "stage": "published",  "size_bytes": 0, "data_source": "simulated", "path": "과제 제안/인도네시아(2026년)/", "owner": "TropicalBEMS"},
+      "asean_buildings":    {"id": "asean_buildings", "name": "ASEAN 12.5M 건물 DB",           "stage": "published",  "size_bytes": 0, "row_count": 12500000, "data_source": "external", "owner": "building-energy-id"},
+      "korea_buildings":    {"id": "korea_buildings", "name": "전국 627만 건물 에너지",        "stage": "published",  "size_bytes": 0, "row_count": 6270000,  "data_source": "measured",  "owner": "building-energy-3d"},
+      "national_h1_seoul":  {"id": "national_h1_seoul", "name": "서울 법정동별 시간별 전력",   "stage": "validated",  "size_bytes": 410000000, "data_source": "measured", "updated": "2026-05-15"},
+      "national_h2_kpx":    {"id": "national_h2_kpx",   "name": "전력거래소 전국 시간별 수요","stage": "validated",  "size_bytes": 56000,     "data_source": "measured", "updated": "2026-05-15"},
+      "national_h3_5min":   {"id": "national_h3_5min",  "name": "전력거래소 5분 예측 16 ZIP", "stage": "downloaded", "size_bytes": 0,        "data_source": "predicted"},
+      "national_h4_smp":    {"id": "national_h4_smp",   "name": "SMP 제주 시간별",            "stage": "validated",  "size_bytes": 131000,   "data_source": "measured"},
+      "national_h5_jeonnam":{"id": "national_h5_jeonnam","name": "전남 전력소비패턴",         "stage": "validated",  "size_bytes": 213000000,"data_source": "measured"},
+      "kapt_management":    {"id": "kapt_management",  "name": "K-apt 관리비 132MB",          "stage": "validated",  "size_bytes": 132000000,"data_source": "certified"},
+      "kdhc_thermal":       {"id": "kdhc_thermal",     "name": "KDHC 19지사 열량계 16.8M행", "stage": "downloaded", "size_bytes": 0, "row_count": 16800000, "data_source": "measured"},
+      "kau25_carbon":       {"id": "kau25_carbon",     "name": "KAU25 탄소 가격",             "stage": "published",  "size_bytes": 0, "row_count": 7355,     "data_source": "certified"},
+      "iitp_ems_virtual":   {"id": "iitp_ems_virtual", "name": "IITP EMS 가상데이터 4 xlsx",  "stage": "downloaded", "size_bytes": 232000000, "row_count": 35136, "data_source": "synthetic"}
+    },
+    "stage_order": ["raw", "downloaded", "normalized", "validated", "curated", "published", "frozen"]
+  }
+}

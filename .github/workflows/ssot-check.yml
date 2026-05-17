@@ -1,0 +1,28 @@
+name: SSOT Governance Check
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+    branches: [main, master]
+  workflow_dispatch:
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Validate SSOT (strategy + ports + schemas + generated drift)
+        run: python scripts/validate_ssot.py --check all
+
+      - name: Check _generated_constants drift across 6 projects
+        run: |
+          if [ -d ../edge-agent ] || [ -d ../building-energy-3d ]; then
+            python scripts/gen_constants.py --check
+          else
+            echo "Sibling project repos not present in this CI checkout — skip"
+          fi

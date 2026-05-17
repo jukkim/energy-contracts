@@ -1,0 +1,29 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "energy-contracts/logging_format.json",
+  "title": "Logging Format SSOT (Phase K-14)",
+  "description": "structlog + OpenTelemetry trace_id 통일 로깅 포맷.",
+  "version": "1.0",
+  "updated": "2026-05-17",
+
+  "type": "object",
+  "default": {
+    "level_default":      "INFO",
+    "level_production":   "WARNING",
+    "level_test":         "DEBUG",
+    "format_dev":         "%(asctime)s [%(levelname)s] %(name)s: %(message)s",
+    "format_production":  "json",
+    "fields_required": ["timestamp", "level", "logger", "message", "trace_id"],
+    "fields_optional": ["span_id", "ven_id", "pnu", "user_id", "request_id", "duration_ms"],
+    "json_keys": {
+      "timestamp": "ts",
+      "level":     "lvl",
+      "logger":    "src",
+      "message":   "msg",
+      "trace_id":  "trace_id",
+      "span_id":   "span_id"
+    },
+    "redact_fields": ["password", "token", "api_key", "secret", "X-Admin-Key", "X-API-Token", "jwt_secret"],
+    "max_message_length": 10000
+  }
+}

@@ -1,0 +1,51 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "energy-contracts/db_migrations.json",
+  "title": "DB Migrations SSOT (Phase K-16)",
+  "description": "각 프로젝트 Alembic 마이그레이션 head/현재 버전 추적. 다중 인스턴스 환경에서 DB 스키마 drift 방지.",
+  "version": "1.0",
+  "updated": "2026-05-17",
+
+  "type": "object",
+  "default": {
+    "projects": {
+      "building-energy-3d": {
+        "alembic_dir": "alembic/",
+        "schema_columns_critical": [
+          "energy_results.data_tier",
+          "energy_results.source_type",
+          "buildings_enriched.pnu",
+          "energy_results.is_current"
+        ]
+      },
+      "gridbridge": {
+        "alembic_dir": "alembic/",
+        "schema_columns_critical": [
+          "telemetry_history.ven_id",
+          "telemetry_history.mode",
+          "telemetry_history.ts"
+        ]
+      },
+      "agentleague": {
+        "alembic_dir": "backend/alembic/",
+        "schema_columns_critical": [
+          "challenges.id",
+          "challenges.is_demo"
+        ]
+      },
+      "eduarena": {
+        "alembic_dir": "backend/alembic/",
+        "schema_columns_critical": [
+          "matches.id",
+          "matches.is_demo"
+        ]
+      }
+    },
+    "policy": {
+      "additive_only":     true,
+      "drop_forbidden":    true,
+      "backfill_required": true,
+      "deprecation_period_months": 6
+    }
+  }
+}

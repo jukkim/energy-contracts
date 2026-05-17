@@ -4,9 +4,11 @@
   1. 하드코딩된 구 전략 코드 (M0, M1, ..., M8 단독) 탐지
   2. 포트 할당 충돌 (port_allocation.json 기준)
   3. JSON Schema 일관성 (common.json $defs 와 다른 스키마 정합)
+  4. _generated_constants.* SOURCE_HASH drift (Phase H 추가)
+  5. port_range 슬롯과 단일 port 항목의 잠복 충돌 (Phase H 추가)
 
 사용법:
-  python validate_ssot.py [--check strategy|ports|schemas|all] [paths...]
+  python validate_ssot.py [--check strategy|ports|schemas|generated|all] [paths...]
   python validate_ssot.py --check all  # 기본
   python validate_ssot.py --check strategy ../edge-agent/src
   python validate_ssot.py --pre-commit  # 변경된 파일만 검사
@@ -108,15 +110,29 @@ def load_port_allocation() -> dict:
 
 
 def check_port_conflicts() -> list[str]:
-    """동일 포트에 둘 이상의 deployed 서비스 매핑 시 위반."""
+    """동일 포트에 둘 이상의 deployed 서비스 매핑 시 위반.
+
+    Phase H: port_range 슬롯이 단일 port 항목과 겹치는지 잠복 검사.
+    """
     data = load_port_allocation()
     if not data:
         return ["port_allocation.json 미존재"]
     seen: dict[int, list[str]] = defaultdict(list)
+    ranges: list[tuple[int, int, str, str]] = []  # (lo, hi, name, status)
     for svc in data.get("services", []):
+        port = svc.get("port")
+        port_range = svc.get("port_range")
+        if port_range:
+            # "8011-8016" 형태
+            try:
+                lo_s, hi_s = port_range.split("-")
+                ranges.append((int(lo_s), int(hi_s),
+                               svc.get("name", "?"), svc.get("status", "?")))
+            except ValueError:
+                pass
+            continue
         if svc.get("status") != "deployed":
             continue
-        port = svc.get("port")
         if port is None:
             continue
         # machine_override로 blocked인 항목은 충돌에서 제외
@@ -126,8 +142,71 @@ def check_port_conflicts() -> list[str]:
     violations = []
     for port, names in seen.items():
         if len(names) > 1:
-            # 공유 DB/Redis 같은 의도적 공유는 services 항목 1개로 표기되어야 함
             violations.append(f"포트 {port} 중복: {', '.join(names)}")
+    # port_range 잠복 충돌 (deployed 단일 port와 겹침)
+    for lo, hi, rng_name, rng_status in ranges:
+        for port, names in seen.items():
+            if lo <= port <= hi:
+                # multi-mode dormant 는 잠복 표시만 (warning, not failure)
+                if rng_status == "multi-mode":
+                    continue
+                violations.append(
+                    f"포트 {port} ({names[0]}) 가 range {lo}-{hi} ({rng_name}, {rng_status}) 와 충돌")
+    return violations
+
+
+# ── 4. _generated_constants.* SOURCE_HASH drift (Phase H) ──────────────────
+
+GENERATED_TARGETS: list[tuple[str, str]] = [
+    ("python", "projects/edge-agent/src/_generated_constants.py"),
+    ("python", "projects/gridbridge/src/_generated_constants.py"),
+    ("python", "projects/building-energy-3d/src/shared/_generated_constants.py"),
+    ("ts",     "projects/building-energy-3d/frontend/src/shared/_generated_constants.ts"),
+    ("python", "projects/agentleague/backend/_generated_constants.py"),
+    ("python", "projects/eduarena/backend/_generated_constants.py"),
+]
+
+
+def check_generated_drift() -> list[str]:
+    """_generated_constants.* 파일의 SOURCE_HASH 헤더 vs 실 schemas hash 비교.
+
+    수동 편집된 파일을 탐지한다. gen_constants.py와 동일 알고리즘.
+    """
+    violations: list[str] = []
+    try:
+        import importlib.util
+        gen_path = CONTRACTS_ROOT / "scripts" / "gen_constants.py"
+        spec = importlib.util.spec_from_file_location("gen_constants", gen_path)
+        if spec is None or spec.loader is None:
+            return ["gen_constants.py 로드 실패"]
+        gen = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(gen)
+        schemas = gen.load_schemas()
+        expected_hash = gen.schemas_hash(schemas)
+    except Exception as e:
+        return [f"schemas hash 계산 실패: {e}"]
+
+    py_pat = re.compile(r'SOURCE_HASH\s*=\s*"([0-9a-f]{16})"')
+    ts_pat = re.compile(r'export const SOURCE_HASH\s*=\s*"([0-9a-f]{16})"')
+    for lang, rel in GENERATED_TARGETS:
+        fp = WORKSPACE_ROOT / rel
+        if not fp.exists():
+            violations.append(f"{rel}  생성 파일 없음 — `gen_constants.py --all` 실행 필요")
+            continue
+        try:
+            text = fp.read_text(encoding="utf-8")
+        except Exception as e:
+            violations.append(f"{rel}  읽기 실패: {e}")
+            continue
+        m = (py_pat if lang == "python" else ts_pat).search(text)
+        if not m:
+            violations.append(f"{rel}  SOURCE_HASH 헤더 누락 — 수동 편집 의심")
+            continue
+        actual = m.group(1)
+        if actual != expected_hash:
+            violations.append(
+                f"{rel}  SOURCE_HASH drift (file={actual} expected={expected_hash}) "
+                f"— `gen_constants.py --all` 재실행 필요")
     return violations
 
 
@@ -182,7 +261,8 @@ def changed_files() -> list[Path]:
 
 def main() -> int:
     ap = argparse.ArgumentParser()
-    ap.add_argument("--check", choices=["strategy", "ports", "schemas", "all"],
+    ap.add_argument("--check",
+                    choices=["strategy", "ports", "schemas", "generated", "all"],
                     default="all")
     ap.add_argument("--pre-commit", action="store_true",
                     help="git diff --cached 대상만 검사")
@@ -235,6 +315,15 @@ def main() -> int:
             failed = True
             total_violations += len(v)
             print(f"\n[SSOT] 스키마 패턴 위반: {len(v)}건")
+            for line in v:
+                print(f"  {line}")
+
+    if args.check in ("generated", "all"):
+        v = check_generated_drift()
+        if v:
+            failed = True
+            total_violations += len(v)
+            print(f"\n[SSOT] _generated_constants drift: {len(v)}건")
             for line in v:
                 print(f"  {line}")
 

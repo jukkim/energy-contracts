@@ -1,0 +1,88 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "energy-contracts/market_prices.json",
+  "title": "Market Prices",
+  "description": "시장/정책 기준값 SSOT (폴백가). ENERGY_SSOT.md §4 기반. API 장애 시 사용되는 기본값.",
+  "version": "2.0",
+  "type": "object",
+  "properties": {
+    "kau": {
+      "type": "object",
+      "description": "KRX 배출권 (K-ETS)",
+      "properties": {
+        "fallback_krw_per_tco2":  { "type": "number" },
+        "reference_date":         { "type": "string", "format": "date" },
+        "refresh_cycle":          { "type": "string" }
+      }
+    },
+    "smp": {
+      "type": "object",
+      "description": "계통한계가격 (System Marginal Price)",
+      "properties": {
+        "fallback_mainland_krw": { "type": "number" },
+        "fallback_jeju_krw":    { "type": "number" },
+        "refresh_cycle":        { "type": "string" }
+      }
+    },
+    "electricity_tariff": {
+      "type": "object",
+      "description": "한전 일반용(을) 고압 시간대별 단가 (원/kWh)",
+      "properties": {
+        "off_peak":     { "type": "number" },
+        "mid_peak":     { "type": "number" },
+        "peak":         { "type": "number" },
+        "peak_hours":     { "type": "array", "items": { "type": "integer" } },
+        "mid_peak_hours": { "type": "array", "items": { "type": "integer" } },
+        "off_peak_hours": { "type": "array", "items": { "type": "integer" } }
+      }
+    },
+    "unit_prices": {
+      "type": "object",
+      "description": "에너지 평균 단가 (원/kWh)",
+      "properties": {
+        "electricity_krw": { "type": "number" },
+        "gas_krw":         { "type": "number" }
+      }
+    },
+    "renewable": {
+      "type": "object",
+      "description": "신재생에너지 시장가",
+      "properties": {
+        "rec_unit_price_krw":     { "type": "number" },
+        "rec_weight_building":    { "type": "number" },
+        "ppa_price_krw_per_kwh":  { "type": "number" },
+        "ppa_self_consumption":   { "type": "number" }
+      }
+    }
+  },
+  "default": {
+    "kau": {
+      "fallback_krw_per_tco2": 17000,
+      "reference_date": "2026-04-30",
+      "refresh_cycle": "quarterly"
+    },
+    "smp": {
+      "fallback_mainland_krw": 120,
+      "fallback_jeju_krw": 115,
+      "refresh_cycle": "semi-annual"
+    },
+    "electricity_tariff": {
+      "off_peak":  61.6,
+      "mid_peak": 109.0,
+      "peak":     191.1,
+      "peak_hours":     [10, 11, 13, 14, 15, 16],
+      "mid_peak_hours": [9, 12, 17, 18, 19, 20, 21, 22],
+      "off_peak_hours": [23, 0, 1, 2, 3, 4, 5, 6, 7, 8]
+    },
+    "unit_prices": {
+      "electricity_krw": 120.0,
+      "gas_krw": 80.0
+    },
+    "renewable": {
+      "rec_unit_price_krw": 65000,
+      "rec_weight_building": 1.5,
+      "ppa_price_krw_per_kwh": 100.0,
+      "ppa_self_consumption": 0.4
+    }
+  }
+}

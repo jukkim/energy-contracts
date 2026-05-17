@@ -1,0 +1,28 @@
+# Redocly CLI config (Phase L-5)
+# 설치: npm install -g @redocly/cli
+# 빌드: redocly build-docs schemas/_index.yaml -o ../../docs/ssot-catalog.html
+# 검증: redocly lint schemas/_index.yaml
+
+apis:
+  ssot@v1:
+    root: schemas/_index.yaml
+    decorators:
+      remove-x-internal: on
+
+extends:
+  - recommended
+
+rules:
+  no-unused-components: error
+  operation-operationId: error
+  no-server-trailing-slash: error
+  info-license:
+    severity: warn
+  tag-description:
+    severity: warn
+
+theme:
+  openapi:
+    htmlTemplate: '<h1>myjob SSOT 26 도메인 카탈로그</h1>'
+    schemaExpansionLevel: 2
+    expandResponses: 'all'

@@ -1,0 +1,53 @@
+# SSOT 26 도메인 카탈로그 인덱스 (Phase L-5)
+# Redocly·Swagger UI·문서 렌더링용. 각 schema 파일을 참조.
+
+openapi: 3.1.0
+info:
+  title: myjob SSOT Governance — 26 Domain Catalog
+  version: '1.0.0'
+  description: |
+    Phase A~K SSOT 거버넌스 카탈로그. JSON Schema 2020-12 기반.
+
+    - **Phase A~G (8 도메인)**: ems_strategies, port_allocation, common, agent_contracts, nl_intents, run_modes, data_classification, test_classification
+    - **Phase I (5)**: ai_model_registry, auth_scopes, error_response (RFC 7807), mqtt_topics, security_policy
+    - **Phase J (7)**: computer_profile, building_usage_map, i18n_keys, tenant_regions, auth_policy, pipeline_status, energy_units
+    - **Phase K (6)**: tests_shared, logging_format, simulation_scenarios, db_migrations, openapi_responses, lint_format
+
+  license:
+    name: Proprietary
+
+servers:
+  - url: https://building-energy.xyz/api/v1
+    description: Production API
+  - url: http://localhost:8000/api/v1
+    description: Local dev
+
+components:
+  schemas:
+    EmsStrategies:    {$ref: 'ems_strategies.json'}
+    PortAllocation:   {$ref: 'port_allocation.json'}
+    AgentContracts:   {$ref: 'agent_contracts.json'}
+    NlIntents:        {$ref: 'nl_intents.json'}
+    RunModes:         {$ref: 'run_modes.json'}
+    DataClassification: {$ref: 'data_classification.json'}
+    TestClassification: {$ref: 'test_classification.json'}
+    AiModelRegistry:  {$ref: 'ai_model_registry.json'}
+    AuthScopes:       {$ref: 'auth_scopes.json'}
+    ErrorResponse:    {$ref: 'error_response.json'}
+    MqttTopics:       {$ref: 'mqtt_topics.json'}
+    SecurityPolicy:   {$ref: 'security_policy.json'}
+    ComputerProfile:  {$ref: 'computer_profile.json'}
+    BuildingUsageMap: {$ref: 'building_usage_map.json'}
+    I18nKeys:         {$ref: 'i18n_keys.json'}
+    TenantRegions:    {$ref: 'tenant_regions.json'}
+    AuthPolicy:       {$ref: 'auth_policy.json'}
+    PipelineStatus:   {$ref: 'pipeline_status.json'}
+    EnergyUnits:      {$ref: 'energy_units.json'}
+    TestsShared:      {$ref: 'tests_shared.json'}
+    LoggingFormat:    {$ref: 'logging_format.json'}
+    SimulationScenarios: {$ref: 'simulation_scenarios.json'}
+    DbMigrations:     {$ref: 'db_migrations.json'}
+    OpenapiResponses: {$ref: 'openapi_responses.json'}
+    LintFormat:       {$ref: 'lint_format.json'}
+
+paths: {}

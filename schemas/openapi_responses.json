@@ -1,0 +1,29 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "energy-contracts/openapi_responses.json",
+  "title": "OpenAPI Standard Responses SSOT (Phase K-17)",
+  "description": "FastAPI 라우터 공통 응답 스키마 (200/400/401/403/404/409/422/429/500). error_response.json 의 ProblemResponse 와 정합.",
+  "version": "1.0",
+  "updated": "2026-05-17",
+
+  "type": "object",
+  "default": {
+    "standard_responses": {
+      "200": {"description": "Success"},
+      "201": {"description": "Created"},
+      "204": {"description": "No Content"},
+      "400": {"description": "Bad Request",     "content_type": "application/problem+json", "schema_ref": "ProblemResponse"},
+      "401": {"description": "Unauthorized",    "content_type": "application/problem+json", "schema_ref": "ProblemResponse"},
+      "403": {"description": "Forbidden",       "content_type": "application/problem+json", "schema_ref": "ProblemResponse"},
+      "404": {"description": "Not Found",       "content_type": "application/problem+json", "schema_ref": "ProblemResponse"},
+      "409": {"description": "Conflict",        "content_type": "application/problem+json", "schema_ref": "ProblemResponse"},
+      "422": {"description": "Validation Failed","content_type": "application/problem+json", "schema_ref": "ProblemResponse"},
+      "429": {"description": "Rate Limited",    "content_type": "application/problem+json", "schema_ref": "ProblemResponse"},
+      "500": {"description": "Internal Error",  "content_type": "application/problem+json", "schema_ref": "ProblemResponse"},
+      "503": {"description": "Service Unavailable","content_type": "application/problem+json","schema_ref": "ProblemResponse"}
+    },
+    "auth_required_responses":   ["401", "403", "500"],
+    "write_operation_responses": ["400", "401", "403", "409", "422", "500"],
+    "read_operation_responses":  ["401", "404", "500"]
+  }
+}

@@ -1,0 +1,63 @@
+# Spectral SSOT Linting Config (Phase L-1)
+# https://github.com/stoplightio/spectral
+# 설치: npm install -g @stoplight/spectral-cli
+# 실행: spectral lint "schemas/**/*.json"
+
+extends:
+  - spectral:oas
+  - spectral:asyncapi
+
+rules:
+  # JSON Schema 거버넌스 룰 (myjob SSOT 26 도메인)
+  ssot-must-have-title:
+    description: "All schemas must declare a title"
+    given: "$"
+    severity: error
+    then:
+      field: title
+      function: truthy
+
+  ssot-must-have-id:
+    description: "All schemas must declare $id"
+    given: "$"
+    severity: error
+    then:
+      field: $id
+      function: truthy
+
+  ssot-must-have-version:
+    description: "All schemas must declare version (semver)"
+    given: "$"
+    severity: error
+    then:
+      field: version
+      function: truthy
+
+  ssot-must-have-updated:
+    description: "All schemas must declare updated date (YYYY-MM-DD)"
+    given: "$"
+    severity: warn
+    then:
+      field: updated
+      function: truthy
+
+  ssot-naming-convention:
+    description: "Property names should be snake_case"
+    given: "$..properties[*]~"
+    severity: warn
+    then:
+      function: pattern
+      functionOptions:
+        match: "^[a-z][a-z0-9_]*$|^\\$"
+
+  no-wildcard-in-cors:
+    description: "CORS must not allow_origins: ['*']"
+    given: "$..cors.default_origins[*]"
+    severity: error
+    then:
+      function: pattern
+      functionOptions:
+        notMatch: "^\\*$"
+
+formats:
+  - oas3_1

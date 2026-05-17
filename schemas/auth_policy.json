@@ -1,0 +1,46 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "energy-contracts/auth_policy.json",
+  "title": "Auth Policy SSOT (Phase J-10)",
+  "description": "JWT·쿠키·refresh token 정책. auth_scopes.json 의 권한 매핑은 별개, 본 SSOT는 토큰 발급·유효기간·전송 채널 정책.",
+  "version": "1.0",
+  "updated": "2026-05-17",
+
+  "type": "object",
+  "default": {
+    "jwt": {
+      "algorithm":          "HS256",
+      "access_expire_minutes":  1440,
+      "refresh_expire_days":    30,
+      "min_secret_length":      32,
+      "issuer":             "building-energy.xyz",
+      "audience":           "myjob-workspace",
+      "claims_required":    ["sub", "exp", "iat", "scope"]
+    },
+    "cookie": {
+      "name":               "session",
+      "secure":             true,
+      "httponly":           true,
+      "samesite":           "lax",
+      "path":               "/",
+      "max_age_seconds":    86400,
+      "production_only_secure": true
+    },
+    "refresh_token": {
+      "rotation":           true,
+      "reuse_detection":    true,
+      "absolute_lifetime_days": 90
+    },
+    "rate_limit_overrides": {
+      "login":          "10/minute",
+      "register":       "5/minute",
+      "password_reset": "3/minute"
+    },
+    "project_overrides": {
+      "edge-agent":         {"jwt": {"access_expire_minutes": 60}},
+      "agentleague":        {"jwt": {"access_expire_minutes": 1440}},
+      "eduarena":           {"jwt": {"access_expire_minutes": 1440}},
+      "building-energy-3d": {"jwt": {"access_expire_minutes": 1440}}
+    }
+  }
+}

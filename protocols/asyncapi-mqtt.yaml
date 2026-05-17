@@ -1,0 +1,104 @@
+asyncapi: '3.0.0'
+info:
+  title: myjob MQTT Topics SSOT
+  version: '1.0.0'
+  description: |
+    AsyncAPI 3.0 표준으로 작성된 워크스페이스 MQTT 토픽 SSOT (Phase L-3).
+    `schemas/mqtt_topics.json` 의 통일 표현. Specmatic·AsyncAPI CLI 호환.
+
+    검증: `asyncapi validate protocols/asyncapi-mqtt.yaml`
+    문서: `asyncapi generate fromTemplate protocols/asyncapi-mqtt.yaml @asyncapi/html-template`
+
+servers:
+  mqtt-broker:
+    host: localhost:1883
+    protocol: mqtt
+    description: 워크스페이스 공유 MQTT 브로커
+    security:
+      - type: scramSha256
+        description: PLACEHOLDER — 현재 anonymous, Phase L에서 강제 도입 권고
+
+channels:
+  gridbridge_telemetry:
+    address: gridbridge/telemetry/{ven_id}
+    description: EdgeAgent → GridBridge 텔레메트리
+    parameters:
+      ven_id:
+        $ref: '#/components/parameters/VenId'
+    messages:
+      telemetry:
+        $ref: '#/components/messages/Telemetry'
+
+  gridbridge_command:
+    address: gridbridge/command/{ven_id}
+    description: GridBridge → EdgeAgent 제어 명령
+    parameters:
+      ven_id:
+        $ref: '#/components/parameters/VenId'
+    messages:
+      command:
+        $ref: '#/components/messages/Command'
+
+  fleet_register:
+    address: fleet/register/{ven_id}
+    description: EdgeAgent 등록 (retained)
+    parameters:
+      ven_id:
+        $ref: '#/components/parameters/VenId'
+    messages:
+      registration:
+        $ref: '#/components/messages/Registration'
+
+  fleet_heartbeat:
+    address: fleet/heartbeat/{ven_id}
+    description: EdgeAgent heartbeat (30초)
+    parameters:
+      ven_id:
+        $ref: '#/components/parameters/VenId'
+
+  agentleague_challenge:
+    address: agentleague/challenge/{challenge_id}/result
+    description: AgentLeague 챌린지 결과
+    parameters:
+      challenge_id:
+        $ref: '#/components/parameters/ChallengeId'
+
+  eduarena_match:
+    address: eduarena/match/{match_id}/event
+    description: EduArena 매치 이벤트
+    parameters:
+      match_id:
+        $ref: '#/components/parameters/MatchId'
+
+components:
+  parameters:
+    VenId:
+      description: VEN ID — common.json#VenId pattern 매칭
+      schema:
+        type: string
+        pattern: "^VEN-[A-Z0-9-]+$"
+    ChallengeId:
+      schema:
+        type: string
+    MatchId:
+      schema:
+        type: string
+
+  messages:
+    Telemetry:
+      contentType: application/json
+      payload:
+        $ref: '../schemas/telemetry.json'
+    Command:
+      contentType: application/json
+      payload:
+        $ref: '../schemas/control_command.json'
+    Registration:
+      contentType: application/json
+      payload:
+        $ref: '../schemas/edge_registration.json'
+
+  securitySchemes:
+    scramSha256:
+      type: scramSha256
+      description: MQTT broker SCRAM-SHA-256 인증 (권고, 미강제)

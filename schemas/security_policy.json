@@ -1,0 +1,54 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "energy-contracts/security_policy.json",
+  "title": "Security Policy SSOT (Phase I-5)",
+  "description": "공통 보안 헤더 + CORS + rate limit 정책. 6 프로젝트 FastAPI 미들웨어 단일 진실. building-energy-3d/main.py SecurityHeadersMiddleware 패턴 일반화.",
+  "version": "1.0",
+  "updated": "2026-05-17",
+
+  "type": "object",
+  "properties": {
+    "headers":    {"type": "object"},
+    "cors":       {"type": "object"},
+    "rate_limit": {"type": "object"}
+  },
+
+  "default": {
+    "headers": {
+      "X-Content-Type-Options":    "nosniff",
+      "X-Frame-Options":           "DENY",
+      "Referrer-Policy":           "strict-origin-when-cross-origin",
+      "Strict-Transport-Security": "max-age=31536000; includeSubDomains",
+      "Content-Security-Policy":   "default-src 'self'; img-src 'self' data: blob: https://tiles.building-energy.xyz; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline'; connect-src 'self' wss: https:; font-src 'self' data:; worker-src 'self' blob:;",
+      "Permissions-Policy":        "geolocation=(), microphone=(), camera=()"
+    },
+    "cors": {
+      "default_origins":     ["http://localhost:5173", "http://localhost:3000", "http://localhost:3001", "http://localhost:3011"],
+      "production_origins":  [
+        "https://building-energy.xyz",
+        "https://id.building-energy.xyz",
+        "https://my.building-energy.xyz",
+        "https://th.building-energy.xyz",
+        "https://sg.building-energy.xyz",
+        "https://vn.building-energy.xyz",
+        "https://ph.building-energy.xyz",
+        "https://eduarena.building-energy.xyz",
+        "https://agentleague.building-energy.xyz",
+        "https://arena.building-energy.xyz"
+      ],
+      "allow_credentials":   true,
+      "allow_methods":       ["GET", "POST", "PATCH", "DELETE", "OPTIONS"],
+      "allow_headers":       ["Content-Type", "Authorization", "X-Requested-With", "X-Admin-Key", "X-API-Token", "X-Trace-Id"],
+      "wildcard_forbidden":  true
+    },
+    "rate_limit": {
+      "default":     "60/minute",
+      "auth":        "10/minute",
+      "auth_failed": "5/minute",
+      "control":     "30/minute",
+      "simulation":  "10/minute",
+      "search":      "120/minute",
+      "telemetry":   "300/minute"
+    }
+  }
+}

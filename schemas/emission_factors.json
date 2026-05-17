@@ -1,0 +1,64 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "energy-contracts/emission_factors.json",
+  "title": "Emission Factors",
+  "description": "CO2 배출계수 SSOT. ENERGY_SSOT.md §1 기반. 모든 모듈은 이 값을 단일 원본으로 사용.",
+  "version": "2.0",
+  "type": "object",
+  "properties": {
+    "co2_kgco2eq_per_kwh": {
+      "type": "object",
+      "description": "에너지원별 CO2 배출계수 (kgCO2eq/kWh)",
+      "properties": {
+        "KR": {
+          "type": "object",
+          "properties": {
+            "electricity":    { "type": "number", "description": "전력 간접배출 (소비단, 2023 확정)" },
+            "gas":            { "type": "number", "description": "LNG 도시가스 연소 (IPCC 2006)" },
+            "district_heat":  { "type": "number", "description": "지역난방 수도권 (2024)" }
+          },
+          "required": ["electricity", "gas", "district_heat"]
+        },
+        "ID": {
+          "type": "object",
+          "description": "인도네시아 (PLN grid)",
+          "properties": {
+            "electricity": { "type": "number" },
+            "gas":         { "type": "number" }
+          }
+        }
+      },
+      "required": ["KR"]
+    },
+    "metadata": {
+      "type": "object",
+      "properties": {
+        "source":           { "type": "string" },
+        "reference_year":   { "type": "integer" },
+        "publish_date":     { "type": "string", "format": "date" },
+        "next_update":      { "type": "string" },
+        "governance":       { "type": "string" }
+      }
+    }
+  },
+  "default": {
+    "co2_kgco2eq_per_kwh": {
+      "KR": {
+        "electricity":    0.4173,
+        "gas":            0.2036,
+        "district_heat":  0.1260
+      },
+      "ID": {
+        "electricity":    0.85,
+        "gas":            0.2036
+      }
+    },
+    "metadata": {
+      "source": "기후에너지환경부 2025.12.17 공표 (KR), PLN 2024 (ID)",
+      "reference_year": 2023,
+      "publish_date": "2025-12-17",
+      "next_update": "2026-12 (2024 확정치)",
+      "governance": "ENERGY_SSOT.md §1 → 이 파일 → constants.py/constants.ts"
+    }
+  }
+}

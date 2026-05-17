@@ -1,0 +1,46 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "energy-contracts/simulation_scenarios.json",
+  "title": "Simulation Scenarios SSOT (Phase K-15)",
+  "description": "EnergyPlus DesignDay / RunPeriod / EMS 패턴 표준. ~/.claude/SIMULATION_DESIGN_SSOT.md 의 머신리더블 추출.",
+  "version": "1.0",
+  "updated": "2026-05-17",
+
+  "type": "object",
+  "default": {
+    "run_periods": {
+      "annual_calendar": {"begin_month": 1,  "begin_day": 1,  "end_month": 12, "end_day": 31, "name": "Annual (Calendar)"},
+      "summer_peak":     {"begin_month": 7,  "begin_day": 1,  "end_month": 8,  "end_day": 31, "name": "Summer Peak"},
+      "winter_peak":     {"begin_month": 1,  "begin_day": 1,  "end_month": 2,  "end_day": 28, "name": "Winter Peak"},
+      "shoulder_spring": {"begin_month": 4,  "begin_day": 1,  "end_month": 5,  "end_day": 31, "name": "Spring Shoulder"}
+    },
+    "design_days": {
+      "cooling_99":  {"name": "ASHRAE Cooling 99%",  "type": "SummerDesignDay",  "humidity_indicating_type": "WetBulb"},
+      "heating_99":  {"name": "ASHRAE Heating 99%",  "type": "WinterDesignDay",  "humidity_indicating_type": "WetBulb"}
+    },
+    "ems_patterns": {
+      "M00_baseline":         {"description": "Baseline — 무제어 reference",      "actuators": []},
+      "M01_night_setback":    {"description": "Night setback HVAC",                  "actuators": ["HVACSetpoint"]},
+      "M02_economizer":       {"description": "Economizer cycle",                    "actuators": ["EconomizerControl"]},
+      "M03_chiller_staging":  {"description": "Chiller dual-stage",                  "actuators": ["ChillerCommand"]},
+      "M04_pmv_05":           {"description": "PMV ±0.5 comfort",                    "actuators": ["HVACSetpoint"]},
+      "M07_lighting":         {"description": "Lighting daylight + dimming",         "actuators": ["LightingPower"]},
+      "M08_precooling":       {"description": "Pre-cooling before peak",             "actuators": ["HVACSetpoint", "PrecoolStart"]},
+      "M09_ess_peak":         {"description": "ESS peak shaving",                    "actuators": ["ESSDischarge"]},
+      "M14_dr_integrated":    {"description": "DR integrated optimization",          "actuators": ["HVACSetpoint","EconomizerControl","LightingPower","ESSDischarge"]},
+      "M15_dr_emergency":     {"description": "DR emergency curtailment (cascade)",  "actuators": ["HVACSetpoint","NightSetback","EconomizerControl","LightingPower","Precooling","ESSDischarge"]}
+    },
+    "pmv_thresholds": {
+      "comfort_zone_low":  -0.5,
+      "comfort_zone_high":  0.5,
+      "relaxed_low":       -0.7,
+      "relaxed_high":       0.7
+    },
+    "ko_envelope_uvalue": {
+      "central_1": {"wall": 0.17, "roof": 0.15, "floor": 0.17, "window": 1.0, "_zone": "중부1"},
+      "central_2": {"wall": 0.24, "roof": 0.17, "floor": 0.24, "window": 1.2, "_zone": "중부2"},
+      "southern":  {"wall": 0.32, "roof": 0.20, "floor": 0.32, "window": 1.5, "_zone": "남부"},
+      "jeju":      {"wall": 0.36, "roof": 0.24, "floor": 0.36, "window": 1.8, "_zone": "제주"}
+    }
+  }
+}

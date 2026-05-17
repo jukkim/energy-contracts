@@ -1,0 +1,44 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "energy-contracts/lint_format.json",
+  "title": "Lint & Format Config SSOT (Phase K-18)",
+  "description": "ruff·black·prettier 통일 규칙. 각 프로젝트 pyproject.toml [tool.ruff] 가 본 값을 참조.",
+  "version": "1.0",
+  "updated": "2026-05-17",
+
+  "type": "object",
+  "default": {
+    "python": {
+      "ruff": {
+        "line_length":     120,
+        "target_version":  "py311",
+        "select":          ["E", "F", "W", "I", "B", "UP", "ASYNC"],
+        "ignore":          ["E501", "B008", "B904"],
+        "fixable":         ["ALL"]
+      },
+      "black": {
+        "line_length":     120,
+        "target_version":  ["py311"]
+      },
+      "import_order": ["__future__", "stdlib", "third_party", "first_party", "local"]
+    },
+    "typescript": {
+      "prettier": {
+        "print_width":     100,
+        "single_quote":    false,
+        "semi":            true,
+        "trailing_comma":  "all"
+      },
+      "eslint_rules": {
+        "no_unused_vars":         "error",
+        "no_explicit_any":        "warn",
+        "exhaustive_deps":        "warn"
+      }
+    },
+    "pre_commit_hooks": {
+      "ruff_check":  {"args": ["--fix"]},
+      "ruff_format": {},
+      "validate_ssot": {}
+    }
+  }
+}

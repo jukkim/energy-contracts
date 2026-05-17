@@ -1,0 +1,44 @@
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "extends": [
+    "config:recommended",
+    ":semanticCommits",
+    ":dependencyDashboard"
+  ],
+  "labels": ["dependencies", "ssot"],
+  "schedule": ["before 4am on monday"],
+  "packageRules": [
+    {
+      "matchManagers": ["pip_requirements", "poetry"],
+      "groupName": "python deps",
+      "automerge": false
+    },
+    {
+      "matchManagers": ["npm"],
+      "groupName": "npm deps"
+    },
+    {
+      "matchPackagePatterns": ["^@stoplight/spectral", "^@asyncapi/", "^@redocly/"],
+      "groupName": "ssot tooling",
+      "labels": ["ssot-tools"],
+      "automerge": true,
+      "minimumReleaseAge": "3 days"
+    },
+    {
+      "matchPackageNames": ["datamodel-code-generator"],
+      "groupName": "ssot tooling python",
+      "labels": ["ssot-tools"]
+    }
+  ],
+  "regexManagers": [
+    {
+      "fileMatch": ["^projects/energy-contracts/schemas/.*\\.json$"],
+      "matchStrings": ["\"version\":\\s*\"(?<currentValue>\\d+\\.\\d+\\.?\\d*)\""],
+      "datasourceTemplate": "semver",
+      "depNameTemplate": "schema-{{packageFile}}"
+    }
+  ],
+  "vulnerabilityAlerts": {
+    "labels": ["security", "ssot"]
+  }
+}

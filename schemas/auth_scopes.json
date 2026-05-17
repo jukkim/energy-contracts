@@ -1,0 +1,71 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "energy-contracts/auth_scopes.json",
+  "title": "Auth Scopes & RBAC SSOT (Phase I-2)",
+  "description": "워크스페이스 공통 RBAC. edge-agent admin/operator/technician + AgentLeague admin + EduArena student/teacher/admin + building-energy-3d guest 통합. permissions 매트릭스는 verb:resource 라벨.",
+  "version": "1.0",
+  "updated": "2026-05-17",
+
+  "$defs": {
+    "Scope": {
+      "type": "string",
+      "enum": ["super_admin", "admin", "operator", "technician",
+               "teacher", "student", "guest"]
+    },
+    "Permission": {
+      "type": "string",
+      "pattern": "^(read|write|delete|exec):[a-z_]+$",
+      "description": "verb:resource (예: write:portfolio, read:telemetry)"
+    }
+  },
+
+  "type": "object",
+  "properties": {
+    "scopes":      {"type": "object"},
+    "permissions": {"type": "object"},
+    "project_default_scopes": {"type": "object"}
+  },
+
+  "default": {
+    "scopes": {
+      "super_admin": {"description": "전 워크스페이스 관리자",
+                      "includes": ["admin", "operator", "technician", "teacher"]},
+      "admin":       {"description": "프로젝트 전권"},
+      "operator":    {"description": "일상 모니터링·제어 (read + write strategy/telemetry)"},
+      "technician":  {"description": "설치·구성 변경 (write edge_config + seal bundle)"},
+      "teacher":     {"description": "EduArena 강의 운영 (write classroom + read metrics)"},
+      "student":     {"description": "EduArena 학습자 (write submission)"},
+      "guest":       {"description": "DEMO 모드 읽기 전용"}
+    },
+    "permissions": {
+      "read:telemetry":     ["admin", "operator", "technician", "guest"],
+      "write:telemetry":    ["admin", "operator"],
+      "read:portfolio":     ["admin", "operator", "guest"],
+      "write:portfolio":    ["admin"],
+      "delete:portfolio":   ["admin"],
+      "write:edge_config":  ["admin", "technician"],
+      "exec:edge_seal":     ["admin", "technician"],
+      "write:strategy":     ["admin", "operator"],
+      "exec:dispatch":      ["admin", "operator"],
+      "read:metrics":       ["admin", "operator", "teacher"],
+      "write:classroom":    ["admin", "teacher"],
+      "write:submission":   ["admin", "teacher", "student"],
+      "read:agent":         ["admin", "operator", "teacher", "guest"],
+      "write:agent":        ["admin"],
+      "exec:simulation":    ["admin", "operator"],
+      "read:carbon_price":  ["admin", "operator", "guest"],
+      "write:carbon_price": ["admin"]
+    },
+    "project_default_scopes": {
+      "building-energy-3d": ["admin", "operator", "guest"],
+      "edge-agent":         ["admin", "operator", "technician"],
+      "gridbridge":         ["admin", "operator"],
+      "agentleague":        ["admin", "operator", "guest"],
+      "eduarena":           ["admin", "teacher", "student", "guest"]
+    },
+    "demo_mode_fallback": {
+      "description": "RUN_MODE=demo 시 인증 누락 요청에 자동 적용할 scope",
+      "scope": "guest"
+    }
+  }
+}

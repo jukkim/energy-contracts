@@ -59,9 +59,41 @@ def load_schemas() -> dict:
     modes = json.loads(modes_fp.read_text(encoding="utf-8")) if modes_fp.exists() else {}
     dataclass = json.loads(data_fp.read_text(encoding="utf-8")) if data_fp.exists() else {}
     tests = json.loads(tests_fp.read_text(encoding="utf-8")) if tests_fp.exists() else {}
+    # Phase I 신규 (5개 SSOT)
+    def _load(name: str) -> dict:
+        fp = SCHEMAS_DIR / name
+        return json.loads(fp.read_text(encoding="utf-8")) if fp.exists() else {}
+    models = _load("ai_model_registry.json")
+    auth = _load("auth_scopes.json")
+    errors = _load("error_response.json")
+    mqtt = _load("mqtt_topics.json")
+    security = _load("security_policy.json")
+    # Phase J 신규 (7개)
+    cmpprof = _load("computer_profile.json")
+    usage = _load("building_usage_map.json")
+    i18n = _load("i18n_keys.json")
+    tenant_reg = _load("tenant_regions.json")
+    authpol = _load("auth_policy.json")
+    pipeline = _load("pipeline_status.json")
+    units = _load("energy_units.json")
+    # Phase K 신규 (6개)
+    tests_shared = _load("tests_shared.json")
+    logfmt = _load("logging_format.json")
+    sim_scn = _load("simulation_scenarios.json")
+    dbmig = _load("db_migrations.json")
+    oapi_resp = _load("openapi_responses.json")
+    lintfmt = _load("lint_format.json")
     return {"ems": ems, "ports": ports, "common": common,
             "agents": agents, "intents": intents,
-            "modes": modes, "dataclass": dataclass, "tests": tests}
+            "modes": modes, "dataclass": dataclass, "tests": tests,
+            "models": models, "auth": auth, "errors": errors,
+            "mqtt": mqtt, "security": security,
+            "cmpprof": cmpprof, "usage": usage, "i18n": i18n,
+            "tenant_reg": tenant_reg, "authpol": authpol,
+            "pipeline": pipeline, "units": units,
+            "tests_shared": tests_shared, "logfmt": logfmt,
+            "sim_scn": sim_scn, "dbmig": dbmig,
+            "oapi_resp": oapi_resp, "lintfmt": lintfmt}
 
 
 def schemas_hash(data: dict) -> str:
@@ -146,9 +178,16 @@ def gen_python(schemas: dict) -> str:
         lines.append("")
 
     # Phase C2 — NL Intents
-    intents = schemas.get("intents", {}).get("default", {})
+    intents_root = schemas.get("intents", {})
+    intents = intents_root.get("default", {})
     if intents:
         lines.append("# ─ NL Intents (Phase C2 SSOT) ──────────────────────────────")
+        # IntentType enum (Phase H — 하드코딩 "edgeControl" 제거 대상)
+        intent_types = (intents_root.get("$defs", {})
+                                    .get("IntentType", {})
+                                    .get("enum", []))
+        if intent_types:
+            lines.append(f"INTENT_TYPES: tuple[str, ...] = {tuple(intent_types)!r}")
         lines.append(f"NL_STRATEGIES_BY_KEYWORD: dict[str, list[str]] = "
                      f"{intents.get('strategies_by_keyword', {})!r}")
         lines.append(f"NL_CONTROL_KEYWORDS: list[str] = "
@@ -184,6 +223,203 @@ def gen_python(schemas: dict) -> str:
         lines.append(f"TEST_STAGES: dict[str, dict] = {tests.get('stages', {})!r}")
         lines.append(f"TEST_PROJECT_DEFAULT_GROUPS: dict[str, list[str]] = "
                      f"{tests.get('project_default_groups', {})!r}")
+        lines.append("")
+
+    # Phase I-1 — AI Model Registry
+    models = schemas.get("models", {}).get("default", {}).get("models", {})
+    if models:
+        lines.append("# ─ AI Model Registry (Phase I-1 SSOT) ───────────────────────")
+        lines.append(f"AI_MODELS: dict[str, dict] = {models!r}")
+        lines.append("")
+
+    # Phase I-2 — Auth Scopes
+    auth = schemas.get("auth", {}).get("default", {})
+    if auth:
+        lines.append("# ─ Auth Scopes (Phase I-2 SSOT) ─────────────────────────────")
+        lines.append(f"AUTH_SCOPES: dict[str, dict] = {auth.get('scopes', {})!r}")
+        lines.append(f"AUTH_PERMISSIONS: dict[str, list[str]] = "
+                     f"{auth.get('permissions', {})!r}")
+        lines.append(f"AUTH_PROJECT_DEFAULT_SCOPES: dict[str, list[str]] = "
+                     f"{auth.get('project_default_scopes', {})!r}")
+        lines.append("")
+
+    # Phase I-3 — Error Response
+    errors = schemas.get("errors", {}).get("default", {})
+    if errors:
+        lines.append("# ─ Error Response (Phase I-3 SSOT) ──────────────────────────")
+        lines.append(f"ERROR_CODES: dict[str, dict] = {errors.get('codes', {})!r}")
+        lines.append(f"ERROR_TYPE_PREFIX: str = {errors.get('type_prefix', '')!r}")
+        lines.append("")
+
+    # Phase I-4 — MQTT Topics
+    mqtt = schemas.get("mqtt", {}).get("default", {})
+    if mqtt:
+        lines.append("# ─ MQTT Topics (Phase I-4 SSOT) ─────────────────────────────")
+        lines.append(f"MQTT_NAMESPACES: dict[str, dict] = "
+                     f"{mqtt.get('namespaces', {})!r}")
+        lines.append(f"MQTT_TOPIC_PATTERNS: list[dict] = {mqtt.get('topics', [])!r}")
+        lines.append("")
+
+    # Phase I-5 — Security Policy
+    security = schemas.get("security", {}).get("default", {})
+    if security:
+        lines.append("# ─ Security Policy (Phase I-5 SSOT) ─────────────────────────")
+        lines.append(f"SECURITY_HEADERS: dict[str, str] = "
+                     f"{security.get('headers', {})!r}")
+        lines.append(f"SECURITY_CORS: dict = {security.get('cors', {})!r}")
+        lines.append(f"SECURITY_RATE_LIMITS: dict[str, str] = "
+                     f"{security.get('rate_limit', {})!r}")
+        lines.append("")
+
+    # ── Phase J 신규 (7개) ──────────────────────────────────────────────────
+
+    cmpprof = schemas.get("cmpprof", {}).get("default", {})
+    if cmpprof:
+        lines.append("# ─ Computer Profile (Phase J-6 SSOT) ────────────────────────")
+        lines.append(f"COMPUTER_PROFILES: dict[str, dict] = "
+                     f"{cmpprof.get('machines', {})!r}")
+        lines.append(f"COMPUTER_SHARED_PATHS: dict[str, str] = "
+                     f"{cmpprof.get('shared_ssot_paths', {})!r}")
+        # Phase B-2: 머신 감지 헬퍼 (5사이트의 'H:/내 드라이브' 하드코딩 대체)
+        lines.append("")
+        lines.append("def detect_machine() -> str:")
+        lines.append('    """SSOT COMPUTER_PROFILES.machines.*.detection 으로 현재 머신 ID 판정.')
+        lines.append("")
+        lines.append("    우선순위: 명시 env COMPUTER_ID > detection.method 적용 > 'B' fallback.")
+        lines.append('    """')
+        lines.append("    import os as _os")
+        lines.append('    explicit = _os.environ.get("COMPUTER_ID", "").strip().upper()')
+        lines.append("    if explicit in COMPUTER_PROFILES:")
+        lines.append("        return explicit")
+        lines.append("    for mid, meta in COMPUTER_PROFILES.items():")
+        lines.append('        det = meta.get("detection") or {}')
+        lines.append('        method = det.get("method")')
+        lines.append('        if method == "path_exists":')
+        lines.append('            if _os.path.exists(det.get("path", "")):')
+        lines.append("                return mid")
+        lines.append('        elif method == "env_var":')
+        lines.append('            if _os.environ.get(det.get("env", ""), "") == det.get("value", ""):')
+        lines.append("                return mid")
+        lines.append('    return "B"')
+        lines.append("")
+        lines.append("def gridbridge_url_for_machine() -> str:")
+        lines.append('    """현재 머신의 GridBridge 호스트 URL — SSOT 기반."""')
+        lines.append("    mid = detect_machine()")
+        lines.append("    meta = COMPUTER_PROFILES.get(mid, {})")
+        lines.append('    port = meta.get("gridbridge_host_port", 8001)')
+        lines.append('    return f"http://localhost:{port}"')
+        lines.append("")
+
+    usage = schemas.get("usage", {}).get("default", {}).get("usages", {})
+    if usage:
+        lines.append("# ─ Building Usage Map (Phase J-7 SSOT) ──────────────────────")
+        lines.append(f"BUILDING_USAGES: dict[str, dict] = {usage!r}")
+        lines.append("")
+
+    i18n = schemas.get("i18n", {}).get("default", {})
+    if i18n:
+        lines.append("# ─ i18n Keys (Phase J-8 SSOT) ───────────────────────────────")
+        lines.append(f"I18N_SUPPORTED_LANGS: tuple[str, ...] = "
+                     f"{tuple(i18n.get('supported_langs', []))!r}")
+        lines.append(f"I18N_FALLBACK_LANG: str = "
+                     f"{i18n.get('fallback_lang', 'en')!r}")
+        lines.append(f"I18N_KEYS: dict[str, dict[str, str]] = "
+                     f"{i18n.get('keys', {})!r}")
+        lines.append("")
+
+    tenant_reg = schemas.get("tenant_reg", {}).get("default", {})
+    if tenant_reg:
+        lines.append("# ─ Tenant Regions (Phase J-9 SSOT) ──────────────────────────")
+        lines.append(f"TENANT_REGIONS: dict[str, dict] = "
+                     f"{tenant_reg.get('regions', {})!r}")
+        lines.append(f"TENANT_TO_REGION: dict[str, str] = "
+                     f"{tenant_reg.get('tenant_to_region', {})!r}")
+        lines.append("")
+
+    authpol = schemas.get("authpol", {}).get("default", {})
+    if authpol:
+        lines.append("# ─ Auth Policy (Phase J-10 SSOT) ────────────────────────────")
+        lines.append(f"AUTH_JWT_POLICY: dict = {authpol.get('jwt', {})!r}")
+        lines.append(f"AUTH_COOKIE_POLICY: dict = {authpol.get('cookie', {})!r}")
+        lines.append(f"AUTH_REFRESH_POLICY: dict = "
+                     f"{authpol.get('refresh_token', {})!r}")
+        lines.append(f"AUTH_PROJECT_POLICY_OVERRIDES: dict = "
+                     f"{authpol.get('project_overrides', {})!r}")
+        lines.append("")
+
+    pipeline = schemas.get("pipeline", {}).get("default", {})
+    if pipeline:
+        lines.append("# ─ Pipeline Status (Phase J-11 SSOT) ────────────────────────")
+        lines.append(f"PIPELINE_DATASETS: dict[str, dict] = "
+                     f"{pipeline.get('datasets', {})!r}")
+        lines.append(f"PIPELINE_STAGE_ORDER: list[str] = "
+                     f"{pipeline.get('stage_order', [])!r}")
+        lines.append("")
+
+    units = schemas.get("units", {}).get("default", {})
+    if units:
+        lines.append("# ─ Energy Units (Phase J-12 SSOT) ───────────────────────────")
+        lines.append(f"ENERGY_BASE_UNITS: dict[str, str] = "
+                     f"{units.get('base_units', {})!r}")
+        lines.append(f"ENERGY_CONVERSIONS: dict[str, float] = "
+                     f"{units.get('conversions', {})!r}")
+        lines.append(f"PRIMARY_ENERGY_FACTORS: dict[str, float] = "
+                     f"{units.get('primary_energy_factors', {})!r}")
+        lines.append(f"EMISSION_FACTORS_KR: dict[str, float] = "
+                     f"{units.get('emission_factors_kr', {})!r}")
+        lines.append(f"ZEB_THRESHOLDS: dict[str, float] = "
+                     f"{units.get('zeb_thresholds_kwh_m2_yr', {})!r}")
+        lines.append("")
+
+    # ── Phase K 신규 (6개) ──────────────────────────────────────────────────
+
+    ts_shared = schemas.get("tests_shared", {}).get("default", {})
+    if ts_shared:
+        lines.append("# ─ Shared Test Fixtures (Phase K-13 SSOT) ───────────────────")
+        lines.append(f"TESTS_SHARED: dict = {ts_shared!r}")
+        lines.append("")
+
+    logfmt = schemas.get("logfmt", {}).get("default", {})
+    if logfmt:
+        lines.append("# ─ Logging Format (Phase K-14 SSOT) ─────────────────────────")
+        lines.append(f"LOGGING_FORMAT: dict = {logfmt!r}")
+        lines.append("")
+
+    sim_scn = schemas.get("sim_scn", {}).get("default", {})
+    if sim_scn:
+        lines.append("# ─ Simulation Scenarios (Phase K-15 SSOT) ───────────────────")
+        lines.append(f"SIM_RUN_PERIODS: dict = {sim_scn.get('run_periods', {})!r}")
+        lines.append(f"SIM_DESIGN_DAYS: dict = {sim_scn.get('design_days', {})!r}")
+        lines.append(f"SIM_EMS_PATTERNS: dict = {sim_scn.get('ems_patterns', {})!r}")
+        lines.append(f"SIM_PMV_THRESHOLDS: dict = "
+                     f"{sim_scn.get('pmv_thresholds', {})!r}")
+        lines.append(f"SIM_KO_ENVELOPE_UVALUE: dict = "
+                     f"{sim_scn.get('ko_envelope_uvalue', {})!r}")
+        lines.append("")
+
+    dbmig = schemas.get("dbmig", {}).get("default", {})
+    if dbmig:
+        lines.append("# ─ DB Migrations (Phase K-16 SSOT) ──────────────────────────")
+        lines.append(f"DB_MIGRATIONS: dict = {dbmig!r}")
+        lines.append("")
+
+    oapi_resp = schemas.get("oapi_resp", {}).get("default", {})
+    if oapi_resp:
+        lines.append("# ─ OpenAPI Standard Responses (Phase K-17 SSOT) ─────────────")
+        lines.append(f"OPENAPI_RESPONSES: dict = "
+                     f"{oapi_resp.get('standard_responses', {})!r}")
+        lines.append(f"OPENAPI_AUTH_RESPONSES: list[str] = "
+                     f"{oapi_resp.get('auth_required_responses', [])!r}")
+        lines.append(f"OPENAPI_WRITE_RESPONSES: list[str] = "
+                     f"{oapi_resp.get('write_operation_responses', [])!r}")
+        lines.append(f"OPENAPI_READ_RESPONSES: list[str] = "
+                     f"{oapi_resp.get('read_operation_responses', [])!r}")
+        lines.append("")
+
+    lintfmt = schemas.get("lintfmt", {}).get("default", {})
+    if lintfmt:
+        lines.append("# ─ Lint & Format (Phase K-18 SSOT) ──────────────────────────")
+        lines.append(f"LINT_CONFIG: dict = {lintfmt!r}")
         lines.append("")
 
     return "\n".join(lines) + "\n"
@@ -269,9 +505,17 @@ def gen_typescript(schemas: dict) -> str:
         lines.append("")
 
     # Phase C2
-    intents = schemas.get("intents", {}).get("default", {})
+    intents_root = schemas.get("intents", {})
+    intents = intents_root.get("default", {})
     if intents:
         lines.append("// ─ NL Intents (Phase C2) ────────────────────────────────")
+        intent_types = (intents_root.get("$defs", {})
+                                    .get("IntentType", {})
+                                    .get("enum", []))
+        if intent_types:
+            lines.append(f"export const INTENT_TYPES = "
+                         f"{json.dumps(intent_types)} as const;")
+            lines.append("export type IntentType = (typeof INTENT_TYPES)[number];")
         lines.append(f"export const NL_STRATEGIES_BY_KEYWORD: Record<string, string[]> = "
                      f"{json.dumps(intents.get('strategies_by_keyword', {}), ensure_ascii=False)};")
         lines.append(f"export const NL_CONTROL_KEYWORDS = "
@@ -315,6 +559,85 @@ def gen_typescript(schemas: dict) -> str:
         lines.append(f"export const TEST_STAGES = "
                      f"{json.dumps(tests.get('stages', {}), ensure_ascii=False)} as const;")
         lines.append("")
+
+    # Phase I-1 — AI Model Registry
+    models = schemas.get("models", {}).get("default", {}).get("models", {})
+    if models:
+        lines.append("// ─ AI Model Registry (Phase I-1) ────────────────────────")
+        lines.append(f"export const AI_MODELS = "
+                     f"{json.dumps(models, ensure_ascii=False)} as const;")
+        lines.append("")
+
+    # Phase I-2 — Auth Scopes
+    auth = schemas.get("auth", {}).get("default", {})
+    if auth:
+        lines.append("// ─ Auth Scopes (Phase I-2) ──────────────────────────────")
+        lines.append(f"export const AUTH_SCOPES = "
+                     f"{json.dumps(auth.get('scopes', {}), ensure_ascii=False)} as const;")
+        lines.append(f"export const AUTH_PERMISSIONS = "
+                     f"{json.dumps(auth.get('permissions', {}), ensure_ascii=False)} as const;")
+        lines.append(f"export const AUTH_PROJECT_DEFAULT_SCOPES = "
+                     f"{json.dumps(auth.get('project_default_scopes', {}), ensure_ascii=False)} as const;")
+        lines.append("")
+
+    # Phase I-3 — Error Response
+    errors = schemas.get("errors", {}).get("default", {})
+    if errors:
+        lines.append("// ─ Error Response (Phase I-3) ───────────────────────────")
+        lines.append(f"export const ERROR_CODES = "
+                     f"{json.dumps(errors.get('codes', {}), ensure_ascii=False)} as const;")
+        lines.append(f"export const ERROR_TYPE_PREFIX = "
+                     f"{json.dumps(errors.get('type_prefix', ''))};")
+        lines.append("")
+
+    # Phase I-4 — MQTT Topics
+    mqtt = schemas.get("mqtt", {}).get("default", {})
+    if mqtt:
+        lines.append("// ─ MQTT Topics (Phase I-4) ──────────────────────────────")
+        lines.append(f"export const MQTT_NAMESPACES = "
+                     f"{json.dumps(mqtt.get('namespaces', {}), ensure_ascii=False)} as const;")
+        lines.append(f"export const MQTT_TOPIC_PATTERNS = "
+                     f"{json.dumps(mqtt.get('topics', []), ensure_ascii=False)} as const;")
+        lines.append("")
+
+    # Phase I-5 — Security Policy
+    security = schemas.get("security", {}).get("default", {})
+    if security:
+        lines.append("// ─ Security Policy (Phase I-5) ──────────────────────────")
+        lines.append(f"export const SECURITY_HEADERS = "
+                     f"{json.dumps(security.get('headers', {}), ensure_ascii=False)} as const;")
+        lines.append(f"export const SECURITY_CORS = "
+                     f"{json.dumps(security.get('cors', {}), ensure_ascii=False)} as const;")
+        lines.append(f"export const SECURITY_RATE_LIMITS = "
+                     f"{json.dumps(security.get('rate_limit', {}), ensure_ascii=False)} as const;")
+        lines.append("")
+
+    # ── Phase J/K 추가 (13개) — TS는 핵심만 노출 ─────────────────────────────
+
+    def _ts_dump(key: str, var: str, path: list[str] | None = None) -> None:
+        node: dict = schemas.get(key, {}).get("default", {})
+        for p in (path or []):
+            node = node.get(p, {})
+        if node:
+            lines.append(f"export const {var} = "
+                         f"{json.dumps(node, ensure_ascii=False)} as const;")
+
+    _ts_dump("cmpprof",    "COMPUTER_PROFILES",   ["machines"])
+    _ts_dump("usage",      "BUILDING_USAGES",     ["usages"])
+    _ts_dump("i18n",       "I18N_KEYS",           ["keys"])
+    _ts_dump("i18n",       "I18N_FALLBACK_LANG",  ["fallback_lang"])
+    _ts_dump("tenant_reg", "TENANT_REGIONS",      ["regions"])
+    _ts_dump("tenant_reg", "TENANT_TO_REGION",    ["tenant_to_region"])
+    _ts_dump("authpol",    "AUTH_JWT_POLICY",     ["jwt"])
+    _ts_dump("authpol",    "AUTH_COOKIE_POLICY",  ["cookie"])
+    _ts_dump("pipeline",   "PIPELINE_DATASETS",   ["datasets"])
+    _ts_dump("units",      "ENERGY_CONVERSIONS",  ["conversions"])
+    _ts_dump("units",      "PRIMARY_ENERGY_FACTORS", ["primary_energy_factors"])
+    _ts_dump("units",      "EMISSION_FACTORS_KR", ["emission_factors_kr"])
+    _ts_dump("units",      "ZEB_THRESHOLDS",      ["zeb_thresholds_kwh_m2_yr"])
+    _ts_dump("logfmt",     "LOGGING_FORMAT")
+    _ts_dump("sim_scn",    "SIM_EMS_PATTERNS",    ["ems_patterns"])
+    _ts_dump("oapi_resp",  "OPENAPI_RESPONSES",   ["standard_responses"])
 
     return "\n".join(lines)
 

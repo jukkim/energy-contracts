@@ -1,0 +1,52 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "energy-contracts/tenant_regions.json",
+  "title": "Tenant Regions SSOT (Phase J-9)",
+  "description": "한국 권역(Metro/Gangwon/...) + ASEAN 6 테넌트 + 인도네시아 12 도시 통합. 기존 region_codes.json(시뮬 C01~C11)을 보완. building-energy-id 6 테넌트 + GridBridge 권역 통합 SSOT.",
+  "version": "1.0",
+  "updated": "2026-05-17",
+
+  "$defs": {
+    "RegionEntry": {
+      "type": "object",
+      "required": ["code", "name_kr", "name_en", "country"],
+      "properties": {
+        "code":           {"type": "string", "pattern": "^[A-Z]{2}-[A-Z]{2,8}$"},
+        "name_kr":        {"type": "string"},
+        "name_en":        {"type": "string"},
+        "country":        {"type": "string", "description": "ISO 3166-1 alpha-2"},
+        "timezone":       {"type": "string"},
+        "climate_zone":   {"type": "string", "description": "ASHRAE 169"},
+        "is_tropical":    {"type": "boolean", "default": false},
+        "parent_region":  {"type": "string"}
+      }
+    }
+  },
+
+  "type": "object",
+  "default": {
+    "regions": {
+      "KR-METRO":    {"code": "KR-METRO",    "name_kr": "수도권",       "name_en": "Seoul Metro",   "country": "KR", "timezone": "Asia/Seoul",        "climate_zone": "4A"},
+      "KR-GANGWON":  {"code": "KR-GANGWON",  "name_kr": "강원권",       "name_en": "Gangwon",       "country": "KR", "timezone": "Asia/Seoul",        "climate_zone": "5A"},
+      "KR-CHUNGNAM": {"code": "KR-CHUNGNAM", "name_kr": "충청권",       "name_en": "Chungnam",      "country": "KR", "timezone": "Asia/Seoul",        "climate_zone": "4A"},
+      "KR-HONAM":    {"code": "KR-HONAM",    "name_kr": "호남권",       "name_en": "Honam",         "country": "KR", "timezone": "Asia/Seoul",        "climate_zone": "3A"},
+      "KR-YEONGNAM": {"code": "KR-YEONGNAM", "name_kr": "영남권",       "name_en": "Yeongnam",      "country": "KR", "timezone": "Asia/Seoul",        "climate_zone": "3A"},
+      "KR-JEJU":     {"code": "KR-JEJU",     "name_kr": "제주",         "name_en": "Jeju",          "country": "KR", "timezone": "Asia/Seoul",        "climate_zone": "3A"},
+      "ID-JKT":      {"code": "ID-JKT",      "name_kr": "자카르타",     "name_en": "Jakarta",       "country": "ID", "timezone": "Asia/Jakarta",      "climate_zone": "1A", "is_tropical": true},
+      "ID-SBY":      {"code": "ID-SBY",      "name_kr": "수라바야",     "name_en": "Surabaya",      "country": "ID", "timezone": "Asia/Jakarta",      "climate_zone": "1A", "is_tropical": true},
+      "ID-BDG":      {"code": "ID-BDG",      "name_kr": "반둥",         "name_en": "Bandung",       "country": "ID", "timezone": "Asia/Jakarta",      "climate_zone": "1A", "is_tropical": true},
+      "MY-KL":       {"code": "MY-KL",       "name_kr": "쿠알라룸푸르", "name_en": "Kuala Lumpur",  "country": "MY", "timezone": "Asia/Kuala_Lumpur", "climate_zone": "1A", "is_tropical": true},
+      "MY-PEN":      {"code": "MY-PEN",      "name_kr": "페낭",         "name_en": "Penang",        "country": "MY", "timezone": "Asia/Kuala_Lumpur", "climate_zone": "1A", "is_tropical": true},
+      "MY-JB":       {"code": "MY-JB",       "name_kr": "조호바루",     "name_en": "Johor Bahru",   "country": "MY", "timezone": "Asia/Kuala_Lumpur", "climate_zone": "1A", "is_tropical": true},
+      "MY-KK":       {"code": "MY-KK",       "name_kr": "코타키나발루", "name_en": "Kota Kinabalu", "country": "MY", "timezone": "Asia/Kuala_Lumpur", "climate_zone": "1A", "is_tropical": true},
+      "TH-BKK":      {"code": "TH-BKK",      "name_kr": "방콕",         "name_en": "Bangkok",       "country": "TH", "timezone": "Asia/Bangkok",      "climate_zone": "1A", "is_tropical": true},
+      "SG-SG":       {"code": "SG-SG",       "name_kr": "싱가포르",     "name_en": "Singapore",     "country": "SG", "timezone": "Asia/Singapore",    "climate_zone": "1A", "is_tropical": true},
+      "VN-HCMC":     {"code": "VN-HCMC",     "name_kr": "호치민",       "name_en": "Ho Chi Minh",   "country": "VN", "timezone": "Asia/Ho_Chi_Minh",  "climate_zone": "1A", "is_tropical": true},
+      "PH-MNL":      {"code": "PH-MNL",      "name_kr": "마닐라",       "name_en": "Manila",        "country": "PH", "timezone": "Asia/Manila",       "climate_zone": "1A", "is_tropical": true}
+    },
+    "tenant_to_region": {
+      "kr": "KR-METRO", "id": "ID-JKT", "my": "MY-KL", "th": "TH-BKK",
+      "sg": "SG-SG",    "vn": "VN-HCMC","ph": "PH-MNL"
+    }
+  }
+}
