@@ -190,6 +190,11 @@ def check_generated_drift() -> list[str]:
     ts_pat = re.compile(r'export const SOURCE_HASH\s*=\s*"([0-9a-f]{16})"')
     for lang, rel in GENERATED_TARGETS:
         fp = WORKSPACE_ROOT / rel
+        # 형제 repo 자체가 없으면 CI 단일 repo 체크아웃으로 간주 → 스킵
+        # (각 형제 repo의 자체 pre-commit hook + 자체 CI가 drift를 검증한다)
+        sibling_repo_root = WORKSPACE_ROOT / rel.split("/")[0] / rel.split("/")[1]
+        if not sibling_repo_root.exists():
+            continue
         if not fp.exists():
             violations.append(f"{rel}  생성 파일 없음 — `gen_constants.py --all` 실행 필요")
             continue
