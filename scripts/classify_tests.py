@@ -67,14 +67,41 @@ def estimate_tier(fp: Path, text: str) -> str:
     return "T2"
 
 
-def estimate_group(fp: Path) -> str:
-    """프로젝트 폴더로 group 추정. project_default_groups 첫 번째 값을 사용."""
+_AUTH_RBAC_NAME_HINTS = (
+    "auth", "rbac", "api_key", "api_keys", "oauth", "jwt",
+    "permission", "scope", "scopes", "csrf",
+)
+
+
+def _is_auth_test(fp: Path) -> bool:
+    """파일명/경로에 auth 키워드가 포함되면 G6 (Auth-RBAC) cross-cutting 추가."""
+    name = fp.name.lower()
+    return any(h in name for h in _AUTH_RBAC_NAME_HINTS)
+
+
+def estimate_groups(fp: Path) -> list[str]:
+    """프로젝트 폴더로 group 추정. project_default_groups 전체를 반환.
+
+    Returns: [primary, ...secondary] — primary는 첫 group marker로,
+             secondary는 추가 group marker로 부여.
+    추가로 파일명에 auth 키워드 포함 시 G6 강제 추가 (cross-cutting).
+    """
     parts = [p for p in fp.parts]
-    for proj, groups in DEFAULT_GROUPS.items():
-        # myjob/projects/{proj}/tests/...
-        if proj in parts and groups:
-            return groups[0]
-    return "G2"  # default Backend
+    groups: list[str] = []
+    for proj, default_groups in DEFAULT_GROUPS.items():
+        if proj in parts and default_groups:
+            groups = list(default_groups)
+            break
+    if not groups:
+        groups = ["G2"]  # default Backend
+    if _is_auth_test(fp) and "G6" not in groups:
+        groups.append("G6")
+    return groups
+
+
+def estimate_group(fp: Path) -> str:
+    """하위호환: 첫 group만 반환."""
+    return estimate_groups(fp)[0]
 
 
 def estimate_stage(tier: str) -> str:
@@ -84,43 +111,54 @@ def estimate_stage(tier: str) -> str:
 
 # ── 스캔 ─────────────────────────────────────────────────────────────────────
 
-def scan_tests() -> list[tuple[Path, str, str, str]]:
-    """전체 워크스페이스 테스트 파일 + 추정 (Tier, Group, Stage)."""
-    out: list[tuple[Path, str, str, str]] = []
+def scan_tests() -> list[tuple[Path, str, list[str], str]]:
+    """전체 워크스페이스 테스트 파일 + 추정 (Tier, Groups, Stage).
+
+    `{proj}/tests/` 직속 + `{proj}/backend/tests/` (eduarena, agentleague 등) 둘 다 스캔.
+    Groups는 list — primary + cross-cutting (G6) 동시 부여 지원.
+    """
+    out: list[tuple[Path, str, list[str], str]] = []
     projects_dir = WORKSPACE_ROOT / "projects"
     if not projects_dir.exists():
         return out
+    test_root_candidates = ("tests", "backend/tests")
     for proj_dir in projects_dir.iterdir():
-        tests_dir = proj_dir / "tests"
-        if not tests_dir.is_dir():
+        if not proj_dir.is_dir():
             continue
-        for fp in tests_dir.rglob("test_*.py"):
-            try:
-                text = fp.read_text(encoding="utf-8", errors="replace")
-            except Exception:
+        for sub in test_root_candidates:
+            tests_dir = proj_dir.joinpath(*sub.split("/"))
+            if not tests_dir.is_dir():
                 continue
-            tier = estimate_tier(fp, text)
-            group = estimate_group(fp)
-            stage = estimate_stage(tier)
-            out.append((fp, tier, group, stage))
+            for fp in tests_dir.rglob("test_*.py"):
+                try:
+                    text = fp.read_text(encoding="utf-8", errors="replace")
+                except Exception:
+                    continue
+                tier = estimate_tier(fp, text)
+                groups = estimate_groups(fp)
+                stage = estimate_stage(tier)
+                out.append((fp, tier, groups, stage))
     return out
 
 
-def report(entries: list[tuple[Path, str, str, str]]) -> None:
+def report(entries: list[tuple[Path, str, list[str], str]]) -> None:
     from collections import Counter
     tier_c = Counter(e[1] for e in entries)
-    group_c = Counter(e[2] for e in entries)
+    # 그룹 카운트: primary만 + 전체(중복 포함)
+    group_primary_c = Counter(e[2][0] for e in entries)
+    group_all_c = Counter(g for e in entries for g in e[2])
     stage_c = Counter(e[3] for e in entries)
     print(f"총 {len(entries)}개 테스트 파일")
-    print(f"  Tier:  {dict(tier_c)}")
-    print(f"  Group: {dict(group_c)}")
-    print(f"  Stage: {dict(stage_c)}")
+    print(f"  Tier:           {dict(tier_c)}")
+    print(f"  Group (primary):{dict(group_primary_c)}")
+    print(f"  Group (all):    {dict(group_all_c)}")
+    print(f"  Stage:          {dict(stage_c)}")
 
 
-def dry_run(entries: list[tuple[Path, str, str, str]]) -> None:
-    for fp, tier, group, stage in entries:
+def dry_run(entries: list[tuple[Path, str, list[str], str]]) -> None:
+    for fp, tier, groups, stage in entries:
         rel = fp.relative_to(WORKSPACE_ROOT)
-        print(f"  {tier} {group} {stage}  {rel}")
+        print(f"  {tier} {'+'.join(groups)} {stage}  {rel}")
 
 
 # ── --apply-all 모듈 레벨 marker 자동 삽입 ──────────────────────────────────
@@ -129,20 +167,25 @@ _MARKER_BLOCK_HEAD = "# ─ Phase G SSOT markers (auto-applied by classify_tests
 _MARKER_BLOCK_TAIL = "# ─ End Phase G markers ─"
 
 
-def _build_marker_block(tier: str, group: str, stage: str) -> str:
+def _build_marker_block(tier: str, groups: list[str] | str, stage: str) -> str:
+    if isinstance(groups, str):
+        groups = [groups]
+    group_lines = "".join(
+        f"    _ssot_pytest.mark.group({g!r}),\n" for g in groups
+    )
     return (
         f"{_MARKER_BLOCK_HEAD}\n"
         f"import pytest as _ssot_pytest\n"
         f"pytestmark = [\n"
         f"    _ssot_pytest.mark.tier({tier!r}),\n"
-        f"    _ssot_pytest.mark.group({group!r}),\n"
+        f"{group_lines}"
         f"    _ssot_pytest.mark.stage({stage!r}),\n"
         f"]\n"
         f"{_MARKER_BLOCK_TAIL}\n"
     )
 
 
-def _apply_marker_to_file(fp: Path, tier: str, group: str, stage: str) -> str:
+def _apply_marker_to_file(fp: Path, tier: str, groups: list[str] | str, stage: str) -> str:
     """파일에 모듈 레벨 marker 블록 삽입. 이미 있으면 갱신.
 
     삽입 위치: future import / docstring 다음, 첫 코드 라인 이전.
@@ -154,7 +197,7 @@ def _apply_marker_to_file(fp: Path, tier: str, group: str, stage: str) -> str:
         _block, after = _rest.split(_MARKER_BLOCK_TAIL, 1)
         # tail 줄바꿈 정리
         after = after.lstrip("\n")
-        new_text = before + _build_marker_block(tier, group, stage) + after
+        new_text = before + _build_marker_block(tier, groups, stage) + after
     else:
         # 삽입 지점 찾기: 모듈 docstring + future imports 다음
         import ast
@@ -177,7 +220,7 @@ def _apply_marker_to_file(fp: Path, tier: str, group: str, stage: str) -> str:
                 continue
             break
         lines = text.splitlines(keepends=True)
-        block = _build_marker_block(tier, group, stage)
+        block = _build_marker_block(tier, groups, stage)
         # insert_line 다음 줄에 빈 줄 + 블록 삽입
         prefix = "".join(lines[:insert_line])
         suffix = "".join(lines[insert_line:])
@@ -191,12 +234,12 @@ def _apply_marker_to_file(fp: Path, tier: str, group: str, stage: str) -> str:
     return "wrote"
 
 
-def apply_all(entries: list[tuple[Path, str, str, str]]) -> int:
+def apply_all(entries: list[tuple[Path, str, list[str], str]]) -> int:
     """전 워크스페이스 marker 자동 부여. 회귀 안전 모듈 레벨 방식."""
     from collections import Counter
     stats = Counter()
-    for fp, tier, group, stage in entries:
-        status = _apply_marker_to_file(fp, tier, group, stage)
+    for fp, tier, groups, stage in entries:
+        status = _apply_marker_to_file(fp, tier, groups, stage)
         stats[status] += 1
     print(f"[classify_tests] apply-all 완료: {dict(stats)}")
     return 0
@@ -219,11 +262,13 @@ def main() -> int:
         return apply_all(entries)
     if args.apply:
         target = Path(args.apply).resolve()
-        for fp, tier, group, stage in entries:
+        for fp, tier, groups, stage in entries:
             if fp == target:
-                print(f"수동 적용 예시 ({tier}/{group}/{stage}):")
+                primary = groups[0]
+                print(f"수동 적용 예시 ({tier}/{'+'.join(groups)}/{stage}):")
                 print(f"@pytest.mark.tier('{tier}')")
-                print(f"@pytest.mark.group('{group}')")
+                for g in groups:
+                    print(f"@pytest.mark.group('{g}')")
                 print(f"@pytest.mark.stage('{stage}')")
                 print(f"def test_xxx(...): ...")
                 return 0
