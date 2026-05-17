@@ -127,9 +127,18 @@ def estimate_groups(fp: Path, text: str | None = None) -> list[str]:
     return groups
 
 
+_TIER_STAGE_MAP = {"T0": "S1", "T1": "S1", "T2": "S2", "T3": "S3",
+                   "T4": "S4", "T5": "S5"}
+
+
 def estimate_stage(tier: str) -> str:
-    return {"T0": "S1", "T1": "S1", "T2": "S2", "T3": "S3",
-            "T4": "S4", "T5": "S5"}.get(tier, "S3")
+    # 새 tier (T6/T7) 추가 시 silent S3 폴백 대신 명시 매핑을 강제.
+    if tier not in _TIER_STAGE_MAP:
+        raise KeyError(
+            f"unknown tier={tier!r}; _TIER_STAGE_MAP 갱신 필요 "
+            f"(현재 매핑: {sorted(_TIER_STAGE_MAP)})"
+        )
+    return _TIER_STAGE_MAP[tier]
 
 
 # ── 스캔 ─────────────────────────────────────────────────────────────────────

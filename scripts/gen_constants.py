@@ -227,6 +227,14 @@ SOURCE_HASH = "{hash}"
 '''
 
 
+def _find_service_port(ports: dict, service_name: str, fallback: int) -> int:
+    """port_allocation.json services 에서 이름으로 포트 조회. 미발견 시 fallback."""
+    for svc in ports.get("services", []):
+        if svc.get("name") == service_name and isinstance(svc.get("port"), int):
+            return svc["port"]
+    return fallback
+
+
 def gen_python(schemas: dict) -> str:
     h = schemas_hash(schemas)
     ems = schemas["ems"]["default"]
@@ -271,12 +279,14 @@ def gen_python(schemas: dict) -> str:
     lines.append("}")
     lines.append("")
 
-    # Computer A 특수 포트 (자주 쓰임)
+    # Computer A 특수 포트 (자주 쓰임). URL 은 services 의 GridBridge 항목에서 동적 추출.
     lines.append("# ─ Computer A override (Docker가 8001/8002 점유) ────────────")
     machine_a = ports.get("machines", {}).get("A", {})
+    default_port = _find_service_port(ports, "GridBridge (code default)", 8001)
+    computer_a_port = _find_service_port(ports, "GridBridge (Computer A canonical)", 8003)
     lines.append(f"GRIDBRIDGE_HOST_PORT_A: int = {machine_a.get('gridbridge_host_port', 8001)}")
-    lines.append('GRIDBRIDGE_URL_DEFAULT: str = "http://localhost:8001"')
-    lines.append('GRIDBRIDGE_URL_COMPUTER_A: str = "http://localhost:8003"')
+    lines.append(f'GRIDBRIDGE_URL_DEFAULT: str = "http://localhost:{default_port}"')
+    lines.append(f'GRIDBRIDGE_URL_COMPUTER_A: str = "http://localhost:{computer_a_port}"')
     lines.append("")
 
     # Phase C1 — Agent Contracts
@@ -598,11 +608,13 @@ def gen_typescript(schemas: dict) -> str:
     lines.append("")
 
     machine_a = ports.get("machines", {}).get("A", {})
+    default_port = _find_service_port(ports, "GridBridge (code default)", 8001)
+    computer_a_port = _find_service_port(ports, "GridBridge (Computer A canonical)", 8003)
     lines.append("// ─ Computer A override ──────────────────────────────────────")
     lines.append(f"export const GRIDBRIDGE_HOST_PORT_A = "
                  f"{machine_a.get('gridbridge_host_port', 8001)};")
-    lines.append('export const GRIDBRIDGE_URL_DEFAULT = "http://localhost:8001";')
-    lines.append('export const GRIDBRIDGE_URL_COMPUTER_A = "http://localhost:8003";')
+    lines.append(f'export const GRIDBRIDGE_URL_DEFAULT = "http://localhost:{default_port}";')
+    lines.append(f'export const GRIDBRIDGE_URL_COMPUTER_A = "http://localhost:{computer_a_port}";')
     lines.append("")
 
     # Phase C1
