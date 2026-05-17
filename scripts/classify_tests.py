@@ -217,13 +217,35 @@ def _build_marker_block(tier: str, groups: list[str] | str, stage: str) -> str:
     )
 
 
+_LEGACY_MARKER_HEAD = re.compile(r"#\s*─+\s*Phase G SSOT markers[^\n]*\n")
+_LEGACY_MARKER_TAIL = re.compile(r"#\s*─+\s*End Phase G markers\s*─*\s*\n?")
+
+
+def _strip_legacy_marker_blocks(text: str) -> str:
+    """동일 파일에 변형 헤더(`(auto-applied by ...)` 누락 등)로 들어간 중복
+    marker 블록을 모두 제거. _apply_marker_to_file 가 단일 idempotent 블록을
+    유지하도록 보장한다.
+    """
+    while True:
+        m_head = _LEGACY_MARKER_HEAD.search(text)
+        if not m_head:
+            return text
+        m_tail = _LEGACY_MARKER_TAIL.search(text, m_head.end())
+        if not m_tail:
+            return text
+        # 블록 사이 영역도 함께 제거 (pytestmark = [...] + import pytest as _ssot_pytest)
+        text = text[: m_head.start()] + text[m_tail.end():]
+
+
 def _apply_marker_to_file(fp: Path, tier: str, groups: list[str] | str, stage: str) -> str:
     """파일에 모듈 레벨 marker 블록 삽입. 이미 있으면 갱신.
 
     삽입 위치: future import / docstring 다음, 첫 코드 라인 이전.
+    변형 헤더로 들어간 중복 블록도 한 번에 정리 (idempotent 강화).
     """
     text = fp.read_text(encoding="utf-8")
-    # 이미 marker 블록이 있으면 통째로 교체 (idempotent)
+    text = _strip_legacy_marker_blocks(text)
+    # 이미 marker 블록이 있으면 통째로 교체 (idempotent) — 이 시점엔 정규형 블록 0개 또는 1개
     if _MARKER_BLOCK_HEAD in text and _MARKER_BLOCK_TAIL in text:
         before, _rest = text.split(_MARKER_BLOCK_HEAD, 1)
         _block, after = _rest.split(_MARKER_BLOCK_TAIL, 1)
