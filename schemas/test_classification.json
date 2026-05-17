@@ -67,12 +67,21 @@
       "building-energy-id": ["G1", "G2"],
       "edge-agent":         ["G4"],
       "gridbridge":         ["G4"],
-      "agentleague":        ["G2", "G6"],
-      "eduarena":           ["G2", "G6"],
+      "agentleague":        ["G2"],
+      "eduarena":           ["G2"],
       "energy-contracts":   ["G7"],
       "Korean_BB":          ["G3"],
       "ems_transformer":    ["G3"],
       "building_ai":        ["G3"]
+    },
+    "group_keyword_hints": {
+      "G6": {
+        "name_keywords": ["auth", "rbac", "api_key", "api_keys", "oauth", "jwt",
+                          "permission", "permissions", "csrf", "login", "logout",
+                          "session", "token", "cookie"],
+        "import_pattern": "(from\\s+src\\.auth|import\\s+jwt|jwt\\.(decode|encode)|HTTPBearer|require_auth|check_permission|AUTH_JWT_POLICY|AUTH_SCOPES)",
+        "description": "G6 cross-cutting Auth-RBAC marker는 default_groups에서 자동 부여하지 않음. 위 키워드/import 시그널 검출 시에만 추가 — 무차별 부여로 의미 희석되는 사고 방지 (Phase H7)."
+      }
     },
     "pytest_marker_example": {
       "comment": "각 프로젝트 pytest.ini에 등록 + 테스트에 부여",

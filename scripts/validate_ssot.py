@@ -188,12 +188,19 @@ def check_generated_drift() -> list[str]:
 
     py_pat = re.compile(r'SOURCE_HASH\s*=\s*"([0-9a-f]{16})"')
     ts_pat = re.compile(r'export const SOURCE_HASH\s*=\s*"([0-9a-f]{16})"')
+    skipped: list[str] = []
     for lang, rel in GENERATED_TARGETS:
         fp = WORKSPACE_ROOT / rel
-        # 형제 repo 자체가 없으면 CI 단일 repo 체크아웃으로 간주 → 스킵
-        # (각 형제 repo의 자체 pre-commit hook + 자체 CI가 drift를 검증한다)
+        # 형제 repo 자체가 없거나 빈 디렉토리(repo marker 없음)면 CI 단일 repo
+        # 체크아웃으로 간주 → 스킵. 각 형제 repo 자체 pre-commit hook + 자체 CI 가 검증.
+        # 빈 디렉토리 우회 방지(M5): .git/pyproject.toml/package.json 중 하나가 있어야 진짜 repo.
         sibling_repo_root = WORKSPACE_ROOT / rel.split("/")[0] / rel.split("/")[1]
         if not sibling_repo_root.exists():
+            skipped.append(rel)
+            continue
+        repo_markers = (".git", "pyproject.toml", "package.json", "Cargo.toml")
+        if not any((sibling_repo_root / m).exists() for m in repo_markers):
+            skipped.append(f"{rel} (빈 디렉토리 — repo marker 없음)")
             continue
         if not fp.exists():
             violations.append(f"{rel}  생성 파일 없음 — `gen_constants.py --all` 실행 필요")
@@ -212,6 +219,11 @@ def check_generated_drift() -> list[str]:
             violations.append(
                 f"{rel}  SOURCE_HASH drift (file={actual} expected={expected_hash}) "
                 f"— `gen_constants.py --all` 재실행 필요")
+    if skipped:
+        # 스킵 카운트는 print 로 알리고 (CI 로그 가시화), violations 에는 넣지 않음.
+        print(f"[SSOT] 형제 repo {len(skipped)}건 스킵 (CI 단일 repo 환경 또는 빈 dir):")
+        for s in skipped:
+            print(f"  - {s}")
     return violations
 
 

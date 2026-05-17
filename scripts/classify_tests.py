@@ -67,24 +67,49 @@ def estimate_tier(fp: Path, text: str) -> str:
     return "T2"
 
 
+# G6 (Auth-RBAC) cross-cutting 부여 키워드.
+# 'scope' 단어는 carbon Scope1/2/3, lighting/zoom scope 등 광범위 오탐 — 제외하고
+# 'auth_scope', 'oauth_scope', 'rbac_scope' 같은 합성어만 매치.
+# SSOT: 향후 test_classification.json#group_keyword_hints.G6 로 이동 예정.
 _AUTH_RBAC_NAME_HINTS = (
     "auth", "rbac", "api_key", "api_keys", "oauth", "jwt",
-    "permission", "scope", "scopes", "csrf",
+    "permission", "permissions", "csrf", "login", "logout",
+    "session", "token", "cookie",
+)
+_AUTH_RBAC_IMPORT_PAT = re.compile(
+    r"(from\s+src\.auth|import\s+jwt|jwt\.(decode|encode)|HTTPBearer|"
+    r"require_auth|check_permission|AUTH_JWT_POLICY|AUTH_SCOPES)"
 )
 
 
-def _is_auth_test(fp: Path) -> bool:
-    """파일명/경로에 auth 키워드가 포함되면 G6 (Auth-RBAC) cross-cutting 추가."""
+def _is_auth_test(fp: Path, text: str | None = None) -> bool:
+    """파일명/import 분석으로 G6 (Auth-RBAC) cross-cutting 판정.
+
+    1) 파일명에 auth 키워드 포함 (auth/rbac/oauth/jwt/login/session/token/cookie 등)
+    2) 본문에 auth 관련 import/심볼 포함 (jwt.decode, HTTPBearer, require_auth, ...)
+    """
     name = fp.name.lower()
-    return any(h in name for h in _AUTH_RBAC_NAME_HINTS)
+    if any(h in name for h in _AUTH_RBAC_NAME_HINTS):
+        return True
+    if text is None:
+        try:
+            text = fp.read_text(encoding="utf-8", errors="replace")
+        except Exception:
+            return False
+    head = text[:4000]
+    return bool(_AUTH_RBAC_IMPORT_PAT.search(head))
 
 
-def estimate_groups(fp: Path) -> list[str]:
+def estimate_groups(fp: Path, text: str | None = None) -> list[str]:
     """프로젝트 폴더로 group 추정. project_default_groups 전체를 반환.
 
     Returns: [primary, ...secondary] — primary는 첫 group marker로,
              secondary는 추가 group marker로 부여.
-    추가로 파일명에 auth 키워드 포함 시 G6 강제 추가 (cross-cutting).
+
+    G6 (Auth-RBAC) cross-cutting 부여 정책:
+      - 파일명/본문 import 분석으로 auth 시그널 검출 시에만 부여.
+      - project_default_groups 가 G6 를 포함하더라도 시그널 없으면 제거 —
+        "모든 backend 테스트가 G6" 무차별 부여 방지 (H7 정정).
     """
     parts = [p for p in fp.parts]
     groups: list[str] = []
@@ -94,14 +119,12 @@ def estimate_groups(fp: Path) -> list[str]:
             break
     if not groups:
         groups = ["G2"]  # default Backend
-    if _is_auth_test(fp) and "G6" not in groups:
+    is_auth = _is_auth_test(fp, text)
+    if is_auth and "G6" not in groups:
         groups.append("G6")
+    elif not is_auth and "G6" in groups:
+        groups.remove("G6")
     return groups
-
-
-def estimate_group(fp: Path) -> str:
-    """하위호환: 첫 group만 반환."""
-    return estimate_groups(fp)[0]
 
 
 def estimate_stage(tier: str) -> str:
@@ -135,7 +158,7 @@ def scan_tests() -> list[tuple[Path, str, list[str], str]]:
                 except Exception:
                     continue
                 tier = estimate_tier(fp, text)
-                groups = estimate_groups(fp)
+                groups = estimate_groups(fp, text)
                 stage = estimate_stage(tier)
                 out.append((fp, tier, groups, stage))
     return out

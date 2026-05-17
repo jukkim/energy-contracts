@@ -97,9 +97,22 @@ def load_schemas() -> dict:
 
 
 def schemas_hash(data: dict) -> str:
-    """소스 스키마들의 SHA-256 해시 — 변경 감지용."""
-    blob = json.dumps(data, sort_keys=True, ensure_ascii=False)
-    return hashlib.sha256(blob.encode("utf-8")).hexdigest()[:16]
+    """소스 스키마 + 생성기 본체 의 SHA-256 해시 — 변경 감지용.
+
+    Phase H 보강(M7): schemas 무변경이지만 gen_constants.py 자체 알고리즘이
+    바뀌어도 hash가 갱신되어 "위장 통과(silent drift)" 방지. 자기 자신을
+    bytes 로 읽어 schemas dict 와 함께 해시.
+    """
+    blob = json.dumps(data, sort_keys=True, ensure_ascii=False).encode("utf-8")
+    try:
+        self_bytes = Path(__file__).read_bytes()
+    except Exception:
+        self_bytes = b""
+    h = hashlib.sha256()
+    h.update(blob)
+    h.update(b"\x00gen_constants_self\x00")
+    h.update(self_bytes)
+    return h.hexdigest()[:16]
 
 
 # ── Python 생성 ──────────────────────────────────────────────────────────────
