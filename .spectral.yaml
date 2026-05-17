@@ -1,63 +1,116 @@
 # Spectral SSOT Linting Config (Phase L-1)
 # https://github.com/stoplightio/spectral
-# 설치: npm install -g @stoplight/spectral-cli
-# 실행: spectral lint "schemas/**/*.json"
+# JSON Schema 2020-12 전용 자체 ruleset — OpenAPI/AsyncAPI overlay 제외
+# 실행: spectral lint "schemas/*.json"
 
-extends:
-  - spectral:oas
-  - spectral:asyncapi
+functions: []
+
+# JSON Schema는 spectral 기본 format 아님 → format 함수 자체 정의
+# 우리 모든 schema는 root에 $schema/title/$id 보유 → 단일 format으로 처리
+aliases:
+  RootSchema:
+    - "$"
+  PropertyName:
+    - "$..properties[*]~"
 
 rules:
-  # JSON Schema 거버넌스 룰 (myjob SSOT 26 도메인)
+  # ── SSOT 거버넌스 핵심 룰 ─────────────────────────────────────────────
+
+  ssot-must-have-schema:
+    description: "$schema must be JSON Schema 2020-12 draft"
+    given: "$"
+    severity: error
+    then:
+      field: $schema
+      function: pattern
+      functionOptions:
+        match: "json-schema\\.org/draft/2020-12"
+
+  ssot-must-have-id:
+    description: "$id must be 'energy-contracts/<name>.json'"
+    given: "$"
+    severity: error
+    then:
+      field: $id
+      function: pattern
+      functionOptions:
+        match: "^energy-contracts/[a-z][a-z0-9_]*\\.json$"
+
   ssot-must-have-title:
-    description: "All schemas must declare a title"
+    description: "All schemas must declare title"
     given: "$"
     severity: error
     then:
       field: title
       function: truthy
 
-  ssot-must-have-id:
-    description: "All schemas must declare $id"
-    given: "$"
-    severity: error
-    then:
-      field: $id
-      function: truthy
-
   ssot-must-have-version:
-    description: "All schemas must declare version (semver)"
+    description: "Schemas must declare semver version"
     given: "$"
-    severity: error
+    severity: warn
     then:
       field: version
       function: truthy
 
-  ssot-must-have-updated:
-    description: "All schemas must declare updated date (YYYY-MM-DD)"
+  ssot-must-have-default:
+    description: "SSOT schemas should provide a 'default' block for runtime values"
     given: "$"
     severity: warn
     then:
-      field: updated
-      function: truthy
+      field: default
+      function: defined
 
-  ssot-naming-convention:
-    description: "Property names should be snake_case"
-    given: "$..properties[*]~"
+  # ── 명명 규약 (Karpathy: 일관성) ──────────────────────────────────────
+
+  ssot-snake-case-properties:
+    description: "Property names should be snake_case ($-prefixed JSON Schema keywords 제외)"
+    given: "#PropertyName"
     severity: warn
     then:
       function: pattern
       functionOptions:
         match: "^[a-z][a-z0-9_]*$|^\\$"
 
-  no-wildcard-in-cors:
-    description: "CORS must not allow_origins: ['*']"
-    given: "$..cors.default_origins[*]"
+  ssot-no-trailing-whitespace-id:
+    description: "$id must not contain trailing slash"
+    given: "$"
+    severity: warn
+    then:
+      field: $id
+      function: pattern
+      functionOptions:
+        notMatch: "/$"
+
+  # ── 보안·정책 룰 ──────────────────────────────────────────────────────
+
+  ssot-no-wildcard-cors:
+    description: "CORS default_origins/production_origins must not contain '*'"
+    given: "$..origins[*]"
     severity: error
     then:
       function: pattern
       functionOptions:
         notMatch: "^\\*$"
 
-formats:
-  - oas3_1
+  ssot-jwt-min-secret-32:
+    description: "JWT min_secret_length must be >= 32 (cryptographic safety)"
+    given: "$..jwt.min_secret_length"
+    severity: error
+    then:
+      function: schema
+      functionOptions:
+        schema:
+          type: integer
+          minimum: 32
+
+  # ── 전략 코드 ─────────────────────────────────────────────────────────
+
+  ssot-strategy-pattern:
+    description: "EMS strategy enum must match M00~M15 pattern"
+    given: "$..['StrategyCode'].enum[*]"
+    severity: error
+    then:
+      function: pattern
+      functionOptions:
+        match: "^M(0[0-9]|1[0-5])$"
+

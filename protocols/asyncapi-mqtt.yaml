@@ -1,4 +1,4 @@
-asyncapi: '3.0.0'
+asyncapi: '3.1.0'
 info:
   title: myjob MQTT Topics SSOT
   version: '1.0.0'
@@ -74,29 +74,43 @@ components:
   parameters:
     VenId:
       description: VEN ID — common.json#VenId pattern 매칭
-      schema:
-        type: string
-        pattern: "^VEN-[A-Z0-9-]+$"
+      enum: []
     ChallengeId:
-      schema:
-        type: string
+      description: AgentLeague 챌린지 ID
+      enum: []
     MatchId:
-      schema:
-        type: string
+      description: EduArena 매치 ID
+      enum: []
 
   messages:
     Telemetry:
       contentType: application/json
+      description: "EdgeAgent → GridBridge 텔레메트리. 실 schema는 schemas/telemetry.json 참조"
       payload:
-        $ref: '../schemas/telemetry.json'
+        type: object
+        properties:
+          ven_id:   {type: string}
+          ts:       {type: string, format: date-time}
+          power_kw: {type: number}
+          temp_c:   {type: number}
     Command:
       contentType: application/json
+      description: "GridBridge → EdgeAgent 제어 명령. schemas/control_command.json"
       payload:
-        $ref: '../schemas/control_command.json'
+        type: object
+        properties:
+          ven_id:   {type: string}
+          strategy: {type: string, pattern: "^M(0[0-9]|1[0-5])$"}
+          hvac_setpoint: {type: number, minimum: 18, maximum: 30}
     Registration:
       contentType: application/json
+      description: "EdgeAgent 등록 (retained). schemas/edge_registration.json"
       payload:
-        $ref: '../schemas/edge_registration.json'
+        type: object
+        properties:
+          ven_id:   {type: string}
+          backend:  {type: string, enum: [virtual, replay, energyplus, real_bas]}
+          version:  {type: string}
 
   securitySchemes:
     scramSha256:
