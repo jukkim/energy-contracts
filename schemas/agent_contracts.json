@@ -120,6 +120,13 @@
           "type": "string",
           "description": "사용된 방법 라벨 (예: 'L0_template' / 'L2_llm')"
         },
+        "ml_model_version": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "description": "L1 ML 경로 시 모델 식별자 (예: 'patchtst_v5_168to24'). L0/룰 분기에서는 null."
+        },
         "elapsed_sec": {
           "type": "number",
           "minimum": 0,
