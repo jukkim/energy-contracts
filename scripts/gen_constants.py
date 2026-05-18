@@ -214,10 +214,13 @@ def schemas_hash(data: dict) -> str:
     Phase H 보강(M7): schemas 무변경이지만 gen_constants.py 자체 알고리즘이
     바뀌어도 hash가 갱신되어 "위장 통과(silent drift)" 방지. 자기 자신을
     bytes 로 읽어 schemas dict 와 함께 해시.
+
+    Phase 4 H11 fix: read_text() + encode() 로 newline 정규화 — Windows(CRLF)
+    와 Linux(LF) 사이 hash 불일치 차단 (서버측 CI 와 로컬 일치 보장).
     """
     blob = json.dumps(data, sort_keys=True, ensure_ascii=False).encode("utf-8")
     try:
-        self_bytes = Path(__file__).read_bytes()
+        self_bytes = Path(__file__).read_text(encoding="utf-8").encode("utf-8")
     except Exception:
         self_bytes = b""
     h = hashlib.sha256()
