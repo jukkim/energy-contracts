@@ -4,6 +4,24 @@
 
 ---
 
+## (unversioned) — 2026-05-18 H11 cross-platform hash fix + TD-9 단위 테스트
+
+### gen_constants.py 버그 수정
+- `schemas_hash()` 가 `read_bytes()` 로 self-bytes 를 읽어 Windows(CRLF) / Linux(LF) 에서 hash 가 달랐음 → CI 서버측 검증에서 false-positive DRIFT 발생
+- Fix: `read_text(encoding="utf-8").encode("utf-8")` 로 newline 정규화 (PR #2, `be3c75b`)
+- SOURCE_HASH cascade: `58ff101d` → `1a793963` (5 consumer repo 6 파일 regen)
+
+### 신규 단위 테스트 (TD-9, PR #3)
+- `tests/test_classify_tests.py` — `_strip_headerless_pytestmark` 4 케이스 (canonical_only / raw_only / **H1 회귀 canonical+raw** / dangling import)
+- pytest 4/4 PASS (0.23s)
+
+### 서버측 SSOT pre-merge gate (H11)
+- 5 consumer repo (edge-agent / gridbridge / agentleague / eduarena / building-energy-3d) 에 `.github/workflows/ssot-drift.yml` 추가
+- PR/push 시 energy-contracts master 와 `_generated_constants.*` drift 자동 검출 (서버측 강제, `--no-verify` 우회 차단)
+- grep 필터로 자기 repo 외 sibling MISSING 무시
+
+---
+
 ## v1.4.0 — 2026-04-23 (R16/R17 + VW forecast/anomaly + GB bulk sync)
 
 ### 개요
