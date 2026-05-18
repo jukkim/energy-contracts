@@ -19,6 +19,7 @@ SSOT: schemas/test_classification.json — Tier × Group × Stage 3축
 from __future__ import annotations
 
 import argparse
+import ast
 import json
 import re
 import sys
@@ -278,6 +279,49 @@ def _strip_legacy_marker_blocks(text: str) -> str:
         text = text[: m_head.start()] + text[m_tail.end():]
 
 
+def _strip_headerless_pytestmark(text: str) -> str:
+    """canonical sentinel 블록 외부의 모듈 레벨 pytestmark = [...] 제거.
+
+    `_strip_legacy_marker_blocks` 는 헤더 sentinel 변형만 다룬다.
+    sentinel 자체가 없는 raw `pytestmark = [...]` 는 감지하지 못해 중복 발생.
+    AST 로 모듈 레벨 Assign(target=Name('pytestmark')) 를 찾아 canonical
+    블록 내부가 아닌 것만 제거. 직전 라인이 `import pytest as _ssot_pytest`
+    면 함께 제거 (dangling import 방지).
+
+    TD-6 (2026-05-18): test_building_permits_api.py 1건 실증.
+    """
+    try:
+        tree = ast.parse(text)
+    except SyntaxError:
+        return text
+    lines = text.splitlines(keepends=True)
+    to_remove: list[tuple[int, int]] = []  # (start_idx, end_idx) 0-indexed, end exclusive
+    for node in tree.body:
+        if not (isinstance(node, ast.Assign) and len(node.targets) == 1
+                and isinstance(node.targets[0], ast.Name)
+                and node.targets[0].id == "pytestmark"):
+            continue
+        start = node.lineno - 1  # 0-indexed
+        end = (node.end_lineno or node.lineno)  # 1-indexed inclusive → exclusive
+        # 위쪽 4줄 안에 canonical header 가 있으면 보존 (sentinel block 내부 pytestmark)
+        window_start = max(0, start - 4)
+        window = "".join(lines[window_start:start])
+        if _MARKER_BLOCK_HEAD in window:
+            continue
+        # 직전 라인이 `import pytest as _ssot_pytest` 이면 함께 제거
+        adj_start = start
+        if start > 0 and lines[start - 1].strip() == "import pytest as _ssot_pytest":
+            # 그 위가 canonical header 가 아닐 때만 제거
+            window2 = "".join(lines[max(0, start - 5):start - 1])
+            if _MARKER_BLOCK_HEAD not in window2:
+                adj_start = start - 1
+        to_remove.append((adj_start, end))
+    # 뒤에서부터 제거 (인덱스 보존)
+    for s, e in reversed(to_remove):
+        del lines[s:e]
+    return "".join(lines)
+
+
 def _apply_marker_to_file(fp: Path, tier: str, groups: list[str] | str, stage: str) -> str:
     """파일에 모듈 레벨 marker 블록 삽입. 이미 있으면 갱신.
 
@@ -286,6 +330,7 @@ def _apply_marker_to_file(fp: Path, tier: str, groups: list[str] | str, stage: s
     """
     text = fp.read_text(encoding="utf-8")
     text = _strip_legacy_marker_blocks(text)
+    text = _strip_headerless_pytestmark(text)
     # 이미 marker 블록이 있으면 통째로 교체 (idempotent) — 이 시점엔 정규형 블록 0개 또는 1개
     if _MARKER_BLOCK_HEAD in text and _MARKER_BLOCK_TAIL in text:
         before, _rest = text.split(_MARKER_BLOCK_HEAD, 1)
@@ -295,7 +340,6 @@ def _apply_marker_to_file(fp: Path, tier: str, groups: list[str] | str, stage: s
         new_text = before + _build_marker_block(tier, groups, stage) + after
     else:
         # 삽입 지점 찾기: 모듈 docstring + future imports 다음
-        import ast
         try:
             tree = ast.parse(text)
         except SyntaxError:

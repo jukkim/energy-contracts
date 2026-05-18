@@ -147,6 +147,35 @@
         "payload_schema": "energy-contracts/control_response.json"
       },
       {
+        "pattern": "gridbridge/dispatch/{event_id}",
+        "namespace": "gridbridge",
+        "qos": 1,
+        "retained": true,
+        "publisher": "gridbridge",
+        "subscriber": "edge-agent",
+        "payload_schema": "energy-contracts/dr_dispatch_event.json",
+        "$comment": "Phase 4 — ESG Aggregator가 분배 결정한 dispatch 이벤트 전체를 EdgeAgent로 발행. retained=true (지연 가입자에게도 최신 명령 전달)."
+      },
+      {
+        "pattern": "gridbridge/dispatch_ack/{event_id}/{ven_id}",
+        "namespace": "gridbridge",
+        "qos": 1,
+        "retained": false,
+        "publisher": "edge-agent",
+        "subscriber": "gridbridge",
+        "$comment": "Phase 4 — EdgeAgent의 이행 acknowledgement + 실측 결과. dispatch_event status 전이 트리거."
+      },
+      {
+        "pattern": "vworld/dispatch_event/{event_id}",
+        "namespace": "vworld",
+        "qos": 1,
+        "retained": true,
+        "publisher": "gridbridge",
+        "subscriber": "building-energy-3d",
+        "payload_schema": "energy-contracts/dr_dispatch_event.json",
+        "$comment": "Phase 4 — SSE 백본. /esg 카르테 UI 토스트·카운터 갱신용."
+      },
+      {
         "pattern": "vworld/telemetry/{ven_id}",
         "namespace": "vworld",
         "qos": 1,

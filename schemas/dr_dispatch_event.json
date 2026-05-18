@@ -1,0 +1,222 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "energy-contracts/dr_dispatch_event.json",
+  "title": "DR Dispatch Event",
+  "description": "외부 발령창 또는 경제성 정책 엔진이 발생시키는 DR 디스패치 이벤트. dr_event.json (기존, 단순 신호 모델)과 구분 — 본 스키마는 ESG Aggregator 레이어가 받아 분배·실행하는 정책 명령. Phase 4 도입.",
+  "_usage": "runtime-validate",
+  "_consumers": [
+    "building-energy-3d",
+    "gridbridge",
+    "edge-agent"
+  ],
+  "_security": "dispatched_by는 서버측 JWT sub claim에서 derive — 클라이언트 입력은 무시·덮어쓴다. mandatory=true 발령은 acknowledgement 후 cancel 불가 (DB FSM trigger). jti(JWT ID)로 replay 방어 — gridbridge가 Redis nonce store에 보존. dispatched_at는 서버 시각 검증 (±60s 윈도).",
+  "version": "1.1",
+  "$defs": {
+    "DispatchSource": {
+      "type": "string",
+      "enum": [
+        "reliability",
+        "economic"
+      ],
+      "description": "발령 출처. reliability=외부 발령창(수동/KPX 대체), economic=경제성 정책 엔진 자동."
+    },
+    "DispatchStatus": {
+      "type": "string",
+      "enum": [
+        "pending",
+        "acknowledged",
+        "active",
+        "completed",
+        "failed",
+        "cancelled"
+      ],
+      "description": "라이프사이클. pending→acknowledged→active→completed (정상) 또는 failed/cancelled (예외)."
+    },
+    "DispatchWindow": {
+      "type": "object",
+      "required": [
+        "start",
+        "end"
+      ],
+      "properties": {
+        "start": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "end": {
+          "type": "string",
+          "format": "date-time"
+        }
+      },
+      "additionalProperties": false
+    },
+    "MemberAllocation": {
+      "type": "object",
+      "description": "분배 결과 — 각 멤버에 할당된 감축량.",
+      "required": [
+        "ven_id",
+        "allocated_kw"
+      ],
+      "properties": {
+        "ven_id": {
+          "type": "string"
+        },
+        "allocated_kw": {
+          "type": "number",
+          "minimum": 0
+        },
+        "strategy": {
+          "type": "string",
+          "pattern": "^M(0[0-9]|1[0-5])$",
+          "description": "적용된 EMS 전략 코드 (M00~M15). ems_strategies.json#StrategyPattern 참조. DB CHECK도 동일 패턴."
+        },
+        "reasoning": {
+          "type": "string",
+          "description": "분배 알고리즘이 남긴 결정 근거 (디버깅·UI 표시용)"
+        }
+      },
+      "additionalProperties": false
+    },
+    "ExecutionReport": {
+      "type": "object",
+      "description": "이행 결과 보고서 (status=completed/failed 시 필수).",
+      "properties": {
+        "target_kw": {
+          "type": "number",
+          "minimum": 0
+        },
+        "achieved_kw": {
+          "type": "number",
+          "minimum": 0
+        },
+        "unallocated_kw": {
+          "type": "number",
+          "minimum": 0,
+          "description": "분배 단계에서 할당 못 한 양 (mandatory + partial_execution 결합 시 발생)"
+        },
+        "shortfall_kw": {
+          "type": "number",
+          "description": "이행 후 부족분 (target − achieved)"
+        },
+        "avoided_cost_krw": {
+          "type": "number",
+          "description": "회피비용 = Σ(회피kWh × (SMP − bid_price)). 음수 가능 (역손실)."
+        },
+        "comfort_violations": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "ven_id": {
+                "type": "string"
+              },
+              "violation_type": {
+                "type": "string",
+                "enum": [
+                  "pmv_exceeded",
+                  "setpoint_deviation_exceeded"
+                ]
+              },
+              "value": {
+                "type": "number"
+              }
+            }
+          }
+        }
+      },
+      "additionalProperties": false
+    }
+  },
+  "type": "object",
+  "required": [
+    "event_id",
+    "source",
+    "group_id",
+    "target_kw",
+    "window",
+    "mandatory",
+    "status",
+    "dispatched_at"
+  ],
+  "properties": {
+    "event_id": {
+      "type": "string",
+      "pattern": "^dispatch-[0-9]{4}-[0-9]{4,}$",
+      "description": "예: dispatch-2026-0001"
+    },
+    "source": {
+      "$ref": "#/$defs/DispatchSource"
+    },
+    "group_id": {
+      "type": "string",
+      "description": "esg_groups.group_id 참조"
+    },
+    "target_kw": {
+      "type": "number",
+      "minimum": 0,
+      "description": "목표 감축량 (kW)"
+    },
+    "window": {
+      "$ref": "#/$defs/DispatchWindow"
+    },
+    "mandatory": {
+      "type": "boolean",
+      "description": "true=의무 이행 (신뢰성 DR 통상), false=선택적 (경제성 DR 통상)"
+    },
+    "advance_notice_minutes": {
+      "type": "integer",
+      "minimum": 0,
+      "description": "발령 시각부터 window.start까지 예고 시간. esg_policy.reliability.min_advance_minutes 와 비교 검증."
+    },
+    "dispatched_by": {
+      "type": "string",
+      "pattern": "^(operator-[a-zA-Z0-9_-]{3,64}|auto-esg-policy-[a-zA-Z0-9_-]+)$",
+      "description": "서버측 JWT claim에서 derive. operator-{jwt.sub} 또는 auto-{policy_id}. 클라이언트 입력값은 서버가 무시·덮어쓴다. UI 표시는 dispatched_by_display 사용 (PII 보호)."
+    },
+    "jti": {
+      "type": "string",
+      "minLength": 16,
+      "maxLength": 128,
+      "description": "JWT ID — replay 방어. gridbridge Redis nonce store (TTL=window.end+24h)에 보존. UNIQUE."
+    },
+    "dispatched_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "status": {
+      "$ref": "#/$defs/DispatchStatus"
+    },
+    "distribution_algorithm": {
+      "type": "string",
+      "description": "사용된 분배 알고리즘 (esg_policy.distribution.algorithm 또는 override)"
+    },
+    "allocations": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/MemberAllocation"
+      },
+      "description": "분배 결과. status≥acknowledged 시 채워짐."
+    },
+    "execution_report": {
+      "$ref": "#/$defs/ExecutionReport",
+      "description": "이행 후 보고서. status=completed/failed 시 필수."
+    },
+    "trace": {
+      "type": "object",
+      "description": "디버깅용 — 의사결정 트레이스",
+      "properties": {
+        "smp_at_dispatch": {
+          "type": "number"
+        },
+        "weather_at_dispatch": {
+          "type": "object"
+        },
+        "policy_version": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": true
+    }
+  },
+  "additionalProperties": false
+}

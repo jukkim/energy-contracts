@@ -52,12 +52,14 @@ PROJECT_TARGETS: dict[str, dict] = {
                 "AI_MODELS", "AUTH_JWT_POLICY", "AUTH_PROJECT_DEFAULT_SCOPES",
                 "BUILDING_USAGES", "COMPUTER_PROFILES", "DATA_SOURCES",
                 "DATA_SOURCE_LABELS", "DB_MIGRATIONS", "ENERGY_CONVERSIONS",
+                "DISPATCH_SOURCES", "DISPATCH_STATUSES",
                 "ERROR_CODES", "GRIDBRIDGE_URL_COMPUTER_A",
                 "GRIDBRIDGE_URL_DEFAULT", "I18N_KEYS", "INTENT_TYPES",
                 "LEGACY_MAPPING", "LINT_CONFIG", "LOGGING_FORMAT",
                 "MQTT_TOPIC_PATTERNS", "OPENAPI_RESPONSES", "PIPELINE_DATASETS",
                 "PORTS", "RUN_MODES", "RUN_MODE_BEHAVIOR", "SECURITY_HEADERS",
-                "SIGNAL_MAPPING", "SIM_EMS_PATTERNS", "STRATEGIES",
+                "SIGNAL_MAPPING", "SIGNAL_MAPPING_DR",
+                "SIM_EMS_PATTERNS", "STRATEGIES",
                 "STRATEGY_CODES", "STRATEGY_PATTERN", "TENANT_REGIONS",
                 "TESTS_SHARED", "TEST_GROUPS", "TEST_STAGES", "TEST_TIERS",
             ],
@@ -67,13 +69,18 @@ PROJECT_TARGETS: dict[str, dict] = {
         "python": "projects/gridbridge/src/_generated_constants.py",
         "exports": {
             "python": [
-                "AI_MODELS", "AUTH_JWT_POLICY", "AUTH_SCOPES", "COMPUTER_PROFILES",
+                "AI_MODELS", "AUTH_JWT_POLICY", "AUTH_SCOPES",
+                "BID_STRATEGIES", "COMPUTER_PROFILES",
                 "DATA_SOURCES", "DATA_SOURCE_LABELS", "DB_MIGRATIONS",
+                "DISPATCH_SOURCES", "DISPATCH_STATUSES",
+                "DISTRIBUTION_ALGORITHMS", "DR_TYPES",
                 "EMISSION_FACTORS_KR", "ENERGY_CONVERSIONS", "ERROR_CODES",
-                "GRIDBRIDGE_URL_COMPUTER_A", "LOGGING_FORMAT", "MQTT_TOPIC_PATTERNS",
+                "GRIDBRIDGE_URL_COMPUTER_A", "LOGGING_FORMAT",
+                "MANAGEMENT_MODES", "MQTT_TOPIC_PATTERNS",
                 "OPENAPI_RESPONSES", "PIPELINE_DATASETS", "PORTS",
                 "RUN_MODES", "RUN_MODE_BEHAVIOR", "SECURITY_HEADERS",
-                "SIGNAL_MAPPING", "SIM_EMS_PATTERNS", "STRATEGY_CODES",
+                "SIGNAL_MAPPING", "SIGNAL_MAPPING_DR",
+                "SIM_EMS_PATTERNS", "STRATEGY_CODES",
                 "STRATEGY_PATTERN", "TENANT_REGIONS", "TESTS_SHARED",
                 "TEST_GROUPS", "TEST_STAGES", "TEST_TIERS",
             ],
@@ -85,15 +92,20 @@ PROJECT_TARGETS: dict[str, dict] = {
         "exports": {
             "python": [
                 "AGENT_REGISTRY", "AI_MODELS", "AUTH_JWT_POLICY", "AUTH_PERMISSIONS",
-                "AUTH_PROJECT_DEFAULT_SCOPES", "AUTH_SCOPES", "BUILDING_USAGES",
+                "AUTH_PROJECT_DEFAULT_SCOPES", "AUTH_SCOPES",
+                "BID_STRATEGIES", "BUILDING_USAGES",
                 "COMPUTER_PROFILES", "DATA_SOURCES", "DATA_SOURCE_LABELS",
-                "DB_MIGRATIONS", "EMISSION_FACTORS_KR", "ENERGY_CONVERSIONS",
+                "DB_MIGRATIONS", "DISPATCH_SOURCES", "DISPATCH_STATUSES",
+                "DISTRIBUTION_ALGORITHMS", "DR_TYPES",
+                "EMISSION_FACTORS_KR", "ENERGY_CONVERSIONS",
                 "ERROR_CODES", "ERROR_TYPE_PREFIX", "I18N_FALLBACK_LANG",
                 "I18N_KEYS", "INTENT_TYPES", "LINT_CONFIG", "LOGGING_FORMAT",
-                "MQTT_NAMESPACES", "MQTT_TOPIC_PATTERNS", "NL_CONSTRAINTS",
+                "MANAGEMENT_MODES", "MQTT_NAMESPACES", "MQTT_TOPIC_PATTERNS",
+                "NL_CONSTRAINTS",
                 "NL_CONTROL_KEYWORDS", "NL_GATE_TOKENS", "NL_STRATEGIES_BY_KEYWORD",
                 "OPENAPI_RESPONSES", "PIPELINE_DATASETS", "PRIMARY_ENERGY_FACTORS",
                 "RUN_MODES", "RUN_MODE_BEHAVIOR", "SECURITY_CORS", "SECURITY_HEADERS",
+                "SIGNAL_MAPPING_DR",
                 "SIM_EMS_PATTERNS", "SIM_PMV_THRESHOLDS", "SIM_RUN_PERIODS",
                 "STRATEGIES", "STRATEGY_CODES", "TENANT_REGIONS", "TESTS_SHARED",
                 "TEST_GROUPS", "TEST_STAGES", "TEST_TIERS", "ZEB_THRESHOLDS",
@@ -179,6 +191,9 @@ def load_schemas() -> dict:
     dbmig = _load("db_migrations.json")
     oapi_resp = _load("openapi_responses.json")
     lintfmt = _load("lint_format.json")
+    # Phase L 신규 (2개 — AI 챔피언 Phase 4 DR Aggregator)
+    esg_policy = _load("esg_policy.json")
+    dr_dispatch = _load("dr_dispatch_event.json")
     return {"ems": ems, "ports": ports, "common": common,
             "agents": agents, "intents": intents,
             "modes": modes, "dataclass": dataclass, "tests": tests,
@@ -189,7 +204,8 @@ def load_schemas() -> dict:
             "pipeline": pipeline, "units": units,
             "tests_shared": tests_shared, "logfmt": logfmt,
             "sim_scn": sim_scn, "dbmig": dbmig,
-            "oapi_resp": oapi_resp, "lintfmt": lintfmt}
+            "oapi_resp": oapi_resp, "lintfmt": lintfmt,
+            "esg_policy": esg_policy, "dr_dispatch": dr_dispatch}
 
 
 def schemas_hash(data: dict) -> str:
@@ -261,6 +277,35 @@ def gen_python(schemas: dict) -> str:
     lines.append("# ─ DR signal → strategy ─────────────────────────────────────")
     lines.append(f"SIGNAL_MAPPING: dict[str, str] = {ems['signal_mapping']!r}")
     lines.append("")
+
+    # Phase 4 — signal_mapping_dr (dr_type 분기)
+    if "signal_mapping_dr" in ems:
+        lines.append("# ─ Phase 4 — DR signal → strategy, dr_type 분기 ─────────────")
+        lines.append(f"SIGNAL_MAPPING_DR: dict[str, dict[str, str]] = {ems['signal_mapping_dr']!r}")
+        lines.append("")
+
+    # Phase 4 — DR Aggregator enums (esg_policy.json + dr_dispatch_event.json)
+    esg = schemas.get("esg_policy") or {}
+    dispatch = schemas.get("dr_dispatch") or {}
+    if esg:
+        lines.append("# ─ Phase 4 — ESG Aggregator enums ───────────────────────────")
+        for name, ref in [
+            ("DR_TYPES",              esg.get("$defs", {}).get("DRType", {}).get("enum")),
+            ("MANAGEMENT_MODES",      esg.get("$defs", {}).get("ManagementMode", {}).get("enum")),
+            ("BID_STRATEGIES",        esg.get("$defs", {}).get("BidStrategy", {}).get("enum")),
+            ("DISTRIBUTION_ALGORITHMS", esg.get("$defs", {}).get("DistributionAlgorithm", {}).get("enum")),
+        ]:
+            if ref:
+                lines.append(f"{name}: list[str] = {ref!r}")
+        lines.append("")
+    if dispatch:
+        for name, ref in [
+            ("DISPATCH_SOURCES",  dispatch.get("$defs", {}).get("DispatchSource", {}).get("enum")),
+            ("DISPATCH_STATUSES", dispatch.get("$defs", {}).get("DispatchStatus", {}).get("enum")),
+        ]:
+            if ref:
+                lines.append(f"{name}: list[str] = {ref!r}")
+        lines.append("")
 
     # Legacy mapping (lookup only)
     lines.append("# ─ Legacy code mapping (lookup only — DO NOT use for new code) ─")
@@ -835,6 +880,8 @@ def filter_typescript_output(content: str, whitelist: list[str]) -> str:
     interface / type 은 의존 const 와 함께 keep/drop. 휴리스틱:
       - `export type X = (typeof Y)[number]` → Y 가 keep 이면 X 도 keep
       - `export interface Foo` 블록 → 항상 보존 (작아서 분석 비용 > 이득)
+      - **interface 가 다른 type/const 를 참조하면 그것도 transitive 하게 keep**
+        (TD-2 청산: StrategyMeta가 StrategyCode 참조 → StrategyCode + STRATEGY_CODES 모두 keep)
     """
     if not whitelist:
         return content
@@ -870,6 +917,42 @@ def filter_typescript_output(content: str, whitelist: list[str]) -> str:
             j += 1
         blocks.append((i, j, name, kind))
         i = j + 1
+
+    # TD-2 청산: interface 가 keep 이면 그 안에서 참조된 식별자도 keep 으로 transitive 확장.
+    # interface 는 line 925-925 의 휴리스틱(always keep)으로 보존되므로 그 의존도 확장.
+    # type 의 (typeof X) 도 동일 — X 가 keep set 에 들어와야 type 이 의미 있음.
+    ident_re = re.compile(r"\b([A-Z][A-Za-z_0-9]*)\b")
+    changed = True
+    iter_guard = 0
+    while changed and iter_guard < 5:
+        changed = False
+        iter_guard += 1
+        for start, end, name, kind in blocks:
+            # 이 블록이 보존 대상인지 (interface 항상, name 매칭, type+의존자 keep)
+            is_kept = (
+                name in keep_set
+                or kind == "interface"
+                or (kind == "type" and re.search(
+                    r"\(typeof\s+([A-Za-z_][A-Za-z_0-9]*)\)",
+                    "".join(lines[start:end + 1]),
+                ) and re.search(
+                    r"\(typeof\s+([A-Za-z_][A-Za-z_0-9]*)\)",
+                    "".join(lines[start:end + 1]),
+                ).group(1) in keep_set)
+            )
+            if not is_kept:
+                continue
+            block_text = "".join(lines[start:end + 1])
+            # 블록 내 모든 식별자(PascalCase/UPPER_SNAKE) 추출 후 keep_set 확장
+            for ident in ident_re.findall(block_text):
+                if ident == name or ident in keep_set:
+                    continue
+                # 다른 블록 이름과 매칭되면 keep
+                for s2, e2, n2, _k2 in blocks:
+                    if n2 == ident and n2 not in keep_set:
+                        keep_set.add(ident)
+                        changed = True
+                        break
 
     # 2차 패스: keep 결정
     # const/interface 는 화이트리스트 직접 매칭. type 은 의존 const 추적.

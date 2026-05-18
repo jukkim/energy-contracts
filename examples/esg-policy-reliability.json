@@ -1,0 +1,23 @@
+{
+  "policy_id": "esg-policy-reliability-only-001",
+  "group_id": "PHASE4-DEMO-001",
+  "dr_type": "reliability",
+  "management_mode": "unified",
+  "reliability": {
+    "auto_accept": true,
+    "min_advance_minutes": 30,
+    "max_obligation_kw": 200,
+    "partial_execution": true
+  },
+  "distribution": {
+    "algorithm": "weighted_capability",
+    "fallback_algorithm": "proportional_load",
+    "max_retry": 3
+  },
+  "member_weights": {
+    "VEN-OFFICE-001": {"weight": 0.5, "auto_derived": false},
+    "VEN-OFFICE-002": {"weight": 0.5, "auto_derived": false}
+  },
+  "version": "1.0.0",
+  "updated_at": "2026-05-18T00:00:00Z"
+}

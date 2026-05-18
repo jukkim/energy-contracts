@@ -1,0 +1,308 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "energy-contracts/esg_policy.json",
+  "title": "ESG Aggregator Policy",
+  "description": "ESG 그룹(Aggregator)의 DR 운영 정책 SSOT. 신뢰성/경제성 DR 분기, 분배 알고리즘 선택, 풍부 정책 (요일별 임계값 곡선·멤버 가중치·학습). Phase 4 DR 자율 에이전트 도입.",
+  "_usage": "runtime-validate",
+  "_consumers": [
+    "building-energy-3d",
+    "gridbridge"
+  ],
+  "version": "1.0",
+  "$defs": {
+    "DRType": {
+      "type": "string",
+      "enum": [
+        "none",
+        "reliability",
+        "economic",
+        "both"
+      ],
+      "description": "DR 참여 유형. none=불참, reliability=신뢰성 DR만, economic=경제성 DR만, both=둘다."
+    },
+    "ManagementMode": {
+      "type": "string",
+      "enum": [
+        "unified",
+        "individual"
+      ],
+      "description": "그룹 내 멤버 관리 모드. unified=ESG가 목표 받아 멤버 분배, individual=멤버 각자 ReductionSlot 수신."
+    },
+    "BidStrategy": {
+      "type": "string",
+      "enum": [
+        "conservative",
+        "balanced",
+        "aggressive"
+      ],
+      "description": "경제성 DR 입찰 정책. conservative=SMP-20% (낙찰 우선), balanced=SMP-10%, aggressive=SMP-5% (수익 우선)."
+    },
+    "DistributionAlgorithm": {
+      "type": "string",
+      "enum": [
+        "weighted_capability",
+        "proportional_load",
+        "equal_split",
+        "cost_optimal",
+        "comfort_priority"
+      ],
+      "description": "부하 분배 알고리즘 카탈로그. distribution/{name}.py로 구현. Strategy pattern."
+    },
+    "TimeSlotCurve": {
+      "type": "object",
+      "description": "시간대별 임계값 곡선. 키는 HH-HH 패턴 (예: '14-17').",
+      "patternProperties": {
+        "^[0-2][0-9]-[0-2][0-9]$": {
+          "type": "number",
+          "minimum": 0,
+          "description": "임계값 (원/kWh)"
+        }
+      },
+      "additionalProperties": false
+    },
+    "ComfortConstraint": {
+      "type": "object",
+      "description": "쾌적성 제약. 빌딩은 PMV, 가정은 setpoint deviation 적용.",
+      "properties": {
+        "pmv_max": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 3,
+          "description": "PMV 절댓값 상한 (KS A ISO 7730)"
+        },
+        "setpoint_deviation_max_c": {
+          "type": "number",
+          "minimum": 0,
+          "description": "BAU 대비 setpoint 편차 상한 (°C)"
+        }
+      },
+      "additionalProperties": false
+    },
+    "EconomicPolicy": {
+      "type": "object",
+      "description": "경제성 DR 정책 (풍부).",
+      "required": [
+        "smp_thresholds",
+        "bid_strategy"
+      ],
+      "properties": {
+        "smp_thresholds": {
+          "type": "object",
+          "required": [
+            "weekday",
+            "weekend"
+          ],
+          "properties": {
+            "weekday": {
+              "$ref": "#/$defs/TimeSlotCurve"
+            },
+            "weekend": {
+              "$ref": "#/$defs/TimeSlotCurve"
+            }
+          },
+          "additionalProperties": false
+        },
+        "bid_strategy": {
+          "$ref": "#/$defs/BidStrategy"
+        },
+        "min_reduction_ratio": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1,
+          "description": "그룹 평균 부하 대비 최소 감축 비율"
+        },
+        "max_reduction_ratio": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1,
+          "description": "그룹 평균 부하 대비 최대 감축 비율"
+        },
+        "comfort_constraint": {
+          "$ref": "#/$defs/ComfortConstraint"
+        },
+        "learning": {
+          "type": "object",
+          "description": "입찰 학습 (P7 stub).",
+          "properties": {
+            "enabled": {
+              "type": "boolean"
+            },
+            "history_window_days": {
+              "type": "integer",
+              "minimum": 1
+            },
+            "model": {
+              "type": "string",
+              "description": "학습 모델 식별자. stub_v1=히스토리만, linucb_v1=LinUCB 등."
+            }
+          }
+        }
+      }
+    },
+    "ReliabilityPolicy": {
+      "type": "object",
+      "description": "신뢰성 DR 정책 (외부 발령 대응).",
+      "required": [
+        "auto_accept"
+      ],
+      "properties": {
+        "auto_accept": {
+          "type": "boolean",
+          "description": "발령 자동 수락 여부"
+        },
+        "min_advance_minutes": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "최소 예고 시간 (분). 이보다 짧으면 거부."
+        },
+        "max_obligation_kw": {
+          "type": "number",
+          "minimum": 0,
+          "description": "그룹 최대 수용 가능 감축량 (kW)"
+        },
+        "partial_execution": {
+          "type": "boolean",
+          "default": true,
+          "description": "능력 부족 시 최대 가능량 발행 + 부족분 보고 (true) vs 실패 보고만 (false). false 선택 시 failure_escalation_url 필수 (계통 운영자 통보)."
+        },
+        "failure_escalation_url": {
+          "type": "string",
+          "format": "uri",
+          "description": "partial_execution=false + mandatory 실패 시 외부 계통 운영자에 통보할 webhook URL. 신뢰성 의무 회피 방지."
+        }
+      }
+    },
+    "DistributionPolicy": {
+      "type": "object",
+      "description": "부하 분배 정책. 주 알고리즘 + fallback.",
+      "required": [
+        "algorithm"
+      ],
+      "properties": {
+        "algorithm": {
+          "$ref": "#/$defs/DistributionAlgorithm"
+        },
+        "fallback_algorithm": {
+          "$ref": "#/$defs/DistributionAlgorithm",
+          "description": "주 알고리즘 5% 초과 shortfall 시 호출. 같은 알고리즘 가능 (재시도)."
+        },
+        "max_retry": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 10,
+          "default": 3
+        }
+      }
+    },
+    "MemberWeight": {
+      "type": "object",
+      "description": "멤버별 분배 가중치. 합 = 1.0 (정규화 안 되어 있으면 자동 정규화).",
+      "required": [
+        "weight"
+      ],
+      "properties": {
+        "weight": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1
+        },
+        "auto_derived": {
+          "type": "boolean",
+          "default": false,
+          "description": "true=현재 부하 비례 자동 산정 (실시간 갱신), false=수동 정의."
+        }
+      }
+    }
+  },
+  "_security": "policy_id·group_id·정책 본문 변경은 PROD 모드에서 4-eye 원칙 (drafter ≠ approver). gridbridge esg_policies 테이블의 created_by/approved_by 컬럼 + RBAC roles (esg_policy_reader/drafter/approver) 참조. DEMO/TEST 우회 허용.",
+  "type": "object",
+  "required": [
+    "policy_id",
+    "group_id",
+    "dr_type",
+    "management_mode",
+    "version"
+  ],
+  "allOf": [
+    {
+      "$comment": "dr_type=economic 또는 both → economic 블록 필수",
+      "if": {"properties": {"dr_type": {"enum": ["economic", "both"]}}, "required": ["dr_type"]},
+      "then": {"required": ["economic"]}
+    },
+    {
+      "$comment": "dr_type=reliability 또는 both → reliability 블록 필수",
+      "if": {"properties": {"dr_type": {"enum": ["reliability", "both"]}}, "required": ["dr_type"]},
+      "then": {"required": ["reliability"]}
+    },
+    {
+      "$comment": "dr_type=none → economic·reliability 둘 다 금지",
+      "if": {"properties": {"dr_type": {"const": "none"}}, "required": ["dr_type"]},
+      "then": {"not": {"anyOf": [{"required": ["economic"]}, {"required": ["reliability"]}]}}
+    },
+    {
+      "$comment": "management_mode=unified → distribution 필수 (individual 모드는 분배 안 함)",
+      "if": {"properties": {"management_mode": {"const": "unified"}}, "required": ["management_mode"]},
+      "then": {"required": ["distribution", "member_weights"]}
+    },
+    {
+      "$comment": "reliability.partial_execution=false → failure_escalation_url 필수 (계통 안전성)",
+      "if": {
+        "properties": {
+          "reliability": {
+            "properties": {"partial_execution": {"const": false}},
+            "required": ["partial_execution"]
+          }
+        },
+        "required": ["reliability"]
+      },
+      "then": {
+        "properties": {
+          "reliability": {"required": ["failure_escalation_url"]}
+        }
+      }
+    }
+  ],
+  "properties": {
+    "policy_id": {
+      "type": "string",
+      "pattern": "^esg-policy-[a-zA-Z0-9_-]+$"
+    },
+    "group_id": {
+      "type": "string",
+      "description": "esg_groups.group_id 참조"
+    },
+    "dr_type": {
+      "$ref": "#/$defs/DRType"
+    },
+    "management_mode": {
+      "$ref": "#/$defs/ManagementMode"
+    },
+    "economic": {
+      "$ref": "#/$defs/EconomicPolicy",
+      "description": "dr_type ∈ {economic, both} 시 필수"
+    },
+    "reliability": {
+      "$ref": "#/$defs/ReliabilityPolicy",
+      "description": "dr_type ∈ {reliability, both} 시 필수"
+    },
+    "distribution": {
+      "$ref": "#/$defs/DistributionPolicy"
+    },
+    "member_weights": {
+      "type": "object",
+      "description": "키=ven_id (esg_group_venues 참조)",
+      "additionalProperties": {
+        "$ref": "#/$defs/MemberWeight"
+      }
+    },
+    "version": {
+      "type": "string",
+      "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$"
+    },
+    "updated_at": {
+      "type": "string",
+      "format": "date-time"
+    }
+  },
+  "additionalProperties": false
+}

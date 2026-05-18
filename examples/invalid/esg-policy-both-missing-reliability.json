@@ -1,0 +1,17 @@
+{
+  "_invalid_reason": "dr_type=both 인데 reliability 블록 누락 — esg_policy.json#/allOf의 if/then 위반 (Tier 1 #5).",
+  "policy_id": "esg-policy-invalid-001",
+  "group_id": "PHASE4-DEMO-001",
+  "dr_type": "both",
+  "management_mode": "unified",
+  "economic": {
+    "smp_thresholds": {
+      "weekday": {"14-17": 220},
+      "weekend": {"14-17": 180}
+    },
+    "bid_strategy": "aggressive"
+  },
+  "distribution": {"algorithm": "weighted_capability"},
+  "member_weights": {"VEN-001": {"weight": 1.0}},
+  "version": "1.0.0"
+}

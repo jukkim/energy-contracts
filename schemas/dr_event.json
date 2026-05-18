@@ -1,14 +1,15 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "energy-contracts/dr_event.json",
-  "title": "DREvent",
-  "description": "DR 이벤트 — GridBridge가 생성, VWorld/EdgeAgent가 참조.",
+  "title": "DREvent (Legacy Simple Signal Model)",
+  "description": "DR 이벤트 단순 신호 모델 — Phase 3 이전 사용. **신규 코드는 dr_dispatch_event.json 사용 권장** (Phase 4 ESG Aggregator 레이어 모델, allocations + execution_report + 4-eye RBAC 포함). 본 스키마는 기존 GridBridge dispatch 경로 호환용으로 유지. 향후 dr_dispatch_event.json v2.0에 통합 예정.",
   "_usage": "reference-only",
   "_consumers": [
     "edge-agent",
     "gridbridge",
     "building-energy-3d"
   ],
+  "$comment": "deprecated since 2026-05 — 신규 코드는 dr_dispatch_event.json 사용. 통합 마이그레이션 Phase 4 후반 계획.",
   "version": "1.0",
   "type": "object",
   "required": [

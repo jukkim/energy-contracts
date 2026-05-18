@@ -81,7 +81,7 @@
     },
     "signal_mapping": {
       "type": "object",
-      "description": "DR SignalLevel → 기본 전략 매핑",
+      "description": "DR SignalLevel → 기본 전략 매핑 (flat, fallback). dr_type 컨텍스트 없을 때 사용.",
       "properties": {
         "NORMAL": {
           "$ref": "#/$defs/StrategyCode"
@@ -94,6 +94,49 @@
         },
         "EMERGENCY": {
           "$ref": "#/$defs/StrategyCode"
+        }
+      }
+    },
+    "signal_mapping_dr": {
+      "type": "object",
+      "description": "DR SignalLevel → 전략 매핑, dr_type별 분기 (Phase 4 도입). esg_policy.dr_type ∈ {reliability,economic,both} 시 사용. 4 SignalLevel × 2 dr_type = 8 키 모두 필수. Fallback 체인: signal_mapping_dr.{level}.{type} 정의 누락 시 → signal_mapping_dr.{level}.reliability (보수적 가정) → signal_mapping.{level} (flat) → M00. dr_agent loader가 startup 시 8 키 모두 존재 검증.",
+      "required": ["NORMAL", "MODERATE", "HIGH", "EMERGENCY"],
+      "properties": {
+        "NORMAL": {
+          "type": "object",
+          "required": ["reliability", "economic"],
+          "properties": {
+            "reliability": {"$ref": "#/$defs/StrategyCode"},
+            "economic": {"$ref": "#/$defs/StrategyCode"}
+          },
+          "additionalProperties": false
+        },
+        "MODERATE": {
+          "type": "object",
+          "required": ["reliability", "economic"],
+          "properties": {
+            "reliability": {"$ref": "#/$defs/StrategyCode"},
+            "economic": {"$ref": "#/$defs/StrategyCode"}
+          },
+          "additionalProperties": false
+        },
+        "HIGH": {
+          "type": "object",
+          "required": ["reliability", "economic"],
+          "properties": {
+            "reliability": {"$ref": "#/$defs/StrategyCode"},
+            "economic": {"$ref": "#/$defs/StrategyCode"}
+          },
+          "additionalProperties": false
+        },
+        "EMERGENCY": {
+          "type": "object",
+          "required": ["reliability", "economic"],
+          "properties": {
+            "reliability": {"$ref": "#/$defs/StrategyCode"},
+            "economic": {"$ref": "#/$defs/StrategyCode"}
+          },
+          "additionalProperties": false
         }
       }
     },
@@ -243,6 +286,12 @@
       "MODERATE": "M04",
       "HIGH": "M14",
       "EMERGENCY": "M15"
+    },
+    "signal_mapping_dr": {
+      "NORMAL":    {"reliability": "M01", "economic": "M07"},
+      "MODERATE":  {"reliability": "M04", "economic": "M04"},
+      "HIGH":      {"reliability": "M14", "economic": "M11"},
+      "EMERGENCY": {"reliability": "M15", "economic": "M14"}
     },
     "legacy_mapping": {
       "ems_simulation": {

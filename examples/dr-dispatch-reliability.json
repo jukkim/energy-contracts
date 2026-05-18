@@ -1,0 +1,24 @@
+{
+  "event_id": "dispatch-2026-0001",
+  "source": "reliability",
+  "group_id": "PHASE4-DEMO-001",
+  "target_kw": 50.0,
+  "window": {"start": "2026-05-18T14:00:00Z", "end": "2026-05-18T15:00:00Z"},
+  "mandatory": true,
+  "advance_notice_minutes": 60,
+  "dispatched_by": "operator-jkim",
+  "jti": "01928a8e-7c50-7b30-9c91-0a1b2c3d4e5f",
+  "dispatched_at": "2026-05-18T13:00:00Z",
+  "status": "pending",
+  "distribution_algorithm": "weighted_capability",
+  "allocations": [
+    {"ven_id": "VEN-OFFICE-001", "allocated_kw": 20, "strategy": "M14", "reasoning": "weight 0.4 × target 50"},
+    {"ven_id": "VEN-OFFICE-002", "allocated_kw": 15, "strategy": "M14", "reasoning": "weight 0.3 × target 50"},
+    {"ven_id": "VEN-HOME-001",   "allocated_kw": 15, "strategy": "M04", "reasoning": "가정용 setpoint 셋백"}
+  ],
+  "trace": {
+    "smp_at_dispatch": 215.5,
+    "weather_at_dispatch": {"outdoor_temp_c": 32.4, "humidity_pct": 65.0, "solar_radiation_wm2": 720, "source": "asos-108"},
+    "policy_version": "1.0.0"
+  }
+}

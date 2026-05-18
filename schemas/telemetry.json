@@ -58,6 +58,20 @@
     "schedule_slot_idx": {
       "type": "integer",
       "description": "현재 실행 중인 스케줄 슬롯 인덱스"
+    },
+    "mode": {
+      "type": "string",
+      "enum": [
+        "prod",
+        "demo",
+        "dev",
+        "test"
+      ],
+      "description": "EdgeAgent 운영 모드 audit 표시 (informational only — trust anchor 아님). Trust anchor는 bootstrap channel: ① mTLS 인증서의 mode extension OR ② GridBridge가 발급한 short-lived signed token에 mode embed. payload의 mode 단독 검증 금지 (위변조 가능). startup_check 는 bootstrap channel과 본 필드 일치 확인 — 5분 후 불일치 시 venue suspend + alert."
+    },
+    "mode_locked": {
+      "type": "boolean",
+      "description": "첫 telemetry에서 lock 후 mode 변경 시 alert + suspend (변조 탐지)."
     }
   }
 }
