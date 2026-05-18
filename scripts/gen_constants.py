@@ -880,6 +880,8 @@ def filter_typescript_output(content: str, whitelist: list[str]) -> str:
     interface / type 은 의존 const 와 함께 keep/drop. 휴리스틱:
       - `export type X = (typeof Y)[number]` → Y 가 keep 이면 X 도 keep
       - `export interface Foo` 블록 → 항상 보존 (작아서 분석 비용 > 이득)
+      - **interface 가 다른 type/const 를 참조하면 그것도 transitive 하게 keep**
+        (TD-2 청산: StrategyMeta가 StrategyCode 참조 → StrategyCode + STRATEGY_CODES 모두 keep)
     """
     if not whitelist:
         return content
@@ -915,6 +917,42 @@ def filter_typescript_output(content: str, whitelist: list[str]) -> str:
             j += 1
         blocks.append((i, j, name, kind))
         i = j + 1
+
+    # TD-2 청산: interface 가 keep 이면 그 안에서 참조된 식별자도 keep 으로 transitive 확장.
+    # interface 는 line 925-925 의 휴리스틱(always keep)으로 보존되므로 그 의존도 확장.
+    # type 의 (typeof X) 도 동일 — X 가 keep set 에 들어와야 type 이 의미 있음.
+    ident_re = re.compile(r"\b([A-Z][A-Za-z_0-9]*)\b")
+    changed = True
+    iter_guard = 0
+    while changed and iter_guard < 5:
+        changed = False
+        iter_guard += 1
+        for start, end, name, kind in blocks:
+            # 이 블록이 보존 대상인지 (interface 항상, name 매칭, type+의존자 keep)
+            is_kept = (
+                name in keep_set
+                or kind == "interface"
+                or (kind == "type" and re.search(
+                    r"\(typeof\s+([A-Za-z_][A-Za-z_0-9]*)\)",
+                    "".join(lines[start:end + 1]),
+                ) and re.search(
+                    r"\(typeof\s+([A-Za-z_][A-Za-z_0-9]*)\)",
+                    "".join(lines[start:end + 1]),
+                ).group(1) in keep_set)
+            )
+            if not is_kept:
+                continue
+            block_text = "".join(lines[start:end + 1])
+            # 블록 내 모든 식별자(PascalCase/UPPER_SNAKE) 추출 후 keep_set 확장
+            for ident in ident_re.findall(block_text):
+                if ident == name or ident in keep_set:
+                    continue
+                # 다른 블록 이름과 매칭되면 keep
+                for s2, e2, n2, _k2 in blocks:
+                    if n2 == ident and n2 not in keep_set:
+                        keep_set.add(ident)
+                        changed = True
+                        break
 
     # 2차 패스: keep 결정
     # const/interface 는 화이트리스트 직접 매칭. type 은 의존 const 추적.
