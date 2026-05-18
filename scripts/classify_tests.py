@@ -303,8 +303,9 @@ def _strip_headerless_pytestmark(text: str) -> str:
             continue
         start = node.lineno - 1  # 0-indexed
         end = (node.end_lineno or node.lineno)  # 1-indexed inclusive → exclusive
-        # 위쪽 4줄 안에 canonical header 가 있으면 보존 (sentinel block 내부 pytestmark)
-        window_start = max(0, start - 4)
+        # 위쪽 6줄 안에 canonical header 가 있으면 보존 (sentinel block 내부 pytestmark).
+        # 4 → 6 으로 여유 확보: docstring/주석/빈줄이 끼어도 false negative 차단.
+        window_start = max(0, start - 6)
         window = "".join(lines[window_start:start])
         if _MARKER_BLOCK_HEAD in window:
             continue
@@ -312,7 +313,7 @@ def _strip_headerless_pytestmark(text: str) -> str:
         adj_start = start
         if start > 0 and lines[start - 1].strip() == "import pytest as _ssot_pytest":
             # 그 위가 canonical header 가 아닐 때만 제거
-            window2 = "".join(lines[max(0, start - 5):start - 1])
+            window2 = "".join(lines[max(0, start - 7):start - 1])
             if _MARKER_BLOCK_HEAD not in window2:
                 adj_start = start - 1
         to_remove.append((adj_start, end))
