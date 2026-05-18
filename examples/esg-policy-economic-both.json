@@ -1,0 +1,35 @@
+{
+  "policy_id": "esg-policy-mixed-aggregator-001",
+  "group_id": "PHASE4-DEMO-001",
+  "dr_type": "both",
+  "management_mode": "unified",
+  "economic": {
+    "smp_thresholds": {
+      "weekday": {"00-06": 80, "06-09": 100, "09-12": 150, "12-14": 180, "14-17": 220, "17-19": 200, "19-22": 150, "22-24": 100},
+      "weekend": {"00-06": 70, "06-09": 90, "09-12": 120, "12-14": 150, "14-17": 180, "17-19": 170, "19-22": 130, "22-24": 90}
+    },
+    "bid_strategy": "aggressive",
+    "min_reduction_ratio": 0.05,
+    "max_reduction_ratio": 0.30,
+    "comfort_constraint": {"pmv_max": 1.0, "setpoint_deviation_max_c": 2.5},
+    "learning": {"enabled": true, "history_window_days": 30, "model": "stub_v1"}
+  },
+  "reliability": {
+    "auto_accept": true,
+    "min_advance_minutes": 30,
+    "max_obligation_kw": 200,
+    "partial_execution": true
+  },
+  "distribution": {
+    "algorithm": "weighted_capability",
+    "fallback_algorithm": "proportional_load",
+    "max_retry": 3
+  },
+  "member_weights": {
+    "VEN-OFFICE-001": {"weight": 0.4, "auto_derived": false},
+    "VEN-OFFICE-002": {"weight": 0.3, "auto_derived": false},
+    "VEN-HOME-001":   {"weight": 0.3, "auto_derived": false}
+  },
+  "version": "1.0.0",
+  "updated_at": "2026-05-18T00:00:00Z"
+}

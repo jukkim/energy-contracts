@@ -1,0 +1,16 @@
+{
+  "_invalid_reason": "allocations[].strategy='M99' — ems_strategies.json StrategyCode enum 위반. DB CHECK도 차단 (Tier 1 #12).",
+  "event_id": "dispatch-2026-9999",
+  "source": "reliability",
+  "group_id": "PHASE4-DEMO-001",
+  "target_kw": 20.0,
+  "window": {"start": "2026-05-18T14:00:00Z", "end": "2026-05-18T15:00:00Z"},
+  "mandatory": true,
+  "dispatched_by": "operator-test",
+  "jti": "01928a8e-7c50-7b30-9c91-deadbeef0000",
+  "dispatched_at": "2026-05-18T13:00:00Z",
+  "status": "pending",
+  "allocations": [
+    {"ven_id": "VEN-001", "allocated_kw": 20, "strategy": "M99", "reasoning": "invalid"}
+  ]
+}

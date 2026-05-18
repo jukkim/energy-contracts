@@ -1,0 +1,31 @@
+{
+  "event_id": "dispatch-2026-0002",
+  "source": "economic",
+  "group_id": "PHASE4-DEMO-001",
+  "target_kw": 30.0,
+  "window": {"start": "2026-05-18T14:00:00Z", "end": "2026-05-18T16:00:00Z"},
+  "mandatory": false,
+  "advance_notice_minutes": 120,
+  "dispatched_by": "auto-esg-policy-mixed-aggregator-001",
+  "jti": "01928a8e-7c50-7b30-9c91-aabbccddeeff",
+  "dispatched_at": "2026-05-18T12:00:00Z",
+  "status": "completed",
+  "distribution_algorithm": "cost_optimal",
+  "allocations": [
+    {"ven_id": "VEN-OFFICE-001", "allocated_kw": 12, "strategy": "M11", "reasoning": "감축 단가 8000원/kWh"},
+    {"ven_id": "VEN-OFFICE-002", "allocated_kw": 10, "strategy": "M11", "reasoning": "감축 단가 9500원/kWh"},
+    {"ven_id": "VEN-HOME-001",   "allocated_kw": 8,  "strategy": "M07", "reasoning": "조명+가전 감축 12000원/kWh"}
+  ],
+  "execution_report": {
+    "target_kw": 30.0,
+    "achieved_kw": 29.4,
+    "unallocated_kw": 0.0,
+    "shortfall_kw": 0.6,
+    "avoided_cost_krw": 12450.0
+  },
+  "trace": {
+    "smp_at_dispatch": 220.0,
+    "weather_at_dispatch": {"outdoor_temp_c": 31.8, "humidity_pct": 70.0, "solar_radiation_wm2": 685, "source": "asos-108"},
+    "policy_version": "1.0.0"
+  }
+}

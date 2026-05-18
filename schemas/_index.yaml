@@ -49,5 +49,7 @@ components:
     DbMigrations:     {$ref: 'db_migrations.json'}
     OpenapiResponses: {$ref: 'openapi_responses.json'}
     LintFormat:       {$ref: 'lint_format.json'}
+    EsgPolicy:        {$ref: 'esg_policy.json'}
+    DrDispatchEvent:  {$ref: 'dr_dispatch_event.json'}
 
 paths: {}

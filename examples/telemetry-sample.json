@@ -7,6 +7,7 @@
   "lighting_pct": 70,
   "ess_soc_pct": 65.0,
   "ess_discharge_kw": 15.0,
-  "active_strategy": "M5",
-  "schedule_slot_idx": 0
+  "active_strategy": "M05",
+  "schedule_slot_idx": 0,
+  "mode": "prod"
 }
