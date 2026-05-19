@@ -323,13 +323,14 @@
         },
         "industry_context": {
           "type": ["object", "null"],
-          "description": "공장/제조에 한해 한국에너지공단 GHG 광역시도 평균. 비공장 null.",
+          "description": "공장/제조에 한해 한국에너지공단 GHG 광역시도 평균. 비공장 null. 사냥꾼 3차 S3-9 required 필드 명시.",
           "default": null,
+          "required": ["region", "source", "biz_count", "avg_co2_ton_per_biz"],
           "properties": {
             "region": {"type": "string"},
             "source": {"type": "string"},
             "year": {"type": ["integer", "null"]},
-            "biz_count": {"type": "integer"},
+            "biz_count": {"type": "integer", "minimum": 0},
             "avg_co2_ton_per_biz": {"type": "number"},
             "total_co2_ton": {"type": ["number", "null"]},
             "note": {"type": "string"}
