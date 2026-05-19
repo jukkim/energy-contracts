@@ -198,6 +198,40 @@
       },
       "additionalProperties": false
     },
+    "FireRiskAssessment": {
+      "type": "object",
+      "description": "PNU → building_fire_risk MV (7-component scoring) + inspection_obligation_active. AI 챔피언 a05_safety 의존성. ems_transformer Gateway `/v1/building/fire-risk?pnu=` 응답.",
+      "required": ["pnu", "available"],
+      "properties": {
+        "pnu": {
+          "type": "string",
+          "minLength": 19,
+          "maxLength": 19
+        },
+        "available": {
+          "type": "boolean",
+          "description": "MV 데이터 가용 여부. false 면 a05 rules 분기"
+        },
+        "structure_score": {"type": "integer", "minimum": 0, "default": 0},
+        "age_score": {"type": "integer", "minimum": 0, "default": 0},
+        "usage_score": {"type": "integer", "minimum": 0, "default": 0},
+        "height_score": {"type": "integer", "minimum": 0, "default": 0},
+        "disaster_zone_score": {"type": "integer", "minimum": 0, "default": 0},
+        "history_score": {"type": "integer", "minimum": 0, "default": 0},
+        "inspection_score": {"type": "integer", "minimum": 0, "default": 0},
+        "total_score": {"type": "integer", "minimum": 0, "default": 0},
+        "risk_grade": {
+          "type": ["string", "null"],
+          "description": "HIGH / MEDIUM / LOW",
+          "default": null
+        },
+        "has_obligation": {"type": "boolean", "default": false},
+        "obligation_source": {"type": ["string", "null"], "default": null},
+        "obligation_confidence": {"type": ["string", "null"], "default": null},
+        "obligation_type": {"type": ["string", "null"], "default": null}
+      },
+      "additionalProperties": false
+    },
     "SetbackPattern": {
       "type": "object",
       "description": "PNU → 야간감축 setback 패턴 분류. AI 챔피언 a03_optimizer 의존성 (Phase D 마이그레이션). inverse_ems RF 분류기 결과. ems_transformer Gateway `/v1/building/setback-pattern?pnu=` 응답.",
