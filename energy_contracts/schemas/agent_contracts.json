@@ -153,6 +153,51 @@
       },
       "additionalProperties": false
     },
+    "BuildingForecast": {
+      "type": "object",
+      "description": "PNU → 168h 시계열 + 24h 예측. AI 챔피언 a02_forecast 의존성 (Phase D 마이그레이션 A). ems_transformer Gateway `/v1/building/forecast?pnu=` 가 본 모델로 응답.",
+      "required": ["pnu", "forecast_24h_kw", "ml_model_version"],
+      "properties": {
+        "pnu": {
+          "type": "string",
+          "minLength": 19,
+          "maxLength": 19
+        },
+        "context_168h_kw": {
+          "type": ["array", "null"],
+          "items": {"type": "number"},
+          "description": "168h hourly 실측 (kW). 미보유 시 null — fixture/L0 fallback 분기 가능",
+          "default": null
+        },
+        "forecast_24h_kw": {
+          "type": "array",
+          "items": {"type": "number"},
+          "minItems": 24,
+          "maxItems": 24,
+          "description": "Korean_BB TwGauss-M 24h hourly 예측 (kW)"
+        },
+        "peak_kw_24h": {
+          "type": "number",
+          "minimum": 0,
+          "default": 0.0
+        },
+        "avg_kw_24h": {
+          "type": "number",
+          "minimum": 0,
+          "default": 0.0
+        },
+        "ml_model_version": {
+          "type": "string",
+          "description": "예: 'patchtst_v5_168to24_real' / 'patchtst_v5_168to24_synthetic'"
+        },
+        "timeseries_available": {
+          "type": "boolean",
+          "default": false,
+          "description": "실측 168h 시계열 보유 여부. false 면 forecast 도 synthetic"
+        }
+      },
+      "additionalProperties": false
+    },
     "AgentCapability": {
       "type": "string",
       "enum": [
