@@ -406,6 +406,20 @@
           "M15"
         ],
         "output_data_source": "live"
+      },
+      "a12_anomaly": {
+        "id": "a12",
+        "name_en": "Anomaly Detection",
+        "name_kr": "이상 탐지",
+        "capability": "anomaly_detection",
+        "phase": 4,
+        "maturity": "L1_rule",
+        "requires": [
+          "a01",
+          "a02"
+        ],
+        "output_strategies": [],
+        "output_data_source": "measured"
       }
     }
   }
