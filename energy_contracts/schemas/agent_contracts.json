@@ -198,6 +198,48 @@
       },
       "additionalProperties": false
     },
+    "SetbackPattern": {
+      "type": "object",
+      "description": "PNU → 야간감축 setback 패턴 분류. AI 챔피언 a03_optimizer 의존성 (Phase D 마이그레이션). inverse_ems RF 분류기 결과. ems_transformer Gateway `/v1/building/setback-pattern?pnu=` 응답.",
+      "required": ["pnu", "available"],
+      "properties": {
+        "pnu": {
+          "type": "string",
+          "minLength": 19,
+          "maxLength": 19
+        },
+        "available": {
+          "type": "boolean",
+          "description": "분류 가능 여부 (실측 시계열 + 모델 가용). false 면 a03 가 rules 만 사용"
+        },
+        "label": {
+          "type": ["string", "null"],
+          "description": "예: 'SETBACK' / 'NO_SETBACK' / 'MIXED'",
+          "default": null
+        },
+        "probability": {
+          "type": ["number", "null"],
+          "minimum": 0,
+          "maximum": 1,
+          "default": null
+        },
+        "is_setback": {
+          "type": "boolean",
+          "default": false
+        },
+        "days_used": {
+          "type": "integer",
+          "minimum": 0,
+          "default": 0
+        },
+        "engine": {
+          "type": ["string", "null"],
+          "description": "예: 'rf_v1_168h_F1_0.911'",
+          "default": null
+        }
+      },
+      "additionalProperties": false
+    },
     "AgentCapability": {
       "type": "string",
       "enum": [
