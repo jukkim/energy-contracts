@@ -447,6 +447,17 @@
         ],
         "output_strategies": [],
         "output_data_source": "simulated"
+      },
+      "a15_mcp_bridge": {
+        "id": "a15",
+        "name_en": "MCP Bridge",
+        "name_kr": "MCP 브리지",
+        "capability": "mcp_exposure",
+        "phase": 4,
+        "maturity": "L0_template",
+        "requires": [],
+        "output_strategies": [],
+        "output_data_source": "synthetic"
       }
     }
   }
