@@ -420,6 +420,19 @@
         ],
         "output_strategies": [],
         "output_data_source": "measured"
+      },
+      "a13_predictive_maintenance": {
+        "id": "a13",
+        "name_en": "Predictive Maintenance",
+        "name_kr": "예지보전",
+        "capability": "predictive_maintenance",
+        "phase": 4,
+        "maturity": "L1_rule",
+        "requires": [
+          "a05"
+        ],
+        "output_strategies": [],
+        "output_data_source": "certified"
       }
     }
   }
