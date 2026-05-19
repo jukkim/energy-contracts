@@ -198,6 +198,30 @@
       },
       "additionalProperties": false
     },
+    "MaintenanceFacts": {
+      "type": "object",
+      "description": "PNU → 유지보수 사실 (fire_risk 일부 + inspection cycle + alterations 이력). AI 챔피언 a13_predictive_maintenance 의존성. Gateway `/v1/building/maintenance-facts?pnu=` 응답.",
+      "required": ["pnu", "available"],
+      "properties": {
+        "pnu": {"type": "string", "minLength": 19, "maxLength": 19},
+        "available": {"type": "boolean"},
+        "age_score": {"type": "integer", "minimum": 0, "default": 0},
+        "structure_score": {"type": "integer", "minimum": 0, "default": 0},
+        "history_score": {"type": "integer", "minimum": 0, "default": 0},
+        "total_score": {"type": "integer", "minimum": 0, "default": 0},
+        "inspection_cycle_years": {"type": ["integer", "null"], "default": null},
+        "valid_until": {
+          "type": ["string", "null"],
+          "description": "ISO date — 다음 점검 due year 계산 입력",
+          "default": null
+        },
+        "obligation_type": {"type": ["string", "null"], "default": null},
+        "alt_5yr": {"type": "integer", "minimum": 0, "default": 0,
+                    "description": "최근 5년 대수선 건수"},
+        "alt_total": {"type": "integer", "minimum": 0, "default": 0}
+      },
+      "additionalProperties": false
+    },
     "AnomalyDetection": {
       "type": "object",
       "description": "PNU → Korean_BB 잔차 기반 24h 이상 탐지. AI 챔피언 a12_anomaly 의존성. Gateway `/v1/building/anomaly?pnu=` 응답.",
