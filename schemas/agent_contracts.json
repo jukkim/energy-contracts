@@ -433,6 +433,20 @@
         ],
         "output_strategies": [],
         "output_data_source": "certified"
+      },
+      "a14_vpp": {
+        "id": "a14",
+        "name_en": "VPP Aggregator",
+        "name_kr": "가상발전소",
+        "capability": "vpp_aggregation",
+        "phase": 4,
+        "maturity": "L1_rule",
+        "requires": [
+          "a06",
+          "a11"
+        ],
+        "output_strategies": [],
+        "output_data_source": "simulated"
       }
     }
   }
