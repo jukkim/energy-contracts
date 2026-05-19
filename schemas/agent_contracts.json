@@ -458,6 +458,20 @@
         "requires": [],
         "output_strategies": [],
         "output_data_source": "synthetic"
+      },
+      "a16_messenger": {
+        "id": "a16",
+        "name_en": "Messenger",
+        "name_kr": "메신저",
+        "capability": "proactive_notification",
+        "phase": 4,
+        "maturity": "L1_rule",
+        "requires": [
+          "a05",
+          "a11"
+        ],
+        "output_strategies": [],
+        "output_data_source": "synthetic"
       }
     }
   }
