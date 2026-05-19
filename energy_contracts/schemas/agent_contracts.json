@@ -416,6 +416,44 @@
       },
       "additionalProperties": false
     },
+    "SggCalibrationFactor": {
+      "type": "object",
+      "description": "자치구·에너지원·세그먼트별 보정계수 (정답지 vs 추정 비). AI 챔피언 a04_carbon 의존성 (Phase E 마이그레이션 K). sgg_calibration_factors DB. ems_transformer Gateway `/v1/building/sgg-factor?sgg_cd=&energy_type=&segment=&year=` 응답.",
+      "required": ["sgg_cd", "factor"],
+      "properties": {
+        "sgg_cd": {
+          "type": "string",
+          "minLength": 5,
+          "maxLength": 5,
+          "description": "법정 시군구 5자리 코드"
+        },
+        "energy_type": {
+          "type": "string",
+          "description": "전기 / 가스 / 지역난방"
+        },
+        "segment": {
+          "type": "string",
+          "description": "residential / commercial"
+        },
+        "year": {
+          "type": "integer",
+          "minimum": 2000,
+          "maximum": 2100,
+          "default": 2022
+        },
+        "factor": {
+          "type": "number",
+          "minimum": 0.0,
+          "description": "보정 계수 (1.0 = 미보정)"
+        },
+        "source": {
+          "type": ["string", "null"],
+          "description": "예: 'seoul_oa22362_2022'",
+          "default": null
+        }
+      },
+      "additionalProperties": false
+    },
     "AgentCapability": {
       "type": "string",
       "enum": [
