@@ -30,7 +30,7 @@ from collections import defaultdict
 from pathlib import Path
 
 CONTRACTS_ROOT = Path(__file__).resolve().parents[1]
-SCHEMAS_DIR = CONTRACTS_ROOT / "schemas"
+SCHEMAS_DIR = CONTRACTS_ROOT / "energy_contracts" / "schemas"
 WORKSPACE_ROOT = CONTRACTS_ROOT.parents[1]  # myjob/
 
 # ── 1. 전략 코드 ─────────────────────────────────────────────────────────────

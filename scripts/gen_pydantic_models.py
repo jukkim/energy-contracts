@@ -16,8 +16,8 @@ import sys
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
-SCHEMAS_DIR = ROOT / "schemas"
-OUT_DIR = ROOT / "scripts" / "_pydantic_models"
+SCHEMAS_DIR = ROOT / "energy_contracts" / "schemas"
+OUT_DIR = ROOT / "energy_contracts" / "_pydantic_models"
 
 
 def gen_one(schema_fp: Path) -> int:

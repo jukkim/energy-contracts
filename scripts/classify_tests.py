@@ -28,7 +28,7 @@ from pathlib import Path
 CONTRACTS_ROOT = Path(__file__).resolve().parents[1]
 WORKSPACE_ROOT = CONTRACTS_ROOT.parents[1]
 SCHEMA = json.loads(
-    (CONTRACTS_ROOT / "schemas" / "test_classification.json").read_text(encoding="utf-8")
+    (CONTRACTS_ROOT / "energy_contracts" / "schemas" / "test_classification.json").read_text(encoding="utf-8")
 )
 DEFAULT_GROUPS: dict[str, list[str]] = SCHEMA["default"]["project_default_groups"]
 

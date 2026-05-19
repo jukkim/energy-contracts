@@ -27,7 +27,7 @@ import sys
 from pathlib import Path
 
 CONTRACTS_ROOT = Path(__file__).resolve().parents[1]
-SCHEMAS_DIR = CONTRACTS_ROOT / "schemas"
+SCHEMAS_DIR = CONTRACTS_ROOT / "energy_contracts" / "schemas"
 WORKSPACE_ROOT = CONTRACTS_ROOT.parents[1]
 
 # 표준 프로젝트별 출력 경로 (Tier 3) — Phase M-4: exports 화이트리스트 도입

@@ -4,6 +4,31 @@
 
 ---
 
+## 0.1.0 — 2026-05-19 패키지화 + wheel 배포 (Phase C, agents a12)
+
+### 추가
+- `pyproject.toml` — setuptools 기반 패키지 정의 (`requires-python = ">=3.11"`)
+- `energy_contracts/__init__.py` — `load_schema()`, `list_schemas()`, `SCHEMAS_DIR` 헬퍼
+- `energy_contracts/_pydantic_models/__init__.py` — 서브패키지 진입점
+- wheel: `dist/energy_contracts-0.1.0-py3-none-any.whl` (52 schemas + 2 models + dist-info, 59 files)
+
+### 이동 (R, 57 파일)
+- `schemas/*.json` → `energy_contracts/schemas/*.json` — wheel package data 로 포함
+- `scripts/_pydantic_models/*.py` → `energy_contracts/_pydantic_models/*.py`
+
+### 도구 path 갱신 (`SCHEMAS_DIR`)
+- `scripts/gen_constants.py:30` — `CONTRACTS_ROOT / "energy_contracts" / "schemas"`
+- `scripts/validate_ssot.py:33` — 동일
+- `scripts/gen_pydantic_models.py:19-20` — `SCHEMAS_DIR` + `OUT_DIR` 모두 `energy_contracts/` 하위
+- `scripts/classify_tests.py:31` — `test_classification.json` 경로 갱신
+
+### 호환성
+- 5 consumer repo `_generated_constants.{py,ts}` SOURCE_HASH 동기화 유지 (드리프트 없음, `validate_ssot.py` 통과)
+- 기존 `python energy-contracts/scripts/gen_constants.py --all` 진입점 그대로 (내부 path 만 변경)
+- agents repo 가 `pip install -e ../energy-contracts` 또는 wheel 로 import 검증 ✅ (agents `.venv` Py 3.11.9 + be-3d `venv` Py 3.13.3 모두 통과)
+
+---
+
 ## (unversioned) — 2026-05-18 H11 cross-platform hash fix + TD-9 단위 테스트
 
 ### gen_constants.py 버그 수정
