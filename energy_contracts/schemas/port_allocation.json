@@ -62,9 +62,14 @@
       "port": 8000,
       "name": "building-energy-3d API",
       "folder": "projects/building-energy-3d/",
-      "purpose": "VWorld 메인 백엔드 (FastAPI)",
+      "purpose": "VWorld 메인 백엔드 (FastAPI). AI 챔피언 Phase D-1-B: ems_transformer Gateway 가 BE3D_BACKEND_URL 로 호출하는 internal_agents endpoint 제공. PROD/DEV 는 GATEWAY_BACKEND_SECRET shared-secret + X-Forwarded-Gateway 헤더 필수.",
       "status": "deployed",
-      "env_var": null
+      "env_var": null,
+      "internal_endpoints": [
+        "/api/internal/agents/building-profile/{pnu}"
+      ],
+      "shared_secret_env": "GATEWAY_BACKEND_SECRET",
+      "callers": ["ems_transformer :8030"]
     },
     {
       "port": 8001,
