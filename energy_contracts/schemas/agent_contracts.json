@@ -198,6 +198,51 @@
       },
       "additionalProperties": false
     },
+    "BenchmarkStats": {
+      "type": "object",
+      "description": "PNU+EUI → 같은 용도·연식 그룹 percentile + 공장 산업 컨텍스트. AI 챔피언 a07_benchmark 의존성. ems_transformer Gateway `/v1/building/benchmark?pnu=&eui=&usage_type=&built_year=` 응답.",
+      "required": ["pnu", "available"],
+      "properties": {
+        "pnu": {"type": "string", "minLength": 19, "maxLength": 19},
+        "available": {
+          "type": "boolean",
+          "description": "그룹 비교 가능 여부 (같은 그룹 ≥ 10개). false 면 a07 fallback (산업 컨텍스트만 있을 수 있음)"
+        },
+        "percentile": {"type": ["number", "null"], "default": null},
+        "group_total": {"type": "integer", "minimum": 0, "default": 0},
+        "group_avg_eui": {"type": ["number", "null"], "default": null},
+        "q25": {"type": ["number", "null"], "default": null},
+        "q75": {"type": ["number", "null"], "default": null},
+        "rank": {
+          "type": ["string", "null"],
+          "description": "상위 우수 / 평균 이상 / 평균 이하 / 하위",
+          "default": null
+        },
+        "target_eui": {"type": ["number", "null"], "default": null},
+        "improvement_kwh": {"type": ["number", "null"], "default": null},
+        "group_label": {
+          "type": ["string", "null"],
+          "description": "예: '업무시설 · 2011-2020'",
+          "default": null
+        },
+        "industry_context": {
+          "type": ["object", "null"],
+          "description": "공장/제조에 한해 한국에너지공단 GHG 광역시도 평균. 비공장 null.",
+          "default": null,
+          "properties": {
+            "region": {"type": "string"},
+            "source": {"type": "string"},
+            "year": {"type": ["integer", "null"]},
+            "biz_count": {"type": "integer"},
+            "avg_co2_ton_per_biz": {"type": "number"},
+            "total_co2_ton": {"type": ["number", "null"]},
+            "note": {"type": "string"}
+          },
+          "additionalProperties": false
+        }
+      },
+      "additionalProperties": false
+    },
     "FireRiskAssessment": {
       "type": "object",
       "description": "PNU → building_fire_risk MV (7-component scoring) + inspection_obligation_active. AI 챔피언 a05_safety 의존성. ems_transformer Gateway `/v1/building/fire-risk?pnu=` 응답.",
