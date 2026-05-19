@@ -11,9 +11,9 @@
     "agentleague",
     "eduarena"
   ],
-  "version": "1.0",
-  "updated": "2026-05-17",
-  "$comment": "Phase I-1 산출물. data_classification.json#/$defs/DataSource 참조.",
+  "version": "1.1",
+  "updated": "2026-05-20",
+  "$comment": "Phase I-1 산출물 + AI 챔피언 본선 hash freeze (PRD v1.5 Track 3 G0). v1.1 = active_checkpoint + sha256 + frozen_for_demo 신설.",
   "$defs": {
     "ModelTask": {
       "type": "string",
@@ -127,6 +127,24 @@
         },
         "description": {
           "type": "string"
+        },
+        "active_checkpoint": {
+          "type": "string",
+          "description": "v1.1 추가 — 백엔드 health response 의 checkpoint 식별자와 매칭. Gateway startup_check 가 검증 (mismatch 시 startup ERROR). PRD v1.5 Track 3 G0."
+        },
+        "sha256": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$",
+          "description": "v1.1 추가 — 모델 파일 sha256. 선택 사항 (active_checkpoint name 매칭 우선)."
+        },
+        "backend_url": {
+          "type": "string",
+          "description": "v1.1 추가 — 백엔드 base URL (예: http://localhost:8040). Gateway adapter 가 호출."
+        },
+        "retrain_type": {
+          "type": "string",
+          "enum": ["type_1_sim", "type_2_real"],
+          "description": "v1.1 추가 — Type 1(시뮬 학습, 수동만) vs Type 2(실측, 자동 가능). UNIFIED_GATEWAY_DESIGN §8.5."
         }
       },
       "additionalProperties": true
@@ -139,6 +157,19 @@
       "additionalProperties": {
         "$ref": "#/$defs/ModelEntry"
       }
+    },
+    "frozen_for_demo": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "v1.1 추가 — 본선 시연용 freeze 모델 ID 목록. 본선 시점 Release Bundle manifest 가 이 목록을 참조. PRD v1.5 §4.2 + Track 3 G0. Gateway startup_check 가 이 모델들의 active_checkpoint 일치를 강제 검증."
+    },
+    "gateway_verify_policy": {
+      "type": "string",
+      "enum": ["strict", "warn", "off"],
+      "default": "warn",
+      "description": "v1.1 추가 — Gateway startup_check 의 검증 정책. strict=ERROR 차단, warn=alert 후 통과, off=비활성. 본선 시점 = strict, 개발 = warn."
     }
   },
   "default": {
@@ -162,13 +193,17 @@
           1
         ],
         "accuracy_metric": {
-          "nrmse_pct": 12.3
+          "nrmse_pct": 12.3,
+          "cvrmse_pct": 12.93
         },
         "data_source": "predicted",
         "trained_at": "2026-03-15",
         "frozen": true,
         "project": "Korean_BB",
-        "description": "GS25 224채 실측 학습. Energy and AI 투고 중 — 변경 금지"
+        "description": "GS25 224채 실측 학습. Energy and AI 투고 중 — 변경 금지",
+        "active_checkpoint": "TransformerWithGaussian-M-v3-3k_bb700_s18000_revin_on_best.pt",
+        "backend_url": "http://localhost:8040",
+        "retrain_type": "type_1_sim"
       },
       "korean_bb_residential": {
         "id": "korean_bb_residential",
@@ -183,24 +218,51 @@
         },
         "data_source": "predicted",
         "project": "korean_bb_residential",
-        "description": "Korean_BB fork, K-apt 132MB 학습 중"
+        "description": "Korean_BB fork, K-apt 132MB 학습 중. v1.1 frozen_for_demo 등재 (학습 완료 시 active_checkpoint 갱신).",
+        "active_checkpoint": "v0.3-development",
+        "retrain_type": "type_1_sim"
       },
       "ems_transformer": {
         "id": "ems_transformer",
-        "name": "EMS Transformer",
-        "name_kr": "EMS 절감 Transformer",
+        "name": "EMS Transformer (Qwen QLoRA + Gateway)",
+        "name_kr": "EMS 절감 Transformer (통합 게이트웨이)",
         "version": "3.0",
         "path": "8.simulation/ems_transformer/checkpoints/",
         "task": "optimize",
         "framework": "transformer",
         "accuracy_metric": {
           "reduction_pct": 22.5,
-          "mae_kwh": 0.18
+          "mae_kwh": 0.18,
+          "qa_keyword_accuracy": 1.0,
+          "training_loss": 0.1662
         },
         "data_source": "simulated",
         "trained_at": "2026-04-10",
         "project": "ems_transformer",
-        "description": "M00~M15 전략 → 절감량 예측. EnergyPlus 1,500건 학습"
+        "description": "M00~M15 전략 → 절감량 예측 + 17 QA 유형. EnergyPlus 1,500건 학습. v1.1 Gateway :8030 통합 진입점.",
+        "active_checkpoint": "qwen2.5-7b-qlora-final",
+        "backend_url": "http://localhost:8030",
+        "retrain_type": "type_1_sim"
+      },
+      "reverse": {
+        "id": "reverse",
+        "name": "Reverse EMS Identifier (Module A + LLM)",
+        "name_kr": "역산 EMS 식별기",
+        "version": "1.0",
+        "path": "8.simulation/reverse/checkpoints/",
+        "task": "diagnose",
+        "framework": "lightgbm",
+        "accuracy_metric": {
+          "module_a_macro_f1": 0.857,
+          "module_a_transformer_f1_20k_subset": 0.962
+        },
+        "data_source": "simulated",
+        "trained_at": "2026-05-05",
+        "project": "reverse",
+        "description": "부하 → EMS 식별 (16-bit 다중레이블). ASHRAE 학습 완료, 한국화 fine-tune 대기. v1.1 frozen_for_demo 등재.",
+        "active_checkpoint": "llm_v2_final_run_20260505_182617+lightgbm_v1+m_bits=16",
+        "backend_url": "http://localhost:8060",
+        "retrain_type": "type_1_sim"
       },
       "ems_transformer_hybrid": {
         "id": "ems_transformer_hybrid",
@@ -223,10 +285,15 @@
         "framework": "xgboost",
         "accuracy_metric": {
           "r2": 0.87,
-          "mae_kwh": 0.32
+          "mae_kwh": 0.32,
+          "cvrmse_pct": 5.5
         },
         "data_source": "predicted",
-        "project": "building_ai"
+        "project": "building_ai",
+        "description": "v1.1 — Type 2 (실측). OI-12 freeze = 본선 자동 재학습 1종 (월/분기). smartbuilding-api :8005 서빙.",
+        "active_checkpoint": "xgboost_v2.1",
+        "backend_url": "http://localhost:8005",
+        "retrain_type": "type_2_real"
       },
       "building_ai_anomaly": {
         "id": "building_ai_anomaly",
@@ -351,6 +418,13 @@
         "project": "projects/energyplus",
         "description": "외피 1,512건 + EMS 1,500건 + 인도네시아 90건"
       }
-    }
+    },
+    "frozen_for_demo": [
+      "korean_bb",
+      "ems_transformer",
+      "korean_bb_residential",
+      "reverse"
+    ],
+    "gateway_verify_policy": "warn"
   }
 }
