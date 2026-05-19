@@ -198,6 +198,43 @@
       },
       "additionalProperties": false
     },
+    "AnomalyDetection": {
+      "type": "object",
+      "description": "PNU → Korean_BB 잔차 기반 24h 이상 탐지. AI 챔피언 a12_anomaly 의존성. Gateway `/v1/building/anomaly?pnu=` 응답.",
+      "required": ["pnu", "available"],
+      "properties": {
+        "pnu": {"type": "string", "minLength": 19, "maxLength": 19},
+        "available": {
+          "type": "boolean",
+          "description": "잔차 분석 가능 여부 (실측 192h + 모델). false 면 a12 rules 분기"
+        },
+        "anomaly_count": {"type": "integer", "minimum": 0, "default": 0},
+        "anomalies": {
+          "type": "array",
+          "default": [],
+          "items": {
+            "type": "object",
+            "properties": {
+              "hour": {"type": "integer", "minimum": 0, "maximum": 23},
+              "actual_kw": {"type": "number"},
+              "predicted_kw": {"type": "number"},
+              "z_score": {"type": "number"},
+              "severity": {"type": "string", "enum": ["high", "medium"]}
+            },
+            "additionalProperties": false
+          }
+        },
+        "cvrmse_pct": {"type": "number", "minimum": 0, "default": 0.0},
+        "anomaly_rate_pct": {"type": "number", "minimum": 0, "default": 0.0},
+        "high_severity_count": {"type": "integer", "minimum": 0, "default": 0},
+        "engine": {
+          "type": ["string", "null"],
+          "default": null,
+          "description": "예: 'patchtst_v5_168to24_real'"
+        }
+      },
+      "additionalProperties": false
+    },
     "DREnrollment": {
       "type": "object",
       "description": "PNU → DR venue 등록 상태 + 감축 잠재. AI 챔피언 a11_dr_orchestrator 의존성. ems_transformer Gateway `/v1/building/dr-enrollment?pnu=` 응답.",
