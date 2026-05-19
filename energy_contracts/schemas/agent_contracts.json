@@ -198,6 +198,20 @@
       },
       "additionalProperties": false
     },
+    "AlertSignals": {
+      "type": "object",
+      "description": "PNU → 능동 알림 트리거 신호 집계 (DR 이벤트/등록, 화재 위험, 점검 의무). AI 챔피언 a16_messenger 의존성. Gateway `/v1/building/alert-signals?pnu=` 응답.",
+      "required": ["pnu"],
+      "properties": {
+        "pnu": {"type": "string", "minLength": 19, "maxLength": 19},
+        "active_dr_event": {"type": "boolean", "default": false},
+        "dr_enrolled": {"type": "boolean", "default": false},
+        "fire_high_risk": {"type": "boolean", "default": false},
+        "fire_score": {"type": "integer", "minimum": 0, "default": 0},
+        "has_obligation": {"type": "boolean", "default": false}
+      },
+      "additionalProperties": false
+    },
     "MaintenanceFacts": {
       "type": "object",
       "description": "PNU → 유지보수 사실 (fire_risk 일부 + inspection cycle + alterations 이력). AI 챔피언 a13_predictive_maintenance 의존성. Gateway `/v1/building/maintenance-facts?pnu=` 응답.",
