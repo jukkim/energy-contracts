@@ -1,0 +1,266 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "energy-contracts/rq_ai_intent.json",
+  "title": "RQ-AI Intent Schema (RQ-AI 7요소)",
+  "description": "역질문 UI 5단계의 Step 2~3 산출물. 자연어 → LLM 파싱 → 7요소 filled-in form. RQ-AI Framework SSOT (~/.claude/skills-library/rq-ai-framework/SKILL.md §RQ-AI 7요소).",
+  "_usage": "reference-only",
+  "_consumers": [
+    "building-energy-3d",
+    "agentleague",
+    "eduarena",
+    "ems_transformer"
+  ],
+  "version": "1.0",
+  "updated": "2026-05-20",
+  "$comment": "Track 1 G2 (REQUIREMENTS.md §2 G2) 산출물. PRD v1.6 §4.5 역질문 UI 5단계 Step 3 Filled-in form 의 직렬화 포맷. nl_intents.json 은 제어 명령 추출(M00~M15)에 특화, rq_ai_intent.json 은 목표역산(advisory/prescriptive) 의도 모델링.",
+  "$defs": {
+    "OutputType": {
+      "type": "string",
+      "enum": ["advisory", "prescriptive", "both"],
+      "description": "역산 결과 수신자 유형. advisory=시민 체감형(권고), prescriptive=정책형(처방), both=양쪽 (RQ-AI Framework §역산 결과의 두 유형)."
+    },
+    "Persona": {
+      "type": "string",
+      "enum": ["household", "owner", "municipal", "govt"],
+      "description": "발화자 페르소나. persona.ts SSOT 와 1:1 미러."
+    },
+    "Language": {
+      "type": "string",
+      "enum": ["ko", "en", "id"]
+    },
+    "ConfidenceLevel": {
+      "type": "string",
+      "enum": ["high", "medium", "low"],
+      "description": "LLM 파싱 신뢰도. low 이면 Step 3 에서 사용자 명시적 확인 필요."
+    },
+    "TargetState": {
+      "type": "object",
+      "description": "수치화된 목표 (RQ-AI 요소 #2). emotion → number 변환 결과.",
+      "properties": {
+        "metric": {
+          "type": "string",
+          "description": "목표 측정 단위 (예: monthly_bill_krw, edu_kwh_per_m2_year, peak_kw, comfort_pmv)."
+        },
+        "operator": {
+          "type": "string",
+          "enum": ["<=", ">=", "==", "<", ">"],
+          "description": "목표 비교 연산자."
+        },
+        "value": {
+          "type": "number",
+          "description": "수치 목표값."
+        },
+        "unit": {
+          "type": "string",
+          "description": "단위 라벨 (예: 만원/월, kWh/m²·yr, %)."
+        }
+      },
+      "required": ["metric", "operator", "value"],
+      "additionalProperties": false
+    },
+    "Variable": {
+      "type": "object",
+      "description": "context / control 변수 한 항목 (RQ-AI 요소 #3, #4).",
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "변수 식별자 (예: pnu, hvac_setpoint, retrofit_budget)."
+        },
+        "value": {
+          "description": "변수 값. null 이면 미상 (LLM 미추출)."
+        },
+        "unit": {
+          "type": "string"
+        },
+        "source": {
+          "type": "string",
+          "enum": ["user_input", "llm_inferred", "system_default"],
+          "description": "값 출처. llm_inferred 는 Step 3 에서 사용자 확인 우선."
+        }
+      },
+      "required": ["name", "source"],
+      "additionalProperties": false
+    },
+    "PersonaPlaceholder": {
+      "type": "object",
+      "description": "페르소나별 자연어 입력창 placeholder (Step 1). 4 페르소나 모두 정의 필수.",
+      "properties": {
+        "placeholder": {
+          "type": "string",
+          "description": "input[placeholder] 값. 페르소나 톤·관심사 반영."
+        },
+        "examples": {
+          "type": "array",
+          "items": {"type": "string"},
+          "minItems": 1,
+          "description": "원클릭 예시 발화 (input prefill 후보)."
+        },
+        "default_output_type": {
+          "$ref": "#/$defs/OutputType"
+        }
+      },
+      "required": ["placeholder", "examples", "default_output_type"],
+      "additionalProperties": false
+    },
+    "RqAiIntent": {
+      "type": "object",
+      "description": "Step 2 LLM 파싱 산출물 = Step 3 filled-in form 직렬화 형태.",
+      "properties": {
+        "intent_id": {
+          "type": "string",
+          "description": "UUID v4 — Step 4 시뮬 호출 트레이스 ID."
+        },
+        "persona": {"$ref": "#/$defs/Persona"},
+        "language": {"$ref": "#/$defs/Language"},
+        "pain_question": {
+          "type": "string",
+          "description": "RQ-AI 요소 #1. 사용자 원문 발화 (수정 없이 보존)."
+        },
+        "output_type": {"$ref": "#/$defs/OutputType"},
+        "target_state": {"$ref": "#/$defs/TargetState"},
+        "context_variables": {
+          "type": "array",
+          "items": {"$ref": "#/$defs/Variable"},
+          "description": "RQ-AI 요소 #3. 못 바꾸는 조건 (pnu, 건물 연식, 기상)."
+        },
+        "control_variables": {
+          "type": "array",
+          "items": {"$ref": "#/$defs/Variable"},
+          "description": "RQ-AI 요소 #4. 조정 가능 변수 (온도, 시간, 투자액)."
+        },
+        "forward_model_hint": {
+          "type": "string",
+          "description": "RQ-AI 요소 #5. 호출 후보 모델 식별자 (gateway tool name). 예: korean_bb_forecast_24h, reverse_diagnose, ems_recommend."
+        },
+        "confidence": {"$ref": "#/$defs/ConfidenceLevel"},
+        "missing_fields": {
+          "type": "array",
+          "items": {"type": "string"},
+          "description": "LLM 이 추출 못 한 필드 목록. Step 3 에서 사용자 보완 요청."
+        }
+      },
+      "required": [
+        "intent_id",
+        "persona",
+        "language",
+        "pain_question",
+        "output_type",
+        "confidence"
+      ],
+      "additionalProperties": false
+    }
+  },
+  "type": "object",
+  "properties": {
+    "placeholders": {
+      "type": "object",
+      "description": "Step 1 자연어 입력창 placeholder (페르소나 4 × 언어 1+). ko 는 필수.",
+      "properties": {
+        "ko": {
+          "type": "object",
+          "properties": {
+            "household": {"$ref": "#/$defs/PersonaPlaceholder"},
+            "owner": {"$ref": "#/$defs/PersonaPlaceholder"},
+            "municipal": {"$ref": "#/$defs/PersonaPlaceholder"},
+            "govt": {"$ref": "#/$defs/PersonaPlaceholder"}
+          },
+          "required": ["household", "owner", "municipal", "govt"],
+          "additionalProperties": false
+        }
+      },
+      "required": ["ko"],
+      "additionalProperties": true
+    },
+    "intent_example": {
+      "$ref": "#/$defs/RqAiIntent",
+      "description": "Step 3 filled-in form 직렬화 예시 (consumer 가 fixture 로 사용)."
+    },
+    "step_latency_budget_ms": {
+      "type": "object",
+      "description": "PRD v1.6 §3.2 결선 metric — 5 단계별 p99 latency budget.",
+      "properties": {
+        "step1_input": {"type": "integer"},
+        "step2_parse": {"type": "integer"},
+        "step3_form_render": {"type": "integer"},
+        "step4_simulate": {"type": "integer"},
+        "step5_visualize": {"type": "integer"}
+      },
+      "required": ["step2_parse", "step4_simulate"],
+      "additionalProperties": false
+    }
+  },
+  "required": ["placeholders", "step_latency_budget_ms"],
+  "default": {
+    "placeholders": {
+      "ko": {
+        "household": {
+          "placeholder": "예: 이번 달 전기세가 무서워요. 5만원 이하로 줄일 수 있을까요?",
+          "examples": [
+            "이번 여름 에어컨 켜도 전기세 폭탄 안 맞으려면?",
+            "야간 setback 으로 한 달에 얼마 아낄 수 있나요?",
+            "우리 집 에너지등급으로 받을 수 있는 보조금은?"
+          ],
+          "default_output_type": "advisory"
+        },
+        "owner": {
+          "placeholder": "예: 보유 건물 5동의 연간 에너지비용을 20% 줄이려면 어디부터 손대야 할까요?",
+          "examples": [
+            "포트폴리오 EUI 200 → 150 으로 낮추는 최적 리트로핏 순서는?",
+            "옥상 PV 100kW 설치 시 ROI 와 회수기간은?",
+            "DR 참여로 연간 얼마 벌 수 있나요?"
+          ],
+          "default_output_type": "advisory"
+        },
+        "municipal": {
+          "placeholder": "예: 우리 구 공공건물 30동의 2030 NDC 목표 달성하려면 예산을 어떻게 배분할까요?",
+          "examples": [
+            "관할 구역 노후 건물 우선순위 리트로핏 5개동 추천",
+            "DR 이벤트 발령 시 예상 감축량과 인센티브 비용?",
+            "구민 대상 ZEB 보조금 효과를 EUI 분포로 보여주세요"
+          ],
+          "default_output_type": "prescriptive"
+        },
+        "govt": {
+          "placeholder": "예: 전국 729만 건물 대상 2030 -40% NDC 시나리오 4 가지를 비교해주세요.",
+          "examples": [
+            "리트로핏 보조금 1조 투입 시 시도별 감축 잠재량",
+            "옥상 PV 의무화 정책의 발전량·자원·일자리 영향",
+            "K-ETS 가격 변동(2~5만원)에 따른 산업·건물 부문 반응"
+          ],
+          "default_output_type": "prescriptive"
+        }
+      }
+    },
+    "step_latency_budget_ms": {
+      "step1_input": 0,
+      "step2_parse": 3000,
+      "step3_form_render": 200,
+      "step4_simulate": 15000,
+      "step5_visualize": 500
+    },
+    "intent_example": {
+      "intent_id": "00000000-0000-4000-8000-000000000001",
+      "persona": "owner",
+      "language": "ko",
+      "pain_question": "보유 오피스 3동 연간 전기료 20% 줄이려면 어디부터?",
+      "output_type": "advisory",
+      "target_state": {
+        "metric": "annual_electricity_cost_krw",
+        "operator": "<=",
+        "value": -0.20,
+        "unit": "감소율"
+      },
+      "context_variables": [
+        {"name": "pnu_list", "value": null, "source": "user_input"},
+        {"name": "weather_zone", "value": "수도권", "source": "llm_inferred"}
+      ],
+      "control_variables": [
+        {"name": "retrofit_budget_krw", "value": null, "source": "user_input"},
+        {"name": "ems_strategy", "value": ["M01", "M03", "M09"], "source": "llm_inferred"}
+      ],
+      "forward_model_hint": "ems_recommend",
+      "confidence": "medium",
+      "missing_fields": ["pnu_list", "retrofit_budget_krw"]
+    }
+  }
+}
