@@ -136,6 +136,7 @@ all_schemas = list_schemas()                   # ['agent_contracts', ...]
 | v1.1 | 2026-04-19 | **관측형/제어형 이분화**. Edge측 스펙 4종 추가(virtual_prosumer, control_response, edge_registration, edge_status). venue.json 신설(kind+backend). mqtt-topics에 fleet/register · ACL · ven_id 네이밍 추가. |
 | v2.0 | 2026-05-16 | **4-Module SSOT 확장**. EMS 코드 M0~M8→M00~M15 (16전략). 6개 공유 스키마 신설: ems_strategies(전략코드표), emission_factors(배출계수), energy_constants(PE/ZEB/등급), market_prices(시장가), building_archetypes(건물유형·EUI), region_codes(도시·HVAC). Layer 0(ENERGY_SSOT.md)→Layer 1(이 프로젝트)→Layer 2(각 프로젝트 constants) 3계층 거버넌스 확립. |
 | v2.0.1 | 2026-05-16 | **통합 전략표 확정**. BuildWise+DR 의미 충돌 해소. M00=Baseline 공통화. 16 전략 단일 코드표: BuildWise(M00~M06,M11~M13), DR Control(M00,M01,M02,M04,M07~M09,M14~M15). M10=reserved. |
+| v2.0.2 | 2026-05-20 | **`_utils.redact_pnu` 추가** (Phase E #5, E8). PNU PII redaction cross-repo SSOT — ems_transformer + be-3d 의 동일 함수 중복 제거. commit `c660812`. consumer 측은 wheel SHA bump 후 `from energy_contracts._utils import redact_pnu` 로 전환. 신규 단위 8 PASS. |
 
 ## 참조하는 프로젝트
 
