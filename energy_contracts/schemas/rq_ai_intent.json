@@ -10,7 +10,7 @@
     "eduarena",
     "ems_transformer"
   ],
-  "version": "1.0",
+  "version": "1.1",
   "updated": "2026-05-20",
   "$comment": "Track 1 G2 (REQUIREMENTS.md §2 G2) 산출물. PRD v1.6 §4.5 역질문 UI 5단계 Step 3 Filled-in form 의 직렬화 포맷. nl_intents.json 은 제어 명령 추출(M00~M15)에 특화, rq_ai_intent.json 은 목표역산(advisory/prescriptive) 의도 모델링.",
   "$defs": {
@@ -192,6 +192,82 @@
   "required": ["placeholders", "step_latency_budget_ms"],
   "default": {
     "placeholders": {
+      "en": {
+        "household": {
+          "placeholder": "e.g., I'm worried about this month's bill. Can I keep it under ₩50,000?",
+          "examples": [
+            "How can I avoid an AC bill shock this summer?",
+            "How much would night setback save me per month?",
+            "What subsidies are available for my energy grade?"
+          ],
+          "default_output_type": "advisory"
+        },
+        "owner": {
+          "placeholder": "e.g., How do I cut annual energy cost for 5 buildings by 20%?",
+          "examples": [
+            "Optimal retrofit order to drop portfolio EUI 200 → 150?",
+            "ROI and payback for a 100kW rooftop PV?",
+            "Annual revenue from DR participation?"
+          ],
+          "default_output_type": "advisory"
+        },
+        "municipal": {
+          "placeholder": "e.g., How should I allocate budget across 30 public buildings to hit 2030 NDC?",
+          "examples": [
+            "Top 5 buildings for retrofit priority in my district",
+            "Estimated DR dispatch reduction + incentive cost",
+            "Distribution of EUI under ZEB subsidy program"
+          ],
+          "default_output_type": "prescriptive"
+        },
+        "govt": {
+          "placeholder": "e.g., Compare four 2030 -40% NDC scenarios across 7.29M buildings.",
+          "examples": [
+            "Provincial reduction potential under ₩1T retrofit subsidy",
+            "Generation + jobs impact of mandatory rooftop PV",
+            "Sectoral response to K-ETS price shifts (₩20k~₩50k)"
+          ],
+          "default_output_type": "prescriptive"
+        }
+      },
+      "id": {
+        "household": {
+          "placeholder": "Mis., Tagihan listrik bulan ini saya khawatirkan. Bisakah di bawah Rp 500rb?",
+          "examples": [
+            "Bagaimana cara menghindari tagihan AC tinggi musim ini?",
+            "Berapa hemat dari mode malam (night setback) per bulan?",
+            "Subsidi apa yang tersedia untuk peringkat energi rumah saya?"
+          ],
+          "default_output_type": "advisory"
+        },
+        "owner": {
+          "placeholder": "Mis., Bagaimana memangkas biaya energi 5 gedung 20% per tahun?",
+          "examples": [
+            "Urutan retrofit optimal untuk turunkan EUI 200 → 150",
+            "ROI dan payback untuk PV atap 100kW",
+            "Pendapatan tahunan dari partisipasi DR"
+          ],
+          "default_output_type": "advisory"
+        },
+        "municipal": {
+          "placeholder": "Mis., Bagaimana mengalokasikan anggaran 30 gedung publik untuk target NDC 2030?",
+          "examples": [
+            "5 gedung prioritas tertinggi untuk retrofit",
+            "Estimasi reduksi DR + biaya insentif",
+            "Distribusi EUI program subsidi ZEB"
+          ],
+          "default_output_type": "prescriptive"
+        },
+        "govt": {
+          "placeholder": "Mis., Bandingkan 4 skenario NDC 2030 -40% untuk 7,29 juta gedung.",
+          "examples": [
+            "Potensi reduksi provinsi dengan subsidi retrofit Rp 1T",
+            "Dampak pembangkitan + ketenagakerjaan PV atap wajib",
+            "Respon sektoral terhadap perubahan harga K-ETS"
+          ],
+          "default_output_type": "prescriptive"
+        }
+      },
       "ko": {
         "household": {
           "placeholder": "예: 이번 달 전기세가 무서워요. 5만원 이하로 줄일 수 있을까요?",
