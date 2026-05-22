@@ -275,6 +275,33 @@
         "data_source": "simulated",
         "project": "ems_transformer/hybrid"
       },
+      "ecmhs": {
+        "id": "ecmhs",
+        "name": "ECMHS MPC Surrogate (energyx_surrogate)",
+        "name_kr": "ECMHS MPC 서로게이트",
+        "version": "0.1.0-phase0a",
+        "path": "8.simulation/mpc_model/energyx_surrogate/artifacts/",
+        "task": "predict",
+        "framework": "patchtst",
+        "input_shape": ["batch", 48, 7],
+        "output_shape": ["batch", "{1,4,24}", 4],
+        "accuracy_metric": {
+          "elec_cvrmse_pct_1h": 8.52,
+          "elec_cvrmse_pct_4h": 11.78,
+          "elec_cvrmse_pct_24h": 22.6,
+          "zone_temp_mae_c_1h": 0.156,
+          "zone_temp_mae_c_4h": 0.252,
+          "zone_temp_mae_c_24h": 0.552,
+          "gas_cvrmse_pct_1h": 40.7
+        },
+        "data_source": "simulated",
+        "trained_at": "2026-05-21",
+        "project": "mpc_model/energyx_surrogate",
+        "description": "에너지엑스 BACnet MPC 서로게이트 — 1h/4h/24h 예측 + 90% CI + PMV 제약. Phase 0-A 1,542 EnergyPlus sims 학습 (gas weight 0.8 baseline). Gas channel persistence collapse 는 known limitation — Tweedie/zero-inflated 분포 도입 시 재시도. ems_transformer Gateway :8030 의 /v1/mpc/* 가 :8050 직접 호출 또는 프록시.",
+        "active_checkpoint": "ecmhs_phase0_gas08_baseline",
+        "backend_url": "http://localhost:8050",
+        "retrain_type": "type_1_sim"
+      },
       "building_ai_forecast": {
         "id": "building_ai_forecast",
         "name": "Building AI Forecast (XGBoost)",
