@@ -31,7 +31,7 @@
       "X-Frame-Options": "DENY",
       "Referrer-Policy": "strict-origin-when-cross-origin",
       "Strict-Transport-Security": "max-age=31536000; includeSubDomains",
-      "Content-Security-Policy": "default-src 'self'; img-src 'self' data: blob: https://tiles.building-energy.xyz; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline'; connect-src 'self' wss: https:; font-src 'self' data:; worker-src 'self' blob:;",
+      "Content-Security-Policy": "default-src 'self'; img-src 'self' data: blob: https://tiles.building-energy.xyz; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline'; connect-src 'self' wss: https:; font-src 'self' data:; worker-src 'self' blob:; frame-ancestors 'none'; base-uri 'self'; form-action 'self'; object-src 'none';",
       "Permissions-Policy": "geolocation=(), microphone=(), camera=()"
     },
     "cors": {

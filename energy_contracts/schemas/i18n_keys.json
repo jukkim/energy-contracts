@@ -185,6 +185,51 @@
         "ko": "SSOT 계약 위반",
         "en": "SSOT contract violation",
         "id": "Pelanggaran kontrak SSOT"
+      },
+      "control.dispatch_now": {
+        "ko": "즉시 적용",
+        "en": "Dispatch Now",
+        "id": "Terapkan Sekarang"
+      },
+      "control.baseline_return": {
+        "ko": "M00 복귀",
+        "en": "Return to M00",
+        "id": "Kembali ke M00"
+      },
+      "control.telemetry_badge": {
+        "ko": "관측형",
+        "en": "Telemetry",
+        "id": "Telemetri"
+      },
+      "control.telemetry_no_dispatch": {
+        "ko": "관측형 VEN — 제어 불가",
+        "en": "Telemetry-only VEN — Dispatch disabled",
+        "id": "VEN telemetri saja — Pengiriman dinonaktifkan"
+      },
+      "control.telemetry_no_schedule": {
+        "ko": "관측형 VEN — 스케줄 불가",
+        "en": "Telemetry-only VEN — Schedule disabled",
+        "id": "VEN telemetri saja — Penjadwalan dinonaktifkan"
+      },
+      "auth.admin_required": {
+        "ko": "관리자 인증 필요",
+        "en": "Admin authentication required",
+        "id": "Autentikasi admin diperlukan"
+      },
+      "auth.admin_jwt_required": {
+        "ko": "관리자 JWT 입력 필요 (수동 Tick 시연용)",
+        "en": "Admin JWT required (for manual Tick demo)",
+        "id": "JWT admin diperlukan (untuk demo Tick manual)"
+      },
+      "auth.admin_only_tick": {
+        "ko": "관리자만 수동 Tick 가능",
+        "en": "Only admin can manual Tick",
+        "id": "Hanya admin yang dapat Tick manual"
+      },
+      "auth.admin_login_required": {
+        "ko": "관리자 로그인 필요 (수동 Tick 시연용)",
+        "en": "Admin login required (for manual Tick demo)",
+        "id": "Login admin diperlukan (untuk demo Tick manual)"
       }
     }
   }
