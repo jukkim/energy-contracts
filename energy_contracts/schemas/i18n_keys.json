@@ -211,6 +211,41 @@
         "en": "Telemetry-only VEN — Schedule disabled",
         "id": "VEN telemetri saja — Penjadwalan dinonaktifkan"
       },
+      "control.optgroup_dispatch": {
+        "ko": "[송출 가능]",
+        "en": "[Dispatchable]",
+        "id": "[Dapat Dikirim]"
+      },
+      "control.optgroup_telemetry_only": {
+        "ko": "[관측 전용] — 송출 불가",
+        "en": "[Telemetry only] — Dispatch disabled",
+        "id": "[Hanya telemetri] — Pengiriman dinonaktifkan"
+      },
+      "control.no_dispatch_warning": {
+        "ko": "송출 가능 VEN 0건 · 관측 전용",
+        "en": "0 dispatchable VEN · telemetry only",
+        "id": "0 VEN dapat dikirim · hanya telemetri"
+      },
+      "control.no_dispatch_hint": {
+        "ko": "관측 전용 VEN 은 텔레메트리 수신만 가능. 송출을 시연하려면 dispatch VEN 등록 필요.",
+        "en": "Telemetry-only VEN can only receive telemetry. Register a dispatch VEN to demo dispatch.",
+        "id": "VEN telemetri hanya dapat menerima telemetri. Daftarkan VEN dispatch untuk demo pengiriman."
+      },
+      "control.ven_count_summary": {
+        "ko": "{total}개 VEN 등록됨 (송출 {dispatch} · 관측 {telemetry})",
+        "en": "{total} VEN registered (dispatch {dispatch} · telemetry {telemetry})",
+        "id": "{total} VEN terdaftar (dispatch {dispatch} · telemetri {telemetry})"
+      },
+      "control.ven_none": {
+        "ko": "등록된 VEN이 없습니다.",
+        "en": "No VEN registered.",
+        "id": "Tidak ada VEN terdaftar."
+      },
+      "control.ven_manual_input": {
+        "ko": "— VEN 없음 (수동 입력) —",
+        "en": "— No VEN (manual input) —",
+        "id": "— Tidak ada VEN (input manual) —"
+      },
       "auth.admin_required": {
         "ko": "관리자 인증 필요",
         "en": "Admin authentication required",
