@@ -109,10 +109,10 @@
       },
       "korea_buildings": {
         "id": "korea_buildings",
-        "name": "전국 627만 건물 에너지",
+        "name": "전국 729만 건물 에너지",
         "stage": "published",
         "size_bytes": 0,
-        "row_count": 6270000,
+        "row_count": 7293517,
         "data_source": "measured",
         "owner": "building-energy-3d"
       },

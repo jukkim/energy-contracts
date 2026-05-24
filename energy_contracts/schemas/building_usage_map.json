@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "energy-contracts/building_usage_map.json",
   "title": "Building Usage Map SSOT (Phase J-7)",
-  "description": "건축물대장 용도 코드 ↔ archetype ↔ 에너지 사용패턴 매핑. 한국(627만 건물) + 인도네시아 BEMS(12.5M ASEAN 건물).",
+  "description": "건축물대장 용도 코드 ↔ archetype ↔ 에너지 사용패턴 매핑. 한국(729만 건물) + 인도네시아 BEMS(12.5M ASEAN 건물).",
   "_usage": "codegen",
   "_consumers": [
     "edge-agent",
