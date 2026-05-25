@@ -1,6 +1,7 @@
 # CLAUDE.md — Energy Contracts (공유 스펙)
 
 > **SSOT 허브** — Tier 2 도메인 계약. 변경 시 `myjob/docs/SSOT_GOVERNANCE.md` 절차 준수. 검증: `python scripts/validate_ssot.py`.
+> **외부 의존 작업 (2026-05-25, agents Phase DI)**: jukkim/agents 의 W12 Negotiator 진입 시 본 repo `schemas/` 에 **`conflict_policy.json` + `negotiation_decision.json`** 신설 필요 (precedence_score 가중치 + 충돌 해소 audit). 상세 명세: [`../agents/docs/CROSS_FOLDER_TODO.md`](../agents/docs/CROSS_FOLDER_TODO.md) §4.
 
 ## 목적
 
@@ -137,6 +138,9 @@ all_schemas = list_schemas()                   # ['agent_contracts', ...]
 | v2.0 | 2026-05-16 | **4-Module SSOT 확장**. EMS 코드 M0~M8→M00~M15 (16전략). 6개 공유 스키마 신설: ems_strategies(전략코드표), emission_factors(배출계수), energy_constants(PE/ZEB/등급), market_prices(시장가), building_archetypes(건물유형·EUI), region_codes(도시·HVAC). Layer 0(ENERGY_SSOT.md)→Layer 1(이 프로젝트)→Layer 2(각 프로젝트 constants) 3계층 거버넌스 확립. |
 | v2.0.1 | 2026-05-16 | **통합 전략표 확정**. BuildWise+DR 의미 충돌 해소. M00=Baseline 공통화. 16 전략 단일 코드표: BuildWise(M00~M06,M11~M13), DR Control(M00,M01,M02,M04,M07~M09,M14~M15). M10=reserved. |
 | v2.0.2 | 2026-05-20 | **`_utils.redact_pnu` 추가** (Phase E #5, E8). PNU PII redaction cross-repo SSOT — ems_transformer + be-3d 의 동일 함수 중복 제거. commit `c660812`. consumer 측은 wheel SHA bump 후 `from energy_contracts._utils import redact_pnu` 로 전환. 신규 단위 8 PASS. |
+| v2.0.3 | 2026-05-22 | **`ai_model_registry` ecmhs 등재** — Phase 0-A baseline. ECMHS MPC 서로게이트(:8050) 모델 카드 추가. commit `6a7d755`. |
+| v2.0.4 | 2026-05-24 | **KI-031 i18n + CSP 보강** — control/auth i18n 키 9 신규 + control optgroup 키 7 신규 (F-09). CSP 4 directive 추가 + `script-src 'unsafe-inline'` 제거, vworld/unpkg 화이트리스트. commits `29421fd`, `efb676f`, `9fa7f88`. |
+| v2.0.5 | 2026-05-24 | **`korea_buildings` 정정** — 627만 → **729만** (VWorld footprint DB 실측 7,293,517). 전국 건물 카운트 SSOT 갱신. commit `0e91f67`. **외부 의존 note 추가** — agents Phase DI W12 진입 시 `conflict_policy.json` + `negotiation_decision.json` 신설 예정. |
 
 ## 참조하는 프로젝트
 
