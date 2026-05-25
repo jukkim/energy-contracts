@@ -4,6 +4,29 @@
 
 ---
 
+## (unversioned) — 2026-05-25 security_policy.json v1.1 (CSP 강화, P6 SSOT cascade)
+
+### 변경
+- `security_policy.json` `default.headers.Content-Security-Policy`:
+  - `script-src` 에서 `'unsafe-eval'` 제거
+  - `style-src` 에서 `'unsafe-inline'` 제거
+- `version` 1.0 → 1.1, `updated` 2026-05-25
+- be-3d CSP P5 #A~#D 완료 (2026-05-25, be-3d `bb72f51`) 반영
+- Cesium 의존 페이지(`vworld.html`/`cesium.html`) 와 legacy simulator iframe(`/simulators/*`)은 be-3d nginx location 에서 개별 완화 — SSOT default 와 별개
+
+### 영향
+- 6 consumer `_generated_constants.{py,ts}` cascade — `gen_constants.py --all` 실행, drift 0 확인
+  - `building-energy-3d/src/shared/_generated_constants.py`
+  - `building-energy-3d/frontend/src/shared/_generated_constants.ts` (security 미포함 — exports 화이트리스트)
+  - `gridbridge/src/_generated_constants.py`
+  - `edge-agent/src/_generated_constants.py`
+  - `agentleague/backend/_generated_constants.py`
+  - `eduarena/backend/_generated_constants.py`
+- be-3d FastAPI `SecurityHeadersMiddleware` + gridbridge `main.py` + agentleague `main.py` 가 SSOT 직접 import — 재빌드/재시작 시 신규 CSP 자동 적용 (API JSON 응답에만 영향, nginx 가 서빙하는 HTML 은 nginx CSP 사용)
+- 회귀: gridbridge 290 PASS, be-3d SSOT consistency 26 PASS (1 pre-existing path bug 무관)
+
+---
+
 ## 0.1.0 — 2026-05-19 패키지화 + wheel 배포 (Phase C, agents a12)
 
 ### 추가

@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "energy-contracts/security_policy.json",
   "title": "Security Policy SSOT (Phase I-5)",
-  "description": "공통 보안 헤더 + CORS + rate limit 정책. 6 프로젝트 FastAPI 미들웨어 단일 진실. building-energy-3d/main.py SecurityHeadersMiddleware 패턴 일반화.",
+  "description": "공통 보안 헤더 + CORS + rate limit 정책. 6 프로젝트 FastAPI 미들웨어 단일 진실. building-energy-3d/main.py SecurityHeadersMiddleware 패턴 일반화. v1.1 (2026-05-25): be-3d CSP P5 #A~#D 완료에 맞춰 default CSP 에서 'unsafe-eval'(script-src) + 'unsafe-inline'(style-src) 제거. Cesium 의존 페이지(vworld/cesium) 와 legacy simulator iframe 은 nginx location 에서 개별 완화.",
   "_usage": "codegen",
   "_consumers": [
     "edge-agent",
@@ -11,8 +11,8 @@
     "agentleague",
     "eduarena"
   ],
-  "version": "1.0",
-  "updated": "2026-05-17",
+  "version": "1.1",
+  "updated": "2026-05-25",
   "type": "object",
   "properties": {
     "headers": {
@@ -31,7 +31,7 @@
       "X-Frame-Options": "DENY",
       "Referrer-Policy": "strict-origin-when-cross-origin",
       "Strict-Transport-Security": "max-age=31536000; includeSubDomains",
-      "Content-Security-Policy": "default-src 'self'; img-src 'self' data: blob: https://tiles.building-energy.xyz https://map.vworld.kr https://*.vworld.kr; script-src 'self' 'unsafe-eval' https://cdn.jsdelivr.net https://map.vworld.kr https://*.vworld.kr https://unpkg.com; style-src 'self' 'unsafe-inline' https://unpkg.com https://map.vworld.kr; connect-src 'self' wss: https:; font-src 'self' data:; worker-src 'self' blob: https://map.vworld.kr https://*.vworld.kr; frame-ancestors 'self'; base-uri 'self'; form-action 'self'; object-src 'none';",
+      "Content-Security-Policy": "default-src 'self'; img-src 'self' data: blob: https://tiles.building-energy.xyz https://map.vworld.kr https://*.vworld.kr; script-src 'self' https://cdn.jsdelivr.net https://map.vworld.kr https://*.vworld.kr https://unpkg.com; style-src 'self' https://unpkg.com https://map.vworld.kr; connect-src 'self' wss: https:; font-src 'self' data:; worker-src 'self' blob: https://map.vworld.kr https://*.vworld.kr; frame-ancestors 'self'; base-uri 'self'; form-action 'self'; object-src 'none';",
       "Permissions-Policy": "geolocation=(), microphone=(), camera=()"
     },
     "cors": {
