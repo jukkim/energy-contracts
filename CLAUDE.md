@@ -1,7 +1,7 @@
 # CLAUDE.md — Energy Contracts (공유 스펙)
 
 > **SSOT 허브** — Tier 2 도메인 계약. 변경 시 `myjob/docs/SSOT_GOVERNANCE.md` 절차 준수. 검증: `python scripts/validate_ssot.py`.
-> **외부 의존 작업 (2026-05-25, agents Phase DI)**: jukkim/agents 의 W12 Negotiator 진입 시 본 repo `schemas/` 에 **`conflict_policy.json` + `negotiation_decision.json`** 신설 필요 (precedence_score 가중치 + 충돌 해소 audit). 상세 명세: [`../agents/docs/CROSS_FOLDER_TODO.md`](../agents/docs/CROSS_FOLDER_TODO.md) §4.
+> **외부 의존 작업 (2026-05-25, agents Phase DI — arch A11 정정)**: agents `PHASE_DI_PLAN.md §4.5` 3-tier SSOT 결정에 따라 `conflict_policy` + `negotiation_decision` 은 **agents local Tier 2** 로 확정 (wheel 진입 X, `45a99e8` commit). 본 repo 의 Tier 1 wheel 후보는 별개로 **`drift_report`, `retrain_request`, `auto_retrain_policy`** 3건. agents Phase DI 진행에 따라 trigger 시점 결정. 명세: [`../agents/docs/PHASE_DI_PLAN.md`](../agents/docs/PHASE_DI_PLAN.md) §4.5.
 
 ## 목적
 
@@ -140,7 +140,8 @@ all_schemas = list_schemas()                   # ['agent_contracts', ...]
 | v2.0.2 | 2026-05-20 | **`_utils.redact_pnu` 추가** (Phase E #5, E8). PNU PII redaction cross-repo SSOT — ems_transformer + be-3d 의 동일 함수 중복 제거. commit `c660812`. consumer 측은 wheel SHA bump 후 `from energy_contracts._utils import redact_pnu` 로 전환. 신규 단위 8 PASS. |
 | v2.0.3 | 2026-05-22 | **`ai_model_registry` ecmhs 등재** — Phase 0-A baseline. ECMHS MPC 서로게이트(:8050) 모델 카드 추가. commit `6a7d755`. |
 | v2.0.4 | 2026-05-24 | **KI-031 i18n + CSP 보강** — control/auth i18n 키 9 신규 + control optgroup 키 7 신규 (F-09). CSP 4 directive 추가 + `script-src 'unsafe-inline'` 제거, vworld/unpkg 화이트리스트. commits `29421fd`, `efb676f`, `9fa7f88`. |
-| v2.0.5 | 2026-05-24 | **`korea_buildings` 정정** — 627만 → **729만** (VWorld footprint DB 실측 7,293,517). 전국 건물 카운트 SSOT 갱신. commit `0e91f67`. **외부 의존 note 추가** — agents Phase DI W12 진입 시 `conflict_policy.json` + `negotiation_decision.json` 신설 예정. |
+| v2.0.5 | 2026-05-24 | **`korea_buildings` 정정** — 627만 → **729만** (VWorld footprint DB 실측 7,293,517). 전국 건물 카운트 SSOT 갱신. commit `0e91f67`. ~~외부 의존 note 추가 — agents Phase DI W12 진입 시 conflict_policy.json + negotiation_decision.json 신설 예정~~ → **v2.0.6 에서 정정**. |
+| v2.0.6 | 2026-05-25 | **외부 의존 note 정정 (arch A11)** — agents `PHASE_DI_PLAN.md §4.5` 3-tier SSOT 결정에 따라 `conflict_policy` + `negotiation_decision` 은 agents local Tier 2 로 확정 (wheel 진입 X). agents commit `45a99e8` 에서 `policies/conflict_policy.yaml` local SSOT 신설 완료. 본 repo Tier 1 wheel 신규 후보는 별개로 **`drift_report`, `retrain_request`, `auto_retrain_policy`** 3건 (agents Phase DI 진행 시 trigger). |
 
 ## 참조하는 프로젝트
 
