@@ -1,7 +1,7 @@
 # CLAUDE.md — Energy Contracts (공유 스펙)
 
 > **SSOT 허브** — Tier 2 도메인 계약. 변경 시 `myjob/docs/SSOT_GOVERNANCE.md` 절차 준수. 검증: `python scripts/validate_ssot.py`.
-> **외부 의존 작업 (2026-05-25, agents Phase DI — arch A11 정정)**: agents `PHASE_DI_PLAN.md §4.5` 3-tier SSOT 결정에 따라 `conflict_policy` + `negotiation_decision` 은 **agents local Tier 2** 로 확정 (wheel 진입 X, `45a99e8` commit). 본 repo 의 Tier 1 wheel 후보는 별개로 **`drift_report`, `retrain_request`, `auto_retrain_policy`** 3건. agents Phase DI 진행에 따라 trigger 시점 결정. 명세: [`../agents/docs/PHASE_DI_PLAN.md`](../agents/docs/PHASE_DI_PLAN.md) §4.5.
+> **외부 의존 작업 (2026-05-26, agents arch A5 3-tier 분류 확정)**: agents `src/ingestion/_schemas/__init__.py` 의 3-tier SSOT 분류에 따라 — **Tier 1 (wheel)**: `drift_report`, `retrain_request` 2건 (sibling read/receive 대상, 미작성). **Tier 2 (local, wheel 진입 X)**: `negotiation_decision`, `post_validation_result`, `auto_retrain_policy` (agents-only, `45a99e8` commit). **Tier 3 (jsonb)**: `audit_event.extra`. 본 repo Tier 1 wheel 후보는 **`drift_report`, `retrain_request`** 2건 — DriftMonitor/RetrainOrchestrator 가 sibling 으로 emit/receive 진입 시 trigger. retrain_jobs queue 자체는 agents DB schema 009 + smartbuilding W7-ext (`545755a`) polling consumer 로 처리, wheel 불요. 명세: agents `src/ingestion/_schemas/__init__.py` + `docs/PHASE_DI_PLAN.md §4.5`.
 
 ## 목적
 
@@ -142,6 +142,7 @@ all_schemas = list_schemas()                   # ['agent_contracts', ...]
 | v2.0.4 | 2026-05-24 | **KI-031 i18n + CSP 보강** — control/auth i18n 키 9 신규 + control optgroup 키 7 신규 (F-09). CSP 4 directive 추가 + `script-src 'unsafe-inline'` 제거, vworld/unpkg 화이트리스트. commits `29421fd`, `efb676f`, `9fa7f88`. |
 | v2.0.5 | 2026-05-24 | **`korea_buildings` 정정** — 627만 → **729만** (VWorld footprint DB 실측 7,293,517). 전국 건물 카운트 SSOT 갱신. commit `0e91f67`. ~~외부 의존 note 추가 — agents Phase DI W12 진입 시 conflict_policy.json + negotiation_decision.json 신설 예정~~ → **v2.0.6 에서 정정**. |
 | v2.0.6 | 2026-05-25 | **외부 의존 note 정정 (arch A11)** — agents `PHASE_DI_PLAN.md §4.5` 3-tier SSOT 결정에 따라 `conflict_policy` + `negotiation_decision` 은 agents local Tier 2 로 확정 (wheel 진입 X). agents commit `45a99e8` 에서 `policies/conflict_policy.yaml` local SSOT 신설 완료. 본 repo Tier 1 wheel 신규 후보는 별개로 **`drift_report`, `retrain_request`, `auto_retrain_policy`** 3건 (agents Phase DI 진행 시 trigger). |
+| v2.0.7 | 2026-05-26 | **arch A5 3-tier 분류 확정 — `auto_retrain_policy` Tier 2 재분류** — agents `src/ingestion/_schemas/__init__.py` 가 명시한 분류에 따라 `auto_retrain_policy` 는 wheel 후보에서 제외, agents local Tier 2 로 확정 (`negotiation_decision`, `post_validation_result` 와 동일 계층). 본 repo Tier 1 wheel 후보는 **`drift_report`, `retrain_request`** 2건으로 축소. retrain_jobs queue 자체는 agents DB schema 009 + smartbuilding W7-ext (`545755a`) polling consumer 로 처리, wheel 불요. 보조 노트: agents/be-3d wheel pin `c660812` (2026-05-20) 이후 본 repo 12 commit 진행 (`83dc459`/`b0faa13` ai_model_registry v1.1, `316d857` security_policy v1.1, `0de924f`/`a71ebba` rq_ai_intent, `29421fd`/`efb676f`/`9fa7f88` KI-031, `0e91f67` korea_buildings 정정 등) — pin bump 는 consumer 측 trigger 대기. |
 
 ## 참조하는 프로젝트
 
