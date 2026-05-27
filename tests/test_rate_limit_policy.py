@@ -89,6 +89,28 @@ class TestLoadPolicy:
         assert p.requests == 30
         assert p.period_seconds == 60
 
+    def test_read_moderate(self):
+        p = load_policy("read_moderate")
+        assert p.requests == 30
+        assert p.period_seconds == 60
+        assert "표준 GET" in p.description
+
+    def test_read_burst(self):
+        p = load_policy("read_burst")
+        assert p.requests == 200
+        assert p.period_seconds == 60
+        assert "폴링" in p.description or "HLS" in p.description
+
+    def test_stream_realtime(self):
+        p = load_policy("stream_realtime")
+        assert p.requests == 600
+        assert p.period_seconds == 60
+
+    def test_daily_quota(self):
+        p = load_policy("daily_quota")
+        assert p.requests == 10
+        assert p.period_seconds == 3600
+
     def test_unknown_use_case_raises(self):
         with pytest.raises(KeyError, match="unknown rate-limit use_case"):
             load_policy("nonexistent")
@@ -105,6 +127,18 @@ class TestSlowapiLimit:
 
     def test_public_default_string(self):
         assert slowapi_limit("public_default") == "120/minute"
+
+    def test_daily_quota_hour_unit(self):
+        assert slowapi_limit("daily_quota") == "10/hour"
+
+    def test_stream_realtime_string(self):
+        assert slowapi_limit("stream_realtime") == "600/minute"
+
+    def test_read_burst_string(self):
+        assert slowapi_limit("read_burst") == "200/minute"
+
+    def test_read_moderate_string(self):
+        assert slowapi_limit("read_moderate") == "30/minute"
 
 
 class TestParityBE3D:

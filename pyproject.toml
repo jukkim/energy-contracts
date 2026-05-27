@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "energy-contracts"
-version = "0.3.1"
+version = "0.3.2"
 description = "VW/GB/EA/Agents 공유 인터페이스 SSOT (JSON Schema + Pydantic 모델)"
 requires-python = ">=3.11"
 dependencies = [
