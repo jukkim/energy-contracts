@@ -1,0 +1,122 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "energy_contracts/retry_policy.json",
+  "title": "Retry / Backoff Policy SSOT",
+  "description": "지수 backoff 정책 4 use-case 선언적 SSOT. AWS Brooker 2015 jitter 분류 차용. 본 SSOT 위치: myjob/docs/SSOT_GOVERNANCE.md §9.5.",
+  "_usage": "runtime-validate",
+  "_consumers": [
+    "building-energy-3d",
+    "gridbridge",
+    "agents"
+  ],
+  "version": "1.0",
+  "updated": "2026-05-27",
+  "type": "object",
+  "required": ["use_cases"],
+  "properties": {
+    "use_cases": {
+      "type": "object",
+      "description": "use-case 라벨 → BackoffPolicy 매핑",
+      "additionalProperties": {"$ref": "#/$defs/policy"},
+      "properties": {
+        "auth": {
+          "$ref": "#/$defs/policy",
+          "description": "IP-based auth 401 backoff (be-3d AuthBackoffMiddleware). 5회 무료 후 1s, 2s, 4s, ... 최대 1h."
+        },
+        "external_api": {
+          "$ref": "#/$defs/policy",
+          "description": "외부 API circuit breaker cooldown (agents circuit_breaker). 30분 base, 24h 상한, repeat 마다 doubling."
+        },
+        "mqtt_reconnect": {
+          "$ref": "#/$defs/policy",
+          "description": "MQTT 재연결 (paho 내장 X — 명시 정책이 필요할 때). 1s base, 60s 상한, equal jitter (thundering herd 완화)."
+        },
+        "db": {
+          "$ref": "#/$defs/policy",
+          "description": "DB connection / transient query retry. 100ms base, 5s 상한, full jitter."
+        }
+      }
+    }
+  },
+  "$defs": {
+    "policy": {
+      "type": "object",
+      "required": ["base_seconds", "max_seconds"],
+      "additionalProperties": false,
+      "properties": {
+        "base_seconds": {
+          "type": "number",
+          "minimum": 0,
+          "description": "attempt=threshold_attempts+1 일 때 delay (초)"
+        },
+        "factor": {
+          "type": "number",
+          "minimum": 1.0,
+          "default": 2.0,
+          "description": "지수 배율 (기본 2.0 — doubling)"
+        },
+        "max_seconds": {
+          "type": "number",
+          "minimum": 0,
+          "description": "delay 상한 (초). 사용자 영구 lockout 방지."
+        },
+        "threshold_attempts": {
+          "type": "integer",
+          "minimum": 0,
+          "default": 0,
+          "description": "이 횟수 이하 attempt 는 delay=0 (free retry). 정상 사용자 보호."
+        },
+        "window_seconds": {
+          "type": "number",
+          "minimum": 0,
+          "description": "카운터 자연 소멸 윈도우 (초). 상태 머신 호출자가 사용."
+        },
+        "jitter": {
+          "type": "string",
+          "enum": ["none", "full", "equal", "decorrelated"],
+          "default": "none",
+          "description": "jitter 전략. AWS Brooker 2015 분류."
+        },
+        "description": {
+          "type": "string"
+        }
+      }
+    }
+  },
+  "use_cases": {
+    "auth": {
+      "base_seconds": 1.0,
+      "factor": 2.0,
+      "max_seconds": 3600.0,
+      "threshold_attempts": 5,
+      "window_seconds": 300.0,
+      "jitter": "none",
+      "description": "IP-based auth 401 backoff. 정상 사용자(토큰 만료 1~2회 401) 는 무료. 5회 초과 시 1s, 2s, 4s, ... 지수 증가. 5분 윈도우, 1h 상한."
+    },
+    "external_api": {
+      "base_seconds": 1800.0,
+      "factor": 2.0,
+      "max_seconds": 86400.0,
+      "threshold_attempts": 0,
+      "window_seconds": 300.0,
+      "jitter": "none",
+      "description": "외부 API circuit breaker cooldown. OPEN repeats 마다 30m → 1h → 2h → ... → 24h 상한. 48h 후 repeats reset (별도 상태 머신)."
+    },
+    "mqtt_reconnect": {
+      "base_seconds": 1.0,
+      "factor": 2.0,
+      "max_seconds": 60.0,
+      "threshold_attempts": 0,
+      "jitter": "equal",
+      "description": "MQTT broker 재연결 (명시 정책 필요 시 — paho 내장 동작 외). 1s, 2s, 4s, ... 60s 상한 + equal jitter."
+    },
+    "db": {
+      "base_seconds": 0.1,
+      "factor": 2.0,
+      "max_seconds": 5.0,
+      "threshold_attempts": 0,
+      "jitter": "full",
+      "description": "DB transient 오류 retry. 100ms, 200ms, ... 5s 상한 + full jitter."
+    }
+  }
+}
