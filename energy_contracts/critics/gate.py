@@ -13,6 +13,7 @@
 - Cache: 이벤트 signature (group_id, target_kw 1 자리 반올림, mandatory, source) 키
   → 같은 정책 반복 dispatch 시 재평가 skip
 - Carbon Critic 은 실 outcome (avoided CO2) 필요 → batch 사후 토론에서만 적용
+  · 2026-05-27 audit 강화: SSOT 불일치 1 건만으로 FAIL (fail_threshold=1, c_carbon.py)
 
 SSOT 위치: `myjob/docs/SSOT_GOVERNANCE.md` §9.5 — DR Critics 사례.
 """

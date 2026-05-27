@@ -161,8 +161,13 @@ def test_batch_debate_outcome_none_carbon_skipped(gate):
     assert verdict.judge_decision == "pass"
 
 
-def test_batch_debate_carbon_warn(gate):
-    """outcome 에 구버전 배출계수 1 건 → Carbon Critic WARN → judge=needs_review."""
+def test_batch_debate_carbon_fail_on_single_violation(gate):
+    """outcome 에 구버전 배출계수 1 건 → Carbon Critic FAIL → judge=fail.
+
+    2026-05-27 audit 강화: Carbon Critic fail_threshold=1 적용 — SSOT 불일치
+    1 건만으로도 FAIL 처리 (이전: violations ≥ 3 시 FAIL). DR debate 의
+    배출계수 인용 정확성이 즉시 차단되도록 강화.
+    """
     evt = _clean_event()
     outcome = {
         "emission_factor_kgco2_per_kwh": 0.4747,  # 구버전 — outdated_electricity_factor 룰 1 건
@@ -170,8 +175,8 @@ def test_batch_debate_carbon_warn(gate):
         "avoided_kwh": 100.0,
     }
     verdict = gate.evaluate_batch_debate(evt, outcome=outcome)
-    assert verdict.judge_decision == "needs_review"
-    assert verdict.carbon_result.verdict == Verdict.WARN
+    assert verdict.judge_decision == "fail"
+    assert verdict.carbon_result.verdict == Verdict.FAIL
     rules = {v["rule"] for v in verdict.carbon_result.violations}
     assert "outdated_electricity_factor" in rules
 

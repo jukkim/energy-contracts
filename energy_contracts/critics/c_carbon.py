@@ -68,4 +68,8 @@ class CarbonCritic(Critic):
                 "reason": "2025.12 갱신 — 0.4173 권장 (단년도 확정)",
             })
 
-        return self._make_result(violations, notes="CARBON_EMISSION_FACTORS.yaml 정합")
+        return self._make_result(
+            violations,
+            fail_threshold=1,
+            notes="CARBON_EMISSION_FACTORS.yaml 정합 — 1 건만 어긋나도 FAIL (audit 강화, 2026-05-27)",
+        )

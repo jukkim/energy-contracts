@@ -120,6 +120,20 @@ def test_data_critic_zero_tolerance(critics):
     assert any(v["rule"] == "nda_source_exposed" for v in r.violations)
 
 
+def test_carbon_critic_zero_tolerance(critics):
+    """C-Carbon 도 SSOT 불일치 1 건만으로 FAIL (2026-05-27 audit 강화)."""
+    c = critics["c_carbon"]
+    r = c.review("전력 0.55 kgCO2/kWh 적용.")
+    assert r.verdict == Verdict.FAIL, (
+        f"Carbon SSOT 불일치 1 건이 FAIL 이어야 함. 실제: {r.verdict} / {r.violations}"
+    )
+    assert any(v["rule"] == "factor_mismatch" for v in r.violations)
+
+    r_outdated = c.review("전력 0.4747 kgCO2/kWh 적용 (구버전).")
+    assert r_outdated.verdict == Verdict.FAIL
+    assert any(v["rule"] == "outdated_electricity_factor" for v in r_outdated.violations)
+
+
 def test_critic_result_serializable(critics):
     """CriticResult.to_dict() 직렬화 — Layer 2 audit chain 적재 호환."""
     c = critics["c_legal"]
