@@ -87,10 +87,15 @@
       "period_seconds": 60,
       "description": "외부 webhook 수신 (be-3d kakao webhook 등)"
     },
+    "read_standard": {
+      "requests": 60,
+      "period_seconds": 60,
+      "description": "표준 GET API — 일반 카탈로그/리스트/요약 조회. 1초 1요청 가용. service_default 와 값은 같지만 도메인 중립"
+    },
     "read_moderate": {
       "requests": 30,
       "period_seconds": 60,
-      "description": "표준 GET API — 건물 lookup / 상세 조회 / 카탈로그 lookup. public_default (120/min) 보다 엄격, strict_read (5/min) 보다 느슨"
+      "description": "GET API — 건물 상세 / 분석 / 비싼 lookup. read_standard (60/min) 보다 엄격, strict_read (5/min) 보다 느슨"
     },
     "read_burst": {
       "requests": 200,

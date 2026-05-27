@@ -89,11 +89,17 @@ class TestLoadPolicy:
         assert p.requests == 30
         assert p.period_seconds == 60
 
+    def test_read_standard(self):
+        p = load_policy("read_standard")
+        assert p.requests == 60
+        assert p.period_seconds == 60
+        assert "표준 GET" in p.description
+
     def test_read_moderate(self):
         p = load_policy("read_moderate")
         assert p.requests == 30
         assert p.period_seconds == 60
-        assert "표준 GET" in p.description
+        assert "비싼 lookup" in p.description or "GET API" in p.description
 
     def test_read_burst(self):
         p = load_policy("read_burst")
@@ -139,6 +145,9 @@ class TestSlowapiLimit:
 
     def test_read_moderate_string(self):
         assert slowapi_limit("read_moderate") == "30/minute"
+
+    def test_read_standard_string(self):
+        assert slowapi_limit("read_standard") == "60/minute"
 
 
 class TestParityBE3D:
