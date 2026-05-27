@@ -112,6 +112,11 @@ PROJECT_TARGETS: dict[str, dict] = {
             ],
             "ts": [
                 "I18N_FALLBACK_LANG", "I18N_KEYS",
+                # Critics SSOT (0.2.3) — Layer 5 UI 의 verdict 라벨 / critic name 매핑
+                "CRITIC_NAMES", "CRITIC_LABEL_KO",
+                "VERDICT_VALUES", "VERDICT_LABEL_KO",
+                "GATE_DECISIONS", "JUDGE_DECISIONS",
+                "DR_MANDATORY_SIGNAL_LEVELS",
             ],
         },
     },
@@ -807,6 +812,41 @@ def gen_typescript(schemas: dict) -> str:
     _ts_dump("logfmt",     "LOGGING_FORMAT")
     _ts_dump("sim_scn",    "SIM_EMS_PATTERNS",    ["ems_patterns"])
     _ts_dump("oapi_resp",  "OPENAPI_RESPONSES",   ["standard_responses"])
+
+    # ─ Critics 도메인 중립 SSOT (2026-05-27 0.2.3 — frontend i18n / UI 매핑) ──
+    # SSOT: energy_contracts/critics/* (Python). 프로세스 import 부담 없이 frontend
+    # 가 동일한 enum/리스트 사용. 4 종 critic name + Verdict enum + JudgeDecision
+    # enum + GateDecision enum.
+    lines.append("// ─ Critics (energy_contracts.critics) ───────────────────────")
+    lines.append('export const CRITIC_NAMES = ["c_legal", "c_carbon", "c_safety", "c_data"] as const;')
+    lines.append("export type CriticName = (typeof CRITIC_NAMES)[number];")
+    lines.append("")
+    lines.append('export const VERDICT_VALUES = ["pass", "warn", "fail"] as const;')
+    lines.append("export type Verdict = (typeof VERDICT_VALUES)[number];")
+    lines.append("")
+    lines.append('export const GATE_DECISIONS = ["pass", "warn", "block"] as const;')
+    lines.append("export type GateDecision = (typeof GATE_DECISIONS)[number];")
+    lines.append("")
+    lines.append('export const JUDGE_DECISIONS = ["pass", "needs_review", "fail"] as const;')
+    lines.append("export type JudgeDecision = (typeof JUDGE_DECISIONS)[number];")
+    lines.append("")
+    lines.append('export const DR_MANDATORY_SIGNAL_LEVELS = ["HIGH", "EMERGENCY"] as const;')
+    lines.append("export type DrMandatorySignal = (typeof DR_MANDATORY_SIGNAL_LEVELS)[number];")
+    lines.append("")
+    lines.append("// 한국어 라벨 (i18n catalog 키 hint — frontend 가 i18n-global 으로 override 가능)")
+    lines.append("export const CRITIC_LABEL_KO: Record<CriticName, string> = {")
+    lines.append('  c_legal: "법령",')
+    lines.append('  c_carbon: "탄소·배출계수",')
+    lines.append('  c_safety: "안전·HVAC",')
+    lines.append('  c_data: "비공개 데이터",')
+    lines.append("} as const;")
+    lines.append("")
+    lines.append("export const VERDICT_LABEL_KO: Record<Verdict, string> = {")
+    lines.append('  pass: "통과",')
+    lines.append('  warn: "경고",')
+    lines.append('  fail: "위반",')
+    lines.append("} as const;")
+    lines.append("")
 
     return "\n".join(lines)
 

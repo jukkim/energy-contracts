@@ -4,6 +4,28 @@
 
 ---
 
+## 0.2.3 — 2026-05-27 gen_constants TS critic enum (frontend MEDIUM — i18n / UI 매핑)
+
+### 변경
+- `scripts/gen_constants.py` `gen_typescript()` 에 critics 블록 추가
+- 6 consumer `_generated_constants.{py,ts}` SOURCE_HASH cascade (drift 0)
+- be-3d ts exports 화이트리스트에 critic 심볼 7 추가:
+  - `CRITIC_NAMES` / `CRITIC_LABEL_KO`
+  - `VERDICT_VALUES` / `VERDICT_LABEL_KO`
+  - `GATE_DECISIONS` / `JUDGE_DECISIONS`
+  - `DR_MANDATORY_SIGNAL_LEVELS`
+
+### 사유
+- 사냥꾼 frontend MEDIUM: `Verdict.PASS/WARN/FAIL` 값과 critic name (`c_legal` 등) 이
+  frontend TypeScript 측에 자동 생성되지 않아 UI 가 문자열 하드코딩 → drift 위험
+- 한국어 라벨 (`VERDICT_LABEL_KO`, `CRITIC_LABEL_KO`) 도 함께 노출 — i18n catalog override 가능
+
+### 호환성
+- additive only — 기존 TS export 보존
+- non-be-3d consumer 는 SOURCE_HASH cascade 효과만 (실 export 없음)
+
+---
+
 ## 0.2.2 — 2026-05-27 critics Pydantic mirrors (frontend HIGH — OpenAPI 노출)
 
 ### 신규
