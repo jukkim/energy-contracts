@@ -1,0 +1,91 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "energy_contracts/rate_limit_policy.json",
+  "title": "Rate-limit Policy SSOT (inbound HTTP)",
+  "description": "slowapi 호환 inbound HTTP rate-limit 정책 9 종 선언적 SSOT. 본 SSOT 위치: myjob/docs/SSOT_GOVERNANCE.md §9.5.",
+  "_usage": "runtime-validate",
+  "_consumers": [
+    "building-energy-3d",
+    "gridbridge"
+  ],
+  "version": "1.0",
+  "updated": "2026-05-27",
+  "type": "object",
+  "required": ["use_cases"],
+  "properties": {
+    "use_cases": {
+      "type": "object",
+      "description": "use-case 라벨 → RateLimitPolicy 매핑",
+      "additionalProperties": {"$ref": "#/$defs/policy"}
+    }
+  },
+  "$defs": {
+    "policy": {
+      "type": "object",
+      "required": ["requests", "period_seconds"],
+      "additionalProperties": false,
+      "properties": {
+        "requests": {
+          "type": "integer",
+          "minimum": 1,
+          "description": "window 안 허용 요청 수"
+        },
+        "period_seconds": {
+          "type": "number",
+          "minimum": 1,
+          "description": "window 길이 (초)"
+        },
+        "description": {
+          "type": "string"
+        }
+      }
+    }
+  },
+  "use_cases": {
+    "auth_login": {
+      "requests": 5,
+      "period_seconds": 60,
+      "description": "login / refresh / register — brute-force 1차 방어 (auth/backoff SSOT 와 lockstep)"
+    },
+    "auth_session": {
+      "requests": 60,
+      "period_seconds": 60,
+      "description": "토큰 검증 사용자의 /me / 세션 조회"
+    },
+    "public_default": {
+      "requests": 120,
+      "period_seconds": 60,
+      "description": "공개 GET API default (be-3d shared limiter default_limits)"
+    },
+    "service_default": {
+      "requests": 60,
+      "period_seconds": 60,
+      "description": "내부 서비스 API default (GB main.py default_limits)"
+    },
+    "write_normal": {
+      "requests": 20,
+      "period_seconds": 60,
+      "description": "POST / PATCH / DELETE 일반 (GB venues / events 등록)"
+    },
+    "control_command": {
+      "requests": 10,
+      "period_seconds": 60,
+      "description": "민감 제어 명령 발행 (GB MQTT 라우터)"
+    },
+    "expensive_compute": {
+      "requests": 3,
+      "period_seconds": 60,
+      "description": "비싼 AI 추론 / 시뮬레이션 (be-3d fire_safety BFS 확산)"
+    },
+    "strict_read": {
+      "requests": 5,
+      "period_seconds": 60,
+      "description": "엄격한 GET — 외부 데이터 조회나 비용 큰 lookup (be-3d fire_safety 단건 조회)"
+    },
+    "webhook_inbound": {
+      "requests": 30,
+      "period_seconds": 60,
+      "description": "외부 webhook 수신 (be-3d kakao webhook 등)"
+    }
+  }
+}
