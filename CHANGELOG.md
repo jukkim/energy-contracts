@@ -4,6 +4,29 @@
 
 ---
 
+## 0.2.2 — 2026-05-27 critics Pydantic mirrors (frontend HIGH — OpenAPI 노출)
+
+### 신규
+- `energy_contracts/critics/_pydantic_models.py` — FastAPI OpenAPI 자동 생성용 Pydantic v2 mirrors
+  - `Violation` (rule + extras allowed)
+  - `CriticResultModel` (critic / verdict Literal / score / violations / notes)
+  - `GateVerdictModel` (decision Literal / results / cache_hit)
+  - `BatchDebateVerdictModel` (judge_decision Literal / realtime_results / carbon_result | None / notes)
+  - `BatchDebateResponse` extends VerdictModel + event_id + n_participating_venues + source Literal | None
+  - `CriticsBlockDetail` (reason / decision / results / remediation_key / remediation)
+- `energy_contracts.critics` 에서 모두 re-export — 컨슈머는 `from energy_contracts.critics import BatchDebateResponse` 한 줄
+
+### 사유
+- 사냥꾼 frontend HIGH 보고: 기존 dataclass (GateVerdict/CriticResult) 만으로는 FastAPI 가 OpenAPI schema 생성 불가 → `/openapi.json` 에 untyped dict
+- GB `debate.py` + be-3d `dr_dispatch.py` 가 `response_model=BatchDebateResponse` 선언 가능, schema cascade
+
+### 호환성
+- 기존 dataclass 보존 — 내부 SSOT 캐리어로 그대로 사용
+- Pydantic 은 FastAPI 응답 / 클라이언트 검증 / OpenAPI 노출만 담당
+- breaking 변경 없음
+
+---
+
 ## 0.2.1 — 2026-05-27 critics 사냥꾼 patch (M2 false-pass 방지 + M3 mandatory SSOT)
 
 ### 변경 (semantic)

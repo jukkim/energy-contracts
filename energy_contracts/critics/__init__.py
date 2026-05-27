@@ -26,8 +26,17 @@ from .gate import (
     GateVerdict,
     summarize_dispatch_for_critics,
 )
+from ._pydantic_models import (
+    BatchDebateResponse,
+    BatchDebateVerdictModel,
+    CriticResultModel,
+    CriticsBlockDetail,
+    GateVerdictModel,
+    Violation,
+)
 
 __all__ = [
+    # 핵심 (dataclass — 도메인 중립 SSOT 캐리어)
     "Critic",
     "CriticResult",
     "Verdict",
@@ -40,4 +49,11 @@ __all__ = [
     "BatchDebateVerdict",
     "summarize_dispatch_for_critics",
     "MANDATORY_SIGNAL_LEVELS",
+    # Pydantic mirrors (FastAPI OpenAPI 노출용)
+    "Violation",
+    "CriticResultModel",
+    "GateVerdictModel",
+    "BatchDebateVerdictModel",
+    "BatchDebateResponse",
+    "CriticsBlockDetail",
 ]
