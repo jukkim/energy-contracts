@@ -69,9 +69,11 @@ def _normalize_vintage(vintage_class: str | None) -> str | None:
 
     canonical: 2010_2017 / pre1980 / 1980_2000 / 2000_2010 / post2017
     be-3d legacy: y2010, pre1980, y2000, y2017, post, ...
+
+    None/빈 문자열 → None (호출자가 "_default" 로 fallback) — be-3d 원본 동작 보존.
     """
     if not vintage_class:
-        return "2010_2017"  # default fallback
+        return None
 
     v = vintage_class.strip()
 

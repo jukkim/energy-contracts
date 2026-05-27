@@ -264,12 +264,14 @@ class TestEmbodiedKey:
         assert embodied_key("unknown", "2010_2017") == "RC_2010_2017"
 
     def test_empty_inputs_default(self):
-        assert embodied_key(None, None) == "RC_2010_2017"
-        assert embodied_key("", "") == "RC_2010_2017"
+        # None/empty vintage → "_default" (be-3d 원본 동작 보존)
+        assert embodied_key(None, None) == "_default"
+        assert embodied_key("", "") == "_default"
 
     def test_none_vintage_with_canonical_structure(self):
-        # vintage None → default 2010_2017
-        assert embodied_key("RC", None) == "RC_2010_2017"
+        # vintage None → _default (be-3d 호환)
+        assert embodied_key("RC", None) == "_default"
+        assert embodied_key("S", "") == "_default"
 
 
 # ── Parity: GB calculator 동작 보존 ───────────────────────────────
