@@ -139,11 +139,26 @@ def test_clear_cache(gate):
 # ─ Batch debate (4 종) ─────────────────────────────────────────
 
 
-def test_batch_debate_clean_event_passes(gate):
-    verdict = gate.evaluate_batch_debate(_clean_event())
+def test_batch_debate_clean_event_passes_with_outcome(gate):
+    """outcome 주입 시 — 4 종 종합 judge_decision."""
+    outcome = {
+        "emission_factor_kgco2_per_kwh": 0.4173,
+        "source_type": "전력",
+        "avoided_kwh": 100.0,
+    }
+    verdict = gate.evaluate_batch_debate(_clean_event(), outcome=outcome)
     assert verdict.judge_decision == "pass"
     assert verdict.carbon_result is not None
     assert verdict.carbon_result.critic_name == "c_carbon"
+
+
+def test_batch_debate_outcome_none_carbon_skipped(gate):
+    """outcome=None 일 때 Carbon Critic skip (M2 false-pass 방지)."""
+    verdict = gate.evaluate_batch_debate(_clean_event())  # outcome 미주입
+    assert verdict.carbon_result is None
+    assert "Carbon skip" in verdict.notes
+    # judge_decision 은 realtime 3 종 만으로 산출
+    assert verdict.judge_decision == "pass"
 
 
 def test_batch_debate_carbon_warn(gate):

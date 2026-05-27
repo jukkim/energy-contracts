@@ -4,6 +4,31 @@
 
 ---
 
+## 0.2.1 — 2026-05-27 critics 사냥꾼 patch (M2 false-pass 방지 + M3 mandatory SSOT)
+
+### 변경 (semantic)
+- `CriticsGate.evaluate_batch_debate()` — outcome=None 시 Carbon Critic skip.
+  사유: dispatch event 만으로는 배출계수 컨텍스트 결핍 → 거의 항상 false-pass.
+  이전 동작: `carbon_result=CriticResult(verdict=PASS)` 항상 포함.
+  신규 동작: `carbon_result=None`, `notes="outcome 미주입 — Carbon skip"`.
+  judge_decision 은 realtime 3 종 만으로 산출.
+  → 사후 batch debate 호출자는 outcome 주입을 적극 권장.
+
+### 신규 export
+- `energy_contracts.critics.MANDATORY_SIGNAL_LEVELS = frozenset({"HIGH", "EMERGENCY"})`
+  사유: GB local `_MANDATORY_SIGNALS` 분리 → SSOT drift 위험 (M3). EC 가 SSOT.
+
+### 호환성
+- `BatchDebateVerdict.carbon_result` 가 `CriticResult | None` 으로 type 완화
+  (이전: 항상 non-None). UI 컨슈머는 None 체크 추가 필요 — Layer 5 mock 카르테는
+  아직 carbon_result 사용 안 함, 영향 없음.
+
+### 회귀
+- EC tests 19 PASS (1 신규 outcome=None skip)
+- GB tests 10 PASS (1 신규 outcome 주입 케이스)
+
+---
+
 ## 0.2.0 — 2026-05-27 critics 패키지 신설 (SSOT_GOVERNANCE §9 도메인 횡단 분리)
 
 ### 신규

@@ -20,6 +20,7 @@ from .c_carbon import CarbonCritic
 from .c_safety import SafetyCritic
 from .c_data import DataCritic
 from .gate import (
+    MANDATORY_SIGNAL_LEVELS,
     BatchDebateVerdict,
     CriticsGate,
     GateVerdict,
@@ -38,4 +39,5 @@ __all__ = [
     "GateVerdict",
     "BatchDebateVerdict",
     "summarize_dispatch_for_critics",
+    "MANDATORY_SIGNAL_LEVELS",
 ]

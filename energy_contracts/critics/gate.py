@@ -31,6 +31,12 @@ from .critic_base import CriticResult, Verdict
 logger = logging.getLogger(__name__)
 
 
+# DR signal_level 중 의무 발령 (Legal Critic 의 mandatory 컨텍스트 보강 대상).
+# SSOT: `dr_event.json` signal_level enum 의 부분집합.
+# 사냥꾼 root-cause M3 (2026-05-27) — GB local `_MANDATORY_SIGNALS` 분리 해소.
+MANDATORY_SIGNAL_LEVELS: frozenset[str] = frozenset({"HIGH", "EMERGENCY"})
+
+
 @dataclass
 class GateVerdict:
     """3 종 Critic 종합 결과."""
@@ -194,27 +200,50 @@ class CriticsGate:
         *,
         outcome: dict[str, Any] | None = None,
     ) -> BatchDebateVerdict:
-        """사후 batch — 4 종 Critic 종합 + judge_decision.
+        """사후 batch — Carbon Critic + 종합 judge_decision.
 
-        outcome 에 실제 avoided_kwh / measured_co2 등이 들어오면 Carbon Critic
-        에 충분한 텍스트 컨텍스트가 만들어진다. 없으면 dispatch event 만으로 평가.
+        outcome 에 실제 avoided_kwh / measured_co2 / emission_factor 가 들어오면
+        Carbon Critic 이 그 텍스트로 배출계수 SSOT 정합 검증을 수행한다.
+
+        outcome=None 인 경우 Carbon Critic 은 **건너뛴다** — dispatch event 만으로는
+        배출계수 컨텍스트가 결핍되어 거의 항상 false-pass 가 나오기 때문 (사냥꾼
+        root-cause M2 보고, 2026-05-27). 이때 judge_decision 은 realtime 3 종
+        결과만으로 산출하고 `carbon_result=None` 으로 반환한다.
         """
         # realtime 3 종 (cache hit 가능)
         rt = self.evaluate_dispatch(event)
 
-        # Carbon Critic — outcome 텍스트화 (배출계수 정합 검증)
+        if outcome is None:
+            # outcome 미주입 — Carbon Critic skip (M2 false-pass 방지)
+            if any(r.verdict == Verdict.FAIL for r in rt.results):
+                judge = "fail"
+            elif any(r.verdict == Verdict.WARN for r in rt.results):
+                judge = "needs_review"
+            else:
+                judge = "pass"
+            return BatchDebateVerdict(
+                judge_decision=judge,
+                realtime_results=rt.results,
+                carbon_result=None,
+                notes=(
+                    "outcome 미주입 — Carbon skip (cache hit)"
+                    if rt.cache_hit
+                    else "outcome 미주입 — Carbon skip"
+                ),
+            )
+
+        # outcome 있음 — Carbon Critic 실행 (배출계수 정합 검증)
         carbon_text = summarize_dispatch_for_critics(event)
-        if outcome:
-            ef = outcome.get("emission_factor_kgco2_per_kwh")
-            src = outcome.get("source_type", "전력")
-            avoided_kwh = outcome.get("avoided_kwh")
-            if ef is not None:
-                carbon_text += f" 적용 배출계수: {src} {float(ef):.4f} kgCO2/kWh."
-            if avoided_kwh is not None:
-                carbon_text += f" 실측 절감량 {float(avoided_kwh):.1f} kWh."
+        ef = outcome.get("emission_factor_kgco2_per_kwh")
+        src = outcome.get("source_type", "전력")
+        avoided_kwh = outcome.get("avoided_kwh")
+        if ef is not None:
+            carbon_text += f" 적용 배출계수: {src} {float(ef):.4f} kgCO2/kWh."
+        if avoided_kwh is not None:
+            carbon_text += f" 실측 절감량 {float(avoided_kwh):.1f} kWh."
         r_carbon = CarbonCritic().review(carbon_text)
 
-        # judge_decision 합의 룰
+        # judge_decision 합의 룰 (4 종 종합)
         all_results = [*rt.results, r_carbon]
         if any(r.verdict == Verdict.FAIL for r in all_results):
             judge = "fail"
