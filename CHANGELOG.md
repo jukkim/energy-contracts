@@ -4,6 +4,35 @@
 
 ---
 
+## 0.2.0 — 2026-05-27 critics 패키지 신설 (SSOT_GOVERNANCE §9 도메인 횡단 분리)
+
+### 신규
+- `energy_contracts/critics/` — 4 종 Critic + CriticsGate 조합자 (도메인 중립 SSOT)
+  - `critic_base.py` — Critic ABC + CriticResult + Verdict (PASS/WARN/FAIL)
+  - `c_legal.py`    — 법령 인용 정확성 (`rules/legal-citation.md`)
+  - `c_carbon.py`   — 배출계수 SSOT 정합 (`CARBON_EMISSION_FACTORS.yaml`)
+  - `c_safety.py`   — HVAC/PMV/ESS/조명 interlock
+  - `c_data.py`     — NDA 출처 fingerprint (`rules/private-data-disclosure.md`, zero-tolerance)
+  - `gate.py`       — CriticsGate (실시간 3 종 + 사후 batch debate 4 종) + summarize_dispatch_for_critics
+- `tests/test_critics.py` — 5 test (clean 90% 통과 + violation 80% 검출 + zero-tolerance + serialize)
+- `tests/test_critics_gate.py` — 13 test (summary builder + realtime gate + cache + batch debate)
+- `__version__` 0.1.0 → 0.2.0, `pyproject.toml` 동일
+
+### 이동 (be-3d → EC)
+- `building-energy-3d/src/critics/` → `energy_contracts/critics/` (5 파일)
+- `building-energy-3d/src/agents/dr/critics_gate.py` → `energy_contracts/critics/gate.py`
+- `building-energy-3d/tests/test_critics.py` → `tests/test_critics.py`
+- `building-energy-3d/tests/unit/dr/test_critics_gate.py` → `tests/test_critics_gate.py`
+
+### SSOT 거버넌스
+- `myjob/docs/SSOT_GOVERNANCE.md` §9 신규 — 도메인 횡단 로직 분리 원칙 (3 계층 책임 분리 + Q1~Q4 진입 판정 + DR Critics 사례)
+- 영향 repo (lockstep release): be-3d (import 마이그), gridbridge (신규 realtime owner wire-up)
+
+### 회귀
+- EC critics tests 18/18 PASS
+
+---
+
 ## (unversioned) — 2026-05-25 security_policy.json v1.1 (CSP 강화, P6 SSOT cascade)
 
 ### 변경

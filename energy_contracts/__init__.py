@@ -10,7 +10,7 @@ import json
 from importlib import resources
 from pathlib import Path
 
-__version__ = "0.1.0"
+__version__ = "0.2.0"
 
 # 패키지 내부 schemas 디렉토리 위치 — wheel 설치 후에도 작동.
 SCHEMAS_DIR: Path = Path(__file__).parent / "schemas"

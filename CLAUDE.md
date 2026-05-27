@@ -8,7 +8,26 @@
 VWorld(L1), GridBridge(L2), EdgeAgent(L3) 3개 프로젝트 간 **인터페이스 계약서**.
 각 프로젝트는 이 스펙을 참조하여 독립 개발하되, 호환성을 보장한다.
 
-**이 프로젝트는 코드가 아닌 스펙 문서이다. 구현은 각 프로젝트에서 한다.**
+**이 프로젝트는 스펙 + 도메인 중립 SSOT 코드를 둔다. 도메인별 결정·실행은 각 프로젝트에서 한다.**
+
+## 이 패키지에 무엇이 와야 하는가 (3 카테고리)
+
+본 패키지는 다음 3 카테고리 중 하나에 해당하는 자산만 받는다. 의문 시 `myjob/docs/SSOT_GOVERNANCE.md` §9.2 의 Q1~Q4 진입 판정을 적용:
+
+| 카테고리 | 위치 | 예 |
+|---------|------|------|
+| **스키마** | `energy_contracts/schemas/*.json` | 50+ JSON Schema (DR 이벤트, 텔레메트리, 배출계수, 건물 archetypes 등) |
+| **상수 / 모델** | `energy_contracts/_pydantic_models/*.py`, `_utils/*.py` | 자동 생성 Pydantic, `redact_pnu` |
+| **도메인 중립 룰 / 검증 / 조합자** | `energy_contracts/critics/*.py`, `_utils/*.py` | 4 종 Critic + CriticsGate (2026-05-27 신규) |
+
+### 진입 거절 사례
+
+| 안티 패턴 | 거절 이유 |
+|----------|----------|
+| `dr_critics_gate.py` (도메인 이름 박힘) | 다른 도메인 재사용 불가 → `critics/gate.py` 로 |
+| `dispatch_engine.py` (실시간 결정 로직) | GB 가 실시간 owner — 도메인 폴더에 |
+| `building_energy_eui_calculator.py` (외부 DB 의존) | 외부 시스템 호출 — 인프라 분리 → 도메인 폴더에 |
+| `carte_renderer.py` (UI 렌더링) | C 계층 — be-3d / frontend repo 에 |
 
 ## 통신 경로 (4개)
 
@@ -143,6 +162,7 @@ all_schemas = list_schemas()                   # ['agent_contracts', ...]
 | v2.0.5 | 2026-05-24 | **`korea_buildings` 정정** — 627만 → **729만** (VWorld footprint DB 실측 7,293,517). 전국 건물 카운트 SSOT 갱신. commit `0e91f67`. ~~외부 의존 note 추가 — agents Phase DI W12 진입 시 conflict_policy.json + negotiation_decision.json 신설 예정~~ → **v2.0.6 에서 정정**. |
 | v2.0.6 | 2026-05-25 | **외부 의존 note 정정 (arch A11)** — agents `PHASE_DI_PLAN.md §4.5` 3-tier SSOT 결정에 따라 `conflict_policy` + `negotiation_decision` 은 agents local Tier 2 로 확정 (wheel 진입 X). agents commit `45a99e8` 에서 `policies/conflict_policy.yaml` local SSOT 신설 완료. 본 repo Tier 1 wheel 신규 후보는 별개로 **`drift_report`, `retrain_request`, `auto_retrain_policy`** 3건 (agents Phase DI 진행 시 trigger). |
 | v2.0.7 | 2026-05-26 | **arch A5 3-tier 분류 확정 — `auto_retrain_policy` Tier 2 재분류** — agents `src/ingestion/_schemas/__init__.py` 가 명시한 분류에 따라 `auto_retrain_policy` 는 wheel 후보에서 제외, agents local Tier 2 로 확정 (`negotiation_decision`, `post_validation_result` 와 동일 계층). 본 repo Tier 1 wheel 후보는 **`drift_report`, `retrain_request`** 2건으로 축소. retrain_jobs queue 자체는 agents DB schema 009 + smartbuilding W7-ext (`545755a`) polling consumer 로 처리, wheel 불요. 보조 노트: agents/be-3d wheel pin `c660812` (2026-05-20) 이후 본 repo 12 commit 진행 (`83dc459`/`b0faa13` ai_model_registry v1.1, `316d857` security_policy v1.1, `0de924f`/`a71ebba` rq_ai_intent, `29421fd`/`efb676f`/`9fa7f88` KI-031, `0e91f67` korea_buildings 정정 등) — pin bump 는 consumer 측 trigger 대기. |
+| **0.2.0** | **2026-05-27** | **critics 패키지 신설 (SSOT_GOVERNANCE §9 도메인 횡단 분리)** — `energy_contracts/critics/` 신규 (4 Critic + CriticsGate 조합자). be-3d `src/critics/` + `src/agents/dr/critics_gate.py` 이동. lockstep: be-3d import 마이그 + GB realtime owner wire-up (`POST /api/v1/dr/debate/{event_id}` 신설, be-3d 와 동일 path). 18 신규 EC tests + 9 신규 GB tests PASS, be-3d/GB 회귀 0. |
 
 ## 참조하는 프로젝트
 
