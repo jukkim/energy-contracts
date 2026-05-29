@@ -114,6 +114,12 @@
                 "scripts/lint_ems_code_drift.py (lint 도구 자체)",
                 "scripts/add_ems_code.py",
                 "scripts/verify_ems_code_consistency.py",
+                "scripts/verify_no_e_codes.py",
+                "scripts/migrate_metadata_e_to_m.py",
+                "scripts/promote_model.py",
+                "tests/fixtures/debate_hallucinations.jsonl (의도된 fuzz hallucination corpus)",
+                "tests/test_e_to_m_drift_lint.py",
+                "tests/test_debate_fuzz.py",
                 "schemas/legacy_ems_code_mapping.json (본 SSOT)",
                 "data/unified/metadata_unified.jsonl.bak_",
                 "archive/"
@@ -130,6 +136,11 @@
                 "scripts/lint_ems_code_drift.py",
                 "scripts/add_ems_code.py",
                 "scripts/verify_ems_code_consistency.py",
+                "scripts/verify_no_e_codes.py",
+                "scripts/promote_model.py",
+                "tests/fixtures/debate_hallucinations.jsonl",
+                "tests/test_e_to_m_drift_lint.py",
+                "tests/test_debate_fuzz.py",
                 "schemas/legacy_ems_code_mapping.json",
                 "archive/"
               ]
@@ -143,6 +154,11 @@
                 "scripts/lint_ems_code_drift.py",
                 "scripts/add_ems_code.py (auto-add 스크립트 자체)",
                 "scripts/verify_ems_code_consistency.py",
+                "scripts/verify_no_e_codes.py",
+                "tests/fixtures/debate_hallucinations.jsonl",
+                "tests/test_e_to_m_drift_lint.py",
+                "tests/test_debate_fuzz.py",
+                "tests/contract/test_f14_contract.py",
                 "schemas/ems_strategies.json (auto-add 가 갱신할 SSOT)",
                 "schemas/legacy_ems_code_mapping.json"
               ]
