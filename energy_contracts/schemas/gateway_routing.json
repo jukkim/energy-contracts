@@ -1,0 +1,287 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "energy-contracts/gateway_routing.json",
+  "title": "GatewayRoutingSSOT",
+  "description": "ems_transformer 통합 게이트웨이 (:8030) 의 단일 라우팅 SSOT. F1~F14 기능 catalog + Q1~Q17 QA 유형 + tool_registry (Qwen tool-calling) 통합. 워크스페이스 정본 UNIFIED_GATEWAY_DESIGN.md v1.2 의 머신리더블 버전. 변경 시 양쪽 동시 갱신 필수.",
+  "_usage": "reference-only",
+  "_consumers": [
+    "ems_transformer",
+    "building-energy-3d",
+    "agentleague",
+    "agents",
+    "smartbuilding",
+    "eduarena"
+  ],
+  "version": "1.0.0",
+  "updated": "2026-05-29",
+  "$comment": "Phase 0.2 산출물 (ADR-001 F14 namespace 결정 직후). NEG-2026-05-29-002-final + 6-agent hunter round 통합 결과. ems_transformer가 모든 AI 모델의 단일 진입점이라는 위상 (사용자 2026-05-29 09:37 명시) 을 contract 로 고정. 신규 F# 신설 시 본 파일 + UNIFIED_GATEWAY_DESIGN.md v1.x 동시 갱신 의무.",
+  "type": "object",
+  "required": ["gateway", "functions", "qa_types", "tools", "constants"],
+  "additionalProperties": false,
+  "properties": {
+    "gateway": {
+      "type": "object",
+      "required": ["id", "host_port", "base_url_env", "secret_envs", "mode_credentials"],
+      "properties": {
+        "id": {"const": "ems_transformer"},
+        "host_port": {"const": 8030},
+        "base_url_env": {"const": "EMS_GATEWAY_URL"},
+        "external_hostname": {"const": "ems-api.building-energy.xyz"},
+        "secret_envs": {
+          "type": "array",
+          "items": {"enum": ["GATEWAY_BACKEND_SECRET", "LLM_GATEWAY_SECRET", "ANTHROPIC_API_KEY"]}
+        },
+        "mode_credentials": {
+          "type": "object",
+          "description": "DEMO/TEST/PROD 3-mode 적용 — mode-credentials.md 정합. PROD 에서는 /v1/config 가 mode 노출 금지.",
+          "properties": {
+            "run_mode_env": {"const": "EMS_TRANSFORMER_RUN_MODE"},
+            "default_mode": {"const": "demo"},
+            "modes": {
+              "type": "array",
+              "items": {"enum": ["demo", "test", "prod", "dev"]}
+            }
+          }
+        }
+      }
+    },
+    "functions": {
+      "type": "array",
+      "description": "F1~F14 기능 catalog. 신설 시 UNIFIED_GATEWAY_DESIGN.md v1.x §3 표 + 본 array 동시 갱신.",
+      "items": {"$ref": "#/$defs/FunctionEntry"}
+    },
+    "qa_types": {
+      "type": "array",
+      "description": "Q1~Q17 QA 유형 (F2 = /v1/qa/{qa_type}). debate 이후 Q18~Qn 확장 layer 는 별 namespace.",
+      "items": {"$ref": "#/$defs/QaTypeEntry"}
+    },
+    "tools": {
+      "type": "array",
+      "description": "Qwen tool-calling TOOLS list. serving/tool_registry.py 와 정합. 각 tool 은 단일 backend endpoint 호출.",
+      "items": {"$ref": "#/$defs/ToolEntry"}
+    },
+    "constants": {
+      "type": "object",
+      "properties": {
+        "max_tool_rounds": {"const": 3, "$comment": "Qwen tool-calling 라운드 상한 (app.py:102). Phase 5 에서 동적 budget 으로 전환 예정."},
+        "default_timeout_s": {"const": 60.0, "$comment": "5 backend 기본 timeout. Phase 1.5 backend timeout SSOT 신설 시 per-backend override."}
+      }
+    }
+  },
+  "$defs": {
+    "FunctionEntry": {
+      "type": "object",
+      "required": ["id", "name", "status", "backend", "external_facing"],
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "type": "string",
+          "pattern": "^F\\d+[a-z]?$",
+          "description": "F1~F14 또는 sub-id (예: F5b, F10a, F11a)"
+        },
+        "name": {"type": "string"},
+        "method": {"enum": ["GET", "POST"]},
+        "path": {
+          "type": "string",
+          "pattern": "^/v1/[a-z][a-z0-9/_\\-\\{\\}]*$"
+        },
+        "paths": {
+          "type": "array",
+          "description": "다중 endpoint (예: F14 의 sync/async/polling/batch 4 endpoint)",
+          "items": {
+            "type": "object",
+            "required": ["method", "path", "purpose"],
+            "properties": {
+              "method": {"enum": ["GET", "POST"]},
+              "path": {"type": "string"},
+              "purpose": {"type": "string"}
+            }
+          }
+        },
+        "backend": {
+          "type": "object",
+          "required": ["kind"],
+          "properties": {
+            "kind": {"enum": ["in_process", "http_microservice", "proxy", "external_api"]},
+            "host_port": {"type": "integer"},
+            "url_env": {"type": "string"},
+            "upstream_path": {"type": "string"},
+            "model_id_ref": {
+              "type": "string",
+              "description": "_models/registry.yaml#<key> 참조"
+            }
+          }
+        },
+        "status": {
+          "enum": ["operational", "training_pending", "spec_only", "deprecated"],
+          "description": "operational = 운영 중 / training_pending = 모델 학습 대기 / spec_only = 설계만 (Phase 4 이후 구현) / deprecated"
+        },
+        "external_facing": {
+          "type": "boolean",
+          "description": "true = 외부 UI/agent 호출 / false = 내부 격리 (F12 internal agent proxy 같은)"
+        },
+        "tool_registry_name": {
+          "type": "string",
+          "description": "Qwen tool-calling 에서 호출되는 tool name (해당하는 경우)"
+        },
+        "latency_budget_p99_s": {
+          "type": "number",
+          "description": "p99 latency 게이트 (s). 미정 시 omit."
+        },
+        "requires_persona_role": {
+          "type": "array",
+          "items": {"enum": ["household", "building_owner", "facility_manager", "govt", "admin"]},
+          "description": "X-Persona-Role 헤더 강제 (해당 endpoint 가 특정 persona 만 허용)"
+        },
+        "requires_dual_signoff": {
+          "type": "boolean",
+          "description": "AI 챔피언 plan §8.5.3 govt persona dual sign-off"
+        },
+        "tier": {
+          "enum": ["fast", "slow"],
+          "description": "F14 같은 2-tier 라우팅에서 sub-classification"
+        },
+        "ssot_refs": {
+          "type": "array",
+          "items": {"type": "string"}
+        }
+      }
+    },
+    "QaTypeEntry": {
+      "type": "object",
+      "required": ["id", "qa_type", "category", "requires_fields"],
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "type": "string",
+          "pattern": "^Q\\d+$",
+          "description": "Q1~Q17 (현행) / Q18~Qn (debate 이후 확장)"
+        },
+        "qa_type": {"type": "string"},
+        "category": {"type": "string"},
+        "namespace": {
+          "enum": ["current", "legacy", "future_debate"],
+          "default": "current",
+          "description": "current = Q1~Q17 / legacy = src/api/main.py Q1~Q7 / future_debate = Q18~Qn"
+        },
+        "requires_fields": {
+          "type": "array",
+          "items": {"enum": ["building", "city", "hvac", "ems", "ems_compare_to", "base_ems", "cooling_setpoint", "heating_setpoint", "area_m2"]}
+        }
+      }
+    },
+    "ToolEntry": {
+      "type": "object",
+      "required": ["name", "backend_id", "function_id_ref"],
+      "additionalProperties": false,
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "Qwen tool name (TOOLS[].function.name)"
+        },
+        "backend_id": {
+          "enum": ["reverse", "korean_bb", "building_ai", "ecmhs", "energyplus", "kbep"]
+        },
+        "function_id_ref": {
+          "type": "string",
+          "pattern": "^F\\d+[a-z]?$",
+          "description": "본 tool 이 호출 chain 상 어느 F# 기능에 속하는지"
+        },
+        "upstream_url_env": {"type": "string"}
+      }
+    }
+  },
+  "default": {
+    "gateway": {
+      "id": "ems_transformer",
+      "host_port": 8030,
+      "base_url_env": "EMS_GATEWAY_URL",
+      "external_hostname": "ems-api.building-energy.xyz",
+      "secret_envs": ["GATEWAY_BACKEND_SECRET", "LLM_GATEWAY_SECRET", "ANTHROPIC_API_KEY"],
+      "mode_credentials": {
+        "run_mode_env": "EMS_TRANSFORMER_RUN_MODE",
+        "default_mode": "demo",
+        "modes": ["demo", "test", "prod", "dev"]
+      }
+    },
+    "functions": [
+      {"id": "F1", "name": "Qwen tool-calling chat", "method": "POST", "path": "/v1/chat", "backend": {"kind": "in_process", "model_id_ref": "qwen_v25"}, "status": "operational", "external_facing": true, "ssot_refs": ["UNIFIED_GATEWAY_DESIGN.md v1.2 §3"]},
+      {"id": "F2", "name": "Qwen QA structured (Q1~Q17)", "method": "POST", "path": "/v1/qa/{qa_type}", "backend": {"kind": "in_process", "model_id_ref": "qwen_v25"}, "status": "operational", "external_facing": true},
+      {"id": "F3", "name": "Qwen QA catalog", "method": "GET", "path": "/v1/qa/types", "backend": {"kind": "in_process"}, "status": "operational", "external_facing": true},
+      {"id": "F4", "name": "Korean_BB 168h→24h forecast", "method": "POST", "path": "/v1/forecast/24h", "backend": {"kind": "http_microservice", "host_port": 8040, "url_env": "KOREAN_BB_URL", "upstream_path": "/predict", "model_id_ref": "korean_bb_twgauss_m"}, "status": "operational", "external_facing": true, "tool_registry_name": "korean_bb_forecast"},
+      {"id": "F5", "name": "reverse full diagnosis", "method": "POST", "path": "/v1/ems/diagnose", "backend": {"kind": "http_microservice", "host_port": 8060, "url_env": "REVERSE_URL", "upstream_path": "/v1/full-diagnosis", "model_id_ref": "reverse_module_a"}, "status": "operational", "external_facing": true, "tool_registry_name": "reverse_full_diagnosis"},
+      {"id": "F5b", "name": "reverse Module A transformer backend", "backend": {"kind": "http_microservice", "host_port": 8060, "url_env": "REVERSE_URL"}, "status": "operational", "external_facing": true},
+      {"id": "F6", "name": "reverse short diagnosis (168h)", "method": "POST", "path": "/v1/ems/diagnose/short", "backend": {"kind": "http_microservice", "host_port": 8060, "url_env": "REVERSE_URL", "upstream_path": "/v1/short-diagnosis"}, "status": "operational", "external_facing": true, "tool_registry_name": "reverse_short_diagnosis"},
+      {"id": "F7", "name": "reverse Module B lookup 838", "method": "POST", "path": "/v1/ems/recommend", "backend": {"kind": "http_microservice", "host_port": 8060, "url_env": "REVERSE_URL", "upstream_path": "/v1/coldstart"}, "status": "operational", "external_facing": true, "tool_registry_name": "reverse_coldstart"},
+      {"id": "F8", "name": "reverse identify", "method": "POST", "path": "/v1/ems/identify", "backend": {"kind": "http_microservice", "host_port": 8060, "url_env": "REVERSE_URL", "upstream_path": "/v1/identify"}, "status": "operational", "external_facing": true, "tool_registry_name": "reverse_identify"},
+      {"id": "F9", "name": "KBEP forecast (MVP)", "backend": {"kind": "http_microservice", "host_port": 8020, "url_env": "KBEP_URL", "model_id_ref": "kbep_mvp_phase0"}, "status": "training_pending", "external_facing": true},
+      {"id": "F10a", "name": "building_ai energy daily (LightGBM)", "method": "POST", "path": "/v1/ai/energy-daily", "backend": {"kind": "http_microservice", "host_port": 8005, "url_env": "BUILDING_AI_URL"}, "status": "operational", "external_facing": true, "tool_registry_name": "building_ai_energy_daily"},
+      {"id": "F10b", "name": "building_ai anomaly (XGB+IF)", "method": "POST", "path": "/v1/ai/anomaly", "backend": {"kind": "http_microservice", "host_port": 8005, "url_env": "BUILDING_AI_URL"}, "status": "operational", "external_facing": true, "tool_registry_name": "building_ai_anomaly"},
+      {"id": "F10c", "name": "building_ai EMS optimize (GB)", "method": "POST", "path": "/v1/ai/ems-optimize", "backend": {"kind": "http_microservice", "host_port": 8005, "url_env": "BUILDING_AI_URL"}, "status": "operational", "external_facing": true, "tool_registry_name": "building_ai_ems_optimize"},
+      {"id": "F10d", "name": "building_ai load predict 24h (XGB v4)", "method": "POST", "path": "/v1/ai/load-predict", "backend": {"kind": "http_microservice", "host_port": 8005, "url_env": "BUILDING_AI_URL"}, "status": "operational", "external_facing": true, "tool_registry_name": "building_ai_load_predict"},
+      {"id": "F10e", "name": "building_ai occupancy (LightGBM)", "method": "POST", "path": "/v1/ai/occupancy", "backend": {"kind": "http_microservice", "host_port": 8005, "url_env": "BUILDING_AI_URL"}, "status": "operational", "external_facing": true, "tool_registry_name": "building_ai_occupancy"},
+      {"id": "F10f", "name": "building_ai equipment RUL (RF)", "method": "POST", "path": "/v1/ai/equipment-rul", "backend": {"kind": "http_microservice", "host_port": 8005, "url_env": "BUILDING_AI_URL"}, "status": "operational", "external_facing": true, "tool_registry_name": "building_ai_equipment_rul"},
+      {"id": "F11a", "name": "ECMHS MPC predict", "method": "POST", "path": "/v1/mpc/predict", "backend": {"kind": "http_microservice", "host_port": 8050, "url_env": "ECMHS_URL", "upstream_path": "/predict", "model_id_ref": "ecmhs_patchtst"}, "status": "training_pending", "external_facing": true, "tool_registry_name": "mpc_predict"},
+      {"id": "F11b", "name": "ECMHS MPC optimize", "method": "POST", "path": "/v1/mpc/optimize", "backend": {"kind": "http_microservice", "host_port": 8050, "url_env": "ECMHS_URL"}, "status": "training_pending", "external_facing": true, "tool_registry_name": "mpc_optimize"},
+      {"id": "F11c", "name": "ECMHS MPC compare strategies", "method": "POST", "path": "/v1/mpc/compare", "backend": {"kind": "http_microservice", "host_port": 8050, "url_env": "ECMHS_URL"}, "status": "training_pending", "external_facing": true, "tool_registry_name": "mpc_compare_strategies"},
+      {"id": "F12", "name": "Internal agent proxy (be-3d /api/internal/agents/*)", "backend": {"kind": "proxy", "host_port": 8000, "url_env": "BE3D_URL"}, "paths": [
+        {"method": "GET", "path": "/v1/building/profile", "purpose": "a01_diagnosis BuildingContext"},
+        {"method": "GET", "path": "/v1/building/forecast", "purpose": "a02_forecast"},
+        {"method": "GET", "path": "/v1/building/setback-pattern", "purpose": "a03_optimizer"},
+        {"method": "GET", "path": "/v1/building/fire-risk", "purpose": "a05_safety"},
+        {"method": "GET", "path": "/v1/building/benchmark", "purpose": "a07_benchmark"},
+        {"method": "GET", "path": "/v1/building/dr-enrollment", "purpose": "a11+a14"},
+        {"method": "GET", "path": "/v1/building/anomaly", "purpose": "a12_anomaly"},
+        {"method": "GET", "path": "/v1/building/maintenance-facts", "purpose": "a13_predictive_maintenance"},
+        {"method": "GET", "path": "/v1/building/alert-signals", "purpose": "a16_messenger"}
+      ], "status": "operational", "external_facing": false, "ssot_refs": ["UNIFIED_GATEWAY_DESIGN.md v1.2 §3 F12 / §4 routing", "ADR-001"]},
+      {"id": "F13", "name": "Claude LLM complete (anthropic SDK + Redis cache)", "method": "POST", "path": "/v1/llm/complete", "backend": {"kind": "external_api"}, "status": "operational", "external_facing": false, "latency_budget_p99_s": 30, "ssot_refs": ["UNIFIED_GATEWAY_DESIGN.md v1.2 §3 F13"]},
+      {"id": "F14", "name": "Policy Evaluation (AI 챔피언 plan §6.5 Gateway 측)", "backend": {"kind": "in_process"}, "paths": [
+        {"method": "POST", "path": "/v1/policy-evaluate", "purpose": "fast path — policy-aware surrogate ensemble (KBEP policy-aware + building_ai #4 EMS optimizer + Korean_BB residual forecast component). Korean_BB is forecast-only, requires adapter for counterfactual. p99 ≤ 30s"},
+        {"method": "POST", "path": "/v1/policy-evaluate/async", "purpose": "slow path — EnergyPlus primary, 202 Accepted + evaluation_id"},
+        {"method": "GET", "path": "/v1/policy-evaluate/{evaluation_id}", "purpose": "slow path 결과 polling"},
+        {"method": "POST", "path": "/v1/policy-evaluate/batch", "purpose": "debate / 자치단체 sweep batch (N ≤ 100)"}
+      ], "status": "spec_only", "external_facing": true, "requires_persona_role": ["household", "building_owner", "facility_manager", "govt", "admin"], "requires_dual_signoff": true, "tier": "slow", "ssot_refs": ["ADR-001-f14-policy-evaluation-namespace.md", "AI 챔피언 plan v1.9.2 §6.5 G-PE1~G-PE3", "UNIFIED_GATEWAY_DESIGN.md v1.2 §3 F14"]}
+    ],
+    "qa_types": [
+      {"id": "Q1", "qa_type": "comfort", "category": "쾌적도(PMV) + 온습도 변동", "requires_fields": ["city", "building"]},
+      {"id": "Q2", "qa_type": "cost_prediction", "category": "연간 비용 + EUI", "requires_fields": ["city", "building", "hvac"]},
+      {"id": "Q3", "qa_type": "comparison", "category": "EMS 전략 직접 비교", "requires_fields": ["city", "building", "ems", "ems_compare_to"]},
+      {"id": "Q4", "qa_type": "savings", "category": "절감률 + 비용 회수기간", "requires_fields": ["city", "building", "ems"]},
+      {"id": "Q5", "qa_type": "diagnosis", "category": "운영 이상 진단", "requires_fields": ["city", "building"]},
+      {"id": "Q6", "qa_type": "peak_management", "category": "피크 시간대 관리", "requires_fields": ["city", "building"]},
+      {"id": "Q7", "qa_type": "system_analysis", "category": "HVAC 운영 분석", "requires_fields": ["city", "building", "hvac"]},
+      {"id": "Q8", "qa_type": "end_use_breakdown", "category": "용도별 에너지 분해", "requires_fields": ["city", "building"]},
+      {"id": "Q9", "qa_type": "timeseries_next_day", "category": "익일 24h 시간대별 부하", "requires_fields": ["city", "building"]},
+      {"id": "Q10", "qa_type": "timeseries_peak_hour", "category": "피크 발생 시간 + 크기", "requires_fields": ["city", "building"]},
+      {"id": "Q11", "qa_type": "timeseries_168h_24h", "category": "1주 패턴 기반 익일 24h", "requires_fields": ["city", "building"]},
+      {"id": "Q12", "qa_type": "ems_compatibility", "category": "HVAC×EMS 호환성", "requires_fields": ["hvac", "ems"]},
+      {"id": "Q13", "qa_type": "ems_compare", "category": "EMS 직접 비교", "requires_fields": ["city", "building", "ems", "ems_compare_to"]},
+      {"id": "Q14", "qa_type": "ems_recommend", "category": "EMS 추천 순위", "requires_fields": ["city", "building", "hvac"]},
+      {"id": "Q15", "qa_type": "ems_incremental", "category": "증분 기여도", "requires_fields": ["city", "building", "ems", "base_ems"]},
+      {"id": "Q16", "qa_type": "ems_synergy", "category": "시너지 분석", "requires_fields": ["city", "building", "ems", "ems_compare_to"]},
+      {"id": "Q17", "qa_type": "ems_savings_measured", "category": "실측 절감률 보고", "requires_fields": ["city", "building", "ems"]}
+    ],
+    "tools": [
+      {"name": "reverse_full_diagnosis", "backend_id": "reverse", "function_id_ref": "F5", "upstream_url_env": "REVERSE_URL"},
+      {"name": "reverse_short_diagnosis", "backend_id": "reverse", "function_id_ref": "F6", "upstream_url_env": "REVERSE_URL"},
+      {"name": "reverse_forecast", "backend_id": "reverse", "function_id_ref": "F5", "upstream_url_env": "REVERSE_URL"},
+      {"name": "reverse_coldstart", "backend_id": "reverse", "function_id_ref": "F7", "upstream_url_env": "REVERSE_URL"},
+      {"name": "reverse_identify", "backend_id": "reverse", "function_id_ref": "F8", "upstream_url_env": "REVERSE_URL"},
+      {"name": "korean_bb_forecast", "backend_id": "korean_bb", "function_id_ref": "F4", "upstream_url_env": "KOREAN_BB_URL"},
+      {"name": "building_ai_occupancy", "backend_id": "building_ai", "function_id_ref": "F10e", "upstream_url_env": "BUILDING_AI_URL"},
+      {"name": "building_ai_anomaly", "backend_id": "building_ai", "function_id_ref": "F10b", "upstream_url_env": "BUILDING_AI_URL"},
+      {"name": "building_ai_ems_optimize", "backend_id": "building_ai", "function_id_ref": "F10c", "upstream_url_env": "BUILDING_AI_URL"},
+      {"name": "building_ai_load_predict", "backend_id": "building_ai", "function_id_ref": "F10d", "upstream_url_env": "BUILDING_AI_URL"},
+      {"name": "building_ai_equipment_rul", "backend_id": "building_ai", "function_id_ref": "F10f", "upstream_url_env": "BUILDING_AI_URL"},
+      {"name": "building_ai_energy_daily", "backend_id": "building_ai", "function_id_ref": "F10a", "upstream_url_env": "BUILDING_AI_URL"},
+      {"name": "mpc_predict", "backend_id": "ecmhs", "function_id_ref": "F11a", "upstream_url_env": "ECMHS_URL"},
+      {"name": "mpc_optimize", "backend_id": "ecmhs", "function_id_ref": "F11b", "upstream_url_env": "ECMHS_URL"},
+      {"name": "mpc_compare_strategies", "backend_id": "ecmhs", "function_id_ref": "F11c", "upstream_url_env": "ECMHS_URL"}
+    ],
+    "constants": {
+      "max_tool_rounds": 3,
+      "default_timeout_s": 60.0
+    }
+  }
+}
