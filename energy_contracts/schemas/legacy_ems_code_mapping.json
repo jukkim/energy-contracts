@@ -50,7 +50,7 @@
         "E2":  {"maps_to": "M01", "actual_implementation": "ScheduleOpt (OptimalStart + EarlyStop)", "drift_note": ""},
         "E3":  {"maps_to": "M02", "actual_implementation": "Economizer", "drift_note": ""},
         "E4":  {"maps_to": "M03", "actual_implementation": "Staging", "drift_note": ""},
-        "E5":  {"maps_to": null,  "actual_implementation": "DemandLimiting (전력 피크 제한)", "drift_note": "함수명 apply_e5 는 DCV 의도였으나 실제 구현은 DemandLimiting. metadata 0 건. 정정 후 M10 로 매핑 권장. **신규 사용 금지**"},
+        "E5":  {"maps_to": "M10", "actual_implementation": "DemandLimiting (전력 피크 제한)", "drift_note": "함수명 apply_e5 는 DCV 의도였으나 실제 구현은 DemandLimiting. metadata 5,999 row 확인 (2026-05-29 migrate dry-run). 실 의미 기준 M10 (DemandResponse) 매핑. NAMING_UNIFICATION §1.2 의 E5=DCV=M07 표현은 'intent' 매핑 (별 컨텍스트). **신규 사용 금지**"},
         "E6":  {"maps_to": "M04", "actual_implementation": "PMV 0.5 (apply_pmv 위임)", "drift_note": "함수명 apply_e6 는 HeatRecovery 의도였으나 실제 구현은 PMV 0.5. 2026-05-03 리매핑 완료 (23,228 건 → E7)"},
         "E7":  {"maps_to": "M04", "actual_implementation": "PMV 0.5", "drift_note": "GCS 와 Local 둘 다 PMV 0.5. ems_simulation 의 m4 도 동일"},
         "E8":  {"maps_to": "M11", "actual_implementation": "Eco+Staging (E3+E4)", "drift_note": "함수명 apply_e8 는 NightCycle+Eco 의도였으나 실제 구현은 Eco+Staging. 2026-05-03 리매핑 완료 (67,174 건 → E10)"},
