@@ -1,0 +1,252 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "energy-contracts/hvac_ems_matrix.json",
+  "title": "HvacEmsCompatibilityMatrix",
+  "description": "HVAC type × EMS strategy 호환성 매트릭스 SSOT. F14 Policy Evaluation 의 G-PE1 validation 단계에서 infeasible 조합 차단에 사용. KOREAN_HVAC.md §13 + EMS_STRATEGY.md §21 EXPECTED_SKIP + SPEC_HVAC_SYSTEMS.md §3 통합.",
+  "_usage": "runtime-validate",
+  "_consumers": [
+    "ems_transformer",
+    "reverse",
+    "mpc_model",
+    "sim_campaign_2026"
+  ],
+  "version": "1.0.0",
+  "updated": "2026-05-29",
+  "$comment": "Phase 1.3 산출. SPEC_POLICY_VECTOR.md §2.2 가 본 매트릭스를 import. cell 값 의미: compatible (정상 적용) / marginal (적용 가능 but 절감 < 5%, warn) / infeasible (G-PE1 422 STRATEGY_INFEASIBLE_FOR_HVAC) / expected_skip (EMS_STRATEGY §21, infeasible 의 subset).",
+  "type": "object",
+  "required": ["hvac_types", "ems_strategies", "matrix"],
+  "additionalProperties": false,
+  "properties": {
+    "hvac_types": {
+      "type": "object",
+      "description": "ASHRAE 901 STD2019 5 종 (A~E) + 한국화 4 종 (HD~HG)",
+      "additionalProperties": false,
+      "properties": {
+        "A": {"const": "Central chilled water + boiler (chiller multi-stage)"},
+        "B": {"const": "Packaged DX (split / rooftop, 1~2 stage)"},
+        "C": {"const": "Single zone DX (residential / small commercial)"},
+        "D": {"const": "VRF (inverter-driven multi-zone)"},
+        "E": {"const": "Hydronic radiant + DOAS"},
+        "HD": {"const": "Korean — VRF + 온돌 (residential 한국화)"},
+        "HE": {"const": "Korean — 온돌 + gas boiler + PTAC (mid-rise residential)"},
+        "HF": {"const": "Korean — Hybrid (central + 온돌)"},
+        "HG": {"const": "Korean — gas-fired boiler + radiator (older retrofit)"}
+      }
+    },
+    "ems_strategies": {
+      "type": "object",
+      "description": "M00~M15 EMS 전략 (ems_strategies.json#StrategyCode SSOT 참조)",
+      "$ref": "ems_strategies.json#/$defs/StrategyCode"
+    },
+    "matrix": {
+      "type": "object",
+      "description": "key = HVAC type (A~E, HD~HG), value = { strategy_id: compatibility }. compatibility ∈ {compatible, marginal, infeasible, expected_skip}.",
+      "additionalProperties": false,
+      "properties": {
+        "A": {"$ref": "#/$defs/StrategyRow"},
+        "B": {"$ref": "#/$defs/StrategyRow"},
+        "C": {"$ref": "#/$defs/StrategyRow"},
+        "D": {"$ref": "#/$defs/StrategyRow"},
+        "E": {"$ref": "#/$defs/StrategyRow"},
+        "HD": {"$ref": "#/$defs/StrategyRow"},
+        "HE": {"$ref": "#/$defs/StrategyRow"},
+        "HF": {"$ref": "#/$defs/StrategyRow"},
+        "HG": {"$ref": "#/$defs/StrategyRow"}
+      }
+    }
+  },
+  "$defs": {
+    "Compatibility": {
+      "type": "string",
+      "enum": ["compatible", "marginal", "infeasible", "expected_skip"],
+      "description": "compatible = 정상 / marginal = 절감 <5% warn / infeasible = 422 차단 / expected_skip = EMS §21 알려진 skip"
+    },
+    "StrategyRow": {
+      "type": "object",
+      "additionalProperties": false,
+      "patternProperties": {
+        "^M(0[0-9]|1[0-5])$": {
+          "type": "object",
+          "required": ["compatibility"],
+          "properties": {
+            "compatibility": {"$ref": "#/$defs/Compatibility"},
+            "expected_saving_pct_range": {
+              "type": "array",
+              "items": {"type": "number"},
+              "minItems": 2,
+              "maxItems": 2,
+              "description": "[min, max] %. infeasible 시 omit."
+            },
+            "note": {"type": "string"}
+          }
+        }
+      }
+    }
+  },
+  "default": {
+    "matrix": {
+      "A": {
+        "M00": {"compatibility": "compatible", "note": "baseline"},
+        "M01": {"compatibility": "compatible", "expected_saving_pct_range": [5, 10]},
+        "M02": {"compatibility": "compatible", "expected_saving_pct_range": [5, 15], "note": "Economizer 핵심 적합"},
+        "M03": {"compatibility": "compatible", "expected_saving_pct_range": [15, 20], "note": "Staging 핵심 적합 (chiller multi)"},
+        "M04": {"compatibility": "compatible", "expected_saving_pct_range": [3, 8]},
+        "M05": {"compatibility": "compatible", "expected_saving_pct_range": [3, 8]},
+        "M06": {"compatibility": "compatible", "expected_saving_pct_range": [3, 7]},
+        "M07": {"compatibility": "compatible", "expected_saving_pct_range": [4, 10], "note": "DCV (CO2)"},
+        "M08": {"compatibility": "compatible", "expected_saving_pct_range": [5, 12], "note": "ERV"},
+        "M09": {"compatibility": "compatible", "expected_saving_pct_range": [8, 15], "note": "Pre-cooling 열용량 활용"},
+        "M10": {"compatibility": "compatible", "expected_saving_pct_range": [10, 20]},
+        "M11": {"compatibility": "compatible", "expected_saving_pct_range": [15, 25]},
+        "M12": {"compatibility": "compatible", "expected_saving_pct_range": [18, 28]},
+        "M13": {"compatibility": "compatible", "expected_saving_pct_range": [18, 28]},
+        "M14": {"compatibility": "compatible", "expected_saving_pct_range": [20, 30]},
+        "M15": {"compatibility": "compatible", "expected_saving_pct_range": [22, 32]}
+      },
+      "B": {
+        "M00": {"compatibility": "compatible"},
+        "M01": {"compatibility": "compatible", "expected_saving_pct_range": [3, 8]},
+        "M02": {"compatibility": "compatible", "expected_saving_pct_range": [3, 10]},
+        "M03": {"compatibility": "marginal", "expected_saving_pct_range": [5, 10], "note": "Packaged DX 2-stage 제한"},
+        "M04": {"compatibility": "compatible", "expected_saving_pct_range": [2, 6]},
+        "M05": {"compatibility": "compatible", "expected_saving_pct_range": [2, 6]},
+        "M06": {"compatibility": "compatible", "expected_saving_pct_range": [2, 5]},
+        "M07": {"compatibility": "compatible"},
+        "M08": {"compatibility": "compatible"},
+        "M09": {"compatibility": "marginal", "note": "열용량 제한"},
+        "M10": {"compatibility": "compatible"},
+        "M11": {"compatibility": "compatible"},
+        "M12": {"compatibility": "compatible"},
+        "M13": {"compatibility": "compatible"},
+        "M14": {"compatibility": "compatible"},
+        "M15": {"compatibility": "compatible"}
+      },
+      "C": {
+        "M00": {"compatibility": "compatible"},
+        "M01": {"compatibility": "compatible", "expected_saving_pct_range": [2, 5]},
+        "M02": {"compatibility": "infeasible", "note": "Single zone DX, 외기 도입 mechanism 없음"},
+        "M03": {"compatibility": "infeasible", "note": "단일 장비, staging 불가"},
+        "M04": {"compatibility": "compatible"},
+        "M05": {"compatibility": "compatible"},
+        "M06": {"compatibility": "marginal"},
+        "M07": {"compatibility": "infeasible", "note": "DCV CO2 sensor 미설치 가정"},
+        "M08": {"compatibility": "infeasible", "note": "ERV heat exchanger 없음"},
+        "M09": {"compatibility": "marginal"},
+        "M10": {"compatibility": "compatible"},
+        "M11": {"compatibility": "infeasible", "note": "M03 의존 (M01+M02+M03)"},
+        "M12": {"compatibility": "infeasible", "note": "M11 의존"},
+        "M13": {"compatibility": "infeasible", "note": "M11 의존"},
+        "M14": {"compatibility": "infeasible", "note": "M03 의존"},
+        "M15": {"compatibility": "infeasible", "note": "M14 의존"}
+      },
+      "D": {
+        "M00": {"compatibility": "compatible"},
+        "M01": {"compatibility": "compatible", "expected_saving_pct_range": [4, 9]},
+        "M02": {"compatibility": "marginal", "note": "VRF 외기 도입 제한"},
+        "M03": {"compatibility": "compatible", "expected_saving_pct_range": [8, 15], "note": "인버터 제어"},
+        "M04": {"compatibility": "compatible"},
+        "M05": {"compatibility": "compatible"},
+        "M06": {"compatibility": "compatible"},
+        "M07": {"compatibility": "compatible"},
+        "M08": {"compatibility": "compatible"},
+        "M09": {"compatibility": "compatible"},
+        "M10": {"compatibility": "compatible"},
+        "M11": {"compatibility": "compatible"},
+        "M12": {"compatibility": "compatible"},
+        "M13": {"compatibility": "compatible"},
+        "M14": {"compatibility": "compatible"},
+        "M15": {"compatibility": "compatible"}
+      },
+      "E": {
+        "M00": {"compatibility": "compatible"},
+        "M01": {"compatibility": "compatible"},
+        "M02": {"compatibility": "compatible", "note": "DOAS 외기 활용"},
+        "M03": {"compatibility": "marginal", "note": "Hydronic pump staging만"},
+        "M04": {"compatibility": "compatible"},
+        "M05": {"compatibility": "compatible"},
+        "M06": {"compatibility": "compatible"},
+        "M07": {"compatibility": "compatible"},
+        "M08": {"compatibility": "compatible"},
+        "M09": {"compatibility": "compatible", "note": "Hydronic 열용량 활용 강력"},
+        "M10": {"compatibility": "compatible"},
+        "M11": {"compatibility": "marginal"},
+        "M12": {"compatibility": "marginal"},
+        "M13": {"compatibility": "marginal"},
+        "M14": {"compatibility": "marginal"},
+        "M15": {"compatibility": "marginal"}
+      },
+      "HD": {
+        "M00": {"compatibility": "compatible"},
+        "M01": {"compatibility": "compatible"},
+        "M02": {"compatibility": "marginal", "note": "VRF 외기 제한"},
+        "M03": {"compatibility": "compatible"},
+        "M04": {"compatibility": "compatible"},
+        "M05": {"compatibility": "compatible"},
+        "M06": {"compatibility": "compatible"},
+        "M07": {"compatibility": "compatible"},
+        "M08": {"compatibility": "compatible"},
+        "M09": {"compatibility": "compatible", "note": "온돌 열용량 활용"},
+        "M10": {"compatibility": "compatible"},
+        "M11": {"compatibility": "compatible"},
+        "M12": {"compatibility": "compatible"},
+        "M13": {"compatibility": "compatible"},
+        "M14": {"compatibility": "compatible"},
+        "M15": {"compatibility": "compatible"}
+      },
+      "HE": {
+        "M00": {"compatibility": "compatible"},
+        "M01": {"compatibility": "compatible"},
+        "M02": {"compatibility": "expected_skip", "note": "PTAC + boiler, 외기 mechanism 미흡 (EMS §21 EXPECTED_SKIP)"},
+        "M03": {"compatibility": "infeasible", "note": "단일 boiler, staging 불가"},
+        "M04": {"compatibility": "compatible"},
+        "M05": {"compatibility": "compatible"},
+        "M06": {"compatibility": "compatible"},
+        "M07": {"compatibility": "expected_skip"},
+        "M08": {"compatibility": "expected_skip"},
+        "M09": {"compatibility": "compatible", "note": "온돌 열용량"},
+        "M10": {"compatibility": "compatible"},
+        "M11": {"compatibility": "expected_skip", "note": "M02/M03 의존"},
+        "M12": {"compatibility": "expected_skip"},
+        "M13": {"compatibility": "expected_skip"},
+        "M14": {"compatibility": "expected_skip"},
+        "M15": {"compatibility": "expected_skip"}
+      },
+      "HF": {
+        "M00": {"compatibility": "compatible"},
+        "M01": {"compatibility": "compatible"},
+        "M02": {"compatibility": "compatible"},
+        "M03": {"compatibility": "compatible"},
+        "M04": {"compatibility": "compatible"},
+        "M05": {"compatibility": "compatible"},
+        "M06": {"compatibility": "compatible"},
+        "M07": {"compatibility": "compatible"},
+        "M08": {"compatibility": "compatible"},
+        "M09": {"compatibility": "compatible"},
+        "M10": {"compatibility": "compatible"},
+        "M11": {"compatibility": "compatible"},
+        "M12": {"compatibility": "compatible"},
+        "M13": {"compatibility": "compatible"},
+        "M14": {"compatibility": "compatible"},
+        "M15": {"compatibility": "compatible"}
+      },
+      "HG": {
+        "M00": {"compatibility": "compatible"},
+        "M01": {"compatibility": "marginal", "note": "OptimalStart radiator 적용 제한"},
+        "M02": {"compatibility": "infeasible"},
+        "M03": {"compatibility": "infeasible"},
+        "M04": {"compatibility": "compatible"},
+        "M05": {"compatibility": "compatible"},
+        "M06": {"compatibility": "marginal"},
+        "M07": {"compatibility": "infeasible"},
+        "M08": {"compatibility": "infeasible"},
+        "M09": {"compatibility": "compatible"},
+        "M10": {"compatibility": "compatible"},
+        "M11": {"compatibility": "infeasible"},
+        "M12": {"compatibility": "infeasible"},
+        "M13": {"compatibility": "infeasible"},
+        "M14": {"compatibility": "infeasible"},
+        "M15": {"compatibility": "infeasible"}
+      }
+    }
+  }
+}

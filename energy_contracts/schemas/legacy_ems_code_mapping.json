@@ -1,0 +1,178 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "energy-contracts/legacy_ems_code_mapping.json",
+  "title": "LegacyEmsCodeMapping",
+  "description": "EMS 전략 코드 SSOT = M00~M15 (ems_strategies.json#StrategyCode). 구 E0~E13, S1~S7 코드는 deprecated. 본 schema 는 deprecated 코드의 M-code 매핑 + drift 차단 메타 (정규식 / lint hook / auto-add 스크립트 참조) 를 단일 진실원으로 보유한다.",
+  "_usage": "runtime-validate",
+  "_consumers": [
+    "ems_transformer",
+    "reverse",
+    "mpc_model",
+    "sim_campaign_2026",
+    "building-energy-3d",
+    "agents"
+  ],
+  "version": "1.0.0",
+  "updated": "2026-05-29",
+  "$comment": "Phase 1.2 산출 (NEG-2026-05-29-002-final + GPT review). 8.simulation/docs/NAMING_UNIFICATION.md §1.2 + ems_transformer/docs/EMS_CODE_MAPPING.md 를 머신리더블 통합. Phase 2.2 pre-commit lint_ems_code_drift.py 와 Phase 2.3 scripts/add_ems_code.py 가 본 schema 를 참조. Phase 7.2 scripts/debate_validator.py 가 hallucination 검출 시 본 schema 의 STRATEGY_REGEX 강제.",
+  "type": "object",
+  "required": [
+    "ssot",
+    "deprecated_e_codes",
+    "deprecated_s_codes",
+    "deprecated_q_legacy",
+    "drift_guard"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "ssot": {
+      "type": "object",
+      "required": ["schema_ref", "strategy_code_regex", "valid_count"],
+      "properties": {
+        "schema_ref": {
+          "const": "energy-contracts/ems_strategies.json#$defs/StrategyCode",
+          "description": "정본 enum SSOT 위치"
+        },
+        "strategy_code_regex": {
+          "const": "^M(0[0-9]|1[0-5])$",
+          "description": "M00~M15 정확 매칭. lint hook 가 본 정규식 강제. M16+ 신설 시 본 패턴 + ems_strategies.json + 본 schema 동시 갱신."
+        },
+        "valid_count": {"const": 16}
+      }
+    },
+    "deprecated_e_codes": {
+      "type": "object",
+      "description": "구 generate_ems_idfs.py (GCS) E0~E13 코드. 2026-05-03 함수명↔구현 drift 정정. 신규 코드 작성 금지. 잔존 데이터 발견 시 정정 PR.",
+      "additionalProperties": false,
+      "properties": {
+        "E0":  {"maps_to": "M00", "actual_implementation": "Baseline + Night Setback schedule", "drift_note": ""},
+        "E1":  {"maps_to": "M06", "actual_implementation": "NightCycle", "drift_note": ""},
+        "E2":  {"maps_to": "M01", "actual_implementation": "ScheduleOpt (OptimalStart + EarlyStop)", "drift_note": ""},
+        "E3":  {"maps_to": "M02", "actual_implementation": "Economizer", "drift_note": ""},
+        "E4":  {"maps_to": "M03", "actual_implementation": "Staging", "drift_note": ""},
+        "E5":  {"maps_to": null,  "actual_implementation": "DemandLimiting (전력 피크 제한)", "drift_note": "함수명 apply_e5 는 DCV 의도였으나 실제 구현은 DemandLimiting. metadata 0 건. 정정 후 M10 로 매핑 권장. **신규 사용 금지**"},
+        "E6":  {"maps_to": "M04", "actual_implementation": "PMV 0.5 (apply_pmv 위임)", "drift_note": "함수명 apply_e6 는 HeatRecovery 의도였으나 실제 구현은 PMV 0.5. 2026-05-03 리매핑 완료 (23,228 건 → E7)"},
+        "E7":  {"maps_to": "M04", "actual_implementation": "PMV 0.5", "drift_note": "GCS 와 Local 둘 다 PMV 0.5. ems_simulation 의 m4 도 동일"},
+        "E8":  {"maps_to": "M11", "actual_implementation": "Eco+Staging (E3+E4)", "drift_note": "함수명 apply_e8 는 NightCycle+Eco 의도였으나 실제 구현은 Eco+Staging. 2026-05-03 리매핑 완료 (67,174 건 → E10)"},
+        "E9":  {"maps_to": "M12", "actual_implementation": "Eco+Staging+PMV0.5 (E8+E6)", "drift_note": "함수명 apply_e9 는 NightCycle+Eco+DCV 의도였으나 실제 구현은 Eco+Stg+PMV0.5. 2026-05-03 리매핑 완료 (60,254 건 → E11)"},
+        "E10": {"maps_to": "M11", "actual_implementation": "Eco+Staging", "drift_note": "≈ M11 (Combined_EMS) 부분집합"},
+        "E11": {"maps_to": "M12", "actual_implementation": "Eco+Staging+PMV 0.5", "drift_note": "Combined_PMV05"},
+        "E12": {"maps_to": "M05", "actual_implementation": "PMV 0.7", "drift_note": ""},
+        "E13": {"maps_to": "M13", "actual_implementation": "Eco+Staging+PMV 0.7", "drift_note": "Combined_PMV07"}
+      }
+    },
+    "deprecated_s_codes": {
+      "type": "object",
+      "description": "구 src/api/main.py (ems_transformer legacy multi-task transformer) S1~S7 코드. 새 코드 작성 금지. 본 schema 의 매핑은 legacy 호환 reference 만.",
+      "additionalProperties": false,
+      "properties": {
+        "S1": {"maps_to": "M03", "description": "Staging"},
+        "S2": {"maps_to": "M09", "description": "Pre-cooling/Pre-heating"},
+        "S3": {"maps_to": "M02", "description": "Economizer"},
+        "S4": {"maps_to": "M01", "description": "ScheduleOpt"},
+        "S5": {"maps_to": "M00", "description": "Baseline (Night Setback 내장)"},
+        "S6_strict":  {"maps_to": "M04", "description": "PMV ±0.5"},
+        "S6_relaxed": {"maps_to": "M05", "description": "PMV ±0.7"},
+        "S7": {"maps_to": "M10", "description": "DemandResponse"}
+      }
+    },
+    "deprecated_q_legacy": {
+      "type": "object",
+      "description": "구 src/api/main.py 의 Q1~Q7 query type 코드 (정책 코드와는 다른 layer). 현행 Q1~Q17 (gateway_routing.json#qa_types) 와 namespace 분리. debate 이후 Q18~Qn 확장은 future_debate namespace.",
+      "properties": {
+        "Q_REGEX_LEGACY":  {"const": "^Q[1-7]$", "description": "src/api/main.py 한정"},
+        "Q_REGEX_CURRENT": {"const": "^Q(1[0-7]|[1-9])$", "description": "gateway_routing.json#qa_types Q1~Q17"},
+        "Q_NAMESPACE_FUTURE_DEBATE": {"const": "Q\\d{2,}_debate_v\\d+", "description": "debate 이후 확장 (예: Q18_debate_v1)"}
+      }
+    },
+    "drift_guard": {
+      "type": "object",
+      "description": "drift 재발 차단 메타. Phase 2 의 lint hook + auto-add 스크립트가 본 메타 참조.",
+      "required": ["forbidden_patterns", "lint_hook", "auto_add_script", "ssot_locations"],
+      "properties": {
+        "forbidden_patterns": {
+          "type": "array",
+          "description": "신규 commit 차단 정규식. lint hook 가 staged 파일에 대해 본 패턴 매치 시 commit reject.",
+          "items": {
+            "type": "object",
+            "required": ["pattern", "scope", "exception"],
+            "properties": {
+              "pattern": {"type": "string"},
+              "scope": {"type": "string"},
+              "exception": {"type": "array", "items": {"type": "string"}}
+            }
+          },
+          "default": [
+            {
+              "pattern": "(?<![A-Za-z_])E\\d{1,2}(?![A-Za-z0-9_])",
+              "scope": "all *.py / *.jsonl / *.yaml / *.md / *.sql",
+              "exception": [
+                "docs/EMS_CODE_MAPPING.md (transitional ledger)",
+                "docs/NAMING_UNIFICATION.md (deprecated 표)",
+                "docs/specs/SPEC_POLICY_VECTOR.md (hallucination 예시 의도)",
+                "docs/DRIFT_INVENTORY.md (본 drift 보고서)",
+                "scripts/lint_ems_code_drift.py (lint 도구 자체)",
+                "scripts/add_ems_code.py",
+                "scripts/verify_ems_code_consistency.py",
+                "schemas/legacy_ems_code_mapping.json (본 SSOT)",
+                "data/unified/metadata_unified.jsonl.bak_",
+                "archive/"
+              ]
+            },
+            {
+              "pattern": "(?<![A-Za-z_])S[1-7](?![A-Za-z0-9_])",
+              "scope": "all *.py / *.jsonl / *.yaml / *.md",
+              "exception": [
+                "docs/specs/SPEC_EMS_STRATEGIES.md (legacy 표 잔존, 정정 PR 대기)",
+                "docs/specs/SPEC_POLICY_VECTOR.md (hallucination 예시 의도)",
+                "docs/DRIFT_INVENTORY.md",
+                "docs/NAMING_UNIFICATION.md (deprecated 표)",
+                "scripts/lint_ems_code_drift.py",
+                "scripts/add_ems_code.py",
+                "scripts/verify_ems_code_consistency.py",
+                "schemas/legacy_ems_code_mapping.json",
+                "archive/"
+              ]
+            },
+            {
+              "pattern": "(?<![A-Za-z_])M(1[6-9]|[2-9]\\d)(?![A-Za-z0-9_])",
+              "scope": "all",
+              "exception": [
+                "docs/specs/SPEC_POLICY_VECTOR.md (hallucination 예시 의도)",
+                "docs/DRIFT_INVENTORY.md",
+                "scripts/lint_ems_code_drift.py",
+                "scripts/add_ems_code.py (auto-add 스크립트 자체)",
+                "scripts/verify_ems_code_consistency.py",
+                "schemas/ems_strategies.json (auto-add 가 갱신할 SSOT)",
+                "schemas/legacy_ems_code_mapping.json"
+              ]
+            }
+          ]
+        },
+        "lint_hook": {
+          "type": "string",
+          "const": "scripts/lint_ems_code_drift.py",
+          "description": "Phase 2.2 산출. pre-commit hook + CI lint. forbidden_patterns 위반 시 reject."
+        },
+        "auto_add_script": {
+          "type": "string",
+          "const": "scripts/add_ems_code.py",
+          "description": "Phase 2.3 산출. M16 등 신규 EMS 추가 시 6 위치 자동 갱신 (ems_strategies.json + legacy_ems_code_mapping.json + gateway_routing.json + SPEC_EMS_STRATEGIES.md + EMS_CODE_MAPPING.md + generate_qa_unified.py)."
+        },
+        "ssot_locations": {
+          "type": "array",
+          "description": "M00~M15 코드가 정의·참조되는 6 위치. 변경 시 모두 동기 갱신 의무.",
+          "items": {"type": "string"},
+          "default": [
+            "projects/energy-contracts/energy_contracts/schemas/ems_strategies.json",
+            "projects/energy-contracts/energy_contracts/schemas/legacy_ems_code_mapping.json",
+            "projects/energy-contracts/energy_contracts/schemas/gateway_routing.json",
+            "8.simulation/docs/NAMING_UNIFICATION.md",
+            "8.simulation/ems_transformer/docs/specs/SPEC_EMS_STRATEGIES.md",
+            "8.simulation/ems_transformer/docs/EMS_CODE_MAPPING.md"
+          ]
+        }
+      }
+    }
+  }
+}
