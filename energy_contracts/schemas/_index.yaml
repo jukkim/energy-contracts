@@ -51,5 +51,8 @@ components:
     LintFormat:       {$ref: 'lint_format.json'}
     EsgPolicy:        {$ref: 'esg_policy.json'}
     DrDispatchEvent:  {$ref: 'dr_dispatch_event.json'}
+    GatewayRouting:   {$ref: 'gateway_routing.json'}
+    LegacyEmsCodeMapping: {$ref: 'legacy_ems_code_mapping.json'}
+    HvacEmsMatrix:    {$ref: 'hvac_ems_matrix.json'}
 
 paths: {}
