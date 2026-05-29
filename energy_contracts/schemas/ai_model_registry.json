@@ -11,9 +11,9 @@
     "agentleague",
     "eduarena"
   ],
-  "version": "1.1",
-  "updated": "2026-05-20",
-  "$comment": "Phase I-1 산출물 + AI 챔피언 본선 hash freeze (PRD v1.5 Track 3 G0). v1.1 = active_checkpoint + sha256 + frozen_for_demo 신설.",
+  "version": "1.2",
+  "updated": "2026-05-29",
+  "$comment": "Phase I-1 산출물 + AI 챔피언 본선 hash freeze (PRD v1.5 Track 3 G0). v1.1 = active_checkpoint + sha256 + frozen_for_demo 신설. v1.2 (사용자 결정 #6, 2026-05-29) = lifecycle 필드 enum 신설 (active / rollback_only / training_pending / locked / deprecated). registry_loader 5.3 LOCKED 강제 invariant 와 동기.",
   "$defs": {
     "ModelTask": {
       "type": "string",
@@ -145,6 +145,12 @@
           "type": "string",
           "enum": ["type_1_sim", "type_2_real"],
           "description": "v1.1 추가 — Type 1(시뮬 학습, 수동만) vs Type 2(실측, 자동 가능). UNIFIED_GATEWAY_DESIGN §8.5."
+        },
+        "lifecycle": {
+          "type": "string",
+          "enum": ["active", "rollback_only", "training_pending", "locked", "deprecated"],
+          "default": "active",
+          "description": "v1.2 추가 (사용자 결정 #6, 2026-05-29) — 모델 운영 lifecycle. **active**: 운영 traffic 처리. **rollback_only**: 운영 진입 금지, rollback target 만 (예: v2.5-pre Phase K G6 미통과). **training_pending**: 학습 진입 자격 미확정 (예: KBEP, ECMHS). **locked**: frozen baseline (예: Korean_BB v1.0 Energy & AI 투고). **deprecated**: 폐기 예정. Gateway routing 시 본 필드 권위 — `active` 외 모델로 traffic 가 들어가면 startup_check ERROR."
         }
       },
       "additionalProperties": true
@@ -200,10 +206,11 @@
         "trained_at": "2026-03-15",
         "frozen": true,
         "project": "Korean_BB",
-        "description": "GS25 224채 실측 학습. Energy and AI 투고 중 — 변경 금지",
+        "description": "GS25 224채 실측 학습. Energy and AI 투고 중 — 변경 금지. **사용자 결정 #7 (2026-05-29, lifecycle=locked)**: Korean_BB v1.0 LOCKED 유지 (투고 보존). F14 Policy Evaluation 의 forecast component 한정 — policy-aware variant 가 필요한 경우 `korean_bb_policy_adapter` 별 model_id 신설 (Korean_BB v1.0 fork, residual prediction + policy-aware feature 추가). 본 모델 자체 unlock 금지.",
         "active_checkpoint": "TransformerWithGaussian-M-v3-3k_bb700_s18000_revin_on_best.pt",
         "backend_url": "http://localhost:8040",
-        "retrain_type": "type_1_sim"
+        "retrain_type": "type_1_sim",
+        "lifecycle": "locked"
       },
       "korean_bb_residential": {
         "id": "korean_bb_residential",
