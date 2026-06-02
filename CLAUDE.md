@@ -1,5 +1,17 @@
 # CLAUDE.md — Energy Contracts (공유 스펙)
 
+> **SSOT**: ai_core_role_separation_plan v1.9.2 §6.5 — Policy Evaluation Contract. 본 repo = energy-contracts Tier 2 도메인 계약 허브. 본 폴더가 9 sibling repo (ems-transformer / ingestion-worker / edge-agent / building-energy-3d / gridbridge / agentleague / eduarena / energy-contracts / sim_campaign_2026) 의 schema/_pydantic_models/critics 단일 SSOT 를 제공한다. SSOT 본문 = `공모전/2026-04-24_AI챔피언_*/docs/ai_core_role_separation_plan.md` v1.9.2.
+>
+> **Gateway namespace (ADR-001)**: **F14** = `POST /v1/policy-evaluate` Policy Evaluation Contract 4 단계 (intake → counterfactual → aggregation → dual_sign_off). 본 repo 의 `policy_evaluation_contract.json` schema 가 F14 endpoint 의 request/response 계약. F12/F13 = internal proxy + Claude LLM (별 SSOT).
+>
+> **Gates (G-PE 4종)**: **G-PE1** (intake validation) · **G-PE2** (LLM hedging lint 52 사전) · **G-PE3a** (bootstrap N≥1000) · **G-PE3b** (sign-flip rate ≤ 20%). 본 schema 의 `behavior_model` + `policy_type` 필드가 G-PE1 entry condition.
+>
+> **Inverse Decision System (§6.4)**: **4-stack** (multi-modal input + behavior_model + counterfactual + Forward-Inverse Consistency Loss). 본 repo 의 critics/ 4종 (Legal/Carbon/Safety/Data) + CriticsGate = 4-stack 의 검증 layer.
+>
+> **Agent 어휘 4 종 (v1.9.2 §0.9)**: **Specialist Agent** (Layer 1 A1~A14 building-energy-3d) · **Ingestion Worker** (백그라운드 ETL ingestion-worker repo) · **Dev Subagent** (Claude Code 개발 보조) · **Edge Agent** (OpenADR/IEEE 2030.5 표준, edge-agent repo). 단독 "agent" 사용 금지, 종류 prefix 의무.
+>
+> 본 mirror 헤더는 ai-champion-2026 의 `verify_cross_folder_mirror_drift.py` lock-step gate 정합용 — 16 CORE_KEYWORDS 포함. SSOT 갱신 시 본 헤더도 동시 갱신 의무.
+
 > **SSOT 허브** — Tier 2 도메인 계약. 변경 시 `myjob/docs/SSOT_GOVERNANCE.md` 절차 준수. 검증: `python scripts/validate_ssot.py`.
 > **외부 의존 작업 (2026-05-26, agents arch A5 3-tier 분류 확정)**: agents `src/ingestion/_schemas/__init__.py` 의 3-tier SSOT 분류에 따라 — **Tier 1 (wheel)**: `drift_report`, `retrain_request` 2건 (sibling read/receive 대상, 미작성). **Tier 2 (local, wheel 진입 X)**: `negotiation_decision`, `post_validation_result`, `auto_retrain_policy` (agents-only, `45a99e8` commit). **Tier 3 (jsonb)**: `audit_event.extra`. 본 repo Tier 1 wheel 후보는 **`drift_report`, `retrain_request`** 2건 — DriftMonitor/RetrainOrchestrator 가 sibling 으로 emit/receive 진입 시 trigger. retrain_jobs queue 자체는 agents DB schema 009 + smartbuilding W7-ext (`545755a`) polling consumer 로 처리, wheel 불요. 명세: agents `src/ingestion/_schemas/__init__.py` + `docs/PHASE_DI_PLAN.md §4.5`.
 
