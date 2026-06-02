@@ -1,4 +1,4 @@
-# SSOT 26 도메인 카탈로그 인덱스 (Phase L-5)
+# SSOT 31 도메인 카탈로그 인덱스 (Phase L-5 + Policy Evaluation Contract)
 # Redocly·Swagger UI·문서 렌더링용. 각 schema 파일을 참조.
 
 openapi: 3.1.0
@@ -54,5 +54,6 @@ components:
     GatewayRouting:   {$ref: 'gateway_routing.json'}
     LegacyEmsCodeMapping: {$ref: 'legacy_ems_code_mapping.json'}
     HvacEmsMatrix:    {$ref: 'hvac_ems_matrix.json'}
+    PolicyEvaluationContract: {$ref: 'policy_evaluation_contract.json'}
 
 paths: {}

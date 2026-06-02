@@ -1,0 +1,286 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "energy-contracts/policy_evaluation_contract.json",
+  "title": "Policy Evaluation Contract (F14)",
+  "description": "AI 챔피언 plan v1.9.2 §6.5 Policy Evaluation Contract — Gateway F14 (POST /v1/policy-evaluate) 의 입출력 SSOT. Stage 1 (PolicyInputSchema) + Stage 4 (PolicyEvaluationResult) 두 정의 포함. 5 policy_type (carbon_tax / setback_limit / peak_pricing / zeb_mandate / retrofit_subsidy) 지원. Spec source = 공모전/2026-04-24_AI챔피언_전국민AI경진대회/docs/POLICY_EVALUATION_SCHEMA_SPEC.md v1.9.2 B5. ADR-001 (F14 namespace) 정합. 본 PR (2026-06-02) = schema 신설 + _index.yaml 등재. Tier 2 Python/TypeScript codegen 진입 + 5 consumer (be-3d / ems_transformer / ingestion-worker / gridbridge / agentleague) regen 은 follow-up PR.",
+  "_usage": "reference-only",
+  "$comment": "follow-up PR 에서 _usage='codegen' 전환 + gen_constants.py load_schemas() 등록 + datamodel-codegen Pydantic/TS 생성. ADR-001 (F14 namespace) + plan v1.9.2 §6.5 정합.",
+  "_consumers": [
+    "building-energy-3d",
+    "ems_transformer",
+    "ingestion-worker",
+    "gridbridge",
+    "agentleague"
+  ],
+  "version": "1.0",
+  "updated": "2026-06-02",
+  "type": "object",
+  "oneOf": [
+    {"$ref": "#/definitions/PolicyInputSchema"},
+    {"$ref": "#/definitions/PolicyEvaluationResult"}
+  ],
+  "definitions": {
+    "PolicyInputSchema": {
+      "$id": "#/definitions/PolicyInputSchema",
+      "title": "PolicyInputSchema",
+      "description": "Policy Evaluation Contract Stage 1 출력 / Stage 2~4 입력 (plan v1.9.2 §6.5.2)",
+      "type": "object",
+      "required": [
+        "policy_type",
+        "policy_id",
+        "parameters",
+        "building_scope",
+        "baseline_window",
+        "behavior_model",
+        "legal_reference"
+      ],
+      "properties": {
+        "policy_type": {
+          "type": "string",
+          "enum": [
+            "carbon_tax",
+            "setback_limit",
+            "peak_pricing",
+            "zeb_mandate",
+            "retrofit_subsidy"
+          ],
+          "description": "정책 유형 5 종 (plan §6.5.0.A behavior_model 매트릭스 정합)"
+        },
+        "policy_id": {
+          "type": "string",
+          "pattern": "^[a-z][a-z0-9_]*$",
+          "description": "정책 식별자 — 예: carbon_tax_70000_won_per_tco2_2026"
+        },
+        "parameters": {
+          "type": "object",
+          "description": "policy_type 별 parameters 매트릭스 (oneOf)",
+          "oneOf": [
+            {
+              "title": "carbon_tax",
+              "required": ["carbon_price_won_per_tco2"],
+              "properties": {
+                "carbon_price_won_per_tco2": {"type": "number", "minimum": 0, "maximum": 1000000}
+              }
+            },
+            {
+              "title": "setback_limit",
+              "anyOf": [
+                {"required": ["cooling_setpoint_min_c"]},
+                {"required": ["heating_setpoint_max_c"]}
+              ],
+              "properties": {
+                "cooling_setpoint_min_c": {"type": "number", "minimum": 18, "maximum": 30},
+                "heating_setpoint_max_c": {"type": "number", "minimum": 16, "maximum": 26}
+              }
+            },
+            {
+              "title": "peak_pricing",
+              "required": ["peak_hours", "peak_multiplier"],
+              "properties": {
+                "peak_hours": {"type": "array", "items": {"type": "integer", "minimum": 0, "maximum": 23}, "uniqueItems": true},
+                "peak_multiplier": {"type": "number", "minimum": 1.0, "maximum": 10.0}
+              }
+            }
+          ]
+        },
+        "building_scope": {
+          "type": "object",
+          "required": ["scope_type"],
+          "properties": {
+            "scope_type": {"type": "string", "enum": ["pnu_list", "use_class", "climate_zone", "region"]},
+            "pnu_list": {"type": "array", "items": {"type": "string", "pattern": "^[0-9]{10}-[0-9]-[0-9]{8}$"}},
+            "use_class": {"type": "array", "items": {"type": "string", "enum": ["public_office", "school", "hospital", "commercial", "residential", "industrial"]}},
+            "climate_zone": {"type": "string", "enum": ["KR-1a", "KR-1b", "KR-2a", "KR-2b", "KR-3a", "KR-3b", "KR-4a", "KR-4b", "KR-5a", "KR-5b", "KR-5c", "KR-5d"]},
+            "region_code": {"type": "string", "pattern": "^[0-9]{5}$", "description": "법정동코드 5자리 (예: 청주시 43111)"}
+          }
+        },
+        "baseline_window": {
+          "type": "object",
+          "required": ["start", "end", "weather_source"],
+          "properties": {
+            "start": {"type": "string", "format": "date"},
+            "end": {"type": "string", "format": "date"},
+            "weather_source": {"type": "string", "pattern": "^(ASOS|AWS)-[0-9]{1,3}$"}
+          }
+        },
+        "behavior_model": {
+          "type": "object",
+          "required": ["mode"],
+          "properties": {
+            "mode": {"type": "string", "enum": ["utility_based", "hard_constraint", "elastic"]},
+            "elasticity": {"type": "number", "minimum": 0, "maximum": 1},
+            "compliance_rate": {"type": "number", "minimum": 0, "maximum": 1}
+          }
+        },
+        "legal_reference": {
+          "type": "object",
+          "required": ["law", "article", "effective_date"],
+          "description": "C-Legal Critic G-PE1 사전 검증용 (law.go.kr 교차확인)",
+          "properties": {
+            "law": {"type": "string", "description": "법령 정식 명칭 (예: 'K-ETS 4기' or '온실가스배출권의 할당 및 거래에 관한 법률')"},
+            "article": {"type": "string", "description": "조항 번호 + 조문명 (예: '제12조 (할당 방식)')"},
+            "effective_date": {"type": "string", "format": "date", "description": "시행일 (예: '2026-01-01')"}
+          }
+        }
+      }
+    },
+    "PolicyEvaluationResult": {
+      "$id": "#/definitions/PolicyEvaluationResult",
+      "title": "PolicyEvaluationResult",
+      "description": "Policy Evaluation Contract Stage 4 출력 (plan v1.9.2 §6.5.2)",
+      "type": "object",
+      "required": [
+        "policy_id",
+        "evaluation_id",
+        "policy_input",
+        "scope_summary",
+        "baseline_metrics",
+        "policy_metrics",
+        "counterfactual_delta",
+        "sensitivity_bound",
+        "causal_robustness",
+        "assumptions",
+        "disclaimer",
+        "audit"
+      ],
+      "properties": {
+        "policy_id": {"type": "string"},
+        "evaluation_id": {"type": "string", "pattern": "^eval_[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z_[a-z0-9]+$"},
+        "policy_input": {"$ref": "#/definitions/PolicyInputSchema"},
+        "scope_summary": {
+          "type": "object",
+          "required": ["building_count", "total_floor_area_m2"],
+          "properties": {
+            "building_count": {"type": "integer", "minimum": 1},
+            "total_floor_area_m2": {"type": "number", "minimum": 0}
+          }
+        },
+        "baseline_metrics": {
+          "type": "object",
+          "required": ["annual_eui_kwh_m2_yr", "annual_co2_tco2_yr", "annual_cost_won_yr", "eui_basis"],
+          "properties": {
+            "annual_eui_kwh_m2_yr": {"type": "number", "minimum": 0},
+            "annual_co2_tco2_yr": {"type": "number", "minimum": 0},
+            "annual_cost_won_yr": {"type": "integer", "minimum": 0},
+            "eui_basis": {"type": "string", "enum": ["site", "primary"], "description": "G-PE2 정합 + sim_campaign G6 6 게이트 정합"},
+            "zeb_grade": {"type": "string", "enum": ["1", "2", "3", "4", "5", "비대상"]},
+            "fuel_mix": {
+              "type": "object",
+              "properties": {
+                "electricity_pct": {"type": "number", "minimum": 0, "maximum": 100},
+                "gas_pct": {"type": "number", "minimum": 0, "maximum": 100},
+                "district_heating_pct": {"type": "number", "minimum": 0, "maximum": 100}
+              }
+            }
+          }
+        },
+        "policy_metrics": {
+          "type": "object",
+          "required": ["annual_eui_kwh_m2_yr", "annual_co2_tco2_yr", "annual_cost_won_yr", "eui_basis"],
+          "description": "Stage 3 시뮬레이션 후 정책 적용 결과. baseline_metrics 와 동일 구조.",
+          "properties": {
+            "annual_eui_kwh_m2_yr": {"type": "number", "minimum": 0},
+            "annual_co2_tco2_yr": {"type": "number", "minimum": 0},
+            "annual_cost_won_yr": {"type": "integer", "minimum": 0},
+            "eui_basis": {"type": "string", "enum": ["site", "primary"]},
+            "zeb_grade": {"type": "string", "enum": ["1", "2", "3", "4", "5", "비대상"]},
+            "fuel_mix": {
+              "type": "object",
+              "properties": {
+                "electricity_pct": {"type": "number", "minimum": 0, "maximum": 100},
+                "gas_pct": {"type": "number", "minimum": 0, "maximum": 100},
+                "district_heating_pct": {"type": "number", "minimum": 0, "maximum": 100}
+              }
+            }
+          }
+        },
+        "counterfactual_delta": {
+          "type": "object",
+          "required": ["delta_eui_pct", "delta_co2_pct", "delta_cost_pct"],
+          "properties": {
+            "delta_eui_pct": {"type": "number"},
+            "delta_co2_pct": {"type": "number"},
+            "delta_cost_pct": {"type": "number"}
+          }
+        },
+        "sensitivity_bound": {
+          "type": "object",
+          "description": "G-PE3a bootstrap N>=1000, 95% CI",
+          "patternProperties": {
+            "^delta_(eui|co2|cost)_pct$": {
+              "type": "object",
+              "required": ["low", "mean", "high", "n_samples", "method"],
+              "properties": {
+                "low": {"type": "number"},
+                "mean": {"type": "number"},
+                "high": {"type": "number"},
+                "n_samples": {"type": "integer", "minimum": 1000},
+                "method": {"type": "string", "enum": ["bootstrap"]}
+              }
+            }
+          }
+        },
+        "causal_robustness": {
+          "type": "object",
+          "description": "G-PE3b parameter perturbation +/-20% x 4 cells",
+          "required": ["perturbation_cells", "sign_flip_rate", "threshold", "status"],
+          "properties": {
+            "perturbation_cells": {
+              "type": "array",
+              "minItems": 4,
+              "items": {
+                "type": "object",
+                "required": ["variable", "delta", "result_sign"],
+                "properties": {
+                  "variable": {"type": "string", "enum": ["elasticity", "compliance_rate"]},
+                  "delta": {"type": "string", "pattern": "^[+-][0-9]+%$"},
+                  "result_sign": {"type": "string", "enum": ["negative", "positive", "zero"]}
+                }
+              }
+            },
+            "sign_flip_rate": {"type": "number", "minimum": 0, "maximum": 1},
+            "threshold": {"type": "number", "const": 0.20},
+            "status": {"type": "string", "enum": ["PASS", "FAIL"]}
+          }
+        },
+        "assumptions": {
+          "type": "array",
+          "minItems": 1,
+          "description": "v1.9.1 정직성 — transferability 라벨 의무",
+          "items": {
+            "type": "object",
+            "required": ["variable", "value", "source", "transferability"],
+            "properties": {
+              "variable": {"type": "string"},
+              "value": {"oneOf": [{"type": "string"}, {"type": "number"}]},
+              "source": {"type": "string", "description": "출처 (citation 또는 '한국 데이터 미보유 — XX 사용')"},
+              "transferability": {"type": "string", "enum": ["validated", "estimated", "no_korean_data"], "description": "UI 3색 배지 (녹/노/빨)"},
+              "sensitivity_link": {"type": "string"}
+            }
+          }
+        },
+        "disclaimer": {
+          "type": "string",
+          "minLength": 50,
+          "description": "정직성 강제 — '추정·단일 근거 X' 표현 의무. UI <DualSignOffBanner> 에서 강제 표시"
+        },
+        "audit": {
+          "type": "object",
+          "required": ["contract_kind", "dual_sign_off", "audit_chain_hash", "stage4_lint_passed"],
+          "properties": {
+            "contract_kind": {"type": "string", "const": "policy_eval", "description": "plan §6.5.0 intent 라우팅 룰"},
+            "forward_inverse_consistency": {"type": "string", "pattern": "^(PASS|FAIL).*"},
+            "scenario_baseline_validity": {"type": "string"},
+            "causal_robustness": {"type": "string", "pattern": "^(PASS|FAIL).*"},
+            "sensitivity_method": {"type": "string", "enum": ["bootstrap N=1000", "bootstrap N=2000", "bootstrap N=5000"]},
+            "stage4_lint_passed": {"type": "boolean", "description": "Stage 4 LLM lint — numerical lock + hedging 금지"},
+            "legal_critic": {"type": "string", "enum": ["PASS", "FAIL"]},
+            "data_critic": {"type": "string", "enum": ["PASS", "FAIL"]},
+            "dual_sign_off": {"type": "string", "enum": ["REQUIRED", "GRANTED", "DENIED"]},
+            "audit_chain_hash": {"type": "string", "pattern": "^sha256:[0-9a-f]{64}$"}
+          }
+        }
+      }
+    }
+  }
+}
