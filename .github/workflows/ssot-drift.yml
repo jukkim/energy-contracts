@@ -1,0 +1,228 @@
+name: SSOT Drift + Cross-Ref/Gateway/Audit Verify
+
+# Phase 1 cascade CONS-5 — ssot-drift hook 3종 신설
+#  ① verify_cross_ref_drift   : schemas/*.json 의 $ref / _consumers cross-ref 일관성 점검
+#  ② verify_gateway_namespace : gateway_routing.json F1~F14 enum + ADR-001 F14 namespace 정합
+#  ③ verify_audit_chain       : audit-chain SSOT (선택) hash-chain previous_hash/entry_hash invariant
+#
+# 정책: 기존 ssot-check.yml 의 validate_ssot / gen_constants --check 가 codegen drift 를 잡고,
+#       본 workflow 는 의미론적 cross-cutting invariant 3 종을 추가 강제한다.
+# 실패 시: PR 머지 차단. fix 방법은 각 step 의 ::error:: 메시지 참조.
+
+on:
+  pull_request:
+    branches: [main, master]
+    paths-ignore:
+      - '**.md'
+      - 'docs/**'
+  push:
+    branches: [main, master]
+    paths-ignore:
+      - '**.md'
+      - 'docs/**'
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  verify_cross_ref_drift:
+    name: Verify schemas/ cross-ref drift
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Verify cross-ref drift (script if present, else inline)
+        run: |
+          set -e
+          if [ -f scripts/verify_cross_ref_drift.py ]; then
+            python scripts/verify_cross_ref_drift.py
+          else
+            python - <<'PY'
+          import json, sys
+          from pathlib import Path
+
+          schemas_dir = Path("energy_contracts/schemas")
+          if not schemas_dir.is_dir():
+              print("[skip] energy_contracts/schemas not found")
+              sys.exit(0)
+
+          files = sorted(schemas_dir.glob("*.json"))
+          names = {p.stem for p in files}
+          errors = []
+
+          for p in files:
+              try:
+                  data = json.loads(p.read_text(encoding="utf-8"))
+              except Exception as e:
+                  errors.append(f"{p.name}: JSON parse error: {e}")
+                  continue
+
+              # 1) _consumers cross-ref (목록만, 존재성은 sibling repo 부재 시 skip)
+              consumers = data.get("_consumers", []) if isinstance(data, dict) else []
+              if not isinstance(consumers, list):
+                  errors.append(f"{p.name}: _consumers must be list")
+
+              # 2) $ref drift (energy-contracts 내부 ref 만 검사)
+              def walk(obj, path="$"):
+                  if isinstance(obj, dict):
+                      for k, v in obj.items():
+                          if k == "$ref" and isinstance(v, str):
+                              if v.startswith("energy-contracts/"):
+                                  target = v.split("#", 1)[0].split("/", 1)[1]
+                                  target_stem = target.rsplit(".", 1)[0]
+                                  if target_stem not in names:
+                                      errors.append(f"{p.name}{path}.$ref={v} → schema '{target_stem}' missing")
+                          walk(v, f"{path}.{k}")
+                  elif isinstance(obj, list):
+                      for i, v in enumerate(obj):
+                          walk(v, f"{path}[{i}]")
+
+              walk(data)
+
+          if errors:
+              print("::error::Cross-ref drift detected:")
+              for e in errors:
+                  print(f"  - {e}")
+              sys.exit(1)
+          print(f"[ok] {len(files)} schemas — no cross-ref drift")
+          PY
+          fi
+
+  verify_gateway_namespace:
+    name: Verify gateway_routing F1~F14 namespace (ADR-001)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Verify gateway namespace (F14 = Policy Evaluation, ADR-001)
+        run: |
+          set -e
+          if [ -f scripts/verify_gateway_namespace.py ]; then
+            python scripts/verify_gateway_namespace.py
+          else
+            python - <<'PY'
+          import json, sys, re
+          from pathlib import Path
+
+          p = Path("energy_contracts/schemas/gateway_routing.json")
+          if not p.is_file():
+              print("[skip] gateway_routing.json not found")
+              sys.exit(0)
+
+          data = json.loads(p.read_text(encoding="utf-8"))
+          fns = data.get("default", {}).get("functions", [])
+          errors = []
+
+          # 1) F1~F14 id pattern + sub-id (F5b 등) 허용
+          id_re = re.compile(r"^F\d+[a-z]?$")
+          allowed_status = {"operational", "training_pending", "spec_only", "deprecated"}
+          ids = []
+          for f in fns:
+              fid = f.get("id", "")
+              if not id_re.match(fid):
+                  errors.append(f"function id '{fid}' violates ^F\\d+[a-z]?$")
+              ids.append(fid)
+              status = f.get("status", "")
+              if status not in allowed_status:
+                  errors.append(f"{fid} status='{status}' not in {allowed_status}")
+
+          # 2) ADR-001 — F14 = Policy Evaluation
+          f14 = next((f for f in fns if f.get("id") == "F14"), None)
+          if f14 is None:
+              errors.append("F14 missing (ADR-001 — Policy Evaluation Contract namespace)")
+          else:
+              name = f14.get("name", "")
+              if "Policy Evaluation" not in name:
+                  errors.append(f"F14 name='{name}' must contain 'Policy Evaluation' (ADR-001)")
+              # F14 paths 4종 (sync / async / polling / batch) 권장 — 경고만
+              paths = f14.get("paths", [])
+              if len(paths) < 4:
+                  print(f"::warning::F14 paths={len(paths)} < 4 (ADR-001 sync/async/polling/batch 권장)")
+
+          # 3) F12 = Internal agent proxy, F13 = Claude LLM (운영 점유 — ADR-001)
+          f12 = next((f for f in fns if f.get("id") == "F12"), None)
+          if f12 and "agent proxy" not in f12.get("name", "").lower() and "agent" not in f12.get("name", "").lower():
+              print(f"::warning::F12 name='{f12.get('name')}' — ADR-001 은 Internal agent proxy 점유")
+          f13 = next((f for f in fns if f.get("id") == "F13"), None)
+          if f13 and "claude" not in f13.get("name", "").lower() and "llm" not in f13.get("name", "").lower():
+              print(f"::warning::F13 name='{f13.get('name')}' — ADR-001 은 Claude LLM 점유")
+
+          if errors:
+              print("::error::Gateway namespace violations (ADR-001):")
+              for e in errors:
+                  print(f"  - {e}")
+              sys.exit(1)
+          print(f"[ok] gateway namespace — {len(ids)} functions, F14 = Policy Evaluation (ADR-001)")
+          PY
+          fi
+
+  verify_audit_chain:
+    name: Verify audit_chain invariants
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Verify audit chain (script if present, else schema invariant)
+        run: |
+          set -e
+          if [ -f scripts/verify_audit_chain.py ]; then
+            python scripts/verify_audit_chain.py
+          else
+            python - <<'PY'
+          import json, sys
+          from pathlib import Path
+
+          # audit_chain 전용 schema 가 부재할 수 있으므로, 발견되는 임의 audit_*.json 또는
+          # *.audit.json 에 대해 hash-chain invariant (previous_hash / entry_hash chained) 만 점검.
+          candidates = []
+          for d in [Path("energy_contracts/schemas"), Path("scratch"), Path("docs/audit")]:
+              if d.is_dir():
+                  candidates.extend(sorted(d.rglob("*audit*.json")))
+
+          if not candidates:
+              print("[skip] no audit_chain artifact present in energy-contracts (sibling repo 에서 강제)")
+              sys.exit(0)
+
+          errors = []
+          for p in candidates:
+              try:
+                  data = json.loads(p.read_text(encoding="utf-8"))
+              except Exception as e:
+                  errors.append(f"{p}: parse error: {e}")
+                  continue
+              entries = data.get("entries") or data.get("default", {}).get("entries") or []
+              if not isinstance(entries, list) or not entries:
+                  continue
+              prev = None
+              for i, e in enumerate(entries):
+                  if not isinstance(e, dict):
+                      continue
+                  ph = e.get("previous_hash")
+                  eh = e.get("entry_hash")
+                  if i == 0:
+                      if ph not in (None, "", "0" * 64):
+                          errors.append(f"{p.name}[0].previous_hash must be null/zero, got '{ph}'")
+                  else:
+                      if ph != prev:
+                          errors.append(f"{p.name}[{i}].previous_hash != previous entry_hash")
+                  prev = eh
+
+          if errors:
+              print("::error::Audit chain invariants violated:")
+              for e in errors:
+                  print(f"  - {e}")
+              sys.exit(1)
+          print(f"[ok] audit chain — {len(candidates)} artifact(s) consistent")
+          PY
+          fi
