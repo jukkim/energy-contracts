@@ -15,7 +15,9 @@ ESS_SOC_MIN_PCT = 10.0
 LIGHTING_MIN_PCT = 20.0
 
 SETPOINT_PATTERN = re.compile(
-    r"(?:냉방|난방|setpoint|HVAC|에어컨|히터).{0,20}?(\d{1,2}(?:\.\d)?)\s*°?C"
+    # 사냥꾼 FIX (MEDIUM): \d{1,2} 는 "226.0°C" 를 "26.0" 으로 절단 → 18~28 범위 내로 오판 →
+    #   극단 과부하가 fail-open(PASS). \d{1,3} 으로 3자리 setpoint 온전 캡처 → 정상 FAIL.
+    r"(?:냉방|난방|setpoint|HVAC|에어컨|히터).{0,20}?(\d{1,3}(?:\.\d)?)\s*°?C"
 )
 PMV_PATTERN = re.compile(r"PMV[^0-9-]*(-?\d+(?:\.\d+)?)")
 SOC_PATTERN = re.compile(r"(?:SOC|ESS\s*SOC|배터리\s*잔량)[^0-9]*(\d+(?:\.\d+)?)\s*%")

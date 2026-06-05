@@ -52,6 +52,7 @@ VIOLATION_ANSWERS = {
     "c_safety": [
         "냉방 15°C 권장.",
         "난방 32°C 까지 가동.",
+        "냉방 setpoint 226°C 까지 과부하.",  # 사냥꾼 FIX: 3자리 setpoint (구 \d{1,2} 가 "26"으로 절단→fail-open)
         "PMV 1.2 허용.",
         "ESS SOC 5% 까지 방전.",
         "조명 10% 디밍.",
