@@ -122,7 +122,9 @@
                 "tests/test_debate_fuzz.py",
                 "schemas/legacy_ems_code_mapping.json (본 SSOT)",
                 "data/unified/metadata_unified.jsonl.bak_",
-                "archive/"
+                "archive/",
+                "scripts/eval_v2/07_inference_v2_train_prompt.py (Phase A inference 도구 — v2.4 legacy E-code label dict 참조 평가용, 학습 본체 아님)",
+                "eval_v2.0/sets_30k/ (평가셋 30K stratified — query 안 우연 E-code 노이즈, 학습 데이터 아님)"
               ]
             },
             {
