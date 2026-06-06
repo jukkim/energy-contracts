@@ -149,7 +149,7 @@
     },
     "QaTypeEntry": {
       "type": "object",
-      "required": ["id", "qa_type", "category", "requires_fields"],
+      "required": ["id", "qa_type", "category", "requires_fields", "responsible_model"],
       "additionalProperties": false,
       "properties": {
         "id": {
@@ -167,6 +167,10 @@
         "requires_fields": {
           "type": "array",
           "items": {"enum": ["building", "city", "hvac", "ems", "ems_compare_to", "base_ems", "cooling_setpoint", "heating_setpoint", "area_m2"]}
+        },
+        "responsible_model": {
+          "enum": ["qwen_v25", "exaone_v25", "korean_bb_twgauss"],
+          "description": "본 qa_type 의 책임 모델 (8.simulation/CLAUDE.md 의 시계열 책임 분담 SSOT). LLM 응답이 책임 모델인 경우 F2 가 정상 라우팅. korean_bb_twgauss 책임 qa_type 은 F2 → 422 reject + F4 가이드 (Korean_BB :8040 /v1/forecast/24h)."
         }
       }
     },
@@ -244,23 +248,23 @@
       ], "status": "spec_only", "external_facing": true, "requires_persona_role": ["household", "building_owner", "facility_manager", "govt", "admin"], "requires_dual_signoff": true, "tier": "slow", "ssot_refs": ["ADR-001-f14-policy-evaluation-namespace.md", "AI 챔피언 plan v1.9.2 §6.5 G-PE1~G-PE3", "UNIFIED_GATEWAY_DESIGN.md v1.2 §3 F14"]}
     ],
     "qa_types": [
-      {"id": "Q1", "qa_type": "comfort", "category": "쾌적도(PMV) + 온습도 변동", "requires_fields": ["city", "building"]},
-      {"id": "Q2", "qa_type": "cost_prediction", "category": "연간 비용 + EUI", "requires_fields": ["city", "building", "hvac"]},
-      {"id": "Q3", "qa_type": "comparison", "category": "EMS 전략 직접 비교", "requires_fields": ["city", "building", "ems", "ems_compare_to"]},
-      {"id": "Q4", "qa_type": "savings", "category": "절감률 + 비용 회수기간", "requires_fields": ["city", "building", "ems"]},
-      {"id": "Q5", "qa_type": "diagnosis", "category": "운영 이상 진단", "requires_fields": ["city", "building"]},
-      {"id": "Q6", "qa_type": "peak_management", "category": "피크 시간대 관리", "requires_fields": ["city", "building"]},
-      {"id": "Q7", "qa_type": "system_analysis", "category": "HVAC 운영 분석", "requires_fields": ["city", "building", "hvac"]},
-      {"id": "Q8", "qa_type": "end_use_breakdown", "category": "용도별 에너지 분해", "requires_fields": ["city", "building"]},
-      {"id": "Q9", "qa_type": "timeseries_next_day", "category": "익일 24h 시간대별 부하", "requires_fields": ["city", "building"]},
-      {"id": "Q10", "qa_type": "timeseries_peak_hour", "category": "피크 발생 시간 + 크기", "requires_fields": ["city", "building"]},
-      {"id": "Q11", "qa_type": "timeseries_168h_24h", "category": "1주 패턴 기반 익일 24h", "requires_fields": ["city", "building"]},
-      {"id": "Q12", "qa_type": "ems_compatibility", "category": "HVAC×EMS 호환성", "requires_fields": ["hvac", "ems"]},
-      {"id": "Q13", "qa_type": "ems_compare", "category": "EMS 직접 비교", "requires_fields": ["city", "building", "ems", "ems_compare_to"]},
-      {"id": "Q14", "qa_type": "ems_recommend", "category": "EMS 추천 순위", "requires_fields": ["city", "building", "hvac"]},
-      {"id": "Q15", "qa_type": "ems_incremental", "category": "증분 기여도", "requires_fields": ["city", "building", "ems", "base_ems"]},
-      {"id": "Q16", "qa_type": "ems_synergy", "category": "시너지 분석", "requires_fields": ["city", "building", "ems", "ems_compare_to"]},
-      {"id": "Q17", "qa_type": "ems_savings_measured", "category": "실측 절감률 보고", "requires_fields": ["city", "building", "ems"]}
+      {"id": "Q1", "qa_type": "comfort", "category": "쾌적도(PMV) + 온습도 변동", "requires_fields": ["city", "building"], "responsible_model": "exaone_v25"},
+      {"id": "Q2", "qa_type": "cost_prediction", "category": "연간 비용 + EUI", "requires_fields": ["city", "building", "hvac"], "responsible_model": "exaone_v25"},
+      {"id": "Q3", "qa_type": "comparison", "category": "EMS 전략 직접 비교", "requires_fields": ["city", "building", "ems", "ems_compare_to"], "responsible_model": "exaone_v25"},
+      {"id": "Q4", "qa_type": "savings", "category": "절감률 + 비용 회수기간", "requires_fields": ["city", "building", "ems"], "responsible_model": "exaone_v25"},
+      {"id": "Q5", "qa_type": "diagnosis", "category": "운영 이상 진단", "requires_fields": ["city", "building"], "responsible_model": "exaone_v25"},
+      {"id": "Q6", "qa_type": "peak_management", "category": "피크 시간대 관리", "requires_fields": ["city", "building"], "responsible_model": "exaone_v25"},
+      {"id": "Q7", "qa_type": "system_analysis", "category": "HVAC 운영 분석", "requires_fields": ["city", "building", "hvac"], "responsible_model": "exaone_v25"},
+      {"id": "Q8", "qa_type": "end_use_breakdown", "category": "용도별 에너지 분해", "requires_fields": ["city", "building"], "responsible_model": "exaone_v25"},
+      {"id": "Q9", "qa_type": "timeseries_next_day", "category": "익일 24h 시간대별 부하", "requires_fields": ["city", "building"], "responsible_model": "korean_bb_twgauss"},
+      {"id": "Q10", "qa_type": "timeseries_peak_hour", "category": "피크 발생 시간 + 크기", "requires_fields": ["city", "building"], "responsible_model": "korean_bb_twgauss"},
+      {"id": "Q11", "qa_type": "timeseries_168h_24h", "category": "1주 패턴 기반 익일 24h", "requires_fields": ["city", "building"], "responsible_model": "korean_bb_twgauss"},
+      {"id": "Q12", "qa_type": "ems_compatibility", "category": "HVAC×EMS 호환성", "requires_fields": ["hvac", "ems"], "responsible_model": "exaone_v25"},
+      {"id": "Q13", "qa_type": "ems_compare", "category": "EMS 직접 비교", "requires_fields": ["city", "building", "ems", "ems_compare_to"], "responsible_model": "exaone_v25"},
+      {"id": "Q14", "qa_type": "ems_recommend", "category": "EMS 추천 순위", "requires_fields": ["city", "building", "hvac"], "responsible_model": "exaone_v25"},
+      {"id": "Q15", "qa_type": "ems_incremental", "category": "증분 기여도", "requires_fields": ["city", "building", "ems", "base_ems"], "responsible_model": "exaone_v25"},
+      {"id": "Q16", "qa_type": "ems_synergy", "category": "시너지 분석", "requires_fields": ["city", "building", "ems", "ems_compare_to"], "responsible_model": "exaone_v25"},
+      {"id": "Q17", "qa_type": "ems_savings_measured", "category": "실측 절감률 보고", "requires_fields": ["city", "building", "ems"], "responsible_model": "exaone_v25"}
     ],
     "tools": [
       {"name": "reverse_full_diagnosis", "backend_id": "reverse", "function_id_ref": "F5", "upstream_url_env": "REVERSE_URL"},
