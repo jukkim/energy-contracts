@@ -323,3 +323,56 @@ class TestParityBE3D:
         # 단순 산식 검증
         assert b.scope_1_gas == pytest.approx(50 * 75 * 0.2036)
         assert b.scope_2_electricity == pytest.approx(800 * 75 * 0.4173)
+
+
+class TestOverrideValueGuard:
+    """사냥꾼 라운드 M3 (2026-06-08): override 값 검증 — NaN/Inf/음수/bool 차단."""
+
+    def _base(self, overrides):
+        return compose_scope(
+            ScopeInputs(area_m2=100.0, electricity_kwh_m2=100.0, manual_overrides=overrides),
+            _fxs(),
+        )
+
+    def test_nan_override_ignored(self):
+        b = self._base({"scope_1_gas_co2_kg": float("nan")})
+        import math
+        assert math.isfinite(b.total_co2_kg), "NaN override 가 total 을 오염시키면 안 됨"
+
+    def test_inf_override_ignored(self):
+        b = self._base({"scope_2_electricity_co2_kg": float("inf")})
+        import math
+        assert math.isfinite(b.total_co2_kg)
+
+    def test_negative_override_ignored(self):
+        # 음수 배출량은 물리적으로 무의미 → computed 유지
+        computed = self._base({}).scope_1_gas
+        b = self._base({"scope_1_gas_co2_kg": -100.0})
+        assert b.scope_1_gas == computed
+
+    def test_bool_override_ignored(self):
+        computed = self._base({}).scope_3_waste
+        b = self._base({"scope_3_waste_co2_kg": True})
+        assert b.scope_3_waste == computed
+
+    def test_valid_override_applied(self):
+        b = self._base({"scope_1_gas_co2_kg": 42.5})
+        assert b.scope_1_gas == 42.5
+
+
+class TestEmbodiedKeyVintageOrdering:
+    """사냥꾼 라운드 LOW (2026-06-08): 범위 라벨은 시작연도 기준 분류."""
+
+    def test_range_label_uses_start_year(self):
+        # '2010-2017' 은 post2017 이 아니라 2010_2017 (시작연도 2010)
+        assert embodied_key("RC", "2010-2017") == "RC_2010_2017"
+
+    def test_bare_2017_still_post(self):
+        assert embodied_key("RC", "y2017") == "RC_post2017"
+
+    def test_post_label_still_post(self):
+        assert embodied_key("RC", "post") == "RC_post2017"
+
+    def test_canonical_unchanged(self):
+        assert embodied_key("RC", "2010_2017") == "RC_2010_2017"
+        assert embodied_key("S", "post2017") == "S_post2017"

@@ -1,20 +1,35 @@
-"""ai_model_registry v1.1 — Track 3 G0 hash freeze 단위 시험 (PRD v1.5).
+"""ai_model_registry — Track 3 G0 hash freeze 단위 시험 (PRD v1.5).
 
 검증 범위:
 1. schema 로딩 + frozen_for_demo / gateway_verify_policy 필드 존재
 2. frozen_for_demo 4 모델 모두 models dict 에 존재 (orphan reference 차단)
 3. ModelEntry 의 active_checkpoint / backend_url / retrain_type 필드 패턴
 4. retrain_type enum 값 ("type_1_sim" | "type_2_real") 유효성
+5. frozen 모델 active_checkpoint 정확값 pin (demo 모델 silent drift 차단)
 """
 from __future__ import annotations
 
 from energy_contracts import load_schema
 
+# 사냥꾼 라운드 M10 (2026-06-08): hash freeze 의 핵심 의도(불변성)를 강제하려면
+#   active_checkpoint 의 '존재'가 아니라 '정확값'을 pin 해야 한다. 본선 frozen 4 모델의
+#   checkpoint 를 의도적으로 교체하려면 본 dict 도 동반 수정 → PR 리뷰 강제.
+EXPECTED_FROZEN_CHECKPOINTS = {
+    "korean_bb": "TransformerWithGaussian-M-v3-3k_bb700_s18000_revin_on_best.pt",
+    "ems_transformer": "qwen2.5-7b-qlora-final",
+    "korean_bb_residential": "v0.3-development",
+    "reverse": "llm_v2_final_run_20260505_182617+lightgbm_v1+m_bits=16",
+}
+
 
 def test_schema_loadable() -> None:
     """schema 가 load_schema 로 로딩 가능."""
     r = load_schema("ai_model_registry")
-    assert r["version"] == "1.1"
+    # 사냥꾼 라운드 M13 (2026-06-08): version 정확값 하드코딩은 minor bump 마다 false-fail.
+    #   불변성(default/models 키)은 아래에서 검증하므로 version 은 minor-agnostic 최소 비교.
+    assert tuple(int(x) for x in r["version"].split(".")) >= (1, 1), (
+        f"ai_model_registry version 은 1.1 이상이어야 함 (현재 {r['version']})"
+    )
     assert "default" in r
     assert "models" in r["default"]
 
@@ -46,6 +61,25 @@ def test_frozen_models_have_active_checkpoint() -> None:
         if not models[mid].get("active_checkpoint")
     ]
     assert not missing, f"frozen models without active_checkpoint: {missing}"
+
+
+def test_frozen_checkpoints_pinned() -> None:
+    """frozen 모델의 active_checkpoint 정확값 pin — silent drift 차단 (사냥꾼 M10).
+
+    checkpoint 를 의도적으로 교체하려면 EXPECTED_FROZEN_CHECKPOINTS 도 동반 수정해야
+    하므로 PR 리뷰에서 demo 모델 변경이 드러난다.
+    """
+    r = load_schema("ai_model_registry")
+    models = r["default"]["models"]
+    drift = {
+        mid: (models[mid].get("active_checkpoint"), expected)
+        for mid, expected in EXPECTED_FROZEN_CHECKPOINTS.items()
+        if models[mid].get("active_checkpoint") != expected
+    }
+    assert not drift, (
+        f"frozen checkpoint drift (actual, expected): {drift}. "
+        "의도된 변경이면 EXPECTED_FROZEN_CHECKPOINTS 동반 갱신 필요."
+    )
 
 
 def test_gateway_verify_policy_valid() -> None:

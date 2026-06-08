@@ -135,6 +135,58 @@ def test_carbon_critic_zero_tolerance(critics):
     assert any(v["rule"] == "outdated_electricity_factor" for v in r_outdated.violations)
 
 
+def test_safety_critic_hard_interlock_zero_tolerance(critics):
+    """C-Safety hard interlock (setpoint/SOC) 은 단건만으로 FAIL — 룰별 차등 정책.
+
+    사냥꾼 라운드 M1/M12 (사용자 결정 2026-06-08): 물리 interlock 은 Carbon/Data 와
+    동일하게 zero-tolerance. 단건 setpoint 범위초과 / ESS SOC floor 미만 → FAIL.
+    """
+    c = critics["c_safety"]
+    r_setpoint = c.review("냉방 setpoint 226°C 까지 과부하.")
+    assert r_setpoint.verdict == Verdict.FAIL, (
+        f"단건 setpoint 초과는 hard interlock → FAIL. 실제: {r_setpoint.verdict}"
+    )
+    assert any(v["rule"] == "hvac_setpoint_out_of_range" for v in r_setpoint.violations)
+
+    r_soc = c.review("ESS SOC 5% 까지 방전.")
+    assert r_soc.verdict == Verdict.FAIL
+    assert any(v["rule"] == "ess_soc_below_floor" for v in r_soc.violations)
+
+
+def test_safety_critic_soft_rule_single_warns(critics):
+    """C-Safety soft 룰 (조명/PMV) 단건은 WARN (FAIL 아님) — 룰별 차등 정책."""
+    c = critics["c_safety"]
+    r_light = c.review("조명 10% 디밍.")
+    assert r_light.verdict == Verdict.WARN, (
+        f"단건 조명 floor 미만은 soft → WARN. 실제: {r_light.verdict}"
+    )
+    assert any(v["rule"] == "lighting_below_floor" for v in r_light.violations)
+
+    r_pmv = c.review("PMV 1.2 허용.")
+    assert r_pmv.verdict == Verdict.WARN
+    assert any(v["rule"] == "pmv_out_of_comfort" for v in r_pmv.violations)
+
+
+def test_data_critic_public_mode_real_data(critics):
+    """C-Data public 노출 모드 — 익명화 없이 '실측'/'measured' 언급 시 FAIL.
+
+    사냥꾼 라운드 LOW (2026-06-08): public-mode 분기가 테스트 미보호였고 영문
+    'measured'/'real building' 미커버였음. 한/영 모두 검출 + 익명화 시 통과 확인.
+    """
+    c = critics["c_data"]
+    pub = {"disclose_mode": "public"}
+    # 한글 '실측' 익명화 없이 → FAIL
+    r_ko = c.review("실측 데이터로 검증함.", pub)
+    assert r_ko.verdict == Verdict.FAIL
+    assert any(v["rule"] == "real_data_mentioned_without_anonymization" for v in r_ko.violations)
+    # 영문 'measured' 익명화 없이 → FAIL (이전엔 미커버)
+    r_en = c.review("Validated on measured building data.", pub)
+    assert r_en.verdict == Verdict.FAIL
+    # 익명화 표현 있으면 통과
+    r_ok = c.review("비공개 한국 실측 데이터셋으로 검증.", pub)
+    assert r_ok.verdict == Verdict.PASS
+
+
 def test_critic_result_serializable(critics):
     """CriticResult.to_dict() 직렬화 — Layer 2 audit chain 적재 호환."""
     c = critics["c_legal"]

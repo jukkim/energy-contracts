@@ -82,19 +82,42 @@ def test_clean_dispatch_passes(gate):
 
 
 def test_safety_violation_blocks_dispatch(gate):
-    """과도한 kW 감축 → setpoint 시프트 추정이 28°C 초과 → Safety FAIL."""
+    """과도한 kW 감축 → setpoint 시프트 추정이 28°C 초과 → Safety FAIL → block.
+
+    사냥꾼 라운드 M1/M11 (2026-06-08): hvac_setpoint_out_of_range 는 hard interlock 이라
+    단건도 FAIL → decision='block'. 이전엔 ('block','warn') OR 단언이라 fail-open 회귀를
+    가렸으나, 이제 정확히 'block' 을 단언한다.
+    """
     evt = _clean_event()
     # 1 건물에 500 kW 감축 → +10°C 시프트 추정 → 36°C (28°C 초과)
     evt["allocations"] = [{"member_id": "OFFICE-001", "reduction_kw": 500.0}]
     evt["target_kw"] = 500.0
     verdict = gate.evaluate_dispatch(evt)
-    assert verdict.decision in ("block", "warn"), (
-        f"unsafe setpoint should be flagged; got {verdict.decision}"
+    assert verdict.decision == "block", (
+        f"unsafe setpoint (hard interlock) must block; got {verdict.decision}"
     )
-    # 최소 1 개의 hvac_setpoint_out_of_range 위반
     safety_r = next(r for r in verdict.results if r.critic_name == "c_safety")
+    assert safety_r.verdict == Verdict.FAIL
     rules = {v["rule"] for v in safety_r.violations}
     assert "hvac_setpoint_out_of_range" in rules
+
+
+def test_soft_safety_single_violation_warns_not_blocks(gate):
+    """soft 룰 (조명) 단건 위반 → WARN (block 아님) — 룰별 차등 정책.
+
+    사냥꾼 라운드 M1 (2026-06-08): hard interlock(setpoint/SOC)은 단건 block,
+    soft(조명/PMV)는 단건 WARN 으로 dispatch 진행.
+    """
+    evt = _clean_event()
+    # 조명 15% (floor 20% 미만) 단건 — soft 위반. setpoint/SOC 위반 없게 소량 감축.
+    evt["allocations"] = [{"member_id": "OFFICE-001", "reduction_kw": 10.0, "lighting_pct": 15}]
+    evt["target_kw"] = 10.0
+    verdict = gate.evaluate_dispatch(evt)
+    safety_r = next(r for r in verdict.results if r.critic_name == "c_safety")
+    rules = {v["rule"] for v in safety_r.violations}
+    assert "lighting_below_floor" in rules
+    assert safety_r.verdict == Verdict.WARN
+    assert verdict.decision == "warn"
 
 
 def test_data_nda_fingerprint_blocks(gate):
@@ -126,6 +149,26 @@ def test_cache_miss_on_different_target_kw(gate):
     gate.evaluate_dispatch(e1)
     second = gate.evaluate_dispatch(e2)
     assert second.cache_hit is False
+
+
+def test_cache_miss_on_different_reduction_kw(gate):
+    """같은 group/target/members + 다른 per-building reduction_kw → cache miss (H1 회귀 가드).
+
+    사냥꾼 라운드 H1 (2026-06-08): 시그니처가 per-allocation reduction_kw 를 무시하면
+    위험 dispatch(과도한 kW → setpoint 초과)가 이전 안전한 dispatch 의 PASS 를 stale
+    cache hit 으로 받아 Safety 평가 없이 통과(fail-open)한다. 시그니처에 안전 지표를
+    포함하므로 이제 반드시 재평가되어야 한다.
+    """
+    e1 = _clean_event()  # 안전 (20 kW/건물)
+    e2 = _clean_event()
+    # 동일 group/target/members 지만 per-building kW 만 위험 수준으로
+    e2["allocations"] = [{"member_id": "OFFICE-001", "reduction_kw": 5000.0}]
+    e1["allocations"] = [{"member_id": "OFFICE-001", "reduction_kw": 20.0}]
+    first = gate.evaluate_dispatch(e1)
+    second = gate.evaluate_dispatch(e2)
+    assert first.decision == "pass"
+    assert second.cache_hit is False, "다른 reduction_kw 는 stale cache hit 되면 안 됨 (H1)"
+    assert second.decision == "block", "위험 dispatch 는 재평가되어 block 되어야 함"
 
 
 def test_clear_cache(gate):

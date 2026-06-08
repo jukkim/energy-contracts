@@ -210,3 +210,25 @@ class TestParitySwapCircuitBreaker:
         p = load_policy("external_api")
         # 큰 repeats → 86400 (24h) 상한
         assert compute_delay(20, p) == 86400.0
+
+
+class TestRobustnessHunterRound:
+    """사냥꾼 라운드 LOW (2026-06-08): overflow 가드 + decorrelated 하한 클램프."""
+
+    def test_huge_factor_no_overflow(self):
+        # 거대 factor 에서도 OverflowError 없이 max_seconds 로 포화
+        p = BackoffPolicy(base_seconds=1.0, factor=1e308, max_seconds=1e9)
+        d = compute_delay(3, p)
+        assert d == 1e9
+
+    def test_decorrelated_base_gt_max_clamped(self):
+        # base>max 오설정 — 하한이 max 를 넘지 않아 jitter 가 무효화되지 않음
+        p = BackoffPolicy(
+            base_seconds=10.0, factor=2.0, max_seconds=5.0,
+            jitter=JitterStrategy.DECORRELATED,
+        )
+        # rng 하한이 capped(=5)로 클램프되므로 rng(5, 15) 범위에서 동작
+        lo_seen = compute_delay(1, p, random_fn=lambda a, b: a)
+        assert lo_seen == 5.0  # min(max=5, rng 하한 5)
+        hi_seen = compute_delay(1, p, random_fn=lambda a, b: b)
+        assert hi_seen == 5.0  # min(max=5, 큰 값) = 5

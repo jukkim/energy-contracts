@@ -18,6 +18,7 @@ manual_overrides 는 화이트리스트 (OVERRIDE_ALLOWED) 안에서만 적용.
 """
 from __future__ import annotations
 
+import math
 from dataclasses import dataclass, field
 from typing import Any
 
@@ -206,10 +207,23 @@ def compose_scope(inputs: ScopeInputs, factors: ScopeFactors) -> ScopeBreakdown:
 
 
 def _override(overrides: dict[str, Any], key: str, computed: float) -> float:
-    """화이트리스트 통과 시 override, 아니면 computed 그대로."""
+    """화이트리스트 통과 시 override, 아니면 computed 그대로.
+
+    사냥꾼 라운드 M3 (2026-06-08): manual_overrides 는 외부 입력 화이트리스트(보안
+    경계)인데 float() 변환 성공만 보고 값을 검증하지 않아 NaN/Inf/음수/bool 이
+    그대로 통과 → total_co2_kg 가 NaN 으로 조용히 오염(DB UPSERT/JSON 전파)됐다.
+    이제 finite ∧ ≥0 인 실수만 적용하고, 그 외(NaN/Inf/음수/bool/비수치)는 computed 유지.
+    """
     if key in OVERRIDE_ALLOWED and key in overrides:
+        raw = overrides[key]
+        # bool 은 int 하위형 — kgCO2 값으로 의미 없음, 명시 차단.
+        if isinstance(raw, bool):
+            return computed
         try:
-            return float(overrides[key])
+            val = float(raw)
         except (TypeError, ValueError):
             return computed
+        if not math.isfinite(val) or val < 0:
+            return computed
+        return val
     return computed

@@ -48,7 +48,10 @@ def format_slowapi(policy: RateLimitPolicy) -> str:
         return f"{policy.requests}/hour"
     if sec == 86400:
         return f"{policy.requests}/day"
-    return f"{policy.requests} per {int(sec)} seconds"
+    # 사냥꾼 라운드 LOW (2026-06-08): slowapi 는 정수 초만 받는다. 기존 int() 절삭은
+    #   90.5→90 처럼 항상 window 를 짧게(rate-limit 빡빡하게) 만드는 편향 → round() 로
+    #   최근접 정수 사용. (현 schema 의 period_seconds 는 전부 정수라 실사용 영향 없음.)
+    return f"{policy.requests} per {int(round(sec))} seconds"
 
 
 def load_policy(use_case: str) -> RateLimitPolicy:

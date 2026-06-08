@@ -40,6 +40,12 @@ ANONYMIZED_OK_PATTERNS = [
     "private_set_",
 ]
 
+# public 노출 모드에서 익명화 없이 등장하면 위반인 "실측 데이터" 시그널 (한/영).
+# 사냥꾼 라운드 LOW (2026-06-08): 기존 'any("실측" in answer for _ in [0])' 난독 표현 +
+#   영문 'measured'/'real building' 미커버 해소.
+REAL_DATA_KO = "실측"
+REAL_DATA_EN = ("measured", "real building", "real-building")
+
 
 class DataCritic(Critic):
     name = "c_data"
@@ -69,7 +75,8 @@ class DataCritic(Critic):
                 if ok in answer:
                     break
             else:
-                if any("실측" in answer for _ in [0]):
+                low = answer.lower()
+                if REAL_DATA_KO in answer or any(k in low for k in REAL_DATA_EN):
                     violations.append({
                         "rule": "real_data_mentioned_without_anonymization",
                         "remediation": "외부 노출 시 익명화 표현 의무",

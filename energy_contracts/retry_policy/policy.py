@@ -89,7 +89,12 @@ def compute_delay(
     elif effective_attempt - 1 > 30:
         raw = policy.max_seconds
     else:
-        raw = policy.base_seconds * (policy.factor ** (effective_attempt - 1))
+        # 사냥꾼 라운드 LOW (2026-06-08): 가드가 지수 '횟수'만 보고 factor 크기를 무시해
+        #   거대 factor(상한 미설정 schema)에서 OverflowError 가능 → max_seconds 로 포화.
+        try:
+            raw = policy.base_seconds * (policy.factor ** (effective_attempt - 1))
+        except OverflowError:
+            raw = policy.max_seconds
 
     capped = min(raw, policy.max_seconds)
 
@@ -103,7 +108,10 @@ def compute_delay(
         half = capped / 2.0
         return half + rng(0.0, half)
     if policy.jitter == JitterStrategy.DECORRELATED:
-        return min(policy.max_seconds, rng(policy.base_seconds, capped * 3.0))
+        # 사냥꾼 라운드 LOW (2026-06-08): base_seconds>capped(=max) 오설정 시 rng 하한이
+        #   max 를 넘어 항상 max 로 포화(jitter 무효) → 하한을 capped 로 클램프.
+        lo = min(policy.base_seconds, capped)
+        return min(policy.max_seconds, rng(lo, capped * 3.0))
     return capped
 
 

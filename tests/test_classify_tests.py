@@ -99,3 +99,22 @@ def test_raw_with_dangling_import_stripped_together():
     assert "import pytest as _ssot_pytest" not in out, "dangling alias import 가 남음"
     assert "import os" in out, "관련 없는 import 가 함께 삭제됨"
     assert "def test_x(): pass" in out
+
+
+# ── 사냥꾼 라운드 LOW (2026-06-08): G6 auth 판정 word-boundary 회귀 ──
+from classify_tests import _is_auth_test  # noqa: E402
+
+
+@pytest.mark.parametrize("fname,expected", [
+    ("test_token_bucket.py", False),        # rate limiter — 구버전 오탐
+    ("test_engineering_session.py", False),  # commissioning — 구버전 오탐
+    ("test_cookie_banner.py", False),        # UI
+    ("test_auth_login.py", True),
+    ("test_jwt.py", True),
+    ("test_oauth_flow.py", True),
+    ("test_permissions.py", True),
+    ("test_rbac.py", True),
+])
+def test_is_auth_test_name_word_boundary(fname, expected):
+    # 빈 본문 → 파일명만으로 판정 (import 시그널 배제)
+    assert _is_auth_test(Path(fname), text="") is expected

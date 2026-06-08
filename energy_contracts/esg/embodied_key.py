@@ -84,13 +84,16 @@ def _normalize_vintage(vintage_class: str | None) -> str | None:
     v_lower = v.lower()
     if "pre" in v_lower and ("1980" in v or v_lower == "pre"):
         return "pre1980"
-    if "post" in v_lower or "2017" in v:
-        return "post2017"
+    # 사냥꾼 라운드 LOW (2026-06-08): 범위 라벨('2010-2017','2010~2017')은 시작연도
+    #   기준으로 분류한다. 구버전은 '2017' 분기가 먼저라 '2010-2017' 이 post2017 로
+    #   오분류됐다 → 구체적 구간(2010/2000/1980)을 '2017'/'post' fallback 보다 먼저 검사.
     if "2010" in v:
         return "2010_2017"
     if "2000" in v:
         return "2000_2010"
     if "1980" in v or "1990" in v:
         return "1980_2000"
+    if "post" in v_lower or "2017" in v:
+        return "post2017"
 
     return None
