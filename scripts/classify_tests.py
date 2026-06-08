@@ -107,10 +107,13 @@ def estimate_tier(fp: Path, text: str) -> str:
 # 'scope' 단어는 carbon Scope1/2/3, lighting/zoom scope 등 광범위 오탐 — 제외하고
 # 'auth_scope', 'oauth_scope', 'rbac_scope' 같은 합성어만 매치.
 # SSOT: 향후 test_classification.json#group_keyword_hints.G6 로 이동 예정.
-_AUTH_RBAC_NAME_HINTS = (
-    "auth", "rbac", "api_key", "api_keys", "oauth", "jwt",
-    "permission", "permissions", "csrf", "login", "logout",
-    "session", "token", "cookie",
+#
+# 사냥꾼 라운드 LOW (2026-06-08): 기존엔 'token'/'session'/'cookie' 를 파일명 substring 으로
+#   매치해 test_token_bucket.py(rate limiter)·test_engineering_session.py(commissioning)
+#   같은 auth 무관 테스트가 G6 오부여됐다. → 명확한 auth 토큰만 word-boundary 로 매치하고,
+#   모호한 token/session/cookie 는 파일명 단독으로는 부여하지 않고 본문 import 시그널에 위임.
+_AUTH_STRONG_NAME_RE = re.compile(
+    r"(?:^|[_\-.])(?:auth|rbac|oauth|jwt|login|logout|csrf|api[_-]?key|permission)s?(?=$|[_\-.])"
 )
 _AUTH_RBAC_IMPORT_PAT = re.compile(
     r"(from\s+src\.auth|import\s+jwt|jwt\.(decode|encode)|HTTPBearer|"
@@ -121,11 +124,13 @@ _AUTH_RBAC_IMPORT_PAT = re.compile(
 def _is_auth_test(fp: Path, text: str | None = None) -> bool:
     """파일명/import 분석으로 G6 (Auth-RBAC) cross-cutting 판정.
 
-    1) 파일명에 auth 키워드 포함 (auth/rbac/oauth/jwt/login/session/token/cookie 등)
+    1) 파일명에 명확한 auth 토큰 포함 (auth/rbac/oauth/jwt/login/logout/csrf/api_key/permission)
+       — word-boundary 매치 (substring 오탐 방지)
     2) 본문에 auth 관련 import/심볼 포함 (jwt.decode, HTTPBearer, require_auth, ...)
+       — 모호한 session/token/cookie 류는 이 본문 시그널이 있을 때만 G6.
     """
     name = fp.name.lower()
-    if any(h in name for h in _AUTH_RBAC_NAME_HINTS):
+    if _AUTH_STRONG_NAME_RE.search(name):
         return True
     if text is None:
         try:

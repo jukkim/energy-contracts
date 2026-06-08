@@ -1,4 +1,4 @@
-"""26 SSOT 스키마 → Pydantic v2 BaseModel 일괄 생성 (Phase L-2).
+"""SSOT 스키마 전체 → Pydantic v2 BaseModel 일괄 생성 (Phase L-2).
 
 datamodel-code-generator 기반.
 - 자체 gen_constants.py 는 'dict 형태 상수' 생성 (런타임 import).
@@ -65,7 +65,12 @@ def _resolve_external_refs(schema: dict[str, Any]) -> dict[str, Any]:
         defname = _safe_defname(set(schema["$defs"].keys()), path_part, fragment_tail)
         schema["$defs"][defname] = node
         new_ref = f"#/$defs/{defname}"
+        # cache 를 먼저 등록(순환 ref 방어) 후, 인라인된 node 의 transitive 외부 ref 를
+        # 그 자리에서 재해소한다. 사냥꾼 라운드 M7 (2026-06-08): 기존엔 walk 가 $defs 를
+        # 순회한 뒤 properties 처리 중 추가된 $def 내부의 외부 ref 가 미해소로 남아,
+        # 2 단계 cross-file ref 도입 시 datamodel-codegen 입력에 외부 $ref 가 새어 FAIL 했다.
         cache[(path_part, fragment)] = new_ref
+        walk(node)
         return new_ref
 
     def walk(node: Any) -> None:
@@ -124,6 +129,11 @@ def gen_one(schema_fp: Path) -> int:
     ]
     try:
         r = subprocess.run(cmd, capture_output=True, text=True)
+    except FileNotFoundError:
+        # 사냥꾼 라운드 LOW (2026-06-08): datamodel-codegen 미설치 시 traceback 대신 안내.
+        print("[ERROR] datamodel-codegen 미설치 — "
+              "`pip install datamodel-code-generator[ruff]` 후 재시도")
+        return 2
     finally:
         if has_external:
             try:
@@ -140,7 +150,7 @@ def gen_one(schema_fp: Path) -> int:
 
 def main() -> int:
     ap = argparse.ArgumentParser()
-    ap.add_argument("--all", action="store_true", help="26 schema 전체 생성")
+    ap.add_argument("--all", action="store_true", help="schemas/*.json 전체 생성")
     ap.add_argument("--schema", help="단일 schema 파일명 (예: run_modes.json)")
     args = ap.parse_args()
 
@@ -155,7 +165,8 @@ def main() -> int:
         fails = 0
         for fp in sorted(SCHEMAS_DIR.glob("*.json")):
             fails += gen_one(fp)
-        return fails
+        # 사냥꾼 라운드 LOW (2026-06-08): exit code 정규화 (실패 건수 누적 대신 0/1).
+        return 1 if fails else 0
 
     ap.print_help()
     return 2
