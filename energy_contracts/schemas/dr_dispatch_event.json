@@ -3,7 +3,7 @@
   "$id": "energy-contracts/dr_dispatch_event.json",
   "title": "DR Dispatch Event",
   "description": "외부 발령창 또는 경제성 정책 엔진이 발생시키는 DR 디스패치 이벤트. dr_event.json (기존, 단순 신호 모델)과 구분 — 본 스키마는 ESG Aggregator 레이어가 받아 분배·실행하는 정책 명령. Phase 4 도입.",
-  "_usage": "runtime-validate",
+  "_usage": "hybrid",
   "_consumers": [
     "building-energy-3d",
     "gridbridge",

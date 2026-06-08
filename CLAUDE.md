@@ -179,6 +179,7 @@ all_schemas = list_schemas()                   # ['agent_contracts', ...]
 | **0.2.0** | **2026-05-27** | **critics 패키지 신설 (SSOT_GOVERNANCE §9 도메인 횡단 분리)** — `energy_contracts/critics/` 신규 (4 Critic + CriticsGate 조합자). be-3d `src/critics/` + `src/agents/dr/critics_gate.py` 이동. lockstep: be-3d import 마이그 + GB realtime owner wire-up (`POST /api/v1/dr/debate/{event_id}` 신설, be-3d 와 동일 path). 18 신규 EC tests + 9 신규 GB tests PASS, be-3d/GB 회귀 0. |
 | 0.2.1~0.3.3 | 2026-05-27~06-08 | **(요약)** critics 0.2.1~0.2.4 (fail_threshold·Pydantic mirror·TS enum) · retry_policy 0.2.5 · rate_limit_policy 0.2.6/0.3.x · esg composer 0.3.0 · 신규 schema (tenant_regions/policy_evaluation_contract/dr_dispatch_event/esg_policy/hvac_ems_matrix/legacy_ems_code_mapping/ai_model_registry v1.2 등). pyproject = **0.3.3** (= `__version__`, 사냥꾼 라운드 M13 으로 동기). 개별 이력은 `git log` + `CHANGELOG.md` 참조. |
 | 0.3.4 | 2026-06-08 | **사냥꾼 라운드 — 34건 self-contained fix** (HIGH 1 gate cache fail-open + MEDIUM 룰별 차등 safety/carbon regex/esg NaN 가드/validate_ssot 검사공백/hvac matrix 정본화/freeze pin/버전 동기 + LOW 다수). M4(_usage)/M7(legacy_mapping) 2건은 6 consumer regen 유발 → `docs/DEFERRED_INTEGRATIONS.md` 분리. |
+| 0.3.5 | 2026-06-08 | **Deferred D-1/D-2 coordinated bump** — 사냥꾼 M4/M7 cross-folder 해소. D-1: `esg_policy`/`dr_dispatch_event` `_usage`→`hybrid` + `check_codegen_input_usage()` 역방향 가드. D-2: `ems_strategies.gcs_e_codes` E1/E2/E7/E10/E11 정본 정정 + `check_legacy_code_consistency()` 가드. 6 consumer regen(hash `f462482943b38ce1`→`05d50c0601204d89`), edge/gb/be-3d SSOT 테스트 PASS. |
 
 ## 참조하는 프로젝트
 
