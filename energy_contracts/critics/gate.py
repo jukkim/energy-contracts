@@ -32,9 +32,13 @@ from .critic_base import CriticResult, Verdict
 logger = logging.getLogger(__name__)
 
 
-# DR signal_level 중 의무 발령 (Legal Critic 의 mandatory 컨텍스트 보강 대상).
-# SSOT: `dr_event.json` signal_level enum 의 부분집합.
+# DR signal_level 중 의무 발령 집합.
+# SSOT: `dr_event.json` signal_level enum 의 부분집합 + `gen_constants.py` 의
+# `DR_MANDATORY_SIGNAL_LEVELS` (JS export) 와 동일 값.
 # 사냥꾼 root-cause M3 (2026-05-27) — GB local `_MANDATORY_SIGNALS` 분리 해소.
+# 주의 (사냥꾼 라운드 LOW, 2026-06-08): 본 상수는 호출자(GB dispatcher 등)가
+#   signal_level → event["mandatory"] bool 로 변환할 때 참조하는 SSOT 이며,
+#   critics 런타임 로직 자체는 event.get("mandatory") bool 만 사용한다 (여기서 직접 미사용).
 MANDATORY_SIGNAL_LEVELS: frozenset[str] = frozenset({"HIGH", "EMERGENCY"})
 
 
@@ -138,17 +142,35 @@ def summarize_dispatch_for_critics(
 
 
 def _signature(event: dict[str, Any]) -> tuple:
-    """이벤트 cache key — 정책-유사 이벤트는 같은 signature."""
+    """이벤트 cache key — 정책-유사 이벤트는 같은 signature.
+
+    사냥꾼 라운드 H1 (2026-06-08): 멤버 ID 집합만 키로 쓰면 같은 group/target/members +
+    다른 per-building kW (또는 SOC/조명/PMV) 두 이벤트가 같은 signature 를 가져,
+    위험 dispatch 가 이전 PASS verdict 를 stale cache hit 으로 받아 Safety 평가 없이
+    통과(fail-open)한다. → `summarize_dispatch_for_critics` 가 critics 에 넘기는 모든
+    안전 지표 (reduction_kw, soc_pct, lighting_pct, pmv) 를 멤버별로 키에 포함시켜,
+    안전 신호가 달라지면 반드시 cache miss → 재평가되게 한다.
+    """
+    meta = event.get("_decision_meta") or {}
+    allocations = event.get("allocations") or meta.get("allocations") or []
+
+    def _alloc_key(a: dict[str, Any]) -> tuple:
+        return (
+            a.get("member_id") or a.get("building_id") or "",
+            round(float(a.get("reduction_kw") or a.get("allocated_kw") or 0), 1),
+            round(float(a["soc_pct"]), 1) if "soc_pct" in a else None,
+            round(float(a["lighting_pct"]), 1) if "lighting_pct" in a else None,
+            round(float(a["pmv"]), 2) if "pmv" in a else None,
+        )
+
     return (
         event.get("group_id", ""),
-        round(float(event.get("target_kw", 0)), 0),
+        # target_kw 1 자리 반올림 (모듈 docstring 과 일치)
+        round(float(event.get("target_kw", 0)), 1),
         bool(event.get("mandatory", False)),
         event.get("source", ""),
-        # allocations 의 멤버 ID 집합 (set 순서 무관)
-        tuple(sorted(
-            a.get("member_id") or a.get("building_id") or ""
-            for a in (event.get("allocations") or [])
-        )),
+        # allocation 별 (멤버 ID + 안전 지표) — 멤버 ID 기준 정렬 (순서 무관)
+        tuple(sorted((_alloc_key(a) for a in allocations), key=lambda t: t[0])),
     )
 
 

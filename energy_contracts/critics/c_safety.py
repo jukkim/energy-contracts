@@ -14,6 +14,13 @@ PMV_ABS_MAX = 0.5
 ESS_SOC_MIN_PCT = 10.0
 LIGHTING_MIN_PCT = 20.0
 
+# 룰별 차등 (사냥꾼 라운드 M1, 사용자 결정 2026-06-08).
+# hard interlock = 물리적 안전 한계 (장비 손상 / 과열 / 방전 위험) → 단건도 즉시 FAIL→block.
+# soft (조명/PMV) = 쾌적성 관련 → 기존대로 누적 임계 (fail_threshold) 후 FAIL, 단건은 WARN.
+HARD_INTERLOCK_RULES: frozenset[str] = frozenset(
+    {"hvac_setpoint_out_of_range", "ess_soc_below_floor"}
+)
+
 SETPOINT_PATTERN = re.compile(
     # 사냥꾼 FIX (MEDIUM): \d{1,2} 는 "226.0°C" 를 "26.0" 으로 절단 → 18~28 범위 내로 오판 →
     #   극단 과부하가 fail-open(PASS). \d{1,3} 으로 3자리 setpoint 온전 캡처 → 정상 FAIL.
@@ -66,4 +73,8 @@ class SafetyCritic(Critic):
                     "floor_pct": LIGHTING_MIN_PCT,
                 })
 
-        return self._make_result(violations, notes="edge-agent interlocks 룰")
+        return self._make_result(
+            violations,
+            critical_rules=HARD_INTERLOCK_RULES,
+            notes="edge-agent interlocks 룰 (setpoint/SOC = hard interlock, 단건도 FAIL)",
+        )

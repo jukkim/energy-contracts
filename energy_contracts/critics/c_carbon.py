@@ -21,8 +21,12 @@ PE_FACTOR_KR = {
 }
 
 FACTOR_PATTERN = re.compile(
+    # 사냥꾼 라운드 M2 (2026-06-08): val 그룹이 \d+\.\d{2,4} 로 소수 2~4자리만 매칭하면
+    #   '0.9'(1자리)·'5'(정수)·'0.41730'(5자리) 같은 명백한 오류 배출계수가 검사 누락
+    #   (fail-open). \d+(?:\.\d+)? 로 정수/임의 소수 자리를 모두 캡처 → rel_err 비교가
+    #   정상 동작 (합법값 0.4173 은 rel_err≈0 이라 false-positive 없음).
     r"(?P<src>전력|전기|가스|지역난방|district heating|electricity|natural gas)"
-    r".{0,40}?(?P<val>\d+\.\d{2,4})\s*(?:kgCO2|kgCO2eq|kg\s*CO2)"
+    r".{0,40}?(?P<val>\d+(?:\.\d+)?)\s*(?:kgCO2|kgCO2eq|kg\s*CO2)"
 )
 
 FACTOR_TOL_REL = 0.05
