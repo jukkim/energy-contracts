@@ -121,6 +121,7 @@ def check_port_conflicts() -> list[str]:
     if not data:
         return ["port_allocation.json 미존재"]
     seen: dict[int, list[str]] = defaultdict(list)
+    all_seen: dict[int, list[tuple[str, str]]] = defaultdict(list)  # 사냥꾼 LOW: 전 status
     ranges: list[tuple[int, int, str, str]] = []  # (lo, hi, name, status)
     for svc in data.get("services", []):
         port = svc.get("port")
@@ -134,12 +135,14 @@ def check_port_conflicts() -> list[str]:
             except ValueError:
                 pass
             continue
-        if svc.get("status") != "deployed":
-            continue
         if port is None:
             continue
         # machine_override로 blocked인 항목은 충돌에서 제외
         if svc.get("machine_override", {}).get("A") == "blocked (Docker)":
+            continue
+        status = svc.get("status", "?")
+        all_seen[port].append((svc.get("name", "?"), status))
+        if status != "deployed":
             continue
         seen[port].append(svc.get("name", "?"))
     violations = []
@@ -155,6 +158,19 @@ def check_port_conflicts() -> list[str]:
                     continue
                 violations.append(
                     f"포트 {port} ({names[0]}) 가 range {lo}-{hi} ({rng_name}, {rng_status}) 와 충돌")
+    # 사냥꾼 라운드 LOW (2026-06-08): 비-deployed(dev/scaffold/training-pending) 포함 잠복
+    #   포트 중복은 실패(deployed-deployed)는 아니나 dev→deployed 승격 시 충돌 위험 → 경고만.
+    warnings = []
+    for port, entries in all_seen.items():
+        if len(entries) > 1:
+            deployed_n = sum(1 for _, s in entries if s == "deployed")
+            if deployed_n <= 1:  # deployed-deployed 는 위에서 이미 violation 처리
+                names = ", ".join(f"{n}({s})" for n, s in entries)
+                warnings.append(f"포트 {port} 잠복 중복(비-deployed 포함): {names}")
+    if warnings:
+        print(f"[SSOT] 포트 잠복 충돌 경고 {len(warnings)}건 (비-deployed — 실패 아님):")
+        for w in warnings:
+            print(f"  - {w}")
     return violations
 
 
@@ -174,6 +190,13 @@ def check_generated_drift() -> list[str]:
     """_generated_constants.* 파일의 SOURCE_HASH 헤더 vs 실 schemas hash 비교.
 
     수동 편집된 파일을 탐지한다. gen_constants.py와 동일 알고리즘.
+
+    한계 (사냥꾼 라운드 M5, 2026-06-08): 본 검사는 16자 SOURCE_HASH **헤더만** 비교한다.
+    schemas_hash 는 (schemas dict + gen_constants.py self bytes) 로만 계산되므로, 생성
+    파일 **본문 상수값** 을 손으로 변조하면서 헤더를 유지하면 본 검사는 통과한다.
+    본문 전체 정합은 `python gen_constants.py --check` (out.read_text() != 재생성 content
+    full-compare) 가 담당하며, pre-commit hook 이 두 검사를 함께 실행한다. validate_ssot
+    단독으로는 본문 변조를 보장하지 못하므로, CI/로컬 게이트는 gen --check 를 동반해야 한다.
     """
     violations: list[str] = []
     try:
@@ -305,6 +328,38 @@ def check_schema_usage_headers() -> list[str]:
     return violations
 
 
+def check_strategy_pattern_consistency() -> list[str]:
+    """전략코드 패턴 정합 가드 (사냥꾼 라운드 M6, 2026-06-08).
+
+    - common.json $defs.StrategyPattern.pattern == STRATEGY_PATTERN_EXPECTED
+      (gen_constants.py 가 common.json 에서 파생하므로 이 둘이 일치해야 생성물도 일치)
+    - ems_strategies.json 의 모든 전략 코드가 그 패턴에 매칭 (codes ↔ pattern drift 가드)
+    """
+    violations: list[str] = []
+    try:
+        common = json.loads((SCHEMAS_DIR / "common.json").read_text(encoding="utf-8"))
+        ems = json.loads((SCHEMAS_DIR / "ems_strategies.json").read_text(encoding="utf-8"))
+    except Exception as e:
+        return [f"strategy pattern 정합 검사 로드 실패: {e}"]
+    pat = common.get("$defs", {}).get("StrategyPattern", {}).get("pattern")
+    if pat is None:
+        return ["common.json $defs.StrategyPattern.pattern 누락"]
+    if pat != STRATEGY_PATTERN_EXPECTED:
+        violations.append(
+            f"common.json StrategyPattern.pattern={pat!r} != 기대값 "
+            f"{STRATEGY_PATTERN_EXPECTED!r} — gen/validate 정합이 깨짐")
+    try:
+        rx = re.compile(pat)
+    except re.error as e:
+        return [f"StrategyPattern 정규식 컴파일 실패: {e}"]
+    codes = list(ems.get("default", {}).get("strategies", {}).keys())
+    for c in codes:
+        if not rx.fullmatch(c):
+            violations.append(
+                f"ems_strategies code {c!r} 가 StrategyPattern {pat!r} 에 불일치")
+    return violations
+
+
 # ── 변경 파일 (pre-commit) ───────────────────────────────────────────────────
 
 def changed_files() -> list[Path]:
@@ -385,6 +440,7 @@ def main() -> int:
 
     if args.check in ("schemas", "all"):
         v = check_schema_strategy_patterns()
+        v += check_strategy_pattern_consistency()  # 사냥꾼 M6
         if v:
             failed = True
             total_violations += len(v)
