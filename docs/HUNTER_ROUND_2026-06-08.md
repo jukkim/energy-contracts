@@ -2,6 +2,8 @@
 
 > energy-contracts 전수 오류·개선 감사. 6 차원 멀티에이전트 finder + 건별 적대적 검증(refute).
 > 결과 PR: **#10**(자체완결 34건). Deferred 3건 = [DEFERRED_INTEGRATIONS.md](DEFERRED_INTEGRATIONS.md).
+>
+> **상태(2026-06-08)**: PR #10 **MERGED** (전체 CI PASS). 동반 PR #9(REVIEW.md 배너) MERGED. master HEAD `e35b1d0`. Deferred 3건은 cross-folder coordinated bump 대기(미진행).
 
 ## 요약
 
