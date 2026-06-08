@@ -3,7 +3,8 @@
 > energy-contracts 전수 오류·개선 감사. 6 차원 멀티에이전트 finder + 건별 적대적 검증(refute).
 > 결과 PR: **#10**(자체완결 34건). Deferred 3건 = [DEFERRED_INTEGRATIONS.md](DEFERRED_INTEGRATIONS.md).
 >
-> **상태(2026-06-08)**: PR #10 **MERGED** (전체 CI PASS). 동반 PR #9(REVIEW.md 배너) MERGED. master HEAD `e35b1d0`. Deferred 3건은 cross-folder coordinated bump 대기(미진행).
+> **상태(2026-06-08)**: PR #10 **MERGED** (전체 CI PASS). 동반 PR #9(REVIEW.md 배너) MERGED.
+> **Deferred 3건(D-1/D-2/D-3) 전부 RESOLVED** (2026-06-08 후속) — 아래 [Deferred landing 완료](#deferred-landing-완료-2026-06-08) 참조.
 
 ## 요약
 
@@ -53,3 +54,23 @@ c_data 난독 `any()`/영문 커버 · MANDATORY_SIGNAL_LEVELS 주석 · retry o
 
 M4(`_usage`→hybrid), M7(`ems_strategies.legacy_mapping`), CLAUDE 20 CORE_KEYWORDS enumeration.
 사유: gen-loaded schema/`gen_constants.py` 변경은 6 consumer regen 강제(SSOT hash cascade). 상세·절차 = [DEFERRED_INTEGRATIONS.md](DEFERRED_INTEGRATIONS.md).
+
+## Deferred landing 완료 (2026-06-08)
+
+3건 전부 해소. **PR 8개 머지**.
+
+| Deferred | 해소 | PR |
+|----------|------|-----|
+| **D-1 (M4)** `_usage`→hybrid + `check_codegen_input_usage()` | energy-contracts v0.3.5 | EC #12 |
+| **D-2 (M7)** `gcs_e_codes` E1/E2/E7/E10/E11 정정 + `check_legacy_code_consistency()` | energy-contracts v0.3.5 | EC #12 |
+| **D-1/D-2 cascade** 6 consumer regen (hash `f462482943b38ce1`→`05d50c0601204d89`) | edge/gridbridge/agentleague/eduarena/be-3d | #13 / #8 / #6 / #17 / #130 |
+| **D-3** 20 CORE_KEYWORDS enumeration + 로컬 가드 + verifier lock-step | energy-contracts v0.3.6 + ai-champion-2026 | EC #14 / ac #44 |
+
+### 운영 학습 (coordinated bump 실전 — 재발 참조)
+
+1. **Atomicity 강제**: 로컬 pre-commit `check_generated_drift` 가 EC↔consumer 를 **working-tree 수준**에서 일치 요구. EC schema 커밋하려면 consumer 파일도 regenerated 상태로 디스크에 있어야 통과(consumer 되돌리면 EC 커밋 차단).
+2. **순서 고정**: consumer `ssot-drift` CI 는 `jukkim/energy-contracts` **master** 를 clone 해 `gen_constants --check` 비교 → **EC PR 선행 머지 필수**. EC 머지 전 consumer push 시 옛 hash 불일치로 CI 실패.
+3. **EC PR 은 self-validate**: EC `ssot-check.yml` 의 consumer drift step 은 `if [ -d ../edge-agent ]` 가드 → CI(sibling 부재)에선 skip. EC PR 은 `validate_ssot --check all` 자체만 통과하면 머지 가능.
+4. **be-3d 기본 브랜치 = `main`** (다른 5 repo 는 `master`). PR base 주의.
+5. **WIP 브랜치 보호**: 사용자 WIP 브랜치(gridbridge/be-3d) 는 stash + master/main 기반 전용 브랜치 분리 또는 transient checkout 으로 **건드리지 않고** landing.
+6. **D-3 lock-step 패턴**: sibling 에만 있던 SSOT 리스트를 본 repo 에 enumeration mirror + 양쪽 가드(본 repo 로컬 + sibling verifier 동기) → cross-folder 단독-검증-불가 항목의 표준 해법.
