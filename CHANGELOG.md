@@ -1,8 +1,20 @@
 # Energy Contracts — CHANGELOG
 
-스키마·프로토콜 버전 변경 이력. 필드 추가는 minor, 삭제·이름 변경은 major.
+스키마·프로토콜 변경 이력. 필드 추가는 minor, 삭제·이름 변경은 major.
 
 ---
+
+## 0.3.6 — 2026-06-08 Deferred D-3 — 20 BASE CORE_KEYWORDS 로컬 검증 (mirror lock-step)
+
+### 변경 (schema 무관 — hash cascade 없음)
+- **CLAUDE.md**: mirror 헤더에 `MIRROR_CORE_KEYWORDS_BASE_V1` enumeration 블록 신설 —
+  20 BASE CORE_KEYWORDS 를 명시(`G-PE1`…`tenant_regions.json`). 기존엔 "20 CORE_KEYWORDS" 라고만
+  선언하고 토큰 enumeration 이 본 repo 에 없어 로컬 검증 불가였다(D-3).
+- **신규 가드** `validate_ssot.check_mirror_core_keywords()` — enumeration 토큰이 정확히 20 개이고,
+  각 토큰이 mirror 헤더 본문(enumeration 제외)에 전수 등장하는지 로컬 검증. prose stale 검출.
+- **lock-step (sibling)**: ai-champion-2026 `verify_cross_folder_mirror_drift.py` 에
+  `check_energy_contracts_enumeration()` 추가 — 본 enumeration ↔ `BASE_KEYWORDS` 동일 집합 강제
+  (enumeration drift 차단). 별 repo PR.
 
 ## 0.3.5 — 2026-06-08 Deferred D-1/D-2 coordinated bump (사냥꾼 M4/M7 cross-folder 해소)
 

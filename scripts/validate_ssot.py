@@ -446,6 +446,54 @@ def check_legacy_code_consistency() -> list[str]:
     return violations
 
 
+def check_mirror_core_keywords() -> list[str]:
+    """20 BASE CORE_KEYWORDS 로컬 검증 가드 (Deferred D-3, 사냥꾼 LOW).
+
+    CLAUDE.md mirror 헤더가 ai-champion-2026 verifier(`verify_cross_folder_mirror_drift.py`
+    #BASE_KEYWORDS)가 요구하는 20 키워드를 실제로 보유하는지 본 repo 단독으로 검증한다.
+    (기존엔 verifier 가 sibling 에만 있어 로컬 검증 불가 = D-3.)
+
+    검사:
+      1. `<!-- MIRROR_CORE_KEYWORDS_BASE_V1 -->` ~ `<!-- /... -->` enumeration 블록 추출
+      2. backtick 토큰 파싱 → 정확히 20 개여야 함
+      3. enumeration 블록을 **제외한** mirror 영역(헤더 + 50 라인) 본문에 각 토큰이
+         전수 등장해야 함 — enumeration 만 있고 prose 가 stale 한 경우를 잡는다.
+
+    cross-folder 동기(enumeration ↔ BASE_KEYWORDS 동일 집합)는 ai-champion-2026 verifier 가 강제.
+    """
+    fp = CONTRACTS_ROOT / "CLAUDE.md"
+    if not fp.exists():
+        return ["CLAUDE.md 미발견 — mirror CORE_KEYWORDS 검증 불가"]
+    text = fp.read_text(encoding="utf-8")
+    block_re = re.compile(
+        r"<!--\s*MIRROR_CORE_KEYWORDS_BASE_V1\s*-->(.*?)<!--\s*/MIRROR_CORE_KEYWORDS_BASE_V1\s*-->",
+        re.S)
+    m = block_re.search(text)
+    if not m:
+        return ["CLAUDE.md  MIRROR_CORE_KEYWORDS_BASE_V1 enumeration 블록 부재 (D-3 — 로컬 검증 불가)"]
+    block = m.group(1)
+    keywords = re.findall(r"`([^`]+)`", block)
+    violations: list[str] = []
+    if len(keywords) != 20:
+        violations.append(
+            f"CLAUDE.md  BASE CORE_KEYWORDS enumeration 개수={len(keywords)} (기대 20) "
+            f"— ai-champion-2026 BASE_KEYWORDS 와 동기 필요")
+    # enumeration 블록을 제외한 mirror 영역 본문 추출
+    lines = text.splitlines()
+    start = next((i for i, ln in enumerate(lines)
+                  if re.search(r"^>\s*\*\*SSOT\*\*:\s*ai_core", ln)), None)
+    if start is None:
+        return ["CLAUDE.md  mirror 헤더(`> **SSOT**: ai_core`) 미발견 — 영역 검증 불가"]
+    region = "\n".join(lines[start:start + 50])
+    prose = block_re.sub("", region)  # 자기참조 enumeration 제거
+    for kw in keywords:
+        if kw not in prose:
+            violations.append(
+                f"CLAUDE.md  CORE_KEYWORD `{kw}` 가 enumeration 에는 있으나 "
+                f"mirror 헤더 본문에 부재 — prose stale (헤더 보강 필요)")
+    return violations
+
+
 # ── 변경 파일 (pre-commit) ───────────────────────────────────────────────────
 
 def changed_files() -> list[Path]:
@@ -529,6 +577,7 @@ def main() -> int:
         v += check_strategy_pattern_consistency()  # 사냥꾼 M6
         v += check_index_completeness()            # 사냥꾼 LOW — _index.yaml 전수 등재
         v += check_legacy_code_consistency()       # Deferred D-2 (M7) — E-code 교차 정합
+        v += check_mirror_core_keywords()          # Deferred D-3 — 20 BASE CORE_KEYWORDS 로컬 검증
         if v:
             failed = True
             total_violations += len(v)
