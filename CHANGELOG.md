@@ -4,6 +4,31 @@
 
 ---
 
+## 0.3.5 — 2026-06-08 Deferred D-1/D-2 coordinated bump (사냥꾼 M4/M7 cross-folder 해소)
+
+### 변경 (schema — hash cascade)
+- **D-1 (M4)**: `esg_policy.json` · `dr_dispatch_event.json` `_usage` `runtime-validate` → **`hybrid`**.
+  두 schema 는 `gen_constants.load_schemas()` 의 codegen 입력(DR_TYPES/DISPATCH_* 등)인데
+  `runtime-validate` 로 오분류돼 있었다.
+- **D-2 (M7)**: `ems_strategies.json#default.legacy_mapping.gcs_e_codes` 5건 정정 —
+  정본 `legacy_ems_code_mapping.json#deprecated_e_codes` 와 일치:
+  `E1` M01→**M06**, `E2` M06→**M01**, `E7` M05→**M04**, `E10` M14→**M11**, `E11` M15→**M12**.
+
+### 신규 가드 (validate_ssot.py)
+- `check_codegen_input_usage()` — 역방향: `load_schemas()` 가 로드하는 schema 는
+  `_usage ∈ {codegen, hybrid}` 강제 (정방향 `check_schema_usage_headers` 의 사각 보완).
+- `check_legacy_code_consistency()` — `ems_strategies.gcs_e_codes` ↔
+  `legacy_ems_code_mapping.deprecated_e_codes.maps_to` 교차 정합.
+
+### Cascade
+- 6 consumer `_generated_constants.{py,ts}` SOURCE_HASH `f462482943b38ce1` → `05d50c0601204d89`.
+  Python consumer 는 `LEGACY_MAPPING.gcs_e_codes` 5건 동시 정정. TS 는 hash 만(LEGACY_MAPPING 미export).
+- consumer SSOT 테스트: edge-agent 20 / gridbridge 13 / be-3d 27 PASS.
+  eduarena 는 본 regen 이 기존 drift(`test_gen_constants_check_passes`) 1건 정정(4→3),
+  잔여 3건은 pre-existing(Phase C stale 경로 + JWT, 본 변경 무관).
+
+---
+
 ## 0.2.3 — 2026-05-27 gen_constants TS critic enum (frontend MEDIUM — i18n / UI 매핑)
 
 ### 변경

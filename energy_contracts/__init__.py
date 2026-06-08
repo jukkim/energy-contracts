@@ -13,7 +13,7 @@ from pathlib import Path
 # 사냥꾼 라운드 M13 (2026-06-08): pyproject.toml 의 version 과 일치 (단일 SSOT).
 #   이전엔 __init__ 0.2.3 ≠ pyproject 0.3.3 로 wheel 메타 ≠ 런타임 __version__ 불일치.
 #   tests/test_version_consistency.py 가 pyproject 와 동기 가드.
-__version__ = "0.3.4"
+__version__ = "0.3.5"
 
 # 패키지 내부 schemas 디렉토리 위치 — wheel 설치 후에도 작동.
 SCHEMAS_DIR: Path = Path(__file__).parent / "schemas"
