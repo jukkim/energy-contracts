@@ -14,6 +14,12 @@
 >
 > 본 mirror 헤더는 ai-champion-2026 의 `verify_cross_folder_mirror_drift.py` lock-step gate 정합용 — **20 CORE_KEYWORDS** 포함 (v1.9.2 16 + SR-2 4 추가 2026-06-03). SSOT 갱신 시 본 헤더도 동시 갱신 의무.
 
+<!-- MIRROR_CORE_KEYWORDS_BASE_V1 -->
+> **20 BASE CORE_KEYWORDS (명시 enumeration)**: `G-PE1` `G-PE2` `G-PE3a` `G-PE3b` `F14` `/v1/policy-evaluate` `Policy Evaluation Contract` `counterfactual` `behavior_model` `policy_type` `Specialist Agent` `Ingestion Worker` `Edge Agent` `v1.9.2` `Inverse` `4-stack` `enforcement_level` `spec_only` `G-SR2` `tenant_regions.json`
+<!-- /MIRROR_CORE_KEYWORDS_BASE_V1 -->
+>
+> ↑ SSOT = ai-champion-2026 scripts/verify_cross_folder_mirror_drift.py 의 BASE_KEYWORDS (본 enumeration 은 그 mirror). 본 repo 는 REVERSE 거점 아님 → BASE 20 만 요구 (REVERSE 8 은 be-3d/eduarena/ems_transformer). 로컬 가드 = scripts/validate_ssot.py 의 check_mirror_core_keywords (위 20 토큰이 본 헤더 본문에 전수 등장하는지 검증). 동기 가드 = ai-champion-2026 verifier 가 본 블록 ↔ BASE_KEYWORDS 동일 집합 강제.
+
 > **SSOT 허브** — Tier 2 도메인 계약. 변경 시 `myjob/docs/SSOT_GOVERNANCE.md` 절차 준수. 검증: `python scripts/validate_ssot.py`.
 > **외부 의존 작업 (2026-05-26, agents arch A5 3-tier 분류 확정)**: agents `src/ingestion/_schemas/__init__.py` 의 3-tier SSOT 분류에 따라 — **Tier 1 (wheel)**: `drift_report`, `retrain_request` 2건 (sibling read/receive 대상, 미작성). **Tier 2 (local, wheel 진입 X)**: `negotiation_decision`, `post_validation_result`, `auto_retrain_policy` (agents-only, `45a99e8` commit). **Tier 3 (jsonb)**: `audit_event.extra`. 본 repo Tier 1 wheel 후보는 **`drift_report`, `retrain_request`** 2건 — DriftMonitor/RetrainOrchestrator 가 sibling 으로 emit/receive 진입 시 trigger. retrain_jobs queue 자체는 agents DB schema 009 + smartbuilding W7-ext (`545755a`) polling consumer 로 처리, wheel 불요. 명세: agents `src/ingestion/_schemas/__init__.py` + `docs/PHASE_DI_PLAN.md §4.5`.
 
@@ -180,6 +186,7 @@ all_schemas = list_schemas()                   # ['agent_contracts', ...]
 | 0.2.1~0.3.3 | 2026-05-27~06-08 | **(요약)** critics 0.2.1~0.2.4 (fail_threshold·Pydantic mirror·TS enum) · retry_policy 0.2.5 · rate_limit_policy 0.2.6/0.3.x · esg composer 0.3.0 · 신규 schema (tenant_regions/policy_evaluation_contract/dr_dispatch_event/esg_policy/hvac_ems_matrix/legacy_ems_code_mapping/ai_model_registry v1.2 등). pyproject = **0.3.3** (= `__version__`, 사냥꾼 라운드 M13 으로 동기). 개별 이력은 `git log` + `CHANGELOG.md` 참조. |
 | 0.3.4 | 2026-06-08 | **사냥꾼 라운드 — 34건 self-contained fix** (HIGH 1 gate cache fail-open + MEDIUM 룰별 차등 safety/carbon regex/esg NaN 가드/validate_ssot 검사공백/hvac matrix 정본화/freeze pin/버전 동기 + LOW 다수). M4(_usage)/M7(legacy_mapping) 2건은 6 consumer regen 유발 → `docs/DEFERRED_INTEGRATIONS.md` 분리. |
 | 0.3.5 | 2026-06-08 | **Deferred D-1/D-2 coordinated bump** — 사냥꾼 M4/M7 cross-folder 해소. D-1: `esg_policy`/`dr_dispatch_event` `_usage`→`hybrid` + `check_codegen_input_usage()` 역방향 가드. D-2: `ems_strategies.gcs_e_codes` E1/E2/E7/E10/E11 정본 정정 + `check_legacy_code_consistency()` 가드. 6 consumer regen(hash `f462482943b38ce1`→`05d50c0601204d89`), edge/gb/be-3d SSOT 테스트 PASS. |
+| 0.3.6 | 2026-06-08 | **Deferred D-3** — 20 BASE CORE_KEYWORDS 로컬 검증. CLAUDE.md `MIRROR_CORE_KEYWORDS_BASE_V1` enumeration 블록 + `check_mirror_core_keywords()` 로컬 가드 + ai-champion-2026 verifier lock-step(`check_energy_contracts_enumeration()`). schema 무관 = consumer cascade 없음. |
 
 ## 참조하는 프로젝트
 
