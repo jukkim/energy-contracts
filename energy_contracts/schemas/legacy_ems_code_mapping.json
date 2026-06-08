@@ -67,7 +67,7 @@
       "additionalProperties": false,
       "properties": {
         "S1": {"maps_to": "M03", "description": "Staging"},
-        "S2": {"maps_to": "M09", "description": "Pre-cooling/Pre-heating"},
+        "S2": {"maps_to": "M08", "description": "Pre-cooling/Pre-heating"},
         "S3": {"maps_to": "M02", "description": "Economizer"},
         "S4": {"maps_to": "M01", "description": "ScheduleOpt"},
         "S5": {"maps_to": "M00", "description": "Baseline (Night Setback 내장)"},

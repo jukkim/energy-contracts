@@ -360,6 +360,26 @@ def check_strategy_pattern_consistency() -> list[str]:
     return violations
 
 
+def check_index_completeness() -> list[str]:
+    """_index.yaml 카탈로그가 schemas/*.json 전수를 등재했는지 (사냥꾼 라운드 LOW, 2026-06-08).
+
+    기존엔 58 schema 중 31 만 등재돼 Redocly/Swagger 렌더링 시 절반이 누락됐다.
+    entry 수 == .json 파일 수 + phantom(존재하지 않는 schema 참조) 0 을 강제한다.
+    """
+    idx = SCHEMAS_DIR / "_index.yaml"
+    if not idx.exists():
+        return []
+    text = idx.read_text(encoding="utf-8")
+    referenced = set(re.findall(r"\$ref:\s*'([^']+\.json)'", text))
+    actual = {p.name for p in SCHEMAS_DIR.glob("*.json")}
+    violations: list[str] = []
+    for m in sorted(actual - referenced):
+        violations.append(f"_index.yaml  {m} 미등재 — schemas/*.json 전수 등재 필요")
+    for p in sorted(referenced - actual):
+        violations.append(f"_index.yaml  {p} phantom entry — 존재하지 않는 schema 참조")
+    return violations
+
+
 # ── 변경 파일 (pre-commit) ───────────────────────────────────────────────────
 
 def changed_files() -> list[Path]:
@@ -441,6 +461,7 @@ def main() -> int:
     if args.check in ("schemas", "all"):
         v = check_schema_strategy_patterns()
         v += check_strategy_pattern_consistency()  # 사냥꾼 M6
+        v += check_index_completeness()            # 사냥꾼 LOW — _index.yaml 전수 등재
         if v:
             failed = True
             total_violations += len(v)

@@ -1,18 +1,15 @@
-# SSOT 31 도메인 카탈로그 인덱스 (Phase L-5 + Policy Evaluation Contract)
-# Redocly·Swagger UI·문서 렌더링용. 각 schema 파일을 참조.
+# SSOT 58 도메인 카탈로그 인덱스 (Redocly·Swagger UI·문서 렌더링용).
+# 사냥꾼 라운드 LOW (2026-06-08): 기존엔 58 schema 중 31 만 등재 + title/주석 카운트가
+#   31/26/실제 불일치였다 → schemas/*.json 전수 등재 + 카운트 일치.
+#   재발 방지: validate_ssot.check_index_completeness 가 (entry 수 == .json 파일 수) 가드.
 
 openapi: 3.1.0
 info:
-  title: myjob SSOT Governance — 26 Domain Catalog
-  version: '1.0.0'
+  title: myjob SSOT Governance — 58 Domain Catalog
+  version: '1.1.0'
   description: |
-    Phase A~K SSOT 거버넌스 카탈로그. JSON Schema 2020-12 기반.
-
-    - **Phase A~G (8 도메인)**: ems_strategies, port_allocation, common, agent_contracts, nl_intents, run_modes, data_classification, test_classification
-    - **Phase I (5)**: ai_model_registry, auth_scopes, error_response (RFC 7807), mqtt_topics, security_policy
-    - **Phase J (7)**: computer_profile, building_usage_map, i18n_keys, tenant_regions, auth_policy, pipeline_status, energy_units
-    - **Phase K (6)**: tests_shared, logging_format, simulation_scenarios, db_migrations, openapi_responses, lint_format
-
+    Phase A~L SSOT 거버넌스 카탈로그. JSON Schema 2020-12 기반.
+    schemas/*.json 전수(58종) 등재 — components.schemas 항목 수 == 실 .json 파일 수.
   license:
     name: Proprietary
 
@@ -24,36 +21,63 @@ servers:
 
 components:
   schemas:
-    EmsStrategies:    {$ref: 'ems_strategies.json'}
-    PortAllocation:   {$ref: 'port_allocation.json'}
-    AgentContracts:   {$ref: 'agent_contracts.json'}
-    NlIntents:        {$ref: 'nl_intents.json'}
-    RunModes:         {$ref: 'run_modes.json'}
-    DataClassification: {$ref: 'data_classification.json'}
-    TestClassification: {$ref: 'test_classification.json'}
-    AiModelRegistry:  {$ref: 'ai_model_registry.json'}
-    AuthScopes:       {$ref: 'auth_scopes.json'}
-    ErrorResponse:    {$ref: 'error_response.json'}
-    MqttTopics:       {$ref: 'mqtt_topics.json'}
-    SecurityPolicy:   {$ref: 'security_policy.json'}
-    ComputerProfile:  {$ref: 'computer_profile.json'}
-    BuildingUsageMap: {$ref: 'building_usage_map.json'}
-    I18nKeys:         {$ref: 'i18n_keys.json'}
-    TenantRegions:    {$ref: 'tenant_regions.json'}
-    AuthPolicy:       {$ref: 'auth_policy.json'}
-    PipelineStatus:   {$ref: 'pipeline_status.json'}
-    EnergyUnits:      {$ref: 'energy_units.json'}
-    TestsShared:      {$ref: 'tests_shared.json'}
-    LoggingFormat:    {$ref: 'logging_format.json'}
-    SimulationScenarios: {$ref: 'simulation_scenarios.json'}
-    DbMigrations:     {$ref: 'db_migrations.json'}
-    OpenapiResponses: {$ref: 'openapi_responses.json'}
-    LintFormat:       {$ref: 'lint_format.json'}
-    EsgPolicy:        {$ref: 'esg_policy.json'}
-    DrDispatchEvent:  {$ref: 'dr_dispatch_event.json'}
-    GatewayRouting:   {$ref: 'gateway_routing.json'}
-    LegacyEmsCodeMapping: {$ref: 'legacy_ems_code_mapping.json'}
-    HvacEmsMatrix:    {$ref: 'hvac_ems_matrix.json'}
+    AgentContracts:           {$ref: 'agent_contracts.json'}
+    AiModelRegistry:          {$ref: 'ai_model_registry.json'}
+    AnomalyResponse:          {$ref: 'anomaly_response.json'}
+    AuthPolicy:               {$ref: 'auth_policy.json'}
+    AuthScopes:               {$ref: 'auth_scopes.json'}
+    BuildingArchetypes:       {$ref: 'building_archetypes.json'}
+    BuildingEnvelope:         {$ref: 'building_envelope.json'}
+    BuildingUsageMap:         {$ref: 'building_usage_map.json'}
+    BundleManifest:           {$ref: 'bundle_manifest.json'}
+    Common:                   {$ref: 'common.json'}
+    ComputerProfile:          {$ref: 'computer_profile.json'}
+    ControlCommand:           {$ref: 'control_command.json'}
+    ControlResponse:          {$ref: 'control_response.json'}
+    DataClassification:       {$ref: 'data_classification.json'}
+    DbMigrations:             {$ref: 'db_migrations.json'}
+    DrDispatchEvent:          {$ref: 'dr_dispatch_event.json'}
+    DrEvent:                  {$ref: 'dr_event.json'}
+    EdgeRegistration:         {$ref: 'edge_registration.json'}
+    EdgeStatus:               {$ref: 'edge_status.json'}
+    EmissionFactors:          {$ref: 'emission_factors.json'}
+    EmsStrategies:            {$ref: 'ems_strategies.json'}
+    EnergyConstants:          {$ref: 'energy_constants.json'}
+    EnergyUnits:              {$ref: 'energy_units.json'}
+    EngineeringDiff:          {$ref: 'engineering_diff.json'}
+    EngineeringSession:       {$ref: 'engineering_session.json'}
+    ErrorResponse:            {$ref: 'error_response.json'}
+    EsgPolicy:                {$ref: 'esg_policy.json'}
+    EsgVenueBulkSync:         {$ref: 'esg_venue_bulk_sync.json'}
+    ForecastResponse:         {$ref: 'forecast_response.json'}
+    GatewayRouting:           {$ref: 'gateway_routing.json'}
+    HvacEmsMatrix:            {$ref: 'hvac_ems_matrix.json'}
+    I18nKeys:                 {$ref: 'i18n_keys.json'}
+    LegacyEmsCodeMapping:     {$ref: 'legacy_ems_code_mapping.json'}
+    LintFormat:               {$ref: 'lint_format.json'}
+    LoggingFormat:            {$ref: 'logging_format.json'}
+    MarketPrices:             {$ref: 'market_prices.json'}
+    MqttTopics:               {$ref: 'mqtt_topics.json'}
+    NlIntents:                {$ref: 'nl_intents.json'}
+    OpenapiResponses:         {$ref: 'openapi_responses.json'}
+    PipelineStatus:           {$ref: 'pipeline_status.json'}
     PolicyEvaluationContract: {$ref: 'policy_evaluation_contract.json'}
+    PortAllocation:           {$ref: 'port_allocation.json'}
+    Provision:                {$ref: 'provision.json'}
+    ProvisionAck:             {$ref: 'provision_ack.json'}
+    RateLimitPolicy:          {$ref: 'rate_limit_policy.json'}
+    ReductionSchedule:        {$ref: 'reduction_schedule.json'}
+    RegionCodes:              {$ref: 'region_codes.json'}
+    RetryPolicy:              {$ref: 'retry_policy.json'}
+    RqAiIntent:               {$ref: 'rq_ai_intent.json'}
+    RunModes:                 {$ref: 'run_modes.json'}
+    SecurityPolicy:           {$ref: 'security_policy.json'}
+    SimulationScenarios:      {$ref: 'simulation_scenarios.json'}
+    Telemetry:                {$ref: 'telemetry.json'}
+    TenantRegions:            {$ref: 'tenant_regions.json'}
+    TestClassification:       {$ref: 'test_classification.json'}
+    TestsShared:              {$ref: 'tests_shared.json'}
+    Venue:                    {$ref: 'venue.json'}
+    VirtualProsumer:          {$ref: 'virtual_prosumer.json'}
 
 paths: {}
