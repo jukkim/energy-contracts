@@ -380,6 +380,72 @@ def check_index_completeness() -> list[str]:
     return violations
 
 
+def check_codegen_input_usage() -> list[str]:
+    """역방향 가드 (Deferred D-1, 사냥꾼 M4) — gen_constants.py 가 로드하는 schema 는
+    반드시 `_usage ∈ {codegen, hybrid}` 여야 한다.
+
+    `check_schema_usage_headers()` 는 정방향(codegen/hybrid → gen 참조)만 검사한다.
+    그 단방향만으로는 'gen 이 실제로 로드하지만 _usage=runtime-validate' 로 잘못
+    선언된 schema(esg_policy / dr_dispatch_event)를 잡지 못했다. 본 가드는
+    load_schemas() 본문에서 참조하는 모든 schema 파일명을 추출해 _usage 를 역검증한다.
+    감사(2026-06-08): 본 가드는 esg_policy/dr_dispatch_event 2건 외 false-positive 0.
+    """
+    gen_fp = CONTRACTS_ROOT / "scripts" / "gen_constants.py"
+    if not gen_fp.exists():
+        return []
+    gen_src = gen_fp.read_text(encoding="utf-8")
+    m = re.search(r"def load_schemas\(\).*?(?=\ndef )", gen_src, re.S)
+    if not m:
+        return ["gen_constants.py load_schemas() 본문 추출 실패 — 역방향 usage 검사 불가"]
+    body = m.group(0)
+    referenced = sorted(set(re.findall(r'"([a-z0-9_]+\.json)"', body)))
+    violations: list[str] = []
+    for name in referenced:
+        fp = SCHEMAS_DIR / name
+        if not fp.exists():
+            continue
+        try:
+            usage = json.loads(fp.read_text(encoding="utf-8")).get("_usage")
+        except Exception as e:
+            violations.append(f"{name}  JSON 파싱 실패: {e}")
+            continue
+        if usage not in ("codegen", "hybrid"):
+            violations.append(
+                f"{name}  gen_constants.load_schemas() 가 로드하나 "
+                f"_usage={usage!r} — codegen 입력은 _usage ∈ {{codegen, hybrid}} 필수")
+    return violations
+
+
+def check_legacy_code_consistency() -> list[str]:
+    """legacy E-code 교차 정합 가드 (Deferred D-2, 사냥꾼 M7).
+
+    `ems_strategies.json#default.legacy_mapping.gcs_e_codes` 와 전용 drift-guard SSOT
+    `legacy_ems_code_mapping.json#deprecated_e_codes[*].maps_to` 가 같은 E-code 에서
+    동일 M-code 를 가리켜야 한다. 정본은 legacy_ems_code_mapping.json (drift_note 근거 보유).
+    두 파일에 공통 존재하는 E-code 만 비교한다(부분집합 허용).
+    """
+    try:
+        ems = json.loads((SCHEMAS_DIR / "ems_strategies.json").read_text(encoding="utf-8"))
+        legacy = json.loads(
+            (SCHEMAS_DIR / "legacy_ems_code_mapping.json").read_text(encoding="utf-8"))
+    except Exception as e:
+        return [f"legacy code 정합 검사 로드 실패: {e}"]
+    gcs = ems.get("default", {}).get("legacy_mapping", {}).get("gcs_e_codes", {})
+    authoritative = legacy.get("deprecated_e_codes", {})
+    violations: list[str] = []
+    for ecode, mcode in sorted(gcs.items()):
+        auth_entry = authoritative.get(ecode)
+        if not isinstance(auth_entry, dict):
+            continue  # 정본에 없는 E-code 는 비교 대상 아님
+        auth_m = auth_entry.get("maps_to")
+        if auth_m is not None and mcode != auth_m:
+            violations.append(
+                f"ems_strategies gcs_e_codes[{ecode}]={mcode} != "
+                f"legacy_ems_code_mapping.deprecated_e_codes[{ecode}].maps_to={auth_m} "
+                f"(정본=legacy_ems_code_mapping.json)")
+    return violations
+
+
 # ── 변경 파일 (pre-commit) ───────────────────────────────────────────────────
 
 def changed_files() -> list[Path]:
@@ -462,6 +528,7 @@ def main() -> int:
         v = check_schema_strategy_patterns()
         v += check_strategy_pattern_consistency()  # 사냥꾼 M6
         v += check_index_completeness()            # 사냥꾼 LOW — _index.yaml 전수 등재
+        v += check_legacy_code_consistency()       # Deferred D-2 (M7) — E-code 교차 정합
         if v:
             failed = True
             total_violations += len(v)
@@ -480,6 +547,7 @@ def main() -> int:
 
     if args.check in ("usage", "all"):
         v = check_schema_usage_headers()
+        v += check_codegen_input_usage()           # Deferred D-1 (M4) — 역방향 usage 가드
         if v:
             failed = True
             total_violations += len(v)

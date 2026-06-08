@@ -3,7 +3,7 @@
   "$id": "energy-contracts/esg_policy.json",
   "title": "ESG Aggregator Policy",
   "description": "ESG 그룹(Aggregator)의 DR 운영 정책 SSOT. 신뢰성/경제성 DR 분기, 분배 알고리즘 선택, 풍부 정책 (요일별 임계값 곡선·멤버 가중치·학습). Phase 4 DR 자율 에이전트 도입.",
-  "_usage": "runtime-validate",
+  "_usage": "hybrid",
   "_consumers": [
     "building-energy-3d",
     "gridbridge"
