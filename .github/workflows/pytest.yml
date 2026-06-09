@@ -5,52 +5,12 @@ name: pytest
 # ssot-check.yml/ssot-drift.yml 은 gen_constants --check 만 돌려 pytest 미커버였음.
 
 on:
-  pull_request:
-    branches: [master, main]
-    paths-ignore:
-      - '**.md'
-      - 'docs/**'
-      - '**/*.png'
-      - '**/*.jpg'
-      - '**/*.jpeg'
-      - '**/*.gif'
-      - '**/*.svg'
-      - '**/*.webp'
-      - '**/*.mp4'
-      - '**/*.webm'
-      - '**/*.mov'
-      - '**/*.pdf'
-      - 'scratch/**'
-      - 'archive/**'
-      - 'evidence/**'
-      - 'presentation/**'
-      - 'screenshots/**'
-      - 'proposed-figures/**'
-      - '.gitignore'
-      - 'LICENSE*'
-  push:
-    branches: [master, main]
-    paths-ignore:
-      - '**.md'
-      - 'docs/**'
-      - '**/*.png'
-      - '**/*.jpg'
-      - '**/*.jpeg'
-      - '**/*.gif'
-      - '**/*.svg'
-      - '**/*.webp'
-      - '**/*.mp4'
-      - '**/*.webm'
-      - '**/*.mov'
-      - '**/*.pdf'
-      - 'scratch/**'
-      - 'archive/**'
-      - 'evidence/**'
-      - 'presentation/**'
-      - 'screenshots/**'
-      - 'proposed-figures/**'
-      - '.gitignore'
-      - 'LICENSE*'
+  # Minimal mode 2026-06-09 ~ 2026-06-30 — Actions 한도 보호 (한도 90% 도달 사고 후).
+  # PR/push 트리거 일시 제거. schedule 주 2회 (KST 화/금 02:00) + manual dispatch 만 유지.
+  # 2026-07-01 reset 후 PR/push 트리거 원복 (revert PR 미리 준비).
+  # SSOT: ~/.claude/rules/github-actions-budget.md 작성 룰 #6
+  schedule:
+    - cron: "0 17 * * 1,4"  # UTC Mon/Thu 17:00 = KST Tue/Fri 02:00
   workflow_dispatch:
 
 concurrency:
