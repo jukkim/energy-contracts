@@ -7,7 +7,6 @@ Phase C (a12): wheel 배포로 모든 consumer repo 가 동일 git SHA pin.
 from __future__ import annotations
 
 import json
-from importlib import resources
 from pathlib import Path
 
 # 사냥꾼 라운드 M13 (2026-06-08): pyproject.toml 의 version 과 일치 (단일 SSOT).
