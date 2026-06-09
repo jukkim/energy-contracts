@@ -1,0 +1,44 @@
+name: pytest
+
+# AI 챔피언 CI 감사(2026-06-09) HIGH gap — SSOT 허브인 본 repo 의 tests/(critics·schemas·
+# gen_constants·validate_ssot 런타임 로직)가 어떤 workflow 에서도 실행되지 않던 갭 해소.
+# ssot-check.yml/ssot-drift.yml 은 gen_constants --check 만 돌려 pytest 미커버였음.
+
+on:
+  pull_request:
+    branches: [master, main]
+    paths-ignore:
+      - '**.md'
+      - 'docs/**'
+  push:
+    branches: [master, main]
+    paths-ignore:
+      - '**.md'
+      - 'docs/**'
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  pytest:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+
+      - name: Install (dev extras)
+        run: |
+          python -m pip install --upgrade pip
+          pip install -e ".[dev]"
+
+      - name: pytest (critics / schemas / gen_constants / validate_ssot 런타임 로직)
+        env:
+          PYTHONIOENCODING: utf-8
+        run: pytest tests/ -q --tb=short
