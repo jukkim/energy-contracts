@@ -37,6 +37,11 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           pip install -e ".[dev]"
+          pip install ruff
+
+      - name: "lint (ruff F — pyflakes 실버그: undefined name / unused import·var)"
+        # 스타일 아닌 실버그(F821 undefined 등)만 select → 노이즈 없이 회귀 차단.
+        run: ruff check energy_contracts/ scripts/ --select F
 
       - name: pytest (critics / schemas / gen_constants / validate_ssot 런타임 로직)
         env:

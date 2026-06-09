@@ -14,7 +14,7 @@ Pydantic 이 필요 — 이 모듈이 그 mirror 를 제공한다.
 """
 from __future__ import annotations
 
-from typing import Any, Literal
+from typing import Literal
 
 from pydantic import BaseModel, ConfigDict, Field
 

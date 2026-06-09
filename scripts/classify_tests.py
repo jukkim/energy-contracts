@@ -409,13 +409,13 @@ def main() -> int:
         target = Path(args.apply).resolve()
         for fp, tier, groups, stage in entries:
             if fp == target:
-                primary = groups[0]
+                groups[0]
                 print(f"수동 적용 예시 ({tier}/{'+'.join(groups)}/{stage}):")
                 print(f"@pytest.mark.tier('{tier}')")
                 for g in groups:
                     print(f"@pytest.mark.group('{g}')")
                 print(f"@pytest.mark.stage('{stage}')")
-                print(f"def test_xxx(...): ...")
+                print("def test_xxx(...): ...")
                 return 0
         print(f"[classify_tests] {args.apply} 미발견")
         return 1
