@@ -43,13 +43,13 @@
       "_comment": "한국 에너지효율등급 인증제도 1차 에너지 환산계수. ~/.claude/ENERGY_SSOT.md §3.2"
     },
     "emission_factors_kr": {
-      "electricity_kg_co2_per_kwh": 0.4594,
+      "electricity_kg_co2_per_kwh": 0.4173,
       "city_gas_kg_co2_per_nm3": 2.176,
-      "city_gas_kg_co2_per_kwh": 0.202,
-      "district_heating_kg_co2_per_kwh": 0.115,
+      "city_gas_kg_co2_per_kwh": 0.2036,
+      "district_heating_kg_co2_per_kwh": 0.126,
       "diesel_kg_co2_per_l": 2.681,
       "lpg_kg_co2_per_kg": 3.0,
-      "_comment": "KEA 2024 기준. CARBON_EMISSION_FACTORS.yaml 의 KR-2024 셀렉션"
+      "_comment": "정본 = emission_factors.json (전력 0.4173 2023확정 / 도시가스 0.2036 / 지역난방 0.126 수도권2024). 이중 SSOT 충돌 정정 2026-06-13 (구 KEA 0.4594/0.202/0.115 폐기)"
     },
     "zeb_thresholds_kwh_m2_yr": {
       "1+": 0,
