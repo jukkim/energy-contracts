@@ -83,6 +83,16 @@
         },
         "gas_krw": {
           "type": "number"
+        },
+        "residential": {
+          "type": "object",
+          "description": "공동주택(주택용) 비용→kWh 환산 단가",
+          "properties": {
+            "electricity_krw": { "type": "number" },
+            "gas_krw": { "type": "number" },
+            "district_heat_krw": { "type": "number" },
+            "hot_water_krw": { "type": "number" }
+          }
         }
       }
     },
@@ -153,7 +163,14 @@
     },
     "unit_prices": {
       "electricity_krw": 120.0,
-      "gas_krw": 80.0
+      "gas_krw": 80.0,
+      "residential": {
+        "electricity_krw": 110.0,
+        "gas_krw": 45.0,
+        "district_heat_krw": 70.0,
+        "hot_water_krw": 65.0,
+        "_comment": "공동주택(주택용) 관리비 비용→kWh 환산 단가. 한전 주택용 평균. 일반용(상업)은 상위 electricity_krw 120/gas_krw 80. K-apt xlsx 수집기(import_kapt_energy_xlsx) 가 참조."
+      }
     },
     "renewable": {
       "rec_unit_price_krw": 65000,
