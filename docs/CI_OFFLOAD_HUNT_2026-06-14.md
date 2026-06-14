@@ -58,3 +58,4 @@ GitHub Actions 월 한도가 **92%(1847/2000분)** 소진된 상태에서, hoste
 - **오프로드는 repo 단위가 아니라 워크플로 단위**: `test.yml`만 옮기고 `ssot-drift.yml`/`e2e.yml` 등을 두면 부분 오프로드 = 한도 소진 시 그 워크플로만 instant-fail. **"전 워크플로 오프로드" 주장 전 `grep -rn 'ubuntu-latest' .github/workflows/` 전수 확인 의무.**
 - ssot-drift 류(checkout + setup-python + inline 검사)는 services/docker/Node 의존 0 → noble runner 무수정 호환. Playwright/Node 빌드/postgres services 는 별도 검증·runner 필요.
 - instant-fail(steps 0/runner null/~3초) ≠ 코드 실패. 진단 시 한도 여유 시점 run 과 비교해 회귀 여부 판정.
+- **`actions/setup-python` `cache: pip` + 짧은 step `timeout-minutes` 조합 주의** (ems #93 실측): self-hosted 는 hosted 보다 GitHub 캐시 백엔드 복원이 느려 `cache: pip` 복원이 `timeout-minutes: 2` 를 초과해 step 타임아웃. 오프로드 시 `cache: pip` 제거(self-hosted 컨테이너는 `/root/.cache/pip` 가 재사용으로 warm) 또는 step timeout 상향. sentinel-cron(#92)은 `cache: pip` 미사용으로 무사.
