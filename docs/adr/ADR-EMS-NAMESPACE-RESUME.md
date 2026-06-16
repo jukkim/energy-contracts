@@ -3,10 +3,10 @@
 > 2026-06-16 checkpoint. 본 문서 1장이면 다음 세션이 바로 이어간다. 설계=`ADR-EMS-NAMESPACE-UNIFY.md`, 전수 분류=`ADR-EMS-NAMESPACE-P0-INVENTORY.md`, 메모리=`project_agentleague_layer3_mcode_drift_2026-06-16`.
 
 ## 0. 한 줄 재개
-> **"M-code 네임스페이스 통일 program — 남은 건 P5(be-3d 라이브 데모 cutover, 사용자 게이트) + P6-b(agentleague debate→policy_vector)"** — 본 문서 + ADR + 메모리가 맥락 복원. (P0~P4·P6-a 전부 ✅, 브랜치 정합.)
-> - **P5** = be-3d `control_router.py`(M14/M15 데모 프리셋 → 신규 DR M19/M20) + `control_intent.py`/`edge_control.py` regex `M(0[0-9]|1[0-5])`→M20 확장 + `SIGNAL_MAPPING_DR` 정합 + 데모 회귀. **라이브 VWorld 데모 + edge-agent MQTT 계약 변경 = 사용자 cutover 게이트**(배포는 7-repo 머지 시점).
-> - **P6-b** = agentleague debate 를 안 A(policy_vector 기반)로 정합 — M-code 이름 의존 제거. (스파이크 메모리 [[project_agentleague_layer3_mcode_drift_2026-06-16]] 참조.)
-> - **머지** = P5+P6-b 완료 후 **7 repo 일괄**(ems_transformer 포함, cross-repo validate_ssot + editable 결합, 부분 머지 금지).
+> **"M-code 네임스페이스 통일 program — 머지 전 남은 필수는 P5(be-3d 라이브 데모 cutover, 사용자 게이트) 하나"** — 본 문서 + ADR + 메모리가 맥락 복원. (P0~P4·P6-a·P6-b 전부 ✅, 브랜치 정합.)
+> - **P5 (머지 전 마지막)** = be-3d `control_router.py`(M14/M15 데모 프리셋 → 신규 DR M19/M20) + `control_intent.py`/`edge_control.py` regex `M(0[0-9]|1[0-5])`→M20 확장 + `SIGNAL_MAPPING_DR` 정합 + 데모 회귀. **라이브 VWorld 데모 + edge-agent MQTT 계약 변경 = 사용자 cutover 게이트**(배포는 7-repo 머지 시점).
+> - **안 A (별도 forward 트랙, 머지 blocker 아님)** = agentleague debate 가 policy_vector 를 end-to-end 산출 → ems Layer3 직접 적재. P6-b 에서 namespace 정합(M00~M20)은 완료, policy_vector 신설 기능은 post-merge 제품 트랙. (스파이크 메모리 [[project_agentleague_layer3_mcode_drift_2026-06-16]] §3.)
+> - **머지** = P5 완료 후 **7 repo 일괄**(ems_transformer 포함, cross-repo validate_ssot + editable 결합, 부분 머지 금지).
 
 ## 1. 무엇을 하는가
 M00~M15 가 4+ 도메인에서 다른 의미(시뮬 NAMING / DR 프리셋 / a03 optimizer / EUI)로 오버로드된 것을 **단일 vocabulary 로 통일**: M00~M15=시뮬 정본(NAMING §1.1), M16~M20=DR 액션 신규, a03=별 네임스페이스 OM00~OM13.
@@ -22,8 +22,9 @@ M00~M15 가 4+ 도메인에서 다른 의미(시뮬 NAMING / DR 프리셋 / a03 
 | P4-a03 | a03_optimizer → OM00~OM13 분리 + agent_contracts output_strategies OM + pattern | ✅ | a03 97 PASS |
 | **P4-SIM** | **be-3d 비-데모 SIM 정합** (value-swap, 사용자 결정 2026-06-16) | ✅ | 233 PASS |
 | **P6-a** | **ems_transformer F14 PolicyVector M00~M20 + hallucination 경계 SSOT 파생 + hvac_ems_matrix M16~M20 커버리지(P1 완성)** | ✅ | 121+verify gates PASS |
-| P5 | be-3d 라이브 데모 DR 재키잉 (cutover 게이트) | ⬜ | — |
-| P6-b | agentleague debate → policy_vector(안 A) 정합 | ⬜ | — |
+| **P6-b** | **agentleague M00~M20 정합 (stub M16~M20 + SSOT 테스트 path 복구)** | ✅ | 22+74 PASS |
+| P5 | be-3d 라이브 데모 DR 재키잉 (cutover 게이트) — **머지 전 마지막 필수** | ⬜ | — |
+| (별도 트랙) | 안 A: debate→policy_vector end-to-end (forward 제품 기능, **머지 blocker 아님**) | ⬜ | post-merge |
 
 ## 3. 브랜치·SHA (재개 시 checkout)
 
@@ -33,7 +34,7 @@ M00~M15 가 4+ 도메인에서 다른 의미(시뮬 NAMING / DR 프리셋 / a03 
 | gridbridge | `feat/ems-namespace-p1-regen` | 39860a2 |
 | edge-agent | `feat/ems-namespace-p1-regen` | 6d80a87 |
 | building-energy-3d | `feat/ems-namespace-p1-regen` | 846339a |
-| agentleague | `feat/ems-namespace-p1-regen` | ee91197 |
+| agentleague | `feat/ems-namespace-p1-regen` | cdb7fe8 (P6-b) |
 | eduarena | `feat/ems-namespace-p1-regen` | 4dd010d |
 | **ems_transformer** | `feat/agentleague-layer3-adapter-spike` | 17b5eb4 (P6-a, 스파이크 브랜치 연속) |
 | (ADR docs) | `docs/ems-namespace-unify-adr` | 28a689a (foundation 브랜치가 포함) |
