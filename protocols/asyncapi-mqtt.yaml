@@ -100,7 +100,7 @@ components:
         type: object
         properties:
           ven_id:   {type: string}
-          strategy: {type: string, pattern: "^M(0[0-9]|1[0-5])$"}
+          strategy: {type: string, pattern: "^M(0[0-9]|1[0-9]|20)$"}
           hvac_setpoint: {type: number, minimum: 18, maximum: 30}
     Registration:
       contentType: application/json

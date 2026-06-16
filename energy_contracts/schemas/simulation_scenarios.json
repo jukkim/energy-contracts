@@ -62,7 +62,7 @@
         "description": "Baseline — 무제어 reference",
         "actuators": []
       },
-      "M01_night_setback": {
+      "M16_dr_nightsetback": {
         "description": "Night setback HVAC",
         "actuators": [
           "HVACSetpoint"
@@ -86,26 +86,26 @@
           "HVACSetpoint"
         ]
       },
-      "M07_lighting": {
+      "M17_lighting": {
         "description": "Lighting daylight + dimming",
         "actuators": [
           "LightingPower"
         ]
       },
-      "M08_precooling": {
+      "M09_precooling": {
         "description": "Pre-cooling before peak",
         "actuators": [
           "HVACSetpoint",
           "PrecoolStart"
         ]
       },
-      "M09_ess_peak": {
+      "M18_ess_peak": {
         "description": "ESS peak shaving",
         "actuators": [
           "ESSDischarge"
         ]
       },
-      "M14_dr_integrated": {
+      "M19_dr_integrated": {
         "description": "DR integrated optimization",
         "actuators": [
           "HVACSetpoint",
@@ -114,7 +114,7 @@
           "ESSDischarge"
         ]
       },
-      "M15_dr_emergency": {
+      "M20_dr_emergency": {
         "description": "DR emergency curtailment (cascade)",
         "actuators": [
           "HVACSetpoint",

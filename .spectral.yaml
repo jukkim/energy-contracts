@@ -106,11 +106,11 @@ rules:
   # ── 전략 코드 ─────────────────────────────────────────────────────────
 
   ssot-strategy-pattern:
-    description: "EMS strategy enum must match M00~M15 pattern"
+    description: "EMS strategy enum must match M00~M20 pattern"
     given: "$..['StrategyCode'].enum[*]"
     severity: error
     then:
       function: pattern
       functionOptions:
-        match: "^M(0[0-9]|1[0-5])$"
+        match: "^M(0[0-9]|1[0-9]|20)$"
 
