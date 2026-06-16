@@ -3,12 +3,12 @@
 > 2026-06-16 checkpoint. 본 문서 1장이면 다음 세션이 바로 이어간다. 설계=`ADR-EMS-NAMESPACE-UNIFY.md`, 전수 분류=`ADR-EMS-NAMESPACE-P0-INVENTORY.md`, 메모리=`project_agentleague_layer3_mcode_drift_2026-06-16`.
 
 ## 0. 한 줄 재개
-> **"M-code 네임스페이스 통일 program — 전 7 repo 코드 완료. 머지 전 남은 건 ① nl_intents 키워드 untangle(P5 잔여) ② 라이브 cutover(사용자 게이트)"** — 본 문서 + ADR + 메모리가 맥락 복원. (P0~P4·P6-a·P6-b·P5 코드 전부 ✅, 브랜치 정합.)
-> - **P5 코드 ✅** = be-3d control_router/edge_control 프리셋 + control_intent regex 를 edge-agent(P3) 미러로 M16~M20 재키잉 완료(a07e9ce, 25+315 PASS).
-> - **P5 잔여 (머지 전 권장)** = `energy_contracts/schemas/nl_intents.json` `strategies_by_keyword` + `patterns.strategy_code`(아직 M15) 가 DR 키워드 오버로드 + sim M01↔M06 드리프트를 보유 → '긴급 감축해' 등 NL 키워드가 orphaned 코드 해석. **DR 문구→M16~M20, sim M01↔M06 정정 + gen_constants 로 2 consumer(be-3d/sejong) regen** 필요. M-code 도메인 오버로드 untangle = 신중(메모리 교훈). 직접 코드('M20 적용')는 정상.
-> - **P5 cutover = 사용자 게이트** = 라이브 VWorld 배포 + edge-agent MQTT 전환(7-repo 머지 시점).
+> **"M-code 네임스페이스 통일 program — 전 7 repo 코드 + nl_intents untangle 완료. 머지 전 남은 건 라이브 cutover(사용자 게이트) 하나"** — 본 문서 + ADR + 메모리가 맥락 복원. (P0~P4·P6-a·P6-b·P5(코드+잔여) 전부 ✅, validate_ssot drift 0, 브랜치 정합.)
+> - **P5 전부 ✅** = be-3d 데모 DR 재키잉(edge-agent 미러) + nl_intents.json `strategies_by_keyword`/`patterns.strategy_code` DR/sim untangle → M00~M20 + 5 program repo regen(be-3d 실질, 4 hash-only). validate_ssot PASS, be-3d 251 PASS.
+> - **P5 cutover = 사용자 게이트 (머지 전 마지막)** = 라이브 VWorld 배포 + edge-agent MQTT 전환(7-repo 머지 시점).
 > - **안 A (별도 forward 트랙)** = agentleague debate→policy_vector end-to-end. namespace 정합(M00~M20)은 P6-b 에서 완료, policy_vector 신설은 post-merge 제품 트랙.
-> - **머지** = P5 잔여 완료 후 **7 repo 일괄**(cross-repo validate_ssot + editable 결합, 부분 머지 금지).
+> - **sejong (out-of-scope)** = master 상 consumer(control_intent), gen_constants 대상 아님 → 전체 프로그램(P4-SIM+P5+regen) 별도 적용 필요.
+> - **머지** = cutover 게이트 후 **7 repo 일괄**(cross-repo validate_ssot + editable 결합, 부분 머지 금지).
 
 ## 1. 무엇을 하는가
 M00~M15 가 4+ 도메인에서 다른 의미(시뮬 NAMING / DR 프리셋 / a03 optimizer / EUI)로 오버로드된 것을 **단일 vocabulary 로 통일**: M00~M15=시뮬 정본(NAMING §1.1), M16~M20=DR 액션 신규, a03=별 네임스페이스 OM00~OM13.
@@ -26,24 +26,25 @@ M00~M15 가 4+ 도메인에서 다른 의미(시뮬 NAMING / DR 프리셋 / a03 
 | **P6-a** | **ems_transformer F14 PolicyVector M00~M20 + hallucination 경계 SSOT 파생 + hvac_ems_matrix M16~M20 커버리지(P1 완성)** | ✅ | 121+verify gates PASS |
 | **P6-b** | **agentleague M00~M20 정합 (stub M16~M20 + SSOT 테스트 path 복구)** | ✅ | 22+74 PASS |
 | **P5 (코드 ✅)** | be-3d 라이브 데모 DR 재키잉 M16~M20 (control_router/edge_control/control_intent, edge-agent 미러) | ✅ 코드 | 25+315 PASS |
-| P5 잔여 | nl_intents.json `strategies_by_keyword` DR 오버로드+sim M01↔M06 untangle → M16~M20 + 2 consumer(be-3d/sejong) regen | ⬜ | — |
-| P5 cutover | 실제 라이브 VWorld 배포 + edge-agent MQTT 전환 | ⬜ | **사용자 게이트** |
+| **P5 잔여** | nl_intents.json `strategies_by_keyword` DR/sim untangle → M00~M20 + 5 program repo regen (be-3d 실질, 4 hash-only) | ✅ | validate_ssot + be-3d 251 PASS |
+| P5 cutover | 실제 라이브 VWorld 배포 + edge-agent MQTT 전환 | ⬜ | **사용자 게이트 (머지 전 마지막)** |
 | (별도 트랙) | 안 A: debate→policy_vector end-to-end (forward 제품 기능, **머지 blocker 아님**) | ⬜ | post-merge |
 
 ## 3. 브랜치·SHA (재개 시 checkout)
 
 | repo | 브랜치 | HEAD |
 |------|--------|------|
-| energy-contracts | `feat/ems-namespace-p1-foundation` | cabf74f (P6-a hvac_ems_matrix M16~M20 포함) |
-| gridbridge | `feat/ems-namespace-p1-regen` | 39860a2 |
-| edge-agent | `feat/ems-namespace-p1-regen` | 6d80a87 |
-| building-energy-3d | `feat/ems-namespace-p1-regen` | a07e9ce (P4-SIM+P5 코드) |
-| agentleague | `feat/ems-namespace-p1-regen` | cdb7fe8 (P6-b) |
-| eduarena | `feat/ems-namespace-p1-regen` | 4dd010d |
-| **ems_transformer** | `feat/agentleague-layer3-adapter-spike` | 17b5eb4 (P6-a, 스파이크 브랜치 연속) |
+| energy-contracts | `feat/ems-namespace-p1-foundation` | 24dcde0 (+RESUME 커밋 시 갱신) — P6-a matrix + P5 nl_intents |
+| gridbridge | `feat/ems-namespace-p1-regen` | af3940d (P5 regen hash-only) |
+| edge-agent | `feat/ems-namespace-p1-regen` | 80c33fa (P5 regen hash-only) |
+| building-energy-3d | `feat/ems-namespace-p1-regen` | bf9e633 (P4-SIM+P5 코드+P5 regen) |
+| agentleague | `feat/ems-namespace-p1-regen` | d595dfd (P6-b + P5 regen hash-only) |
+| eduarena | `feat/ems-namespace-p1-regen` | 7eada95 (P5 regen hash-only) |
+| **ems_transformer** | `feat/agentleague-layer3-adapter-spike` | **50b1142** (P6-a; 커밋위생 fix 로 17b5eb4→50b1142 재커밋) |
 | (ADR docs) | `docs/ems-namespace-unify-adr` | 28a689a (foundation 브랜치가 포함) |
 
-> ⚠ **머지 시 7 repo** (ems_transformer 추가). ems_transformer 는 P6-a 가 스파이크 브랜치 위에 있음.
+> ⚠ **머지 시 7 repo** (ems_transformer 추가, 스파이크 브랜치 위). sejong 은 master(gen_constants 대상 아님)=별도 프로그램 적용 필요(out-of-scope).
+> ⚠ ems_transformer SHA = **50b1142** (구 문서/커밋메시지의 17b5eb4 는 커밋위생 soft-reset 재커밋 전 SHA — 동일 내용).
 
 ## 4. 환경 (필수)
 - **`energy_contracts` editable 설치**: `pip install -e projects/energy-contracts`. consumer `load_schema`/`validate_ssot` 가 source(M00~M20) 읽도록. 새 머신/재설치 시 필수.
