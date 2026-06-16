@@ -83,7 +83,7 @@
       "type": "array",
       "items": {
         "type": "string",
-        "pattern": "^M(0[0-9]|1[0-5])$"
+        "pattern": "^M(0[0-9]|1[0-9]|20)$"
       },
       "description": "적용 가능한 EMS 전략 부분집합. 미기재 시 M0 만 지원으로 간주."
     },

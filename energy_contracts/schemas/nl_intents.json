@@ -42,7 +42,7 @@
       "type": "object",
       "description": "전략 코드 ↔ 한국어 키워드 매핑. control_intent.py CONTROL_STRATEGIES SSOT.",
       "propertyNames": {
-        "pattern": "^M(0[0-9]|1[0-5])$"
+        "pattern": "^M(0[0-9]|1[0-9]|20)$"
       },
       "additionalProperties": {
         "type": "array",
@@ -63,7 +63,7 @@
       "items": {
         "type": "string"
       },
-      "description": "추가 게이트 토큰 (CONTROL_KEYWORDS + 단위·M00~M15)"
+      "description": "추가 게이트 토큰 (CONTROL_KEYWORDS + 단위·M00~M20)"
     },
     "patterns": {
       "type": "object",

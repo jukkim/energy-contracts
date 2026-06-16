@@ -36,8 +36,8 @@
     },
     "ems_strategies": {
       "type": "object",
-      "description": "M00~M15 EMS 전략 (ems_strategies.json#StrategyCode SSOT 참조)",
-      "$comment": "사냥꾼 라운드 LOW (2026-06-08): 기존 {type:object, $ref:StrategyCode(string enum)} sibling 은 2020-12 에서 'object 이면서 동시에 M00~M15 문자열' 이라 항상 unsatisfiable 이었다 → 참조는 주석으로만. 코드 SSOT = ems_strategies.json#/$defs/StrategyCode."
+      "description": "M00~M20 EMS 전략 (ems_strategies.json#StrategyCode SSOT 참조)",
+      "$comment": "사냥꾼 라운드 LOW (2026-06-08): 기존 {type:object, $ref:StrategyCode(string enum)} sibling 은 2020-12 에서 'object 이면서 동시에 M00~M20 문자열' 이라 항상 unsatisfiable 이었다 → 참조는 주석으로만. 코드 SSOT = ems_strategies.json#/$defs/StrategyCode."
     },
     "matrix": {
       "type": "object",
@@ -66,7 +66,7 @@
       "type": "object",
       "additionalProperties": false,
       "patternProperties": {
-        "^M(0[0-9]|1[0-5])$": {
+        "^M(0[0-9]|1[0-9]|20)$": {
           "type": "object",
           "required": ["compatibility"],
           "properties": {

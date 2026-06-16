@@ -67,8 +67,8 @@
         },
         "strategy": {
           "type": "string",
-          "pattern": "^M(0[0-9]|1[0-5])$",
-          "description": "적용된 EMS 전략 코드 (M00~M15). ems_strategies.json#StrategyPattern 참조. DB CHECK도 동일 패턴."
+          "pattern": "^M(0[0-9]|1[0-9]|20)$",
+          "description": "적용된 EMS 전략 코드 (M00~M20). ems_strategies.json#StrategyPattern 참조. DB CHECK도 동일 패턴."
         },
         "reasoning": {
           "type": "string",

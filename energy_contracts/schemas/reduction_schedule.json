@@ -104,8 +104,8 @@
         },
         "strategy": {
           "type": "string",
-          "pattern": "^M(0[0-9]|1[0-5])$",
-          "description": "EMS 전략 ID (M00~M15)"
+          "pattern": "^M(0[0-9]|1[0-9]|20)$",
+          "description": "EMS 전략 ID (M00~M20)"
         },
         "constraints": {
           "type": "object",

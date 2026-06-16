@@ -96,7 +96,7 @@
       "properties": {
         "active_strategy": {
           "type": "string",
-          "pattern": "^M(0[0-9]|1[0-5])$"
+          "pattern": "^M(0[0-9]|1[0-9]|20)$"
         },
         "schedule_slot_idx": {
           "type": "integer"

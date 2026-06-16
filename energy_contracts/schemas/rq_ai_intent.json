@@ -12,7 +12,7 @@
   ],
   "version": "1.1",
   "updated": "2026-05-20",
-  "$comment": "Track 1 G2 (REQUIREMENTS.md §2 G2) 산출물. PRD v1.6 §4.5 역질문 UI 5단계 Step 3 Filled-in form 의 직렬화 포맷. nl_intents.json 은 제어 명령 추출(M00~M15)에 특화, rq_ai_intent.json 은 목표역산(advisory/prescriptive) 의도 모델링.",
+  "$comment": "Track 1 G2 (REQUIREMENTS.md §2 G2) 산출물. PRD v1.6 §4.5 역질문 UI 5단계 Step 3 Filled-in form 의 직렬화 포맷. nl_intents.json 은 제어 명령 추출(M00~M20)에 특화, rq_ai_intent.json 은 목표역산(advisory/prescriptive) 의도 모델링.",
   "$defs": {
     "OutputType": {
       "type": "string",

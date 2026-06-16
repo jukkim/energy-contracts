@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "energy-contracts/legacy_ems_code_mapping.json",
   "title": "LegacyEmsCodeMapping",
-  "description": "EMS 전략 코드 SSOT = M00~M15 (ems_strategies.json#StrategyCode). 구 E0~E13, S1~S7 코드는 deprecated. 본 schema 는 deprecated 코드의 M-code 매핑 + drift 차단 메타 (정규식 / lint hook / auto-add 스크립트 참조) 를 단일 진실원으로 보유한다.",
+  "description": "EMS 전략 코드 SSOT = M00~M20 (ems_strategies.json#StrategyCode). 구 E0~E13, S1~S7 코드는 deprecated. 본 schema 는 deprecated 코드의 M-code 매핑 + drift 차단 메타 (정규식 / lint hook / auto-add 스크립트 참조) 를 단일 진실원으로 보유한다.",
   "_usage": "runtime-validate",
   "_consumers": [
     "ems_transformer",
@@ -34,8 +34,8 @@
           "description": "정본 enum SSOT 위치"
         },
         "strategy_code_regex": {
-          "const": "^M(0[0-9]|1[0-5])$",
-          "description": "M00~M15 정확 매칭. lint hook 가 본 정규식 강제. M16+ 신설 시 본 패턴 + ems_strategies.json + 본 schema 동시 갱신."
+          "const": "^M(0[0-9]|1[0-9]|20)$",
+          "description": "M00~M20 정확 매칭. lint hook 가 본 정규식 강제. M16+ 신설 시 본 패턴 + ems_strategies.json + 본 schema 동시 갱신."
         },
         "valid_count": {"const": 16}
       }
@@ -179,7 +179,7 @@
         },
         "ssot_locations": {
           "type": "array",
-          "description": "M00~M15 코드가 정의·참조되는 6 위치. 변경 시 모두 동기 갱신 의무.",
+          "description": "M00~M20 코드가 정의·참조되는 6 위치. 변경 시 모두 동기 갱신 의무.",
           "items": {"type": "string"},
           "default": [
             "projects/energy-contracts/energy_contracts/schemas/ems_strategies.json",

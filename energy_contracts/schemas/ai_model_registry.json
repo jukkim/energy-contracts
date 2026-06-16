@@ -246,7 +246,7 @@
         "data_source": "simulated",
         "trained_at": "2026-04-10",
         "project": "ems_transformer",
-        "description": "M00~M15 전략 → 절감량 예측 + 17 QA 유형. EnergyPlus 1,500건 학습. v1.1 Gateway :8030 통합 진입점.",
+        "description": "M00~M20 전략 → 절감량 예측 + 17 QA 유형. EnergyPlus 1,500건 학습. v1.1 Gateway :8030 통합 진입점.",
         "active_checkpoint": "qwen2.5-7b-qlora-final",
         "backend_url": "http://localhost:8030",
         "retrain_type": "type_1_sim"

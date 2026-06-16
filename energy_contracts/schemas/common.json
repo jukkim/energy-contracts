@@ -37,8 +37,8 @@
     },
     "StrategyPattern": {
       "type": "string",
-      "pattern": "^M(0[0-9]|1[0-5])$",
-      "description": "통일 코드 패턴 (M00~M15). v2.0에서 ^M[0-8]$ → ^M(0[0-9]|1[0-5])$ 확장."
+      "pattern": "^M(0[0-9]|1[0-9]|20)$",
+      "description": "통일 코드 패턴 (M00~M20). v2.0에서 ^M[0-8]$ → ^M(0[0-9]|1[0-9]|20)$ 확장."
     },
     "Kind": {
       "type": "string",

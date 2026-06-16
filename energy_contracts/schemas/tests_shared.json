@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "energy-contracts/tests_shared.json",
   "title": "Shared Test Fixtures SSOT (Phase K-13)",
-  "description": "워크스페이스 공통 테스트 fixture. M00~M15 케이스, sample VEN/PNU/Building. 6 프로젝트 중복 제거.",
+  "description": "워크스페이스 공통 테스트 fixture. M00~M20 케이스, sample VEN/PNU/Building. 6 프로젝트 중복 제거.",
   "_usage": "codegen",
   "_consumers": [
     "edge-agent",

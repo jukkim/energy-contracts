@@ -108,7 +108,7 @@
           "type": "array",
           "items": {
             "type": "string",
-            "pattern": "^M(0[0-9]|1[0-5])$"
+            "pattern": "^M(0[0-9]|1[0-9]|20)$"
           }
         },
         "controllable_points": {

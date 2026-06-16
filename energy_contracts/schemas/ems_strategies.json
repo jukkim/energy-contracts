@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "energy-contracts/ems_strategies.json",
   "title": "EMS Strategies",
-  "description": "EMS 전략 코드 SSOT (M00~M15). NAMING_UNIFICATION.md §1 기반. 모든 모듈은 이 정의를 참조.",
+  "description": "EMS 전략 코드 SSOT (M00~M20). M00~M20=시뮬 EMS(NAMING §1.1), M16~M20=DR 제어 액션. ADR-EMS-NAMESPACE-UNIFY. 모든 모듈은 이 정의를 참조.",
   "_usage": "codegen",
   "_consumers": [
     "edge-agent",
@@ -11,7 +11,7 @@
     "agentleague",
     "eduarena"
   ],
-  "version": "2.0",
+  "version": "3.0",
   "$defs": {
     "StrategyCode": {
       "type": "string",
@@ -31,9 +31,14 @@
         "M12",
         "M13",
         "M14",
-        "M15"
+        "M15",
+        "M16",
+        "M17",
+        "M18",
+        "M19",
+        "M20"
       ],
-      "description": "통일 EMS 전략 코드 (16종)"
+      "description": "통일 EMS 전략 코드 (21종, M00~M20). M00~M20=시뮬 EMS(NAMING §1.1), M16~M20=DR 제어 액션(ADR-EMS-NAMESPACE-UNIFY)."
     }
   },
   "type": "object",
@@ -100,41 +105,74 @@
     "signal_mapping_dr": {
       "type": "object",
       "description": "DR SignalLevel → 전략 매핑, dr_type별 분기 (Phase 4 도입). esg_policy.dr_type ∈ {reliability,economic,both} 시 사용. 4 SignalLevel × 2 dr_type = 8 키 모두 필수. Fallback 체인: signal_mapping_dr.{level}.{type} 정의 누락 시 → signal_mapping_dr.{level}.reliability (보수적 가정) → signal_mapping.{level} (flat) → M00. dr_agent loader가 startup 시 8 키 모두 존재 검증.",
-      "required": ["NORMAL", "MODERATE", "HIGH", "EMERGENCY"],
+      "required": [
+        "NORMAL",
+        "MODERATE",
+        "HIGH",
+        "EMERGENCY"
+      ],
       "properties": {
         "NORMAL": {
           "type": "object",
-          "required": ["reliability", "economic"],
+          "required": [
+            "reliability",
+            "economic"
+          ],
           "properties": {
-            "reliability": {"$ref": "#/$defs/StrategyCode"},
-            "economic": {"$ref": "#/$defs/StrategyCode"}
+            "reliability": {
+              "$ref": "#/$defs/StrategyCode"
+            },
+            "economic": {
+              "$ref": "#/$defs/StrategyCode"
+            }
           },
           "additionalProperties": false
         },
         "MODERATE": {
           "type": "object",
-          "required": ["reliability", "economic"],
+          "required": [
+            "reliability",
+            "economic"
+          ],
           "properties": {
-            "reliability": {"$ref": "#/$defs/StrategyCode"},
-            "economic": {"$ref": "#/$defs/StrategyCode"}
+            "reliability": {
+              "$ref": "#/$defs/StrategyCode"
+            },
+            "economic": {
+              "$ref": "#/$defs/StrategyCode"
+            }
           },
           "additionalProperties": false
         },
         "HIGH": {
           "type": "object",
-          "required": ["reliability", "economic"],
+          "required": [
+            "reliability",
+            "economic"
+          ],
           "properties": {
-            "reliability": {"$ref": "#/$defs/StrategyCode"},
-            "economic": {"$ref": "#/$defs/StrategyCode"}
+            "reliability": {
+              "$ref": "#/$defs/StrategyCode"
+            },
+            "economic": {
+              "$ref": "#/$defs/StrategyCode"
+            }
           },
           "additionalProperties": false
         },
         "EMERGENCY": {
           "type": "object",
-          "required": ["reliability", "economic"],
+          "required": [
+            "reliability",
+            "economic"
+          ],
           "properties": {
-            "reliability": {"$ref": "#/$defs/StrategyCode"},
-            "economic": {"$ref": "#/$defs/StrategyCode"}
+            "reliability": {
+              "$ref": "#/$defs/StrategyCode"
+            },
+            "economic": {
+              "$ref": "#/$defs/StrategyCode"
+            }
           },
           "additionalProperties": false
         }
@@ -160,138 +198,193 @@
     "strategies": {
       "M00": {
         "name_en": "Baseline",
-        "name_kr": "Baseline (무제어)",
+        "name_kr": "고정 설정온도 + 야간 Setback",
         "type": "single",
         "components": []
       },
       "M01": {
-        "name_en": "Night Setback",
-        "name_kr": "야간 Setback",
+        "name_en": "ScheduleOpt",
+        "name_kr": "최적 기동·정지 (OptimalStart+EarlyStop)",
         "type": "single",
         "components": []
       },
       "M02": {
         "name_en": "Economizer",
-        "name_kr": "외기냉방 (Economizer)",
+        "name_kr": "엔탈피 이코노마이저 (외기 무료냉방)",
         "type": "single",
         "components": []
       },
       "M03": {
-        "name_en": "Chiller Staging",
-        "name_kr": "냉동기 대수 제어",
+        "name_en": "Staging",
+        "name_kr": "냉동기·보일러 대수 제어",
         "type": "single",
         "components": []
       },
       "M04": {
-        "name_en": "PMV Comfort ±0.5",
-        "name_kr": "PMV 설정온도 ±0.5",
+        "name_en": "PMV_Strict",
+        "name_kr": "PMV ±0.5 동적 설정온도",
         "type": "single",
         "components": []
       },
       "M05": {
-        "name_en": "PMV Comfort ±0.7",
-        "name_kr": "PMV 설정온도 ±0.7",
+        "name_en": "PMV_Relaxed",
+        "name_kr": "PMV ±0.7 동적 설정온도",
         "type": "single",
         "components": []
       },
       "M06": {
-        "name_en": "Optimal Start",
-        "name_kr": "최적 기동 (OptimalStart)",
+        "name_en": "NightCycle",
+        "name_kr": "야간 순환 (NightCycle)",
         "type": "single",
         "components": []
       },
       "M07": {
-        "name_en": "Lighting Control",
-        "name_kr": "조명/콘센트 제어",
+        "name_en": "DCV",
+        "name_kr": "CO2 수요제어환기",
         "type": "single",
         "components": []
       },
       "M08": {
-        "name_en": "Pre-cooling",
-        "name_kr": "예냉 (Pre-cooling)",
+        "name_en": "HeatRecovery",
+        "name_kr": "전열교환기 (ERV)",
         "type": "single",
         "components": []
       },
       "M09": {
-        "name_en": "ESS Peak Shaving",
-        "name_kr": "ESS 피크셰이빙",
+        "name_en": "Precooling",
+        "name_kr": "피크 전 프리쿨링/프리히팅",
         "type": "single",
         "components": []
       },
       "M10": {
-        "name_en": "(reserved)",
-        "name_kr": "(예약)",
+        "name_en": "DemandResponse",
+        "name_kr": "피크 전력 수요반응 (부하 제한)",
         "type": "single",
         "components": []
       },
       "M11": {
-        "name_en": "Integrated EMS",
-        "name_kr": "통합 EMS",
+        "name_en": "Combined_EMS",
+        "name_kr": "통합 EMS (M01+M02+M03)",
         "type": "combined",
         "components": [
-          "M06",
+          "M01",
           "M02",
           "M03"
         ]
       },
       "M12": {
-        "name_en": "Integrated+PMV0.5",
-        "name_kr": "통합+PMV0.5",
+        "name_en": "Combined_PMV05",
+        "name_kr": "통합+PMV0.5 (M11+M04)",
         "type": "combined",
         "components": [
-          "M06",
+          "M01",
           "M02",
           "M03",
           "M04"
         ]
       },
       "M13": {
-        "name_en": "Integrated+PMV0.7",
-        "name_kr": "통합+PMV0.7",
+        "name_en": "Combined_PMV07",
+        "name_kr": "통합+PMV0.7 (M11+M05)",
         "type": "combined",
         "components": [
-          "M06",
+          "M01",
           "M02",
           "M03",
           "M05"
         ]
       },
       "M14": {
-        "name_en": "DR Integrated Optimization",
-        "name_kr": "DR 통합 최적화",
-        "type": "combined",
-        "components": [
-          "M02",
-          "M04",
-          "M07",
-          "M09"
-        ]
-      },
-      "M15": {
-        "name_en": "DR Emergency Curtailment",
-        "name_kr": "DR 긴급 감축",
+        "name_en": "Combined_Full",
+        "name_kr": "통합 완전 (M01+M02+M03+M06+M07)",
         "type": "combined",
         "components": [
           "M01",
           "M02",
+          "M03",
+          "M06",
+          "M07"
+        ]
+      },
+      "M15": {
+        "name_en": "Combined_Premium",
+        "name_kr": "통합 프리미엄 (M14+M04)",
+        "type": "combined",
+        "components": [
+          "M01",
+          "M02",
+          "M03",
           "M04",
-          "M07",
-          "M08",
-          "M09"
+          "M06",
+          "M07"
+        ]
+      },
+      "M16": {
+        "name_en": "DR_NightSetback",
+        "name_kr": "DR 야간 셋백 (능동 부하감축)",
+        "type": "single",
+        "components": []
+      },
+      "M17": {
+        "name_en": "LightingControl",
+        "name_kr": "조명 제어 (디밍)",
+        "type": "single",
+        "components": []
+      },
+      "M18": {
+        "name_en": "ESSPeakShaving",
+        "name_kr": "ESS 피크셰이빙",
+        "type": "single",
+        "components": []
+      },
+      "M19": {
+        "name_en": "DR_Integrated",
+        "name_kr": "DR 통합 최적화 (setpoint+조명+ESS)",
+        "type": "combined",
+        "components": [
+          "M02",
+          "M04",
+          "M17",
+          "M18"
+        ]
+      },
+      "M20": {
+        "name_en": "DR_EmergencyCurtail",
+        "name_kr": "DR 긴급 감축",
+        "type": "combined",
+        "components": [
+          "M16",
+          "M02",
+          "M04",
+          "M17",
+          "M09",
+          "M18"
         ]
       }
     },
     "signal_mapping": {
-      "NORMAL": "M07",
+      "NORMAL": "M17",
       "MODERATE": "M04",
-      "HIGH": "M14",
-      "EMERGENCY": "M15"
+      "HIGH": "M19",
+      "EMERGENCY": "M20"
     },
     "signal_mapping_dr": {
-      "NORMAL":    {"reliability": "M01", "economic": "M07"},
-      "MODERATE":  {"reliability": "M04", "economic": "M04"},
-      "HIGH":      {"reliability": "M14", "economic": "M11"},
-      "EMERGENCY": {"reliability": "M15", "economic": "M14"}
+      "NORMAL": {
+        "reliability": "M16",
+        "economic": "M17"
+      },
+      "MODERATE": {
+        "reliability": "M04",
+        "economic": "M04"
+      },
+      "HIGH": {
+        "reliability": "M19",
+        "economic": "M11"
+      },
+      "EMERGENCY": {
+        "reliability": "M20",
+        "economic": "M19"
+      }
     },
     "legacy_mapping": {
       "ems_simulation": {

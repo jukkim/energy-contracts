@@ -271,7 +271,7 @@ def gen_python(schemas: dict) -> str:
     lines.append("")
     lines.append("# ─ Strategy codes ────────────────────────────────────────────")
     lines.append(f"STRATEGY_CODES: list[str] = {codes!r}")
-    lines.append('STRATEGY_PATTERN: str = r"^M(0[0-9]|1[0-5])$"')
+    lines.append('STRATEGY_PATTERN: str = r"^M(0[0-9]|1[0-9]|20)$"')
     lines.append("")
 
     # Strategies dict
@@ -624,7 +624,7 @@ def gen_typescript(schemas: dict) -> str:
     lines.append("// ─ Strategy codes ────────────────────────────────────────────")
     lines.append(f"export const STRATEGY_CODES = {json.dumps(codes)} as const;")
     lines.append("export type StrategyCode = (typeof STRATEGY_CODES)[number];")
-    lines.append("export const STRATEGY_PATTERN = /^M(0[0-9]|1[0-5])$/;")
+    lines.append("export const STRATEGY_PATTERN = /^M(0[0-9]|1[0-9]|20)$/;")
     lines.append("")
 
     lines.append("export interface StrategyMeta {")
