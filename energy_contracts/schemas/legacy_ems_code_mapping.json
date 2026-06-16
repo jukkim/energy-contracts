@@ -35,9 +35,9 @@
         },
         "strategy_code_regex": {
           "const": "^M(0[0-9]|1[0-9]|20)$",
-          "description": "M00~M20 정확 매칭. lint hook 가 본 정규식 강제. M16+ 신설 시 본 패턴 + ems_strategies.json + 본 schema 동시 갱신."
+          "description": "M00~M20 정확 매칭 (valid set = SSOT; M16~M20 = DR control-plane). lint hook 가 본 정규식 강제. M21+ 신설 시 본 패턴 + ems_strategies.json + 본 schema 동시 갱신 (ADR-EMS-NAMESPACE-P6)."
         },
-        "valid_count": {"const": 16}
+        "valid_count": {"const": 21}
       }
     },
     "deprecated_e_codes": {
@@ -148,10 +148,11 @@
               ]
             },
             {
-              "pattern": "(?<![A-Za-z_])M(1[6-9]|[2-9]\\d)(?![A-Za-z0-9_])",
+              "pattern": "(?<![A-Za-z_])M(2[1-9]|[3-9]\\d)(?![A-Za-z0-9_])",
               "scope": "all",
               "exception": [
                 "docs/specs/SPEC_POLICY_VECTOR.md (hallucination 예시 의도)",
+                "docs/adr/ADR-EMS-NAMESPACE-P6-F14-DR-CODES.md (M21+ 경계 결정 문서)",
                 "docs/DRIFT_INVENTORY.md",
                 "scripts/lint_ems_code_drift.py",
                 "scripts/add_ems_code.py (auto-add 스크립트 자체)",

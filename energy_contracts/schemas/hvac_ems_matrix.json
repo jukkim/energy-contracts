@@ -15,7 +15,9 @@
   "$comment": "Phase 1.3 산출. SPEC_POLICY_VECTOR.md §2.2 가 본 매트릭스를 import. cell 값 의미: compatible (정상 적용) / marginal (적용 가능 but 절감 < 5%, warn) / infeasible (G-PE1 422 STRATEGY_INFEASIBLE_FOR_HVAC) / expected_skip (EMS_STRATEGY §21, infeasible 의 subset).",
   "type": "object",
   "_comment_required": "사냥꾼 라운드 LOW (2026-06-08): hvac_types/ems_strategies 는 차원 정의 메타데이터(const map + 코드 참조)이며 data instance 의 payload 가 아니다 → required 에서 제외해 default(matrix-only) 가 자체 유효하도록 정정.",
-  "required": ["matrix"],
+  "required": [
+    "matrix"
+  ],
   "additionalProperties": false,
   "properties": {
     "hvac_types": {
@@ -23,15 +25,33 @@
       "description": "ASHRAE 901 STD2019 5 종 (A~E) + 한국화 4 종 (HD~HG)",
       "additionalProperties": false,
       "properties": {
-        "A": {"const": "Central chilled water + boiler (chiller multi-stage)"},
-        "B": {"const": "Packaged DX (split / rooftop, 1~2 stage)"},
-        "C": {"const": "Single zone DX (residential / small commercial)"},
-        "D": {"const": "VRF (inverter-driven multi-zone)"},
-        "E": {"const": "Hydronic radiant + DOAS"},
-        "HD": {"const": "Korean — VRF + 온돌 (residential 한국화)"},
-        "HE": {"const": "Korean — 온돌 + gas boiler + PTAC (mid-rise residential)"},
-        "HF": {"const": "Korean — Hybrid (central + 온돌)"},
-        "HG": {"const": "Korean — gas-fired boiler + radiator (older retrofit)"}
+        "A": {
+          "const": "Central chilled water + boiler (chiller multi-stage)"
+        },
+        "B": {
+          "const": "Packaged DX (split / rooftop, 1~2 stage)"
+        },
+        "C": {
+          "const": "Single zone DX (residential / small commercial)"
+        },
+        "D": {
+          "const": "VRF (inverter-driven multi-zone)"
+        },
+        "E": {
+          "const": "Hydronic radiant + DOAS"
+        },
+        "HD": {
+          "const": "Korean — VRF + 온돌 (residential 한국화)"
+        },
+        "HE": {
+          "const": "Korean — 온돌 + gas boiler + PTAC (mid-rise residential)"
+        },
+        "HF": {
+          "const": "Korean — Hybrid (central + 온돌)"
+        },
+        "HG": {
+          "const": "Korean — gas-fired boiler + radiator (older retrofit)"
+        }
       }
     },
     "ems_strategies": {
@@ -44,22 +64,45 @@
       "description": "key = HVAC type (A~E, HD~HG), value = { strategy_id: compatibility }. compatibility ∈ {compatible, marginal, infeasible, expected_skip}.",
       "additionalProperties": false,
       "properties": {
-        "A": {"$ref": "#/$defs/StrategyRow"},
-        "B": {"$ref": "#/$defs/StrategyRow"},
-        "C": {"$ref": "#/$defs/StrategyRow"},
-        "D": {"$ref": "#/$defs/StrategyRow"},
-        "E": {"$ref": "#/$defs/StrategyRow"},
-        "HD": {"$ref": "#/$defs/StrategyRow"},
-        "HE": {"$ref": "#/$defs/StrategyRow"},
-        "HF": {"$ref": "#/$defs/StrategyRow"},
-        "HG": {"$ref": "#/$defs/StrategyRow"}
+        "A": {
+          "$ref": "#/$defs/StrategyRow"
+        },
+        "B": {
+          "$ref": "#/$defs/StrategyRow"
+        },
+        "C": {
+          "$ref": "#/$defs/StrategyRow"
+        },
+        "D": {
+          "$ref": "#/$defs/StrategyRow"
+        },
+        "E": {
+          "$ref": "#/$defs/StrategyRow"
+        },
+        "HD": {
+          "$ref": "#/$defs/StrategyRow"
+        },
+        "HE": {
+          "$ref": "#/$defs/StrategyRow"
+        },
+        "HF": {
+          "$ref": "#/$defs/StrategyRow"
+        },
+        "HG": {
+          "$ref": "#/$defs/StrategyRow"
+        }
       }
     }
   },
   "$defs": {
     "Compatibility": {
       "type": "string",
-      "enum": ["compatible", "marginal", "infeasible", "expected_skip"],
+      "enum": [
+        "compatible",
+        "marginal",
+        "infeasible",
+        "expected_skip"
+      ],
       "description": "compatible = 정상 / marginal = 절감 <5% warn / infeasible = 422 차단 / expected_skip = EMS §21 알려진 skip"
     },
     "StrategyRow": {
@@ -68,17 +111,25 @@
       "patternProperties": {
         "^M(0[0-9]|1[0-9]|20)$": {
           "type": "object",
-          "required": ["compatibility"],
+          "required": [
+            "compatibility"
+          ],
           "properties": {
-            "compatibility": {"$ref": "#/$defs/Compatibility"},
+            "compatibility": {
+              "$ref": "#/$defs/Compatibility"
+            },
             "expected_saving_pct_range": {
               "type": "array",
-              "items": {"type": "number"},
+              "items": {
+                "type": "number"
+              },
               "minItems": 2,
               "maxItems": 2,
               "description": "[min, max] %. infeasible 시 omit."
             },
-            "note": {"type": "string"}
+            "note": {
+              "type": "string"
+            }
           }
         }
       }
@@ -87,166 +138,949 @@
   "default": {
     "matrix": {
       "A": {
-        "M00": {"compatibility": "compatible", "note": "baseline"},
-        "M01": {"compatibility": "compatible", "expected_saving_pct_range": [5, 10]},
-        "M02": {"compatibility": "compatible", "expected_saving_pct_range": [5, 15], "note": "Economizer 핵심 적합"},
-        "M03": {"compatibility": "compatible", "expected_saving_pct_range": [15, 20], "note": "Staging 핵심 적합 (chiller multi)"},
-        "M04": {"compatibility": "compatible", "expected_saving_pct_range": [3, 8]},
-        "M05": {"compatibility": "compatible", "expected_saving_pct_range": [3, 8]},
-        "M06": {"compatibility": "compatible", "expected_saving_pct_range": [3, 7]},
-        "M07": {"compatibility": "compatible", "note": "조명/콘센트 제어 (HVAC 무관)"},
-        "M08": {"compatibility": "compatible", "expected_saving_pct_range": [8, 15], "note": "예냉(Pre-cooling): Pre-cooling 열용량 활용"},
-        "M09": {"compatibility": "compatible", "note": "ESS 피크셰이빙 (HVAC 무관, 부하 이전)"},
-        "M10": {"compatibility": "compatible", "expected_saving_pct_range": [10, 20]},
-        "M11": {"compatibility": "compatible", "expected_saving_pct_range": [15, 25]},
-        "M12": {"compatibility": "compatible", "expected_saving_pct_range": [18, 28]},
-        "M13": {"compatibility": "compatible", "expected_saving_pct_range": [18, 28]},
-        "M14": {"compatibility": "compatible", "expected_saving_pct_range": [20, 30]},
-        "M15": {"compatibility": "compatible", "expected_saving_pct_range": [22, 32]}
+        "M00": {
+          "compatibility": "compatible",
+          "note": "baseline"
+        },
+        "M01": {
+          "compatibility": "compatible",
+          "expected_saving_pct_range": [
+            5,
+            10
+          ]
+        },
+        "M02": {
+          "compatibility": "compatible",
+          "expected_saving_pct_range": [
+            5,
+            15
+          ],
+          "note": "Economizer 핵심 적합"
+        },
+        "M03": {
+          "compatibility": "compatible",
+          "expected_saving_pct_range": [
+            15,
+            20
+          ],
+          "note": "Staging 핵심 적합 (chiller multi)"
+        },
+        "M04": {
+          "compatibility": "compatible",
+          "expected_saving_pct_range": [
+            3,
+            8
+          ]
+        },
+        "M05": {
+          "compatibility": "compatible",
+          "expected_saving_pct_range": [
+            3,
+            8
+          ]
+        },
+        "M06": {
+          "compatibility": "compatible",
+          "expected_saving_pct_range": [
+            3,
+            7
+          ]
+        },
+        "M07": {
+          "compatibility": "compatible",
+          "note": "조명/콘센트 제어 (HVAC 무관)"
+        },
+        "M08": {
+          "compatibility": "compatible",
+          "expected_saving_pct_range": [
+            8,
+            15
+          ],
+          "note": "예냉(Pre-cooling): Pre-cooling 열용량 활용"
+        },
+        "M09": {
+          "compatibility": "compatible",
+          "note": "ESS 피크셰이빙 (HVAC 무관, 부하 이전)"
+        },
+        "M10": {
+          "compatibility": "compatible",
+          "expected_saving_pct_range": [
+            10,
+            20
+          ]
+        },
+        "M11": {
+          "compatibility": "compatible",
+          "expected_saving_pct_range": [
+            15,
+            25
+          ]
+        },
+        "M12": {
+          "compatibility": "compatible",
+          "expected_saving_pct_range": [
+            18,
+            28
+          ]
+        },
+        "M13": {
+          "compatibility": "compatible",
+          "expected_saving_pct_range": [
+            18,
+            28
+          ]
+        },
+        "M14": {
+          "compatibility": "compatible",
+          "expected_saving_pct_range": [
+            20,
+            30
+          ]
+        },
+        "M15": {
+          "compatibility": "compatible",
+          "expected_saving_pct_range": [
+            22,
+            32
+          ]
+        },
+        "M16": {
+          "compatibility": "compatible",
+          "expected_saving_pct_range": [
+            4,
+            9
+          ],
+          "note": "DR 능동 야간셋백 — M01 availability 적용성 상속 (P6 ADR 성분상속)"
+        },
+        "M17": {
+          "compatibility": "compatible",
+          "expected_saving_pct_range": [
+            2,
+            6
+          ],
+          "note": "조명 디밍 — HVAC 독립"
+        },
+        "M18": {
+          "compatibility": "compatible",
+          "expected_saving_pct_range": [
+            3,
+            8
+          ],
+          "note": "ESS 피크셰이빙 — HVAC 독립 (전기 저장)"
+        },
+        "M19": {
+          "compatibility": "compatible",
+          "expected_saving_pct_range": [
+            5,
+            12
+          ],
+          "note": "DR 통합(setpoint+조명+ESS) — economizer 성분 제약 시 marginal, 조명/ESS 항상 기여 (P6 ADR)"
+        },
+        "M20": {
+          "compatibility": "compatible",
+          "expected_saving_pct_range": [
+            8,
+            20
+          ],
+          "note": "DR 긴급 감축 cascade — 가용 레버 총동원 (HVAC 무관)"
+        }
       },
       "B": {
-        "M00": {"compatibility": "compatible"},
-        "M01": {"compatibility": "compatible", "expected_saving_pct_range": [3, 8]},
-        "M02": {"compatibility": "compatible", "expected_saving_pct_range": [3, 10]},
-        "M03": {"compatibility": "marginal", "expected_saving_pct_range": [5, 10], "note": "Packaged DX 2-stage 제한"},
-        "M04": {"compatibility": "compatible", "expected_saving_pct_range": [2, 6]},
-        "M05": {"compatibility": "compatible", "expected_saving_pct_range": [2, 6]},
-        "M06": {"compatibility": "compatible", "expected_saving_pct_range": [2, 5]},
-        "M07": {"compatibility": "compatible", "note": "조명/콘센트 제어 (HVAC 무관)"},
-        "M08": {"compatibility": "marginal", "note": "예냉(Pre-cooling): 열용량 제한"},
-        "M09": {"compatibility": "compatible", "note": "ESS 피크셰이빙 (HVAC 무관, 부하 이전)"},
-        "M10": {"compatibility": "compatible"},
-        "M11": {"compatibility": "compatible"},
-        "M12": {"compatibility": "compatible"},
-        "M13": {"compatibility": "compatible"},
-        "M14": {"compatibility": "compatible"},
-        "M15": {"compatibility": "compatible"}
+        "M00": {
+          "compatibility": "compatible"
+        },
+        "M01": {
+          "compatibility": "compatible",
+          "expected_saving_pct_range": [
+            3,
+            8
+          ]
+        },
+        "M02": {
+          "compatibility": "compatible",
+          "expected_saving_pct_range": [
+            3,
+            10
+          ]
+        },
+        "M03": {
+          "compatibility": "marginal",
+          "expected_saving_pct_range": [
+            5,
+            10
+          ],
+          "note": "Packaged DX 2-stage 제한"
+        },
+        "M04": {
+          "compatibility": "compatible",
+          "expected_saving_pct_range": [
+            2,
+            6
+          ]
+        },
+        "M05": {
+          "compatibility": "compatible",
+          "expected_saving_pct_range": [
+            2,
+            6
+          ]
+        },
+        "M06": {
+          "compatibility": "compatible",
+          "expected_saving_pct_range": [
+            2,
+            5
+          ]
+        },
+        "M07": {
+          "compatibility": "compatible",
+          "note": "조명/콘센트 제어 (HVAC 무관)"
+        },
+        "M08": {
+          "compatibility": "marginal",
+          "note": "예냉(Pre-cooling): 열용량 제한"
+        },
+        "M09": {
+          "compatibility": "compatible",
+          "note": "ESS 피크셰이빙 (HVAC 무관, 부하 이전)"
+        },
+        "M10": {
+          "compatibility": "compatible"
+        },
+        "M11": {
+          "compatibility": "compatible"
+        },
+        "M12": {
+          "compatibility": "compatible"
+        },
+        "M13": {
+          "compatibility": "compatible"
+        },
+        "M14": {
+          "compatibility": "compatible"
+        },
+        "M15": {
+          "compatibility": "compatible"
+        },
+        "M16": {
+          "compatibility": "compatible",
+          "expected_saving_pct_range": [
+            4,
+            9
+          ],
+          "note": "DR 능동 야간셋백 — M01 availability 적용성 상속 (P6 ADR 성분상속)"
+        },
+        "M17": {
+          "compatibility": "compatible",
+          "expected_saving_pct_range": [
+            2,
+            6
+          ],
+          "note": "조명 디밍 — HVAC 독립"
+        },
+        "M18": {
+          "compatibility": "compatible",
+          "expected_saving_pct_range": [
+            3,
+            8
+          ],
+          "note": "ESS 피크셰이빙 — HVAC 독립 (전기 저장)"
+        },
+        "M19": {
+          "compatibility": "compatible",
+          "expected_saving_pct_range": [
+            5,
+            12
+          ],
+          "note": "DR 통합(setpoint+조명+ESS) — economizer 성분 제약 시 marginal, 조명/ESS 항상 기여 (P6 ADR)"
+        },
+        "M20": {
+          "compatibility": "compatible",
+          "expected_saving_pct_range": [
+            8,
+            20
+          ],
+          "note": "DR 긴급 감축 cascade — 가용 레버 총동원 (HVAC 무관)"
+        }
       },
       "C": {
-        "M00": {"compatibility": "compatible"},
-        "M01": {"compatibility": "compatible", "expected_saving_pct_range": [2, 5]},
-        "M02": {"compatibility": "infeasible", "note": "Single zone DX, 외기 도입 mechanism 없음"},
-        "M03": {"compatibility": "infeasible", "note": "단일 장비, staging 불가"},
-        "M04": {"compatibility": "compatible"},
-        "M05": {"compatibility": "compatible"},
-        "M06": {"compatibility": "marginal"},
-        "M07": {"compatibility": "compatible", "note": "조명/콘센트 제어 (HVAC 무관)"},
-        "M08": {"compatibility": "marginal", "note": "예냉(Pre-cooling)"},
-        "M09": {"compatibility": "compatible", "note": "ESS 피크셰이빙 (HVAC 무관, 부하 이전)"},
-        "M10": {"compatibility": "compatible"},
-        "M11": {"compatibility": "infeasible", "note": "M03 의존 (M01+M02+M03)"},
-        "M12": {"compatibility": "infeasible", "note": "M11 의존"},
-        "M13": {"compatibility": "infeasible", "note": "M11 의존"},
-        "M14": {"compatibility": "infeasible", "note": "M03 의존"},
-        "M15": {"compatibility": "infeasible", "note": "M14 의존"}
+        "M00": {
+          "compatibility": "compatible"
+        },
+        "M01": {
+          "compatibility": "compatible",
+          "expected_saving_pct_range": [
+            2,
+            5
+          ]
+        },
+        "M02": {
+          "compatibility": "infeasible",
+          "note": "Single zone DX, 외기 도입 mechanism 없음"
+        },
+        "M03": {
+          "compatibility": "infeasible",
+          "note": "단일 장비, staging 불가"
+        },
+        "M04": {
+          "compatibility": "compatible"
+        },
+        "M05": {
+          "compatibility": "compatible"
+        },
+        "M06": {
+          "compatibility": "marginal"
+        },
+        "M07": {
+          "compatibility": "compatible",
+          "note": "조명/콘센트 제어 (HVAC 무관)"
+        },
+        "M08": {
+          "compatibility": "marginal",
+          "note": "예냉(Pre-cooling)"
+        },
+        "M09": {
+          "compatibility": "compatible",
+          "note": "ESS 피크셰이빙 (HVAC 무관, 부하 이전)"
+        },
+        "M10": {
+          "compatibility": "compatible"
+        },
+        "M11": {
+          "compatibility": "infeasible",
+          "note": "M03 의존 (M01+M02+M03)"
+        },
+        "M12": {
+          "compatibility": "infeasible",
+          "note": "M11 의존"
+        },
+        "M13": {
+          "compatibility": "infeasible",
+          "note": "M11 의존"
+        },
+        "M14": {
+          "compatibility": "infeasible",
+          "note": "M03 의존"
+        },
+        "M15": {
+          "compatibility": "infeasible",
+          "note": "M14 의존"
+        },
+        "M16": {
+          "compatibility": "compatible",
+          "expected_saving_pct_range": [
+            4,
+            9
+          ],
+          "note": "DR 능동 야간셋백 — M01 availability 적용성 상속 (P6 ADR 성분상속)"
+        },
+        "M17": {
+          "compatibility": "compatible",
+          "expected_saving_pct_range": [
+            2,
+            6
+          ],
+          "note": "조명 디밍 — HVAC 독립"
+        },
+        "M18": {
+          "compatibility": "compatible",
+          "expected_saving_pct_range": [
+            3,
+            8
+          ],
+          "note": "ESS 피크셰이빙 — HVAC 독립 (전기 저장)"
+        },
+        "M19": {
+          "compatibility": "marginal",
+          "expected_saving_pct_range": [
+            5,
+            12
+          ],
+          "note": "DR 통합(setpoint+조명+ESS) — economizer 성분 제약 시 marginal, 조명/ESS 항상 기여 (P6 ADR)"
+        },
+        "M20": {
+          "compatibility": "compatible",
+          "expected_saving_pct_range": [
+            8,
+            20
+          ],
+          "note": "DR 긴급 감축 cascade — 가용 레버 총동원 (HVAC 무관)"
+        }
       },
       "D": {
-        "M00": {"compatibility": "compatible"},
-        "M01": {"compatibility": "compatible", "expected_saving_pct_range": [4, 9]},
-        "M02": {"compatibility": "marginal", "note": "VRF 외기 도입 제한"},
-        "M03": {"compatibility": "compatible", "expected_saving_pct_range": [8, 15], "note": "인버터 제어"},
-        "M04": {"compatibility": "compatible"},
-        "M05": {"compatibility": "compatible"},
-        "M06": {"compatibility": "compatible"},
-        "M07": {"compatibility": "compatible", "note": "조명/콘센트 제어 (HVAC 무관)"},
-        "M08": {"compatibility": "compatible", "note": "예냉(Pre-cooling)"},
-        "M09": {"compatibility": "compatible", "note": "ESS 피크셰이빙 (HVAC 무관, 부하 이전)"},
-        "M10": {"compatibility": "compatible"},
-        "M11": {"compatibility": "compatible"},
-        "M12": {"compatibility": "compatible"},
-        "M13": {"compatibility": "compatible"},
-        "M14": {"compatibility": "compatible"},
-        "M15": {"compatibility": "compatible"}
+        "M00": {
+          "compatibility": "compatible"
+        },
+        "M01": {
+          "compatibility": "compatible",
+          "expected_saving_pct_range": [
+            4,
+            9
+          ]
+        },
+        "M02": {
+          "compatibility": "marginal",
+          "note": "VRF 외기 도입 제한"
+        },
+        "M03": {
+          "compatibility": "compatible",
+          "expected_saving_pct_range": [
+            8,
+            15
+          ],
+          "note": "인버터 제어"
+        },
+        "M04": {
+          "compatibility": "compatible"
+        },
+        "M05": {
+          "compatibility": "compatible"
+        },
+        "M06": {
+          "compatibility": "compatible"
+        },
+        "M07": {
+          "compatibility": "compatible",
+          "note": "조명/콘센트 제어 (HVAC 무관)"
+        },
+        "M08": {
+          "compatibility": "compatible",
+          "note": "예냉(Pre-cooling)"
+        },
+        "M09": {
+          "compatibility": "compatible",
+          "note": "ESS 피크셰이빙 (HVAC 무관, 부하 이전)"
+        },
+        "M10": {
+          "compatibility": "compatible"
+        },
+        "M11": {
+          "compatibility": "compatible"
+        },
+        "M12": {
+          "compatibility": "compatible"
+        },
+        "M13": {
+          "compatibility": "compatible"
+        },
+        "M14": {
+          "compatibility": "compatible"
+        },
+        "M15": {
+          "compatibility": "compatible"
+        },
+        "M16": {
+          "compatibility": "compatible",
+          "expected_saving_pct_range": [
+            4,
+            9
+          ],
+          "note": "DR 능동 야간셋백 — M01 availability 적용성 상속 (P6 ADR 성분상속)"
+        },
+        "M17": {
+          "compatibility": "compatible",
+          "expected_saving_pct_range": [
+            2,
+            6
+          ],
+          "note": "조명 디밍 — HVAC 독립"
+        },
+        "M18": {
+          "compatibility": "compatible",
+          "expected_saving_pct_range": [
+            3,
+            8
+          ],
+          "note": "ESS 피크셰이빙 — HVAC 독립 (전기 저장)"
+        },
+        "M19": {
+          "compatibility": "marginal",
+          "expected_saving_pct_range": [
+            5,
+            12
+          ],
+          "note": "DR 통합(setpoint+조명+ESS) — economizer 성분 제약 시 marginal, 조명/ESS 항상 기여 (P6 ADR)"
+        },
+        "M20": {
+          "compatibility": "compatible",
+          "expected_saving_pct_range": [
+            8,
+            20
+          ],
+          "note": "DR 긴급 감축 cascade — 가용 레버 총동원 (HVAC 무관)"
+        }
       },
       "E": {
-        "M00": {"compatibility": "compatible"},
-        "M01": {"compatibility": "compatible"},
-        "M02": {"compatibility": "compatible", "note": "DOAS 외기 활용"},
-        "M03": {"compatibility": "marginal", "note": "Hydronic pump staging만"},
-        "M04": {"compatibility": "compatible"},
-        "M05": {"compatibility": "compatible"},
-        "M06": {"compatibility": "compatible"},
-        "M07": {"compatibility": "compatible", "note": "조명/콘센트 제어 (HVAC 무관)"},
-        "M08": {"compatibility": "compatible", "note": "예냉(Pre-cooling): Hydronic 열용량 활용 강력"},
-        "M09": {"compatibility": "compatible", "note": "ESS 피크셰이빙 (HVAC 무관, 부하 이전)"},
-        "M10": {"compatibility": "compatible"},
-        "M11": {"compatibility": "marginal"},
-        "M12": {"compatibility": "marginal"},
-        "M13": {"compatibility": "marginal"},
-        "M14": {"compatibility": "marginal"},
-        "M15": {"compatibility": "marginal"}
+        "M00": {
+          "compatibility": "compatible"
+        },
+        "M01": {
+          "compatibility": "compatible"
+        },
+        "M02": {
+          "compatibility": "compatible",
+          "note": "DOAS 외기 활용"
+        },
+        "M03": {
+          "compatibility": "marginal",
+          "note": "Hydronic pump staging만"
+        },
+        "M04": {
+          "compatibility": "compatible"
+        },
+        "M05": {
+          "compatibility": "compatible"
+        },
+        "M06": {
+          "compatibility": "compatible"
+        },
+        "M07": {
+          "compatibility": "compatible",
+          "note": "조명/콘센트 제어 (HVAC 무관)"
+        },
+        "M08": {
+          "compatibility": "compatible",
+          "note": "예냉(Pre-cooling): Hydronic 열용량 활용 강력"
+        },
+        "M09": {
+          "compatibility": "compatible",
+          "note": "ESS 피크셰이빙 (HVAC 무관, 부하 이전)"
+        },
+        "M10": {
+          "compatibility": "compatible"
+        },
+        "M11": {
+          "compatibility": "marginal"
+        },
+        "M12": {
+          "compatibility": "marginal"
+        },
+        "M13": {
+          "compatibility": "marginal"
+        },
+        "M14": {
+          "compatibility": "marginal"
+        },
+        "M15": {
+          "compatibility": "marginal"
+        },
+        "M16": {
+          "compatibility": "compatible",
+          "expected_saving_pct_range": [
+            4,
+            9
+          ],
+          "note": "DR 능동 야간셋백 — M01 availability 적용성 상속 (P6 ADR 성분상속)"
+        },
+        "M17": {
+          "compatibility": "compatible",
+          "expected_saving_pct_range": [
+            2,
+            6
+          ],
+          "note": "조명 디밍 — HVAC 독립"
+        },
+        "M18": {
+          "compatibility": "compatible",
+          "expected_saving_pct_range": [
+            3,
+            8
+          ],
+          "note": "ESS 피크셰이빙 — HVAC 독립 (전기 저장)"
+        },
+        "M19": {
+          "compatibility": "compatible",
+          "expected_saving_pct_range": [
+            5,
+            12
+          ],
+          "note": "DR 통합(setpoint+조명+ESS) — economizer 성분 제약 시 marginal, 조명/ESS 항상 기여 (P6 ADR)"
+        },
+        "M20": {
+          "compatibility": "compatible",
+          "expected_saving_pct_range": [
+            8,
+            20
+          ],
+          "note": "DR 긴급 감축 cascade — 가용 레버 총동원 (HVAC 무관)"
+        }
       },
       "HD": {
-        "M00": {"compatibility": "compatible"},
-        "M01": {"compatibility": "compatible"},
-        "M02": {"compatibility": "marginal", "note": "VRF 외기 제한"},
-        "M03": {"compatibility": "compatible"},
-        "M04": {"compatibility": "compatible"},
-        "M05": {"compatibility": "compatible"},
-        "M06": {"compatibility": "compatible"},
-        "M07": {"compatibility": "compatible", "note": "조명/콘센트 제어 (HVAC 무관)"},
-        "M08": {"compatibility": "compatible", "note": "예냉(Pre-cooling): 온돌 열용량 활용"},
-        "M09": {"compatibility": "compatible", "note": "ESS 피크셰이빙 (HVAC 무관, 부하 이전)"},
-        "M10": {"compatibility": "compatible"},
-        "M11": {"compatibility": "compatible"},
-        "M12": {"compatibility": "compatible"},
-        "M13": {"compatibility": "compatible"},
-        "M14": {"compatibility": "compatible"},
-        "M15": {"compatibility": "compatible"}
+        "M00": {
+          "compatibility": "compatible"
+        },
+        "M01": {
+          "compatibility": "compatible"
+        },
+        "M02": {
+          "compatibility": "marginal",
+          "note": "VRF 외기 제한"
+        },
+        "M03": {
+          "compatibility": "compatible"
+        },
+        "M04": {
+          "compatibility": "compatible"
+        },
+        "M05": {
+          "compatibility": "compatible"
+        },
+        "M06": {
+          "compatibility": "compatible"
+        },
+        "M07": {
+          "compatibility": "compatible",
+          "note": "조명/콘센트 제어 (HVAC 무관)"
+        },
+        "M08": {
+          "compatibility": "compatible",
+          "note": "예냉(Pre-cooling): 온돌 열용량 활용"
+        },
+        "M09": {
+          "compatibility": "compatible",
+          "note": "ESS 피크셰이빙 (HVAC 무관, 부하 이전)"
+        },
+        "M10": {
+          "compatibility": "compatible"
+        },
+        "M11": {
+          "compatibility": "compatible"
+        },
+        "M12": {
+          "compatibility": "compatible"
+        },
+        "M13": {
+          "compatibility": "compatible"
+        },
+        "M14": {
+          "compatibility": "compatible"
+        },
+        "M15": {
+          "compatibility": "compatible"
+        },
+        "M16": {
+          "compatibility": "compatible",
+          "expected_saving_pct_range": [
+            4,
+            9
+          ],
+          "note": "DR 능동 야간셋백 — M01 availability 적용성 상속 (P6 ADR 성분상속)"
+        },
+        "M17": {
+          "compatibility": "compatible",
+          "expected_saving_pct_range": [
+            2,
+            6
+          ],
+          "note": "조명 디밍 — HVAC 독립"
+        },
+        "M18": {
+          "compatibility": "compatible",
+          "expected_saving_pct_range": [
+            3,
+            8
+          ],
+          "note": "ESS 피크셰이빙 — HVAC 독립 (전기 저장)"
+        },
+        "M19": {
+          "compatibility": "marginal",
+          "expected_saving_pct_range": [
+            5,
+            12
+          ],
+          "note": "DR 통합(setpoint+조명+ESS) — economizer 성분 제약 시 marginal, 조명/ESS 항상 기여 (P6 ADR)"
+        },
+        "M20": {
+          "compatibility": "compatible",
+          "expected_saving_pct_range": [
+            8,
+            20
+          ],
+          "note": "DR 긴급 감축 cascade — 가용 레버 총동원 (HVAC 무관)"
+        }
       },
       "HE": {
-        "M00": {"compatibility": "compatible"},
-        "M01": {"compatibility": "compatible"},
-        "M02": {"compatibility": "expected_skip", "note": "PTAC + boiler, 외기 mechanism 미흡 (EMS §21 EXPECTED_SKIP)"},
-        "M03": {"compatibility": "infeasible", "note": "단일 boiler, staging 불가"},
-        "M04": {"compatibility": "compatible"},
-        "M05": {"compatibility": "compatible"},
-        "M06": {"compatibility": "compatible"},
-        "M07": {"compatibility": "compatible", "note": "조명/콘센트 제어 (HVAC 무관)"},
-        "M08": {"compatibility": "compatible", "note": "예냉(Pre-cooling): 온돌 열용량"},
-        "M09": {"compatibility": "compatible", "note": "ESS 피크셰이빙 (HVAC 무관, 부하 이전)"},
-        "M10": {"compatibility": "compatible"},
-        "M11": {"compatibility": "expected_skip", "note": "M02/M03 의존"},
-        "M12": {"compatibility": "expected_skip"},
-        "M13": {"compatibility": "expected_skip"},
-        "M14": {"compatibility": "expected_skip"},
-        "M15": {"compatibility": "expected_skip"}
+        "M00": {
+          "compatibility": "compatible"
+        },
+        "M01": {
+          "compatibility": "compatible"
+        },
+        "M02": {
+          "compatibility": "expected_skip",
+          "note": "PTAC + boiler, 외기 mechanism 미흡 (EMS §21 EXPECTED_SKIP)"
+        },
+        "M03": {
+          "compatibility": "infeasible",
+          "note": "단일 boiler, staging 불가"
+        },
+        "M04": {
+          "compatibility": "compatible"
+        },
+        "M05": {
+          "compatibility": "compatible"
+        },
+        "M06": {
+          "compatibility": "compatible"
+        },
+        "M07": {
+          "compatibility": "compatible",
+          "note": "조명/콘센트 제어 (HVAC 무관)"
+        },
+        "M08": {
+          "compatibility": "compatible",
+          "note": "예냉(Pre-cooling): 온돌 열용량"
+        },
+        "M09": {
+          "compatibility": "compatible",
+          "note": "ESS 피크셰이빙 (HVAC 무관, 부하 이전)"
+        },
+        "M10": {
+          "compatibility": "compatible"
+        },
+        "M11": {
+          "compatibility": "expected_skip",
+          "note": "M02/M03 의존"
+        },
+        "M12": {
+          "compatibility": "expected_skip"
+        },
+        "M13": {
+          "compatibility": "expected_skip"
+        },
+        "M14": {
+          "compatibility": "expected_skip"
+        },
+        "M15": {
+          "compatibility": "expected_skip"
+        },
+        "M16": {
+          "compatibility": "compatible",
+          "expected_saving_pct_range": [
+            4,
+            9
+          ],
+          "note": "DR 능동 야간셋백 — M01 availability 적용성 상속 (P6 ADR 성분상속)"
+        },
+        "M17": {
+          "compatibility": "compatible",
+          "expected_saving_pct_range": [
+            2,
+            6
+          ],
+          "note": "조명 디밍 — HVAC 독립"
+        },
+        "M18": {
+          "compatibility": "compatible",
+          "expected_saving_pct_range": [
+            3,
+            8
+          ],
+          "note": "ESS 피크셰이빙 — HVAC 독립 (전기 저장)"
+        },
+        "M19": {
+          "compatibility": "marginal",
+          "expected_saving_pct_range": [
+            5,
+            12
+          ],
+          "note": "DR 통합(setpoint+조명+ESS) — economizer 성분 제약 시 marginal, 조명/ESS 항상 기여 (P6 ADR)"
+        },
+        "M20": {
+          "compatibility": "compatible",
+          "expected_saving_pct_range": [
+            8,
+            20
+          ],
+          "note": "DR 긴급 감축 cascade — 가용 레버 총동원 (HVAC 무관)"
+        }
       },
       "HF": {
-        "M00": {"compatibility": "compatible"},
-        "M01": {"compatibility": "compatible"},
-        "M02": {"compatibility": "compatible"},
-        "M03": {"compatibility": "compatible"},
-        "M04": {"compatibility": "compatible"},
-        "M05": {"compatibility": "compatible"},
-        "M06": {"compatibility": "compatible"},
-        "M07": {"compatibility": "compatible", "note": "조명/콘센트 제어 (HVAC 무관)"},
-        "M08": {"compatibility": "compatible", "note": "예냉(Pre-cooling)"},
-        "M09": {"compatibility": "compatible", "note": "ESS 피크셰이빙 (HVAC 무관, 부하 이전)"},
-        "M10": {"compatibility": "compatible"},
-        "M11": {"compatibility": "compatible"},
-        "M12": {"compatibility": "compatible"},
-        "M13": {"compatibility": "compatible"},
-        "M14": {"compatibility": "compatible"},
-        "M15": {"compatibility": "compatible"}
+        "M00": {
+          "compatibility": "compatible"
+        },
+        "M01": {
+          "compatibility": "compatible"
+        },
+        "M02": {
+          "compatibility": "compatible"
+        },
+        "M03": {
+          "compatibility": "compatible"
+        },
+        "M04": {
+          "compatibility": "compatible"
+        },
+        "M05": {
+          "compatibility": "compatible"
+        },
+        "M06": {
+          "compatibility": "compatible"
+        },
+        "M07": {
+          "compatibility": "compatible",
+          "note": "조명/콘센트 제어 (HVAC 무관)"
+        },
+        "M08": {
+          "compatibility": "compatible",
+          "note": "예냉(Pre-cooling)"
+        },
+        "M09": {
+          "compatibility": "compatible",
+          "note": "ESS 피크셰이빙 (HVAC 무관, 부하 이전)"
+        },
+        "M10": {
+          "compatibility": "compatible"
+        },
+        "M11": {
+          "compatibility": "compatible"
+        },
+        "M12": {
+          "compatibility": "compatible"
+        },
+        "M13": {
+          "compatibility": "compatible"
+        },
+        "M14": {
+          "compatibility": "compatible"
+        },
+        "M15": {
+          "compatibility": "compatible"
+        },
+        "M16": {
+          "compatibility": "compatible",
+          "expected_saving_pct_range": [
+            4,
+            9
+          ],
+          "note": "DR 능동 야간셋백 — M01 availability 적용성 상속 (P6 ADR 성분상속)"
+        },
+        "M17": {
+          "compatibility": "compatible",
+          "expected_saving_pct_range": [
+            2,
+            6
+          ],
+          "note": "조명 디밍 — HVAC 독립"
+        },
+        "M18": {
+          "compatibility": "compatible",
+          "expected_saving_pct_range": [
+            3,
+            8
+          ],
+          "note": "ESS 피크셰이빙 — HVAC 독립 (전기 저장)"
+        },
+        "M19": {
+          "compatibility": "compatible",
+          "expected_saving_pct_range": [
+            5,
+            12
+          ],
+          "note": "DR 통합(setpoint+조명+ESS) — economizer 성분 제약 시 marginal, 조명/ESS 항상 기여 (P6 ADR)"
+        },
+        "M20": {
+          "compatibility": "compatible",
+          "expected_saving_pct_range": [
+            8,
+            20
+          ],
+          "note": "DR 긴급 감축 cascade — 가용 레버 총동원 (HVAC 무관)"
+        }
       },
       "HG": {
-        "M00": {"compatibility": "compatible"},
-        "M01": {"compatibility": "marginal", "note": "OptimalStart radiator 적용 제한"},
-        "M02": {"compatibility": "infeasible"},
-        "M03": {"compatibility": "infeasible"},
-        "M04": {"compatibility": "compatible"},
-        "M05": {"compatibility": "compatible"},
-        "M06": {"compatibility": "marginal"},
-        "M07": {"compatibility": "compatible", "note": "조명/콘센트 제어 (HVAC 무관)"},
-        "M08": {"compatibility": "compatible", "note": "예냉(Pre-cooling)"},
-        "M09": {"compatibility": "compatible", "note": "ESS 피크셰이빙 (HVAC 무관, 부하 이전)"},
-        "M10": {"compatibility": "compatible"},
-        "M11": {"compatibility": "infeasible"},
-        "M12": {"compatibility": "infeasible"},
-        "M13": {"compatibility": "infeasible"},
-        "M14": {"compatibility": "infeasible"},
-        "M15": {"compatibility": "infeasible"}
+        "M00": {
+          "compatibility": "compatible"
+        },
+        "M01": {
+          "compatibility": "marginal",
+          "note": "OptimalStart radiator 적용 제한"
+        },
+        "M02": {
+          "compatibility": "infeasible"
+        },
+        "M03": {
+          "compatibility": "infeasible"
+        },
+        "M04": {
+          "compatibility": "compatible"
+        },
+        "M05": {
+          "compatibility": "compatible"
+        },
+        "M06": {
+          "compatibility": "marginal"
+        },
+        "M07": {
+          "compatibility": "compatible",
+          "note": "조명/콘센트 제어 (HVAC 무관)"
+        },
+        "M08": {
+          "compatibility": "compatible",
+          "note": "예냉(Pre-cooling)"
+        },
+        "M09": {
+          "compatibility": "compatible",
+          "note": "ESS 피크셰이빙 (HVAC 무관, 부하 이전)"
+        },
+        "M10": {
+          "compatibility": "compatible"
+        },
+        "M11": {
+          "compatibility": "infeasible"
+        },
+        "M12": {
+          "compatibility": "infeasible"
+        },
+        "M13": {
+          "compatibility": "infeasible"
+        },
+        "M14": {
+          "compatibility": "infeasible"
+        },
+        "M15": {
+          "compatibility": "infeasible"
+        },
+        "M16": {
+          "compatibility": "marginal",
+          "expected_saving_pct_range": [
+            4,
+            9
+          ],
+          "note": "DR 능동 야간셋백 — M01 availability 적용성 상속 (P6 ADR 성분상속)"
+        },
+        "M17": {
+          "compatibility": "compatible",
+          "expected_saving_pct_range": [
+            2,
+            6
+          ],
+          "note": "조명 디밍 — HVAC 독립"
+        },
+        "M18": {
+          "compatibility": "compatible",
+          "expected_saving_pct_range": [
+            3,
+            8
+          ],
+          "note": "ESS 피크셰이빙 — HVAC 독립 (전기 저장)"
+        },
+        "M19": {
+          "compatibility": "marginal",
+          "expected_saving_pct_range": [
+            5,
+            12
+          ],
+          "note": "DR 통합(setpoint+조명+ESS) — economizer 성분 제약 시 marginal, 조명/ESS 항상 기여 (P6 ADR)"
+        },
+        "M20": {
+          "compatibility": "compatible",
+          "expected_saving_pct_range": [
+            8,
+            20
+          ],
+          "note": "DR 긴급 감축 cascade — 가용 레버 총동원 (HVAC 무관)"
+        }
       }
     }
   }
