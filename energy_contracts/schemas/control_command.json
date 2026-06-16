@@ -39,7 +39,7 @@
         "M19",
         "M20"
       ],
-      "description": "통일 EMS 전략 코드 (16종) — required. common.json §Strategy SSOT. v2.0에서 M0~M8 → M00~M20 확장. control_response 는 status=failed/rejected 시 생략 허용(pattern)."
+      "description": "통일 EMS 전략 코드 (21종, M00~M20) — required. common.json §Strategy SSOT. v2.0에서 M0~M8 → M00~M20 확장. control_response 는 status=failed/rejected 시 생략 허용(pattern)."
     },
     "strategy_name": {
       "type": "string"

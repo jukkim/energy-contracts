@@ -31,9 +31,14 @@
         "M12",
         "M13",
         "M14",
-        "M15"
+        "M15",
+        "M16",
+        "M17",
+        "M18",
+        "M19",
+        "M20"
       ],
-      "description": "통일 EMS 전략 코드 (16종). M00=Baseline, M01=Night Setback, M02=Economizer, M03=Chiller Staging, M04=PMV±0.5, M05=PMV±0.7, M06=Optimal Start, M07=Lighting Control, M08=Pre-cooling, M09=ESS Peak Shaving, M10=(reserved), M11~M15=combined. 상세: ems_strategies.json."
+      "description": "통일 EMS 전략 코드 (21종, M00~M20). M00=Baseline, M01=ScheduleOpt, M02=Economizer, M03=Staging, M04=PMV±0.5, M05=PMV±0.7, M06=NightCycle, M07=DCV, M08=HeatRecovery, M09=Precooling, M10=DemandResponse, M11~M15=Combined. M16~M20=DR 제어 액션(M16=DR_NightSetback, M17=LightingControl, M18=ESSPeakShaving, M19=DR_Integrated, M20=DR_EmergencyCurtail). 상세: ems_strategies.json."
     },
     "StrategyPattern": {
       "type": "string",
@@ -90,7 +95,7 @@
         "HIGH",
         "EMERGENCY"
       ],
-      "description": "DR 신호 강도. signal_level → strategy 매핑: NORMAL→M07(Lighting) · MODERATE→M04(PMV±0.5) · HIGH→M14(DR통합최적화) · EMERGENCY→M15(DR긴급감축). 상세: ems_strategies.json."
+      "description": "DR 신호 강도. signal_level → strategy 매핑: NORMAL→M17(LightingControl) · MODERATE→M04(PMV±0.5) · HIGH→M19(DR_Integrated) · EMERGENCY→M20(DR_EmergencyCurtail). 상세: ems_strategies.json signal_mapping."
     },
     "VenId": {
       "type": "string",
