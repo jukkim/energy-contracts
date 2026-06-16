@@ -42,6 +42,28 @@
 3. **드리프트 "SIM" 표(be-3d constants.py)도 정본 NAMING 과 불일치** — SIM 측조차 내부 드리프트.
 4. 본 통일은 **수주 규모 독립 엔지니어링 program** + 배포/데모/CI 회귀 실위험.
 
+## P4 a03_optimizer 결정 (사용자 "본질적으로 해결", 2026-06-16)
+
+**결정 = a03 을 자체 네임스페이스 `OM00~OM13` (optimizer-measure) 로 분리** — a03 은 EMS 제어 전략이 아니라 **절감 조치 추천(% 측정)** 이라 개념이 다른 객체. EMS M-code 공간에서 완전 디커플 → M07/M08 3-way 충돌 근본 제거.
+
+**a03 footprint (재키잉 M00~M13 → OM00~OM13, EMS M-code 와 무관해짐)**:
+- `src/agents/a03_optimizer/agent.py`: `STRATEGY_SAVINGS`(14) + `SETBACK_DEPENDENCY`(M01/M05/M09) + 제외 set(M06/M11/M12, M00).
+- `src/agents/core/mock_data.py`: a03 추천 echo (M05/M06/M10/M11/M13).
+- **golden snapshots** `tests/unit/snapshots/a03_optimizer/*.json`: "축열 최적화 (M13)" 등 → OM 재기준.
+- 테스트: `test_a03_optimizer`·`test_agents_core`(output_strategies=[M03,M06,M11,M12,M13])·`test_agents_pipeline`(M01).
+- frontend a03 결과 표시(있으면).
+- ⚠ a03 코드가 edge_control(DR)/sim 으로 흐르지 않음(P0 확인) → 분리는 be-3d 내부 contained. OM 은 EMS enum(`#StrategyCode`)과 별개 — 신규 `optimizer_measure` enum 또는 단순 prefix.
+
+**P4 나머지 be-3d 비-데모 (정본 정합)**:
+- `constants.py STRATEGY_NAMES`(드리프트 SIM: M07=조명) → **TRUE 정본 NAMING**(M07=DCV) 정합.
+- `policy_savings.py`/`policy_llm.py`/`f14_analysis.py` POLICY_LEVERS(SIM) → 정본 의미 확인·정합.
+- EUI 테이블(`constants.py`·`buildwise/mock_runner.py`·`building_archetypes.json`): M00~M06,M11~M13 = SIM 제어전략 키, 정본 유지(라벨 주석만 정합).
+- `buildwise/validator.py` HVAC×M-code feasibility(SIM).
+- frontend `policy_picker.ts`·`policy_vector.ts`(SIM, M00~M15 valid).
+- 테스트 동반.
+
+**P5 (별 게이트)** = be-3d 라이브 데모 `edge_control.py`(DR 프리셋, edge-agent 와 동일 M16~M20 재키잉)·`control_router.py`·`control_intent.py` + 데모 cutover.
+
 ## 권고 (P0 결론)
 
 - 본 P0 인벤토리를 네임스페이스 통일 program 의 **scoping SSOT** 로 보존.
