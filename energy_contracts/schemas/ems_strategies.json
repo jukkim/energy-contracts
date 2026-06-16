@@ -379,7 +379,7 @@
       },
       "HIGH": {
         "reliability": "M19",
-        "economic": "M11"
+        "economic": "M19"
       },
       "EMERGENCY": {
         "reliability": "M20",
