@@ -5,12 +5,37 @@ name: pytest
 # ssot-check.yml/ssot-drift.yml 은 gen_constants --check 만 돌려 pytest 미커버였음.
 
 on:
-  # Minimal mode 2026-06-09 ~ 2026-06-30 — Actions 한도 보호 (한도 90% 도달 사고 후).
-  # PR/push 트리거 일시 제거. schedule 주 2회 (KST 화/금 02:00) + manual dispatch 만 유지.
-  # 2026-07-01 reset 후 PR/push 트리거 원복 (revert PR 미리 준비).
-  # SSOT: ~/.claude/rules/github-actions-budget.md 작성 룰 #6
+  # Full CI 복원 (2026-06-17) — self-hosted 러너 오프로드로 Actions 한도 무관($0). minimal mode
+  # (한도 보호) 목적 해소 → PR/push 트리거 조기 원복. schedule 은 보조 안전망 유지.
+  # SSOT: ~/.claude/rules/github-actions-budget.md
+  push:
+    branches: [master, main]
+    paths-ignore:
+      - '**.md'
+      - 'docs/**'
+      - '**/*.png'
+      - '**/*.jpg'
+      - '**/*.svg'
+      - '**/*.pdf'
+      - 'scratch/**'
+      - 'archive/**'
+      - '.gitignore'
+      - 'LICENSE*'
+  pull_request:
+    branches: [master, main]
+    paths-ignore:
+      - '**.md'
+      - 'docs/**'
+      - '**/*.png'
+      - '**/*.jpg'
+      - '**/*.svg'
+      - '**/*.pdf'
+      - 'scratch/**'
+      - 'archive/**'
+      - '.gitignore'
+      - 'LICENSE*'
   schedule:
-    - cron: "0 17 * * 1,4"  # UTC Mon/Thu 17:00 = KST Tue/Fri 02:00
+    - cron: "0 17 * * 1,4"  # UTC Mon/Thu 17:00 = KST Tue/Fri 02:00 (보조 안전망)
   workflow_dispatch:
 
 concurrency:
