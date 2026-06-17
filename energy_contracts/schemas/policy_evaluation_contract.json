@@ -12,8 +12,21 @@
     "gridbridge",
     "agentleague"
   ],
-  "version": "1.0",
-  "updated": "2026-06-02",
+  "version": "1.1",
+  "updated": "2026-06-17",
+  "$defs": {
+    "Objective": {
+      "type": "string",
+      "enum": [
+        "carbon_tco2",
+        "primary_energy",
+        "roi_payback",
+        "equity_weighted",
+        "peak_shift"
+      ],
+      "description": "정책 평가 목적함수(5종) — 미명시 시 carbon_tco2. F14 평가 개념의 재사용 어휘. AgentLeague debate(backend/modules/debate/policy_levers.py#OBJECTIVES)의 비공식 원본을 SSOT 로 정식 등재. peak_shift=절감이 아닌 피크·부하이전 목적(예: EV 충전 의무, DR). lever→objective 매핑(LEVER_OBJECTIVE)은 agentleague 22-레버 debate 전용이라 SSOT 비대상 — 본 enum(어휘)만 공유. measure 어휘는 sibling policy_measures.json#$defs.MeasureCode."
+    }
+  },
   "type": "object",
   "oneOf": [
     {"$ref": "#/definitions/PolicyInputSchema"},

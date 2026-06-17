@@ -1,15 +1,15 @@
-# SSOT 58 도메인 카탈로그 인덱스 (Redocly·Swagger UI·문서 렌더링용).
+# SSOT 59 도메인 카탈로그 인덱스 (Redocly·Swagger UI·문서 렌더링용).
 # 사냥꾼 라운드 LOW (2026-06-08): 기존엔 58 schema 중 31 만 등재 + title/주석 카운트가
 #   31/26/실제 불일치였다 → schemas/*.json 전수 등재 + 카운트 일치.
 #   재발 방지: validate_ssot.check_index_completeness 가 (entry 수 == .json 파일 수) 가드.
 
 openapi: 3.1.0
 info:
-  title: myjob SSOT Governance — 58 Domain Catalog
+  title: myjob SSOT Governance — 59 Domain Catalog
   version: '1.1.0'
   description: |
     Phase A~L SSOT 거버넌스 카탈로그. JSON Schema 2020-12 기반.
-    schemas/*.json 전수(58종) 등재 — components.schemas 항목 수 == 실 .json 파일 수.
+    schemas/*.json 전수(59종) 등재 — components.schemas 항목 수 == 실 .json 파일 수.
   license:
     name: Proprietary
 
@@ -62,6 +62,7 @@ components:
     OpenapiResponses:         {$ref: 'openapi_responses.json'}
     PipelineStatus:           {$ref: 'pipeline_status.json'}
     PolicyEvaluationContract: {$ref: 'policy_evaluation_contract.json'}
+    PolicyMeasures:           {$ref: 'policy_measures.json'}
     PortAllocation:           {$ref: 'port_allocation.json'}
     Provision:                {$ref: 'provision.json'}
     ProvisionAck:             {$ref: 'provision_ack.json'}

@@ -187,6 +187,8 @@ all_schemas = list_schemas()                   # ['agent_contracts', ...]
 | 0.3.4 | 2026-06-08 | **사냥꾼 라운드 — 34건 self-contained fix** (HIGH 1 gate cache fail-open + MEDIUM 룰별 차등 safety/carbon regex/esg NaN 가드/validate_ssot 검사공백/hvac matrix 정본화/freeze pin/버전 동기 + LOW 다수). M4(_usage)/M7(legacy_mapping) 2건은 6 consumer regen 유발 → `docs/DEFERRED_INTEGRATIONS.md` 분리. |
 | 0.3.5 | 2026-06-08 | **Deferred D-1/D-2 coordinated bump** — 사냥꾼 M4/M7 cross-folder 해소. D-1: `esg_policy`/`dr_dispatch_event` `_usage`→`hybrid` + `check_codegen_input_usage()` 역방향 가드. D-2: `ems_strategies.gcs_e_codes` E1/E2/E7/E10/E11 정본 정정 + `check_legacy_code_consistency()` 가드. 6 consumer regen(hash `f462482943b38ce1`→`05d50c0601204d89`), edge/gb/be-3d SSOT 테스트 PASS. |
 | 0.3.6 | 2026-06-08 | **Deferred D-3** — 20 BASE CORE_KEYWORDS 로컬 검증. CLAUDE.md `MIRROR_CORE_KEYWORDS_BASE_V1` enumeration 블록 + `check_mirror_core_keywords()` 로컬 가드 + ai-champion-2026 verifier lock-step(`check_energy_contracts_enumeration()`). schema 무관 = consumer cascade 없음. |
+| 0.3.7 | 2026-06-17 | **CarbonCritic overclaim 게이트** (`critics/c_carbon.py`, P2-c) — claimed vs known_rate 독립 키 비교, known 부재 시 skip. schema 무관 = cascade 없음. |
+| 0.3.8 | 2026-06-17 | **policy_measures.json 신설 + Objective enum** (AgentLeague debate SSOT 승격) — MeasureCode 8종(ENV/PV/SRC/MAT, 자본·설계 조치, ems_strategies StrategyCode 와 직교 네임스페이스) + metric/base/eplus_ref. `policy_evaluation_contract.json` v1.1 `$defs.Objective`(5종 F14 목적함수). 둘 다 **reference-only** → gen 미진입, 6-repo hash cascade 없음(EC + agentleague/ems_transformer/building-energy-3d 4-repo wheel 소비). consumer inline 교체는 follow-up. |
 
 ## 참조하는 프로젝트
 

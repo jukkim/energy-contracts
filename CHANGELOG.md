@@ -4,6 +4,29 @@
 
 ---
 
+## 0.3.8 — 2026-06-17 policy_measures.json 신설 + Objective enum 등재 (AgentLeague debate SSOT 승격)
+
+### 변경 (reference-only schema — gen 미진입, hash cascade 없음)
+- **신규 `schemas/policy_measures.json`** (reference-only, v1.0): MeasureCode 카탈로그 SSOT —
+  운영 EMS(ems_strategies.json#StrategyCode M00~M20)가 표현 못 하는 **자본·설계 조치** 8종
+  (ENV01~03 외피·창호 retrofit / PV01~02 신재생 생성 / SRC01~02 열원 전환 / MAT01 저탄소 자재).
+  `$defs.MeasureCode`(8) + `$defs.MeasureMetric`(operational_kwh/self_sufficiency/primary_energy/
+  embodied_carbon) + measure 별 `{name, metric, base, eplus_ref, note}`. `eplus_ref` 보존 =
+  SIM E+ 정밀화(ems_transformer) 입력. AgentLeague `backend/modules/debate/policy_levers.py#
+  POLICY_MEASURES` 비공식 원본을 정식 SSOT 로 승격. _consumers = agentleague / ems_transformer /
+  building-energy-3d. **코드 prefix 3+ 문자(ENV/PV/SRC/MAT) 의무** — 단일문자 E?/S? 는
+  `legacy_ems_code_mapping.json#drift_guard` 가 deprecated 로 차단(애초 명명 이유).
+- **`policy_evaluation_contract.json` v1.0→v1.1**: `$defs.Objective` enum 추가
+  (carbon_tco2 / primary_energy / roi_payback / equity_weighted / peak_shift). F14 평가 목적함수
+  재사용 어휘 — AgentLeague `policy_levers.py#OBJECTIVES` 원본 승격. lever→objective 매핑은
+  agentleague debate 전용이라 SSOT 비대상(어휘만 공유).
+- **`_index.yaml`**: `PolicyMeasures` 등재 + 카탈로그 카운트 58→59.
+- **소비**: 3 consumer 는 wheel `load_schema("policy_measures")` / `load_schema("policy_evaluation_contract")`.
+  reference-only 라 gen_constants 미진입 → 6-repo SOURCE_HASH 캐스케이드 없음(EC + 3 consumer 4-repo 한정).
+- **follow-up(범위 밖)**: agentleague/ems inline POLICY_MEASURES·OBJECTIVES → SSOT 참조 교체는 consumer-side.
+
+---
+
 ## 0.3.7 — 2026-06-17 CarbonCritic overclaim 게이트 (self-reference 독립화, P2-c)
 
 ### 변경 (schema 무관 — hash cascade 없음)
