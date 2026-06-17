@@ -4,6 +4,21 @@
 
 ---
 
+## 0.3.7 — 2026-06-17 CarbonCritic overclaim 게이트 (self-reference 독립화, P2-c)
+
+### 변경 (schema 무관 — hash cascade 없음)
+- **`critics/c_carbon.py`**: `CarbonCritic.review` 에 과대주장(overclaim) 게이트 추가 (additive).
+  `context["claimed_reduction_pct"]`(에이전트/LLM 주장) > `context["known_rate"]`(독립 ground
+  truth)×1.25 → `rule="overclaim"` 위반. `claimed > 0.5` → `rule="implausible_reduction"`.
+- **self-reference 죽은 게이트 방지**: claimed/known 은 context 의 **별개 키에서만** 읽고,
+  `known_rate` 부재(None)/0 시 claimed 로 대체하지 않고 검사 skip(`_as_rate` → None 구분).
+  W4 실 Critic 스왑(`AGENTLEAGUE_REAL_CRITICS=1`) 시 미러와 동일하게 게이트가 살아있음.
+- **backward-compatible**: context 없는 기존 호출(DR `critics/gate.py` 등)은 overclaim 무관 — 회귀 0.
+- 신규 단위 5 (overclaim 발화/임계내 무발화/known부재 skip/implausible/무context). 정본:
+  `agentleague/docs/POLICY_LEVER_SOLVABILITY_AUDIT.md` §6 P2-c / CB-01.
+
+---
+
 ## 0.3.6 — 2026-06-08 Deferred D-3 — 20 BASE CORE_KEYWORDS 로컬 검증 (mirror lock-step)
 
 ### 변경 (schema 무관 — hash cascade 없음)

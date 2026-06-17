@@ -135,6 +135,60 @@ def test_carbon_critic_zero_tolerance(critics):
     assert any(v["rule"] == "outdated_electricity_factor" for v in r_outdated.violations)
 
 
+def test_carbon_overclaim_fires_with_independent_known(critics):
+    """C-Carbon overclaim: 주장(claimed) > 독립 근거(known)×1.25 → FAIL (P2-c, 2026-06-17).
+
+    W4 실 Critic 스왑 시 게이트가 살아있어야 한다 — claimed/known 은 context 의 별개 키.
+    """
+    c = critics["c_carbon"]
+    # claimed 40% vs known 20% → 0.4 > 0.2×1.25=0.25 → overclaim
+    r = c.review("절감 가능", {"claimed_reduction_pct": 0.4, "known_rate": 0.2})
+    assert r.verdict == Verdict.FAIL, f"overclaim 단건 → FAIL. 실제 {r.verdict} / {r.violations}"
+    ov = [v for v in r.violations if v["rule"] == "overclaim"]
+    assert ov and ov[0]["known_rate"] == 0.2 and ov[0]["claimed_reduction_pct"] == 0.4
+
+
+def test_carbon_overclaim_silent_when_within_threshold(critics):
+    """claimed ≤ known×1.25 → overclaim 미발화 (정직 주장은 통과)."""
+    c = critics["c_carbon"]
+    r = c.review("절감", {"claimed_reduction_pct": 0.24, "known_rate": 0.2})  # 0.24 ≤ 0.25
+    assert not any(v["rule"] == "overclaim" for v in r.violations)
+    assert r.verdict == Verdict.PASS
+
+
+def test_carbon_overclaim_dead_gate_guard_no_fabricated_known(critics):
+    """self-reference 방지: known 부재 시 claimed 로 대체하지 않고 overclaim **skip**.
+
+    known 을 claimed 에서 파생하면 게이트가 죽는다 — known 없으면 검사 자체를 건너뛴다.
+    claimed 0.3(비현실 상한 0.5 미만)·known 부재 → 위반 0, PASS 여야 한다.
+    """
+    c = critics["c_carbon"]
+    r = c.review("절감", {"claimed_reduction_pct": 0.3})  # known_rate 없음
+    assert not any(v["rule"] == "overclaim" for v in r.violations), (
+        "known 부재인데 overclaim 발화 = claimed 를 known 으로 둔갑(죽은 게이트)"
+    )
+    assert r.verdict == Verdict.PASS
+    # known=0(분모 0) 도 동일하게 skip
+    r0 = c.review("절감", {"claimed_reduction_pct": 0.9, "known_rate": 0})
+    assert not any(v["rule"] == "overclaim" for v in r0.violations)
+
+
+def test_carbon_implausible_reduction_independent_of_known(critics):
+    """claimed > 50% → 비현실 위반 (독립 근거 유무 무관)."""
+    c = critics["c_carbon"]
+    r = c.review("절감", {"claimed_reduction_pct": 0.7})
+    assert any(v["rule"] == "implausible_reduction" for v in r.violations)
+    assert r.verdict == Verdict.FAIL
+
+
+def test_carbon_overclaim_backward_compatible_no_context(critics):
+    """context 없는 기존 호출(DR gate 등)은 overclaim 무관 — 회귀 0."""
+    c = critics["c_carbon"]
+    r = c.review("전력 0.4173 kgCO2/kWh 적용.")  # 정상 factor, context 없음
+    assert r.verdict == Verdict.PASS
+    assert not any(v["rule"] in ("overclaim", "implausible_reduction") for v in r.violations)
+
+
 def test_safety_critic_hard_interlock_zero_tolerance(critics):
     """C-Safety hard interlock (setpoint/SOC) 은 단건만으로 FAIL — 룰별 차등 정책.
 
