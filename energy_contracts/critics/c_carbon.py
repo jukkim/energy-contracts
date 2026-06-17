@@ -31,6 +31,25 @@ FACTOR_PATTERN = re.compile(
 
 FACTOR_TOL_REL = 0.05
 
+# 과대주장(overclaim) 게이트 — 주장 절감률이 독립 근거의 1.25배 초과 시 위반.
+OVERCLAIM_MULTIPLIER = 1.25
+# 절감률 단독 비현실 상한(독립 근거 무관).
+IMPLAUSIBLE_REDUCTION = 0.5
+
+
+def _as_rate(v: Any) -> float | None:
+    """context 수치 → float rate. None/빈값/파싱불가 → None (독립값 '부재'를 0 과 구분).
+
+    None 반환이 핵심: known_rate 부재 시 0 이나 claimed 로 대체하지 않고 검사 자체를
+    skip 해야 self-reference(죽은 게이트)를 만들지 않는다.
+    """
+    if v is None or v == "":
+        return None
+    try:
+        return float(v)
+    except (TypeError, ValueError):
+        return None
+
 
 def _canon_source(s: str) -> str | None:
     s_lower = s.lower()
@@ -70,6 +89,35 @@ class CarbonCritic(Critic):
             violations.append({
                 "rule": "outdated_electricity_factor",
                 "reason": "2025.12 갱신 — 0.4173 권장 (단년도 확정)",
+            })
+
+        # ── 과대주장 게이트 — claimed vs known 독립 출처 (P2-c, 2026-06-17) ──────────
+        # claimed_reduction_pct = 에이전트/LLM 주장 절감률, known_rate = **독립 ground
+        # truth**(E+ 시뮬·전략 코드 stub). 두 값이 같은 출처에서 파생되면(self-reference)
+        # claimed>known×1.25 가 영구히 거짓이 되어 게이트가 죽는다. 따라서:
+        #   ① claimed/known 은 context 의 **별개 키**에서만 읽는다(상호 대체 금지).
+        #   ② known 부재(None) 시 claimed 로 메우지 않고 overclaim 검사를 **skip** 한다.
+        # 독립성 보장 책임은 producer(agentleague service._make_claim: known=E+ 독립값,
+        # claimed=LLM 파싱)에 있고, 본 Critic 은 그 분리를 무너뜨리지 않는 소비자다.
+        # 정본: agentleague/docs/POLICY_LEVER_SOLVABILITY_AUDIT.md §6 P2-c / CB-01.
+        ctx = context or {}
+        claimed = _as_rate(ctx.get("claimed_reduction_pct"))
+        known = _as_rate(ctx.get("known_rate"))
+        if claimed is not None and known is not None and known > 0 and (
+            claimed > known * OVERCLAIM_MULTIPLIER
+        ):
+            violations.append({
+                "rule": "overclaim",
+                "claimed_reduction_pct": round(claimed, 4),
+                "known_rate": round(known, 4),
+                "threshold": round(known * OVERCLAIM_MULTIPLIER, 4),
+                "detail": f"주장 절감률 {claimed:.0%} > 독립 근거 {known:.0%}×{OVERCLAIM_MULTIPLIER}",
+            })
+        if claimed is not None and claimed > IMPLAUSIBLE_REDUCTION:
+            violations.append({
+                "rule": "implausible_reduction",
+                "claimed_reduction_pct": round(claimed, 4),
+                "detail": f"절감률 {claimed:.0%} 비현실적 (>{IMPLAUSIBLE_REDUCTION:.0%})",
             })
 
         return self._make_result(
