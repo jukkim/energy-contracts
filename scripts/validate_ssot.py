@@ -590,6 +590,62 @@ def check_ec_pin_lockstep() -> list[str]:
     return violations
 
 
+# ── 로컬 mirror drift (P3, 2026-06-17) ───────────────────────────────────────
+
+def _load_mirror_verifier():
+    """ai-champion-2026 의 verify_cross_folder_mirror_drift 를 import (키워드 SSOT 단일화).
+
+    키워드를 본 파일에 복제하지 않고 verifier 에서 직접 읽어 drift 를 원천 차단.
+    verifier 부재(클론 없음) 시 None → soft-skip.
+    """
+    import importlib.util
+    base = WORKSPACE_ROOT / "공모전"
+    cands = list(base.glob("*/scripts/verify_cross_folder_mirror_drift.py")) if base.exists() else []
+    if not cands:
+        return None
+    spec = importlib.util.spec_from_file_location("driftv_local", cands[0])
+    mod = importlib.util.module_from_spec(spec)
+    sys.modules["driftv_local"] = mod  # dataclass introspection 위해 등록 필수
+    try:
+        spec.loader.exec_module(mod)
+    except Exception:
+        return None
+    return mod
+
+
+def check_local_mirror_drift() -> list[str]:
+    """커밋 대상 repo 의 CLAUDE.md mirror 헤더가 요구 키워드(BASE + REVERSE 거점이면 REVERSE)를
+    보유하는지 로컬 검증 (P3). 2026-06-17 be-3d 가 REVERSE 5/8 → ratio 0.89 로 ai-champion CI
+    에서만 터지던 drift 를 push 전에 차단. 키워드 SSOT = ai-champion verifier (복제 없음).
+    """
+    mod = _load_mirror_verifier()
+    if mod is None:
+        return []  # verifier 미존재 — soft-skip (CI ai-champion 게이트가 authoritative)
+    try:
+        repo_root = Path(subprocess.check_output(
+            ["git", "rev-parse", "--show-toplevel"], text=True, encoding="utf-8").strip())
+    except Exception:
+        return []
+    repo_name = repo_root.name
+    fp = repo_root / "CLAUDE.md"
+    if not fp.exists():
+        return []
+    try:
+        required = mod._required_keywords(repo_name)  # BASE(+REVERSE if REVERSE_SIBLING)
+        threshold = 0.90
+    except Exception:
+        return []
+    text = fp.read_text(encoding="utf-8", errors="replace")
+    matched = [k for k in required if k in text]
+    ratio = len(matched) / max(1, len(required))
+    if ratio < threshold:
+        missing = [k for k in required if k not in text]
+        return [f"CLAUDE.md mirror drift: {repo_name} 키워드 {len(matched)}/{len(required)} "
+                f"(ratio {ratio:.2f} < {threshold}) — 누락 {missing} "
+                f"(ai-champion cross-folder-drift-verify 게이트 사전 차단)"]
+    return []
+
+
 # ── 변경 파일 (pre-commit) ───────────────────────────────────────────────────
 
 def changed_files() -> list[Path]:
@@ -674,6 +730,7 @@ def main() -> int:
         v += check_index_completeness()            # 사냥꾼 LOW — _index.yaml 전수 등재
         v += check_legacy_code_consistency()       # Deferred D-2 (M7) — E-code 교차 정합
         v += check_mirror_core_keywords()          # Deferred D-3 — 20 BASE CORE_KEYWORDS 로컬 검증
+        v += check_local_mirror_drift()            # P3 (2026-06-17) — 커밋 repo CLAUDE.md REVERSE 키워드 로컬 가드
         if v:
             failed = True
             total_violations += len(v)
