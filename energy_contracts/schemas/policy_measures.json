@@ -1,0 +1,149 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "energy-contracts/policy_measures.json",
+  "title": "Policy Measures (자본·설계 조치 카탈로그)",
+  "description": "MeasureCode SSOT — 운영 EMS 전략(ems_strategies.json#StrategyCode, M00~M20)이 표현하지 못하는 자본·설계 조치(외피 retrofit / 신재생 생성 / 열원 전환 / 저탄소 자재). StrategyCode 와 별개 네임스페이스다. AgentLeague debate(F14 producer)가 inline 으로 들고 있던 비공식 원본(backend/modules/debate/policy_levers.py#POLICY_MEASURES)을 SSOT 로 정식 등재. 코드 prefix 는 3+ 문자(ENV/PV/SRC/MAT) 의무 — 단일문자 E?/S? 로 간소화 금지(legacy_ems_code_mapping.json#drift_guard 가 deprecated 로 차단). 각 measure 의 base(추정 기여 분율) + eplus_ref(E+ 정밀화 입력 객체) 보존. base 값은 문헌·공학계수 기반 **추정**이며 실측/EnergyPlus 정밀화 시 교체 가능(상위 호환).",
+  "_usage": "reference-only",
+  "$comment": "reference-only — gen_constants.py load_schemas() 미진입(SOURCE_HASH 무관, 6-repo regen 캐스케이드 회피). 3 consumer 는 wheel `from energy_contracts import load_schema; load_schema('policy_measures')` 로 소비. ems_transformer(8.simulation)는 gen_constants PROJECT_TARGET 아님 → wheel 소비 필수. 사용처: agentleague=debate 후보 measure seeding, ems_transformer=eplus_ref 기반 SIM E+ 정밀화, building-energy-3d=시각화/평가. F14 Objective enum 은 sibling policy_evaluation_contract.json#$defs.Objective.",
+  "_consumers": [
+    "agentleague",
+    "ems_transformer",
+    "building-energy-3d"
+  ],
+  "version": "1.0",
+  "updated": "2026-06-17",
+  "$defs": {
+    "MeasureCode": {
+      "type": "string",
+      "enum": [
+        "ENV01",
+        "ENV02",
+        "ENV03",
+        "PV01",
+        "PV02",
+        "SRC01",
+        "SRC02",
+        "MAT01"
+      ],
+      "description": "자본·설계 조치 코드(8종). prefix 의미: ENV=외피·창호 retrofit / PV=신재생 생성(자립률 분자) / SRC=열원·연료 전환 / MAT=저탄소 자재(내재탄소). prefix 3+ 문자 의무(legacy_ems_code_mapping.json#drift_guard 충돌 회피). ems_strategies.json#StrategyCode(M00~M20)와 직교 네임스페이스."
+    },
+    "MeasureMetric": {
+      "type": "string",
+      "enum": [
+        "operational_kwh",
+        "self_sufficiency",
+        "primary_energy",
+        "embodied_carbon"
+      ],
+      "description": "measure 가 무엇을 줄이거나 기여하는가. operational_kwh=운영 에너지 절감(기후·연식 보정 대상) / self_sufficiency=신재생 자립률 분자(생성) / primary_energy=1차에너지 환산계수 기반 / embodied_carbon=내재탄소(LCA 회계, 운영 E+ 무관)."
+    }
+  },
+  "type": "object",
+  "properties": {
+    "measures": {
+      "type": "object",
+      "propertyNames": {
+        "$ref": "#/$defs/MeasureCode"
+      },
+      "additionalProperties": {
+        "type": "object",
+        "required": [
+          "name",
+          "metric",
+          "base",
+          "eplus_ref"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "조치 영문 식별명(PascalCase, 예: EnvelopeInsulation)."
+          },
+          "metric": {
+            "$ref": "#/$defs/MeasureMetric"
+          },
+          "base": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 1,
+            "description": "추정 기여/절감 분율(0~1, 문헌·공학계수). 실측/E+ 정밀화 시 교체."
+          },
+          "eplus_ref": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "SIM E+ 정밀화(ems_transformer) 시 사용할 EnergyPlus 객체 목록. LCA-only(MAT) measure 는 빈 배열."
+          },
+          "note": {
+            "type": "string",
+            "description": "조치 근거·가정 메모(추정 출처)."
+          }
+        }
+      }
+    }
+  },
+  "required": [
+    "measures"
+  ],
+  "default": {
+    "measures": {
+      "ENV01": {
+        "name": "EnvelopeInsulation",
+        "metric": "operational_kwh",
+        "base": 0.15,
+        "eplus_ref": ["Material", "Construction"],
+        "note": "외피 단열 보강(노후 난방 15~25% 추정)"
+      },
+      "ENV02": {
+        "name": "WindowUpgrade",
+        "metric": "operational_kwh",
+        "base": 0.08,
+        "eplus_ref": ["WindowMaterial:SimpleGlazingSystem"],
+        "note": "고성능 창호 교체"
+      },
+      "ENV03": {
+        "name": "EnvelopeRetrofitFull",
+        "metric": "operational_kwh",
+        "base": 0.22,
+        "eplus_ref": ["Material", "Construction", "ZoneInfiltration:DesignFlowRate"],
+        "note": "단열+창호+기밀 종합(그린리모델링 성능개선 20%↑)"
+      },
+      "PV01": {
+        "name": "RooftopPV",
+        "metric": "self_sufficiency",
+        "base": 0.30,
+        "eplus_ref": ["Generator:Photovoltaic", "ElectricLoadCenter:Distribution"],
+        "note": "옥상 PV(footprint×PV밀도×ASOS 일사 추정 — 실측 시 교체)"
+      },
+      "PV02": {
+        "name": "PVStorage",
+        "metric": "self_sufficiency",
+        "base": 0.45,
+        "eplus_ref": ["Generator:Photovoltaic", "ElectricLoadCenter:Storage:Simple"],
+        "note": "PV+ESS(자가소비율 상향)"
+      },
+      "SRC01": {
+        "name": "DistrictHeatingConversion",
+        "metric": "primary_energy",
+        "base": 0.10,
+        "eplus_ref": ["DistrictHeating:Water"],
+        "note": "지역난방 전환(PE계수 0.728, ZEB 별표3)"
+      },
+      "SRC02": {
+        "name": "HeatPumpElectrification",
+        "metric": "primary_energy",
+        "base": 0.18,
+        "eplus_ref": ["HeatPump:WaterToWater", "Coil:Heating:DX"],
+        "note": "가스→히트펌프(COP≥2.5 손익분기, 전력2.75/가스1.1)"
+      },
+      "MAT01": {
+        "name": "LowCarbonMaterial",
+        "metric": "embodied_carbon",
+        "base": 0.20,
+        "eplus_ref": [],
+        "note": "저탄소 콘크리트/자재(EPD 문헌계수 추정, 운영 E+ 무관 — LCA 회계)"
+      }
+    }
+  }
+}
