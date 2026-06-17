@@ -494,6 +494,102 @@ def check_mirror_core_keywords() -> list[str]:
     return violations
 
 
+# ── EC pin lockstep (P1, 2026-06-17 skew 재발 방지) ──────────────────────────
+
+# energy-contracts 를 git+https 로 pin 하는 consumer (lockstep 그룹).
+# 이번 사고: gridbridge/edge-agent 가 pin v0.2.4(M00~M15) 인데 _generated_constants 는
+# M00~M20 으로 regen → CI 에서만 jsonschema 가 M19/M20 거부. be-3d 는 v0.3.6 으로 divergent.
+EC_PIN_CONSUMERS = ("edge-agent", "gridbridge", "building-energy-3d")
+_EC_PIN_RE = re.compile(r"energy-contracts.*?@(v[0-9][\w.\-]*)")
+_GEN_CONST_RELPATHS = (
+    "src/_generated_constants.py", "_generated_constants.py",
+    "src/shared/_generated_constants.py", "backend/_generated_constants.py",
+)
+
+
+def _ec_pin(repo: Path) -> str | None:
+    pp = repo / "pyproject.toml"
+    if not pp.exists():
+        return None
+    m = _EC_PIN_RE.search(pp.read_text(encoding="utf-8"))
+    return m.group(1) if m else None
+
+
+def _gen_const_file(repo: Path) -> Path | None:
+    for rel in _GEN_CONST_RELPATHS:
+        if (repo / rel).exists():
+            return repo / rel
+    return None
+
+
+def check_ec_pin_lockstep() -> list[str]:
+    """energy-contracts pin lockstep + 커밋 constants ⊆ pin 태그 enum 가드.
+
+    2026-06-17 skew 재발 방지. 세 가지를 커밋 시점에 차단:
+      1) 전 consumer pin 동일 (divergent pin = gridbridge/edge-agent v0.2.4 ≠ be-3d v0.3.6 유형)
+      2) 커밋된 STRATEGY_CODES ⊆ pin 태그의 control_command enum
+         (regen 은 M19/M20 인데 pin 태그 schema 는 M15 상한 = CI-only 실패 유형)
+      3) consumer 간 SOURCE_HASH 동일 (부분 regen 방지)
+    """
+    proj = WORKSPACE_ROOT / "projects"
+    pins: dict[str, str] = {}
+    hashes: dict[str, str] = {}
+    for name in EC_PIN_CONSUMERS:
+        repo = proj / name
+        if not repo.exists():
+            continue
+        pin = _ec_pin(repo)
+        if pin:
+            pins[name] = pin
+        gc = _gen_const_file(repo)
+        if gc:
+            m = re.search(r'SOURCE_HASH\s*=\s*"([0-9a-f]+)"', gc.read_text(encoding="utf-8"))
+            if m:
+                hashes[name] = m.group(1)
+
+    violations: list[str] = []
+    distinct_pins = set(pins.values())
+    if len(distinct_pins) > 1:
+        violations.append(
+            f"energy-contracts pin lockstep 위반: {pins} — 전 consumer 동일 태그 필요 "
+            f"(scripts/bump_ec_pin.py 로 일괄 bump)")
+    distinct_hashes = set(hashes.values())
+    if len(distinct_hashes) > 1:
+        violations.append(
+            f"_generated_constants SOURCE_HASH 불일치(부분 regen): {hashes} — gen_constants.py --all 재실행")
+
+    # pin 태그 enum 커버리지 (단일 pin 일 때만)
+    if len(distinct_pins) == 1:
+        pin = next(iter(distinct_pins))
+        enum: set[str] | None = None
+        try:
+            blob = subprocess.check_output(
+                ["git", "-C", str(CONTRACTS_ROOT), "show",
+                 f"{pin}:energy_contracts/schemas/control_command.json"],
+                text=True, encoding="utf-8", stderr=subprocess.DEVNULL)
+            enum = set(json.loads(blob).get("properties", {})
+                       .get("strategy", {}).get("enum", []))
+        except Exception:
+            violations.append(
+                f"pin 태그 {pin} control_command.json 조회 실패 — "
+                f"`git -C projects/energy-contracts fetch --tags` 후 재시도 (커버리지 검증 skip)")
+        if enum:
+            for name in EC_PIN_CONSUMERS:
+                gc = _gen_const_file(proj / name)
+                if not gc:
+                    continue
+                m = re.search(r"STRATEGY_CODES[^=]*=\s*\[(.*?)\]",
+                              gc.read_text(encoding="utf-8"), re.S)
+                codes = set(re.findall(r"M\d{2}", m.group(1))) if m else set()
+                missing = sorted(codes - enum)
+                if missing:
+                    violations.append(
+                        f"{name}: 커밋된 STRATEGY_CODES {missing} 가 pin 태그 {pin} 의 "
+                        f"control_command enum 에 없음 — pin 을 bump 하거나 regen 을 되돌릴 것 "
+                        f"(2026-06-17 M19/M20 skew 유형, CI 에서만 터지던 회귀)")
+    return violations
+
+
 # ── 변경 파일 (pre-commit) ───────────────────────────────────────────────────
 
 def changed_files() -> list[Path]:
@@ -587,6 +683,7 @@ def main() -> int:
 
     if args.check in ("generated", "all"):
         v = check_generated_drift()
+        v += check_ec_pin_lockstep()               # P1 (2026-06-17) — EC pin↔regen skew 차단
         if v:
             failed = True
             total_violations += len(v)
