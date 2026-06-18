@@ -522,6 +522,38 @@ def _gen_const_file(repo: Path) -> Path | None:
     return None
 
 
+def _git_show_at_tag(tag: str, path: str) -> str | None:
+    """`git show {tag}:{path}` blob 반환. 태그가 로컬에 없으면(`git show` 실패) 해당
+    태그만 1회 targeted fetch 후 재시도(self-heal). 정상 경로(태그 존재)엔 네트워크 0.
+    오프라인이거나 태그 자체가 부재하면 None → 호출부 soft-skip.
+
+    배경(2026-06-18): consumer 미러 커밋 시 로컬 energy-contracts 에 pin 태그가 없으면
+      pre-commit 이 'control_command.json 조회 실패' 로 차단 → 매번 수동 `fetch --tags` +
+      `--no-verify` 강제. 미스일 때만 자동 fetch 해 마찰 제거(정상 커밋 latency 무영향)."""
+    ref = f"{tag}:{path}"
+
+    def _show() -> str | None:
+        try:
+            return subprocess.check_output(
+                ["git", "-C", str(CONTRACTS_ROOT), "show", ref],
+                text=True, encoding="utf-8", stderr=subprocess.DEVNULL)
+        except Exception:
+            return None
+
+    blob = _show()
+    if blob is not None:
+        return blob
+    # 태그 로컬 부재 가능 → 해당 태그만 targeted fetch(빠름) 후 1회 재시도.
+    try:
+        subprocess.run(
+            ["git", "-C", str(CONTRACTS_ROOT), "fetch", "--quiet", "origin", "tag", tag],
+            check=True, timeout=30,
+            stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+    except Exception:
+        return None  # 오프라인/원격 없음 → soft-skip
+    return _show()
+
+
 def check_ec_pin_lockstep() -> list[str]:
     """energy-contracts pin lockstep + 커밋 constants ⊆ pin 태그 enum 가드.
 
@@ -562,17 +594,18 @@ def check_ec_pin_lockstep() -> list[str]:
     if len(distinct_pins) == 1:
         pin = next(iter(distinct_pins))
         enum: set[str] | None = None
-        try:
-            blob = subprocess.check_output(
-                ["git", "-C", str(CONTRACTS_ROOT), "show",
-                 f"{pin}:energy_contracts/schemas/control_command.json"],
-                text=True, encoding="utf-8", stderr=subprocess.DEVNULL)
-            enum = set(json.loads(blob).get("properties", {})
-                       .get("strategy", {}).get("enum", []))
-        except Exception:
+        # 태그 미존재 시 self-heal(targeted fetch). 오프라인·태그 부재면 None → soft-skip.
+        blob = _git_show_at_tag(pin, "energy_contracts/schemas/control_command.json")
+        if blob is None:
             violations.append(
-                f"pin 태그 {pin} control_command.json 조회 실패 — "
-                f"`git -C projects/energy-contracts fetch --tags` 후 재시도 (커버리지 검증 skip)")
+                f"pin 태그 {pin} control_command.json 조회 실패(오프라인이거나 원격에 태그 부재) — "
+                f"온라인에서 `git -C projects/energy-contracts fetch --tags origin` 후 재시도 (커버리지 검증 skip)")
+        else:
+            try:
+                enum = set(json.loads(blob).get("properties", {})
+                           .get("strategy", {}).get("enum", []))
+            except Exception:
+                violations.append(f"pin 태그 {pin} control_command.json 파싱 실패 (커버리지 검증 skip)")
         if enum:
             for name in EC_PIN_CONSUMERS:
                 gc = _gen_const_file(proj / name)
