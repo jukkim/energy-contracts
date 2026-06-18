@@ -23,6 +23,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import os
 import re
 import subprocess
 import sys
@@ -522,6 +523,49 @@ def _gen_const_file(repo: Path) -> Path | None:
     return None
 
 
+def _clean_git_env() -> dict:
+    """상속된 GIT_* 환경변수 제거. consumer(be-3d 등)의 pre-commit 훅이 export 한
+    GIT_DIR/GIT_WORK_TREE/GIT_INDEX_FILE 등이 `git -C {CONTRACTS_ROOT}` 의 `-C` 를
+    무력화(호출 repo 를 봄) → energy-contracts 태그 조회가 엉뚱한 repo 에서 실패한다
+    (2026-06-18 실측 근본원인: be-3d 미러 커밋 시 GIT_DIR=be-3d 누수 → 'tag 조회 실패').
+    GIT_* 를 벗겨 `-C` 가 정확히 energy-contracts 를 가리키게 한다."""
+    return {k: v for k, v in os.environ.items() if not k.startswith("GIT_")}
+
+
+def _git_show_at_tag(tag: str, path: str) -> str | None:
+    """`git show {tag}:{path}` blob 반환. 태그가 로컬에 없으면(`git show` 실패) 해당
+    태그만 1회 targeted fetch 후 재시도(self-heal). 정상 경로(태그 존재)엔 네트워크 0.
+    오프라인이거나 태그 자체가 부재하면 None → 호출부 soft-skip.
+
+    배경(2026-06-18): consumer 미러 커밋 시 ① 로컬 energy-contracts 에 pin 태그 부재 →
+      매번 수동 `fetch --tags` + `--no-verify` 강제(self-heal 로 해소), ② 더 근본은 git 훅이
+      export 한 GIT_DIR 누수가 `-C` 를 무력화 → 엉뚱한 repo 조회 실패(_clean_git_env 로 해소).
+      두 경로 모두 GIT_* 벗긴 env 로 호출."""
+    ref = f"{tag}:{path}"
+    env = _clean_git_env()
+
+    def _show() -> str | None:
+        try:
+            return subprocess.check_output(
+                ["git", "-C", str(CONTRACTS_ROOT), "show", ref],
+                text=True, encoding="utf-8", stderr=subprocess.DEVNULL, env=env)
+        except Exception:
+            return None
+
+    blob = _show()
+    if blob is not None:
+        return blob
+    # 태그 로컬 부재 가능 → 해당 태그만 targeted fetch(빠름) 후 1회 재시도.
+    try:
+        subprocess.run(
+            ["git", "-C", str(CONTRACTS_ROOT), "fetch", "--quiet", "origin", "tag", tag],
+            check=True, timeout=30, env=env,
+            stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+    except Exception:
+        return None  # 오프라인/원격 없음 → soft-skip
+    return _show()
+
+
 def check_ec_pin_lockstep() -> list[str]:
     """energy-contracts pin lockstep + 커밋 constants ⊆ pin 태그 enum 가드.
 
@@ -562,17 +606,18 @@ def check_ec_pin_lockstep() -> list[str]:
     if len(distinct_pins) == 1:
         pin = next(iter(distinct_pins))
         enum: set[str] | None = None
-        try:
-            blob = subprocess.check_output(
-                ["git", "-C", str(CONTRACTS_ROOT), "show",
-                 f"{pin}:energy_contracts/schemas/control_command.json"],
-                text=True, encoding="utf-8", stderr=subprocess.DEVNULL)
-            enum = set(json.loads(blob).get("properties", {})
-                       .get("strategy", {}).get("enum", []))
-        except Exception:
+        # 태그 미존재 시 self-heal(targeted fetch). 오프라인·태그 부재면 None → soft-skip.
+        blob = _git_show_at_tag(pin, "energy_contracts/schemas/control_command.json")
+        if blob is None:
             violations.append(
-                f"pin 태그 {pin} control_command.json 조회 실패 — "
-                f"`git -C projects/energy-contracts fetch --tags` 후 재시도 (커버리지 검증 skip)")
+                f"pin 태그 {pin} control_command.json 조회 실패(오프라인이거나 원격에 태그 부재) — "
+                f"온라인에서 `git -C projects/energy-contracts fetch --tags origin` 후 재시도 (커버리지 검증 skip)")
+        else:
+            try:
+                enum = set(json.loads(blob).get("properties", {})
+                           .get("strategy", {}).get("enum", []))
+            except Exception:
+                violations.append(f"pin 태그 {pin} control_command.json 파싱 실패 (커버리지 검증 skip)")
         if enum:
             for name in EC_PIN_CONSUMERS:
                 gc = _gen_const_file(proj / name)
