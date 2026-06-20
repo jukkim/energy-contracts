@@ -260,13 +260,13 @@
         "task": "diagnose",
         "framework": "lightgbm",
         "accuracy_metric": {
-          "module_a_macro_f1": 0.857,
+          "module_a_macro_f1": 0.877,
           "module_a_transformer_f1_20k_subset": 0.962
         },
         "data_source": "simulated",
         "trained_at": "2026-05-05",
         "project": "reverse",
-        "description": "부하 → EMS 식별 (16-bit 다중레이블). ASHRAE 학습 완료, 한국화 fine-tune 대기. v1.1 frozen_for_demo 등재.",
+        "description": "부하 → EMS 식별 (M00~M15 다중레이블). 한국화 sim_campaign 348k 학습 완료(tier2 leakfix). production 1ch Macro-F1 M00~M08 0.877 / M00~M15 0.858, 12ch 시뮬 ref 0.92, Transformer 0.962 ASHRAE candidate.",
         "active_checkpoint": "llm_v2_final_run_20260505_182617+lightgbm_v1+m_bits=16",
         "backend_url": "http://localhost:8060",
         "retrain_type": "type_1_sim"
