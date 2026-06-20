@@ -779,6 +779,17 @@
         ],
         "output_strategies": [],
         "output_data_source": "synthetic"
+      },
+      "a17_availability_router": {
+        "id": "a17",
+        "name_en": "Availability Router",
+        "name_kr": "데이터 가용성 라우터",
+        "capability": "routing",
+        "phase": 4,
+        "maturity": "L1_rule",
+        "requires": [],
+        "output_strategies": [],
+        "output_data_source": "synthetic"
       }
     }
   }
