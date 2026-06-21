@@ -853,6 +853,43 @@
         ],
         "output_strategies": [],
         "output_data_source": "synthetic"
+      },
+      "a23_tariff_optimizer": {
+        "id": "a23",
+        "name_en": "Tariff Optimizer",
+        "name_kr": "요금제 최적화",
+        "capability": "tariff_optimization",
+        "phase": 4,
+        "maturity": "L1_rule",
+        "requires": [],
+        "output_strategies": [],
+        "output_data_source": "synthetic"
+      },
+      "a24_esg_disclosure": {
+        "id": "a24",
+        "name_en": "ESG / Carbon Disclosure",
+        "name_kr": "ESG·탄소 공시",
+        "capability": "esg_disclosure",
+        "phase": 4,
+        "maturity": "L1_rule",
+        "requires": [
+          "a04"
+        ],
+        "output_strategies": [],
+        "output_data_source": "synthetic"
+      },
+      "a25_incentive_benefit": {
+        "id": "a25",
+        "name_en": "Incentive Benefit",
+        "name_kr": "인센티브 편익",
+        "capability": "incentive_benefit",
+        "phase": 4,
+        "maturity": "L1_rule",
+        "requires": [
+          "a09"
+        ],
+        "output_strategies": [],
+        "output_data_source": "synthetic"
       }
     }
   }
