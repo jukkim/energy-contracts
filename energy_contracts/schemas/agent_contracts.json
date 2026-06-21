@@ -801,6 +801,58 @@
         "requires": [],
         "output_strategies": [],
         "output_data_source": "synthetic"
+      },
+      "a19_dr_baseline": {
+        "id": "a19",
+        "name_en": "DR Baseline / M&V",
+        "name_kr": "DR 베이스라인·M&V",
+        "capability": "baseline_mv",
+        "phase": 4,
+        "maturity": "L1_rule",
+        "requires": [],
+        "output_strategies": [],
+        "output_data_source": "synthetic"
+      },
+      "a20_dr_bid": {
+        "id": "a20",
+        "name_en": "DR Bid Optimization",
+        "name_kr": "DR 입찰 최적화",
+        "capability": "dr_bidding",
+        "phase": 4,
+        "maturity": "L1_rule",
+        "requires": [
+          "a11",
+          "a19"
+        ],
+        "output_strategies": [],
+        "output_data_source": "synthetic"
+      },
+      "a21_dr_settlement": {
+        "id": "a21",
+        "name_en": "DR Settlement",
+        "name_kr": "DR 정산",
+        "capability": "dr_settlement",
+        "phase": 4,
+        "maturity": "L1_rule",
+        "requires": [
+          "a19",
+          "a20"
+        ],
+        "output_strategies": [],
+        "output_data_source": "synthetic"
+      },
+      "a22_dr_aggregator": {
+        "id": "a22",
+        "name_en": "DR Portfolio Aggregator",
+        "name_kr": "DR 포트폴리오 집성",
+        "capability": "dr_aggregation",
+        "phase": 4,
+        "maturity": "L1_rule",
+        "requires": [
+          "a20"
+        ],
+        "output_strategies": [],
+        "output_data_source": "synthetic"
       }
     }
   }
