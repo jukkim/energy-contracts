@@ -67,4 +67,4 @@ def test_objective_enum_registered() -> None:
     obj = pe["$defs"]["Objective"]["enum"]
     assert obj == [
         "carbon_tco2", "primary_energy", "roi_payback",
-        "equity_weighted", "peak_shift"], obj
+        "equity_weighted", "peak_shift", "thermal_comfort"], obj
