@@ -30,7 +30,7 @@
     },
     "zeb": {
       "type": "object",
-      "description": "ZEB 등급 기준 (녹색건축법, 2025.1.1 시행)",
+      "description": "ZEB 등급 기준 (녹색건축법, 2025.1.1 통합인증). min_self_sufficiency_pct=에너지자립률(%)=공식 ZEB 등급 결정 기준(Plus120/1:100/2:80/3:60/4:40/5:20, 20%p 밴드, zeb.energy.or.kr 2026-06-21 재확인). max_pe_kwh=본 시스템 EUI-proxy(baseline150×ratio, 비공식 근사). 공식 1차에너지소요량은 주거/비주거 별도표(음수 포함). 의무화 임계 1,000m²(공공 2025.1.1 / 민간 일반 2025.12.31).",
       "properties": {
         "baseline_kwh_m2_yr": {
           "type": "number",
@@ -162,19 +162,19 @@
         },
         "2": {
           "max_pe_kwh": 60,
-          "min_self_sufficiency_pct": 60
+          "min_self_sufficiency_pct": 80
         },
         "3": {
           "max_pe_kwh": 90,
-          "min_self_sufficiency_pct": 40
+          "min_self_sufficiency_pct": 60
         },
         "4": {
           "max_pe_kwh": 120,
-          "min_self_sufficiency_pct": 20
+          "min_self_sufficiency_pct": 40
         },
         "5": {
           "max_pe_kwh": 150,
-          "min_self_sufficiency_pct": 0
+          "min_self_sufficiency_pct": 20
         },
         "plus": {
           "max_pe_kwh": 0,
