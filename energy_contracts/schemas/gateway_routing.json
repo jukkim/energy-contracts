@@ -241,7 +241,10 @@
         {"method": "POST", "path": "/v1/agents/renewable", "purpose": "a06_renewable PV 잠재"},
         {"method": "POST", "path": "/v1/agents/market", "purpose": "a08_market 비용/요금구간"},
         {"method": "POST", "path": "/v1/agents/policy", "purpose": "a09_policy ZEB/보조금"},
-        {"method": "POST", "path": "/v1/agents/vpp", "purpose": "a14_vpp VPP 잠재"}
+        {"method": "POST", "path": "/v1/agents/vpp", "purpose": "a14_vpp VPP 잠재"},
+        {"method": "POST", "path": "/v1/agents/tariff", "purpose": "a23_tariff_optimizer TOU 분해/부하이전"},
+        {"method": "POST", "path": "/v1/agents/esg", "purpose": "a24_esg_disclosure GHG Scope 1/2"},
+        {"method": "POST", "path": "/v1/agents/incentive", "purpose": "a25_incentive_benefit 보조금/ROI"}
       ], "status": "operational", "external_facing": false, "ssot_refs": ["UNIFIED_GATEWAY_DESIGN.md v1.2 §3 F12 / §4 routing", "ADR-001"]},
       {"id": "F13", "name": "Claude LLM complete (anthropic SDK + Redis cache)", "method": "POST", "path": "/v1/llm/complete", "backend": {"kind": "external_api"}, "status": "operational", "external_facing": false, "latency_budget_p99_s": 30, "ssot_refs": ["UNIFIED_GATEWAY_DESIGN.md v1.2 §3 F13"]},
       {"id": "F14", "name": "Policy Evaluation (AI 챔피언 plan §6.5 Gateway 측)", "backend": {"kind": "in_process"}, "paths": [
