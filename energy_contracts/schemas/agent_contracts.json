@@ -790,6 +790,17 @@
         "requires": [],
         "output_strategies": [],
         "output_data_source": "synthetic"
+      },
+      "a18_preference": {
+        "id": "a18",
+        "name_en": "Preference (Multi-objective Pareto)",
+        "name_kr": "다목적 선호",
+        "capability": "preference",
+        "phase": 4,
+        "maturity": "L1_rule",
+        "requires": [],
+        "output_strategies": [],
+        "output_data_source": "synthetic"
       }
     }
   }
