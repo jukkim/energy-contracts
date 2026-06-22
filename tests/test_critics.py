@@ -22,8 +22,8 @@ from energy_contracts.critics import (
 
 CLEAN_ANSWERS = [
     "전력 0.4173 kgCO2/kWh 적용. 냉방 setpoint 26°C, PMV 0.3 유지.",
-    "지역난방 0.178 kgCO2/kWh, ESS SOC 30% 유지하며 PV 30kW 활용.",
-    "ZEB 5등급 의무화 대상 (2025.6 시행). 가스 0.202 kgCO2/kWh.",
+    "지역난방 0.126 kgCO2/kWh, ESS SOC 30% 유지하며 PV 30kW 활용.",
+    "ZEB 5등급 의무화 대상 (2025.6 시행). 가스 0.2036 kgCO2/kWh.",
     "비공개 한국 실측 데이터셋 검증 결과 NRMSE 12.3%. 조명 50% 절감.",
     "건축법 제65조(에너지 절약 계획서) 제출 대상. 난방 22°C.",
     "K-ETS 4기 (2026.1.1 시행) 대상 — 발전 유상할당 50%.",

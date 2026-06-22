@@ -10,8 +10,8 @@ from .critic_base import Critic, CriticResult
 
 SSOT_FACTORS_KGCO2_PER_KWH = {
     "electricity_kr_2023": 0.4173,
-    "natural_gas_kr": 0.202,
-    "district_heating_kr": 0.178,
+    "natural_gas_kr": 0.2036,
+    "district_heating_kr": 0.1260,  # 수도권 2024 (ENERGY_SSOT v1.13 §1, 구 0.178 = SSOT 미반영 drift)
 }
 
 PE_FACTOR_KR = {
