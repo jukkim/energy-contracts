@@ -117,8 +117,8 @@
   },
   "default": {
     "kau": {
-      "fallback_krw_per_tco2": 17000,
-      "reference_date": "2026-04-30",
+      "fallback_krw_per_tco2": 20000,
+      "reference_date": "2026-06-22",
       "refresh_cycle": "quarterly"
     },
     "smp": {
@@ -173,7 +173,7 @@
       }
     },
     "renewable": {
-      "rec_unit_price_krw": 65000,
+      "rec_unit_price_krw": 71000,
       "rec_weight_building": 1.5,
       "ppa_price_krw_per_kwh": 100.0,
       "ppa_self_consumption": 0.4
