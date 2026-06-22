@@ -2,6 +2,7 @@
 
 검사 항목:
   1. 하드코딩된 구 전략 코드 (M0, M1, ..., M8 단독) 탐지
+  1b. 폐기된 canonical 수치(구 배출계수/PE계수 등) 잔재 탐지 — EC 스키마 단일 root 강제
   2. 포트 할당 충돌 (port_allocation.json 기준)
   3. JSON Schema 일관성 (common.json $defs 와 다른 스키마 정합)
   4. _generated_constants.* SOURCE_HASH drift (Phase H 추가)
@@ -43,6 +44,7 @@ LEGACY_STRATEGY_RE = re.compile(r"""['"](M[0-8])['"]""")
 # 파일 레벨 면제 마커
 FILE_EXEMPT_MARKERS = (
     "SSOT_ALLOW_LEGACY_STRATEGY",  # 의도된 negative test 파일
+    "SSOT_ALLOW_STALE_CANONICAL",  # canonical 구값 게이트의 negative test 파일
     "AUTO-GENERATED",              # gen_constants.py 산출물
 )
 
@@ -101,6 +103,87 @@ def scan_legacy_strategies(paths: list[Path]) -> list[tuple[Path, int, str]]:
                     continue
                 if LEGACY_STRATEGY_RE.search(line):
                     violations.append((fp, lineno, line.strip()[:120]))
+    return violations
+
+
+# ── 1b. 폐기된 canonical 수치(구값) 잔재 ────────────────────────────────────
+# 목적: 배출계수·PE계수 등 canonical 값이 갱신되면 구값이 코드/문서에 잔존하며
+#   drift 를 만든다. EC 스키마(emission_factors.json/energy_constants.json)가
+#   유일 root 이므로, 그 밖에 박힌 **구값**을 탐지해 단일 root 를 강제한다.
+# 설계: 오탐 0 을 위해 (a) 고유성 높은 값(4자리 소수 등)만 (b) 숫자 경계로 매칭
+#   (c) 변경 이력을 적는 라인(구값·이전·old·→ 등)은 면제.
+# 현재값 자체(0.4173 등)는 본 검사 대상 아님 — "EC 밖 손-리터럴 금지"는 home
+#   전환 완료 후 별도 forward-guard 로 추가 예정(false-positive 회피 순서).
+# ⚠ 오탐 0 원칙: 본 게이트는 **코드 파일**(.md 제외)에서 **명백히 구 전력계수 단일값**
+#   으로만 쓰였던 4자리 소수만 잡는다. 아래는 의도적으로 제외:
+#   - 0.4509(2021)/0.4312(2022)/0.1218(heat) = 연도별 **정당한 과거 시계열** (drift 아님)
+#   - 0.459/0.614 = 모델 metric 테이블 등과 **충돌하는 generic** 값
+#   - .md 문서 = reconciliation/history/이력 표가 구값을 정당하게 포함
+#   (문서 구값 정정은 별도 1회성 정리 — 하드 게이트 대상 아님)
+STALE_CANONICAL_VALUES: list[tuple[str, str, str]] = [
+    # (구값, 현행 정본값, 설명) — 어느 연도에도 공식 채택된 적 없는 구 반올림/추정치
+    ("0.4594", "0.4173", "전력 배출계수 구값(KEA)"),
+    ("0.4593", "0.4173", "전력 배출계수 구값(구 반올림)"),
+    ("0.4591", "0.4173", "전력 배출계수 구값(구 반올림)"),
+    ("0.4653", "0.4173", "전력 배출계수 구값(구 추정)"),
+]
+
+# 정본 = emission_factors.json / energy_constants.json (SSOT 자체는 면제).
+# .md 제외 — 문서는 history/reconciliation 표가 구값을 정당히 포함(오탐 원인).
+CANONICAL_SCAN_EXTS = {".py", ".ts", ".tsx", ".js", ".jsx", ".yaml", ".yml"}
+CANONICAL_EXEMPT_PATTERNS = STRATEGY_EXEMPT_PATTERNS + [
+    "emission_factors.json",   # SSOT 자체
+    "energy_constants.json",   # SSOT 자체
+    "validate_ssot.py",        # 본 manifest
+    "/archive/", "/legacy/",   # 의도적 과거 기록
+    "ENERGY_SSOT.md",          # 변경 이력 서술 문서
+]
+# 라인 내 변경-이력 키워드가 있으면 면제 (md 표·마이그레이션 노트 등)
+_HISTORY_NOTE_RE = re.compile(
+    r"(old|legacy|deprecated|previous|이전|구값|폐기|기존|→|->|~)", re.I)
+
+
+def _stale_value_re(value: str) -> re.Pattern:
+    """숫자 경계로만 매칭 — '0.459' 가 '0.4591' 안에서 매칭되지 않도록."""
+    return re.compile(r"(?<![\d.])" + re.escape(value) + r"(?![\d])")
+
+
+def scan_stale_canonical_values(paths: list[Path]) -> list[tuple[Path, int, str]]:
+    compiled = [(_stale_value_re(v), v, cur, desc)
+                for v, cur, desc in STALE_CANONICAL_VALUES]
+    violations = []
+    for root in paths:
+        if root.is_file():
+            files = [root]
+        else:
+            files = [p for p in root.rglob("*") if p.is_file()
+                     and p.suffix in CANONICAL_SCAN_EXTS]
+        for fp in files:
+            s = str(fp).replace("\\", "/")
+            if any(pat in s for pat in CANONICAL_EXEMPT_PATTERNS):
+                continue
+            if any(part in fp.parts for part in
+                   ("node_modules", "dist", ".git", ".venv", "venv", "env",
+                    "__pycache__", "build", "site-packages", ".next", "out")):
+                continue
+            try:
+                text = fp.read_text(encoding="utf-8", errors="replace")
+            except Exception:
+                continue
+            if any(marker in text for marker in FILE_EXEMPT_MARKERS):
+                continue
+            for lineno, line in enumerate(text.splitlines(), 1):
+                stripped = line.lstrip()
+                if stripped.startswith(("#", "//", "*", "<!--")):
+                    continue
+                if _HISTORY_NOTE_RE.search(line):
+                    continue  # 변경 이력 서술 라인 면제
+                for rx, val, cur, desc in compiled:
+                    if rx.search(line):
+                        violations.append(
+                            (fp, lineno,
+                             f"구값 {val} ({desc}) → 정본 {cur}: {line.strip()[:90]}"))
+                        break
     return violations
 
 
@@ -721,8 +804,8 @@ def changed_files() -> list[Path]:
 def main() -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument("--check",
-                    choices=["strategy", "ports", "schemas", "generated",
-                             "usage", "all"],
+                    choices=["strategy", "canonical", "ports", "schemas",
+                             "generated", "usage", "all"],
                     default="all")
     ap.add_argument("--pre-commit", action="store_true",
                     help="git diff --cached 대상만 검사")
@@ -754,6 +837,18 @@ def main() -> int:
             failed = True
             total_violations += len(v)
             print(f"\n[SSOT] 구 전략 코드(M0~M8 단독) 발견: {len(v)}건")
+            for fp, ln, snippet in v[:30]:
+                rel = fp.relative_to(WORKSPACE_ROOT) if fp.is_absolute() else fp
+                print(f"  {rel}:{ln}  {snippet}")
+            if len(v) > 30:
+                print(f"  ... 외 {len(v)-30}건 (총 {len(v)})")
+
+    if args.check in ("canonical", "all"):
+        v = scan_stale_canonical_values(paths)
+        if v:
+            failed = True
+            total_violations += len(v)
+            print(f"\n[SSOT] 폐기된 canonical 수치(구값) 잔재: {len(v)}건")
             for fp, ln, snippet in v[:30]:
                 rel = fp.relative_to(WORKSPACE_ROOT) if fp.is_absolute() else fp
                 print(f"  {rel}:{ln}  {snippet}")
