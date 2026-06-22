@@ -14,7 +14,7 @@
   "allocations": [
     {"ven_id": "VEN-OFFICE-001", "allocated_kw": 12, "strategy": "M11", "reasoning": "감축 단가 8000원/kWh"},
     {"ven_id": "VEN-OFFICE-002", "allocated_kw": 10, "strategy": "M11", "reasoning": "감축 단가 9500원/kWh"},
-    {"ven_id": "VEN-HOME-001",   "allocated_kw": 8,  "strategy": "M07", "reasoning": "조명+가전 감축 12000원/kWh"}
+    {"ven_id": "VEN-HOME-001",   "allocated_kw": 8,  "strategy": "M17", "reasoning": "조명+가전 감축 12000원/kWh"}
   ],
   "execution_report": {
     "target_kw": 30.0,
