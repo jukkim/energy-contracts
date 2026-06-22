@@ -188,7 +188,7 @@
         },
         "M07": {
           "compatibility": "compatible",
-          "note": "조명/콘센트 제어 (HVAC 무관)"
+          "note": "CO2 수요제어환기 (DCV) — IAQ 기반 외기도입"
         },
         "M08": {
           "compatibility": "compatible",
@@ -196,11 +196,11 @@
             8,
             15
           ],
-          "note": "예냉(Pre-cooling): Pre-cooling 열용량 활용"
+          "note": "전열교환기 (ERV) — 외기-배기 폐열회수"
         },
         "M09": {
           "compatibility": "compatible",
-          "note": "ESS 피크셰이빙 (HVAC 무관, 부하 이전)"
+          "note": "피크 전 프리쿨링/프리히팅 — 열용량 선축냉(예냉)"
         },
         "M10": {
           "compatibility": "compatible",
@@ -334,15 +334,15 @@
         },
         "M07": {
           "compatibility": "compatible",
-          "note": "조명/콘센트 제어 (HVAC 무관)"
+          "note": "CO2 수요제어환기 (DCV) — IAQ 기반 외기도입"
         },
         "M08": {
           "compatibility": "marginal",
-          "note": "예냉(Pre-cooling): 열용량 제한"
+          "note": "전열교환기 (ERV) — 외기-배기 폐열회수"
         },
         "M09": {
           "compatibility": "compatible",
-          "note": "ESS 피크셰이빙 (HVAC 무관, 부하 이전)"
+          "note": "피크 전 프리쿨링/프리히팅 — 열용량 선축냉(예냉)"
         },
         "M10": {
           "compatibility": "compatible"
@@ -433,15 +433,15 @@
         },
         "M07": {
           "compatibility": "compatible",
-          "note": "조명/콘센트 제어 (HVAC 무관)"
+          "note": "CO2 수요제어환기 (DCV) — IAQ 기반 외기도입"
         },
         "M08": {
           "compatibility": "marginal",
-          "note": "예냉(Pre-cooling)"
+          "note": "전열교환기 (ERV) — 외기-배기 폐열회수"
         },
         "M09": {
           "compatibility": "compatible",
-          "note": "ESS 피크셰이빙 (HVAC 무관, 부하 이전)"
+          "note": "피크 전 프리쿨링/프리히팅 — 열용량 선축냉(예냉)"
         },
         "M10": {
           "compatibility": "compatible"
@@ -541,15 +541,15 @@
         },
         "M07": {
           "compatibility": "compatible",
-          "note": "조명/콘센트 제어 (HVAC 무관)"
+          "note": "CO2 수요제어환기 (DCV) — IAQ 기반 외기도입"
         },
         "M08": {
           "compatibility": "compatible",
-          "note": "예냉(Pre-cooling)"
+          "note": "전열교환기 (ERV) — 외기-배기 폐열회수"
         },
         "M09": {
           "compatibility": "compatible",
-          "note": "ESS 피크셰이빙 (HVAC 무관, 부하 이전)"
+          "note": "피크 전 프리쿨링/프리히팅 — 열용량 선축냉(예냉)"
         },
         "M10": {
           "compatibility": "compatible"
@@ -636,15 +636,15 @@
         },
         "M07": {
           "compatibility": "compatible",
-          "note": "조명/콘센트 제어 (HVAC 무관)"
+          "note": "CO2 수요제어환기 (DCV) — IAQ 기반 외기도입"
         },
         "M08": {
           "compatibility": "compatible",
-          "note": "예냉(Pre-cooling): Hydronic 열용량 활용 강력"
+          "note": "전열교환기 (ERV) — 외기-배기 폐열회수"
         },
         "M09": {
           "compatibility": "compatible",
-          "note": "ESS 피크셰이빙 (HVAC 무관, 부하 이전)"
+          "note": "피크 전 프리쿨링/프리히팅 — 열용량 선축냉(예냉)"
         },
         "M10": {
           "compatibility": "compatible"
@@ -730,15 +730,15 @@
         },
         "M07": {
           "compatibility": "compatible",
-          "note": "조명/콘센트 제어 (HVAC 무관)"
+          "note": "CO2 수요제어환기 (DCV) — IAQ 기반 외기도입"
         },
         "M08": {
           "compatibility": "compatible",
-          "note": "예냉(Pre-cooling): 온돌 열용량 활용"
+          "note": "전열교환기 (ERV) — 외기-배기 폐열회수"
         },
         "M09": {
           "compatibility": "compatible",
-          "note": "ESS 피크셰이빙 (HVAC 무관, 부하 이전)"
+          "note": "피크 전 프리쿨링/프리히팅 — 열용량 선축냉(예냉)"
         },
         "M10": {
           "compatibility": "compatible"
@@ -825,15 +825,15 @@
         },
         "M07": {
           "compatibility": "compatible",
-          "note": "조명/콘센트 제어 (HVAC 무관)"
+          "note": "CO2 수요제어환기 (DCV) — IAQ 기반 외기도입"
         },
         "M08": {
           "compatibility": "compatible",
-          "note": "예냉(Pre-cooling): 온돌 열용량"
+          "note": "전열교환기 (ERV) — 외기-배기 폐열회수"
         },
         "M09": {
           "compatibility": "compatible",
-          "note": "ESS 피크셰이빙 (HVAC 무관, 부하 이전)"
+          "note": "피크 전 프리쿨링/프리히팅 — 열용량 선축냉(예냉)"
         },
         "M10": {
           "compatibility": "compatible"
@@ -919,15 +919,15 @@
         },
         "M07": {
           "compatibility": "compatible",
-          "note": "조명/콘센트 제어 (HVAC 무관)"
+          "note": "CO2 수요제어환기 (DCV) — IAQ 기반 외기도입"
         },
         "M08": {
           "compatibility": "compatible",
-          "note": "예냉(Pre-cooling)"
+          "note": "전열교환기 (ERV) — 외기-배기 폐열회수"
         },
         "M09": {
           "compatibility": "compatible",
-          "note": "ESS 피크셰이빙 (HVAC 무관, 부하 이전)"
+          "note": "피크 전 프리쿨링/프리히팅 — 열용량 선축냉(예냉)"
         },
         "M10": {
           "compatibility": "compatible"
@@ -1013,15 +1013,15 @@
         },
         "M07": {
           "compatibility": "compatible",
-          "note": "조명/콘센트 제어 (HVAC 무관)"
+          "note": "CO2 수요제어환기 (DCV) — IAQ 기반 외기도입"
         },
         "M08": {
           "compatibility": "compatible",
-          "note": "예냉(Pre-cooling)"
+          "note": "전열교환기 (ERV) — 외기-배기 폐열회수"
         },
         "M09": {
           "compatibility": "compatible",
-          "note": "ESS 피크셰이빙 (HVAC 무관, 부하 이전)"
+          "note": "피크 전 프리쿨링/프리히팅 — 열용량 선축냉(예냉)"
         },
         "M10": {
           "compatibility": "compatible"
