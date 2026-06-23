@@ -170,6 +170,17 @@ PROJECT_TARGETS: dict[str, dict] = {
             ],
         },
     },
+    # ingestion-worker (jukkim/ingestion-worker) — constants.py 가 be-3d 미러였던 것을
+    # EC 생성본 파생으로 전환 (CO2·시장가격·ZEB baseline). 고정값 감사 후속.
+    "ingestion-worker": {
+        "python": "projects/ingestion-worker/src/_generated_constants.py",
+        "exports": {
+            "python": [
+                "EMISSION_FACTORS_KR", "MARKET_PRICES",
+                "ZEB_BASELINE_KWH_M2_YR",
+            ],
+        },
+    },
 }
 
 
