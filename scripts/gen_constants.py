@@ -156,6 +156,17 @@ PROJECT_TARGETS: dict[str, dict] = {
             ],
         },
     },
+    # 8sim-shared (jukkim/8sim-shared) — energy_accounting.py 가 배출/PE/ZEB baseline
+    # 을 본 생성본에서 파생 (literal 단일-편집: EC 스키마만 수정하면 자동 반영).
+    "8sim-shared": {
+        "python": "8.simulation/_shared/_generated_constants.py",
+        "exports": {
+            "python": [
+                "EMISSION_FACTORS_KR", "PRIMARY_ENERGY_FACTORS",
+                "ZEB_BASELINE_KWH_M2_YR",
+            ],
+        },
+    },
 }
 
 
