@@ -11,8 +11,8 @@
     "agentleague",
     "eduarena"
   ],
-  "version": "1.0",
-  "updated": "2026-05-17",
+  "version": "1.1",
+  "updated": "2026-06-23",
   "$comment": "Phase C1 산출물 (myjob/docs/SSOT_GOVERNANCE.md). gen_constants.py 가 이 스키마를 Tier 3 코드로 자동 생성.",
   "$defs": {
     "BuildingContext": {
@@ -887,6 +887,42 @@
         "maturity": "L1_rule",
         "requires": [
           "a09"
+        ],
+        "output_strategies": [],
+        "output_data_source": "synthetic"
+      },
+      "a26_lighting_control": {
+        "id": "a26",
+        "name_en": "Lighting Control",
+        "name_kr": "조명·콘센트 제어",
+        "capability": "lighting_control",
+        "phase": 4,
+        "maturity": "L1_rule",
+        "requires": [],
+        "output_strategies": [],
+        "output_data_source": "synthetic"
+      },
+      "a27_hvac_sequencing": {
+        "id": "a27",
+        "name_en": "HVAC Sequencing",
+        "name_kr": "HVAC 운영 시퀀스",
+        "capability": "hvac_sequencing",
+        "phase": 4,
+        "maturity": "L1_rule",
+        "requires": [],
+        "output_strategies": [],
+        "output_data_source": "synthetic"
+      },
+      "a28_integrated_bms": {
+        "id": "a28",
+        "name_en": "Integrated BMS",
+        "name_kr": "통합 BMS supervisory 조율",
+        "capability": "integrated_bms",
+        "phase": 4,
+        "maturity": "L1_rule",
+        "requires": [
+          "a26",
+          "a27"
         ],
         "output_strategies": [],
         "output_data_source": "synthetic"
