@@ -2,23 +2,41 @@
 
 from __future__ import annotations
 
+import json
 import re
+from pathlib import Path
 from typing import Any
 
 from .critic_base import Critic, CriticResult
 
+_SCHEMAS = Path(__file__).resolve().parents[1] / "schemas"
 
-SSOT_FACTORS_KGCO2_PER_KWH = {
-    "electricity_kr_2023": 0.4173,
-    "natural_gas_kr": 0.2036,
-    "district_heating_kr": 0.1260,  # 수도권 2024 (ENERGY_SSOT v1.13 §1, 구 0.178 = SSOT 미반영 drift)
-}
 
-PE_FACTOR_KR = {
-    "electricity": 2.75,
-    "district_heating": 0.728,
-    "natural_gas": 1.1,
-}
+def _load_emission_factors() -> dict[str, float]:
+    """배출계수 SSOT 를 emission_factors.json 에서 로드 (하드코딩 금지 — SSOT 가드가
+    정작 SSOT 를 복제하면 drift 가능). 키는 본 critic 의 어휘로 remap."""
+    kr = json.loads((_SCHEMAS / "emission_factors.json").read_text(encoding="utf-8"))
+    kr = kr["default"]["co2_kgco2eq_per_kwh"]["KR"]
+    return {
+        "electricity_kr_2023": kr["electricity"],
+        "natural_gas_kr": kr["gas"],
+        "district_heating_kr": kr["district_heat"],  # 수도권 2024 (ENERGY_SSOT v1.13 §1)
+    }
+
+
+def _load_pe_factors() -> dict[str, float]:
+    """PE 환산계수 SSOT 를 energy_constants.json 에서 로드."""
+    pe = json.loads((_SCHEMAS / "energy_constants.json").read_text(encoding="utf-8"))
+    pe = pe["default"]["pe_factors"]
+    return {
+        "electricity": pe["electricity"],
+        "district_heating": pe["district_heat"],
+        "natural_gas": pe["gas"],
+    }
+
+
+SSOT_FACTORS_KGCO2_PER_KWH = _load_emission_factors()
+PE_FACTOR_KR = _load_pe_factors()
 
 FACTOR_PATTERN = re.compile(
     # 사냥꾼 라운드 M2 (2026-06-08): val 그룹이 \d+\.\d{2,4} 로 소수 2~4자리만 매칭하면
