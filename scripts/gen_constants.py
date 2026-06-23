@@ -76,7 +76,7 @@ PROJECT_TARGETS: dict[str, dict] = {
                 "DISTRIBUTION_ALGORITHMS", "DR_TYPES",
                 "EMISSION_FACTORS_KR", "ENERGY_CONVERSIONS", "ERROR_CODES",
                 "GRIDBRIDGE_URL_COMPUTER_A", "LOGGING_FORMAT",
-                "MANAGEMENT_MODES", "MQTT_TOPIC_PATTERNS",
+                "MANAGEMENT_MODES", "MARKET_PRICES", "MQTT_TOPIC_PATTERNS",
                 "OPENAPI_RESPONSES", "PIPELINE_DATASETS", "PORTS",
                 "RUN_MODES", "RUN_MODE_BEHAVIOR", "SECURITY_HEADERS",
                 "SIGNAL_MAPPING", "SIGNAL_MAPPING_DR",
@@ -106,11 +106,15 @@ PROJECT_TARGETS: dict[str, dict] = {
                 "OPENAPI_RESPONSES", "PIPELINE_DATASETS", "PRIMARY_ENERGY_FACTORS",
                 "RUN_MODES", "RUN_MODE_BEHAVIOR", "SECURITY_CORS", "SECURITY_HEADERS",
                 "SIGNAL_MAPPING_DR",
+                "MARKET_PRICES",
                 "SIM_EMS_PATTERNS", "SIM_PMV_THRESHOLDS", "SIM_RUN_PERIODS",
                 "STRATEGIES", "STRATEGY_CODES", "TENANT_REGIONS", "TESTS_SHARED",
-                "TEST_GROUPS", "TEST_STAGES", "TEST_TIERS", "ZEB_THRESHOLDS",
+                "TEST_GROUPS", "TEST_STAGES", "TEST_TIERS",
+                "ZEB_BASELINE_KWH_M2_YR", "ZEB_GRADES", "ZEB_THRESHOLDS",
             ],
             "ts": [
+                "EMISSION_FACTORS_KR", "PRIMARY_ENERGY_FACTORS",
+                "MARKET_PRICES", "ZEB_BASELINE_KWH_M2_YR", "ZEB_THRESHOLDS",
                 "I18N_FALLBACK_LANG", "I18N_KEYS",
                 # Critics SSOT (0.2.3) — Layer 5 UI 의 verdict 라벨 / critic name 매핑
                 "CRITIC_NAMES", "CRITIC_LABEL_KO",
@@ -199,6 +203,9 @@ def load_schemas() -> dict:
     # Phase L 신규 (2개 — AI 챔피언 Phase 4 DR Aggregator)
     esg_policy = _load("esg_policy.json")
     dr_dispatch = _load("dr_dispatch_event.json")
+    # Phase M 신규 (2개 — SSOT 단일 root: 시장/정책 기준값 + ZEB baseline)
+    market = _load("market_prices.json")
+    enconst = _load("energy_constants.json")
     return {"ems": ems, "ports": ports, "common": common,
             "agents": agents, "intents": intents,
             "modes": modes, "dataclass": dataclass, "tests": tests,
@@ -210,7 +217,8 @@ def load_schemas() -> dict:
             "tests_shared": tests_shared, "logfmt": logfmt,
             "sim_scn": sim_scn, "dbmig": dbmig,
             "oapi_resp": oapi_resp, "lintfmt": lintfmt,
-            "esg_policy": esg_policy, "dr_dispatch": dr_dispatch}
+            "esg_policy": esg_policy, "dr_dispatch": dr_dispatch,
+            "market": market, "enconst": enconst}
 
 
 def schemas_hash(data: dict) -> str:
@@ -543,6 +551,23 @@ def gen_python(schemas: dict) -> str:
                      f"{units.get('zeb_thresholds_kwh_m2_yr', {})!r}")
         lines.append("")
 
+    # ── Phase M 신규 (2개 — SSOT 단일 root) ──────────────────────────────────
+
+    market = schemas.get("market", {}).get("default", {})
+    if market:
+        lines.append("# ─ Market Prices (Phase M SSOT — 시장/정책 폴백가) ───────────")
+        lines.append(f"MARKET_PRICES: dict = {market!r}")
+        lines.append("")
+
+    enconst = schemas.get("enconst", {}).get("default", {})
+    zeb = enconst.get("zeb", {})
+    if zeb:
+        lines.append("# ─ ZEB Baseline & Grades (Phase M SSOT) ─────────────────────")
+        lines.append(f"ZEB_BASELINE_KWH_M2_YR: float = "
+                     f"{zeb.get('baseline_kwh_m2_yr')!r}")
+        lines.append(f"ZEB_GRADES: dict[str, dict] = {zeb.get('grades', {})!r}")
+        lines.append("")
+
     # ── Phase K 신규 (6개) ──────────────────────────────────────────────────
 
     ts_shared = schemas.get("tests_shared", {}).get("default", {})
@@ -809,6 +834,13 @@ def gen_typescript(schemas: dict) -> str:
     _ts_dump("units",      "PRIMARY_ENERGY_FACTORS", ["primary_energy_factors"])
     _ts_dump("units",      "EMISSION_FACTORS_KR", ["emission_factors_kr"])
     _ts_dump("units",      "ZEB_THRESHOLDS",      ["zeb_thresholds_kwh_m2_yr"])
+    _ts_dump("market",     "MARKET_PRICES")
+    _ts_dump("enconst",    "ZEB_GRADES",          ["zeb", "grades"])
+    # ZEB baseline 은 스칼라 — _ts_dump(dict only) 미적용, 직접 emit
+    _zeb = schemas.get("enconst", {}).get("default", {}).get("zeb", {})
+    if _zeb.get("baseline_kwh_m2_yr") is not None:
+        lines.append(f"export const ZEB_BASELINE_KWH_M2_YR = "
+                     f"{json.dumps(_zeb['baseline_kwh_m2_yr'])};")
     _ts_dump("logfmt",     "LOGGING_FORMAT")
     _ts_dump("sim_scn",    "SIM_EMS_PATTERNS",    ["ems_patterns"])
     _ts_dump("oapi_resp",  "OPENAPI_RESPONSES",   ["standard_responses"])

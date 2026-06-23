@@ -3,7 +3,7 @@
   "$id": "energy-contracts/energy_constants.json",
   "title": "Energy Constants",
   "description": "에너지 기준값·등급·환산계수 SSOT. ENERGY_SSOT.md §2~§3 기반.",
-  "_usage": "reference-only",
+  "_usage": "codegen",
   "_consumers": [
     "building-energy-3d"
   ],
