@@ -135,6 +135,7 @@
                 "docs/specs/SPEC_POLICY_VECTOR.md (hallucination 예시 의도)",
                 "docs/DRIFT_INVENTORY.md",
                 "docs/NAMING_UNIFICATION.md (deprecated 표)",
+                "CLAUDE.md (MODEL_SWAP 디커플링 seam S1~S4 = refactor-seam 네임스페이스, EMS S-code 아님)",
                 "scripts/lint_ems_code_drift.py",
                 "scripts/add_ems_code.py",
                 "scripts/verify_ems_code_consistency.py",
