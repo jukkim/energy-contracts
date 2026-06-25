@@ -12,8 +12,8 @@
     "smartbuilding",
     "eduarena"
   ],
-  "version": "1.0.0",
-  "updated": "2026-05-29",
+  "version": "1.0.1",
+  "updated": "2026-06-25",
   "$comment": "Phase 0.2 산출물 (ADR-001 F14 namespace 결정 직후). NEG-2026-05-29-002-final + 6-agent hunter round 통합 결과. ems_transformer가 모든 AI 모델의 단일 진입점이라는 위상 (사용자 2026-05-29 09:37 명시) 을 contract 로 고정. 신규 F# 신설 시 본 파일 + UNIFIED_GATEWAY_DESIGN.md v1.x 동시 갱신 의무.",
   "type": "object",
   "required": ["gateway", "functions", "qa_types", "tools", "constants"],
@@ -252,7 +252,7 @@
         {"method": "POST", "path": "/v1/policy-evaluate/async", "purpose": "slow path — EnergyPlus primary, 202 Accepted + evaluation_id"},
         {"method": "GET", "path": "/v1/policy-evaluate/{evaluation_id}", "purpose": "slow path 결과 polling"},
         {"method": "POST", "path": "/v1/policy-evaluate/batch", "purpose": "debate / 자치단체 sweep batch (N ≤ 100)"}
-      ], "status": "spec_only", "external_facing": true, "requires_persona_role": ["household", "building_owner", "facility_manager", "govt", "admin"], "requires_dual_signoff": true, "tier": "slow", "ssot_refs": ["ADR-001-f14-policy-evaluation-namespace.md", "AI 챔피언 plan v1.9.2 §6.5 G-PE1~G-PE3", "UNIFIED_GATEWAY_DESIGN.md v1.2 §3 F14"]}
+      ], "status": "operational", "external_facing": true, "requires_persona_role": ["household", "building_owner", "facility_manager", "govt", "admin"], "requires_dual_signoff": true, "tier": "slow", "ssot_refs": ["ADR-001-f14-policy-evaluation-namespace.md", "AI 챔피언 plan v1.9.2 §6.5 G-PE1~G-PE3", "UNIFIED_GATEWAY_DESIGN.md v1.2 §3 F14"]}
     ],
     "qa_types": [
       {"id": "Q1", "qa_type": "comfort", "category": "쾌적도(PMV) + 온습도 변동", "requires_fields": ["city", "building"], "responsible_model": "exaone_v25"},
