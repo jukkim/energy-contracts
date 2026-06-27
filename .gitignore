@@ -10,3 +10,7 @@ dist/
 .venv/
 venv/
 scratch/
+# 디버그 캡처 PNG 는 루트 추적 금지 (scratch-folder 룰) — 픽스처 repo 아님
+*.png
+*.jpg
+.playwright-mcp/
