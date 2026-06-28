@@ -5,7 +5,10 @@
   "description": "건물 유형·용도 매핑·BUILDWISE EUI SSOT. NAMING_UNIFICATION.md §2 + constants.py 기반.",
   "_usage": "reference-only",
   "_consumers": [
-    "building-energy-3d"
+    "building-energy-3d",
+    "energy-decision-studio (buildwise_eui_seoul[type].M00 → ARCHETYPES.siteEui guarded mirror, verify_mirror_sync.mjs)",
+    "energy-decision-canvas (siteEui ARCHETYPES + FALLBACK_SITE_EUI guarded mirror, verify_mirror_sync.py)",
+    "reverse-ems (usecase_iv_coldstart _DEFAULT_ANNUAL_BASELINE_KWH = M00 EUI × doe area, manual sync)"
   ],
   "version": "2.0",
   "type": "object",
