@@ -26,11 +26,12 @@
     "edge_type": {
       "type": "string",
       "enum": [
-        "real_edge",
-        "replay_edge",
-        "energyplus_emulator"
+        "device",
+        "replay",
+        "eplus",
+        "synthetic"
       ],
-      "description": "VW broker-architecture §4 + common.json §EdgeType SSOT. 보통 replay→replay_edge, energyplus→energyplus_emulator, 그 외→real_edge."
+      "description": "common.json §EdgeType SSOT (backend 정합). backend real_bas=device, replay=replay, energyplus=eplus, virtual=synthetic. 가상/현장은 별개 축 = 관제점 바인딩."
     },
     "kind": {
       "type": "string",
@@ -38,7 +39,7 @@
         "telemetry",
         "dispatch"
       ],
-      "description": "운영 모드 — common.json §Kind SSOT. 보통 replay_edge→telemetry, real_edge·energyplus_emulator→dispatch."
+      "description": "운영 모드 — common.json §Kind SSOT. 관례: replay=telemetry, device·eplus·synthetic=dispatch."
     },
     "backend": {
       "type": "string",

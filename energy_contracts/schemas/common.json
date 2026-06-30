@@ -81,11 +81,12 @@
     "EdgeType": {
       "type": "string",
       "enum": [
-        "real_edge",
-        "replay_edge",
-        "energyplus_emulator"
+        "device",
+        "replay",
+        "eplus",
+        "synthetic"
       ],
-      "description": "VW broker-architecture §4 호환. real_edge=실물 설비, replay_edge=DB replay, energyplus_emulator=E+ 가상."
+      "description": "노드 데이터소스 (backend 정합). device=현장 디바이스(real_bas) · replay=DB 리플레이 · eplus=E+ 시뮬 · synthetic=규칙/합성(virtual). 가상/현장은 별개 축 = 관제점 바인딩(점 단위, OPEN_CONNECTIVITY §2.6)."
     },
     "SignalLevel": {
       "type": "string",
