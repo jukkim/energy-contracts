@@ -78,6 +78,7 @@ components:
     TenantRegions:            {$ref: 'tenant_regions.json'}
     TestClassification:       {$ref: 'test_classification.json'}
     TestsShared:              {$ref: 'tests_shared.json'}
+    UiCapabilities:           {$ref: 'ui_capabilities.json'}
     Venue:                    {$ref: 'venue.json'}
     VirtualProsumer:          {$ref: 'virtual_prosumer.json'}
 
