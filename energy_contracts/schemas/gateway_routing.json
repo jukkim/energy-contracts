@@ -141,6 +141,10 @@
           "enum": ["fast", "slow"],
           "description": "F14 같은 2-tier 라우팅에서 sub-classification"
         },
+        "fallback": {
+          "enum": ["mock", "lite_backend", "cached", "reject", "none"],
+          "description": "백엔드 미가동/오류 시 폴백 전략 (W1′ additive, 2026-07-01). mock=데모 안전망 / lite_backend=경량 대체(예: F4→F10d) / cached=Redis 캐시 재사용 / reject=명시 거부 / none=폴백 없음. 미정 시 omit(= none)."
+        },
         "ssot_refs": {
           "type": "array",
           "items": {"type": "string"}
@@ -212,13 +216,13 @@
       {"id": "F1", "name": "Qwen tool-calling chat", "method": "POST", "path": "/v1/chat", "backend": {"kind": "in_process", "model_id_ref": "qwen_v25"}, "status": "operational", "external_facing": true, "ssot_refs": ["UNIFIED_GATEWAY_DESIGN.md v1.2 §3"]},
       {"id": "F2", "name": "Qwen QA structured (Q1~Q17)", "method": "POST", "path": "/v1/qa/{qa_type}", "backend": {"kind": "in_process", "model_id_ref": "qwen_v25"}, "status": "operational", "external_facing": true},
       {"id": "F3", "name": "Qwen QA catalog", "method": "GET", "path": "/v1/qa/types", "backend": {"kind": "in_process"}, "status": "operational", "external_facing": true},
-      {"id": "F4", "name": "Korean_BB 168h→24h forecast", "method": "POST", "path": "/v1/forecast/24h", "backend": {"kind": "http_microservice", "host_port": 8040, "url_env": "KOREAN_BB_URL", "upstream_path": "/predict", "model_id_ref": "korean_bb_twgauss_m"}, "status": "operational", "external_facing": true, "tool_registry_name": "korean_bb_forecast"},
+      {"id": "F4", "name": "Korean_BB 168h→24h forecast", "method": "POST", "path": "/v1/forecast/24h", "backend": {"kind": "http_microservice", "host_port": 8040, "url_env": "KOREAN_BB_URL", "upstream_path": "/predict", "model_id_ref": "korean_bb_twgauss_m"}, "status": "operational", "external_facing": true, "tool_registry_name": "korean_bb_forecast", "fallback": "lite_backend"},
       {"id": "F5", "name": "reverse full diagnosis", "method": "POST", "path": "/v1/ems/diagnose", "backend": {"kind": "http_microservice", "host_port": 8060, "url_env": "REVERSE_URL", "upstream_path": "/v1/full-diagnosis", "model_id_ref": "reverse_module_a"}, "status": "operational", "external_facing": true, "tool_registry_name": "reverse_full_diagnosis"},
       {"id": "F5b", "name": "reverse Module A transformer backend", "backend": {"kind": "http_microservice", "host_port": 8060, "url_env": "REVERSE_URL"}, "status": "operational", "external_facing": true},
       {"id": "F6", "name": "reverse short diagnosis (168h)", "method": "POST", "path": "/v1/ems/diagnose/short", "backend": {"kind": "http_microservice", "host_port": 8060, "url_env": "REVERSE_URL", "upstream_path": "/v1/short-diagnosis"}, "status": "operational", "external_facing": true, "tool_registry_name": "reverse_short_diagnosis"},
       {"id": "F7", "name": "reverse Module B lookup 838", "method": "POST", "path": "/v1/ems/recommend", "backend": {"kind": "http_microservice", "host_port": 8060, "url_env": "REVERSE_URL", "upstream_path": "/v1/coldstart"}, "status": "operational", "external_facing": true, "tool_registry_name": "reverse_coldstart"},
       {"id": "F8", "name": "reverse identify", "method": "POST", "path": "/v1/ems/identify", "backend": {"kind": "http_microservice", "host_port": 8060, "url_env": "REVERSE_URL", "upstream_path": "/v1/identify"}, "status": "operational", "external_facing": true, "tool_registry_name": "reverse_identify"},
-      {"id": "F9", "name": "KBEP forecast (MVP)", "backend": {"kind": "http_microservice", "host_port": 8020, "url_env": "KBEP_URL", "model_id_ref": "kbep_mvp_phase0"}, "status": "training_pending", "external_facing": true},
+      {"id": "F9", "name": "KBEP forecast (MVP)", "backend": {"kind": "http_microservice", "host_port": 8020, "url_env": "KBEP_URL", "model_id_ref": "kbep_mvp_phase0"}, "status": "training_pending", "external_facing": true, "fallback": "mock"},
       {"id": "F10a", "name": "building_ai energy daily (LightGBM)", "method": "POST", "path": "/v1/ai/energy-daily", "backend": {"kind": "http_microservice", "host_port": 8005, "url_env": "BUILDING_AI_URL"}, "status": "operational", "external_facing": true, "tool_registry_name": "building_ai_energy_daily"},
       {"id": "F10b", "name": "building_ai anomaly (XGB+IF)", "method": "POST", "path": "/v1/ai/anomaly", "backend": {"kind": "http_microservice", "host_port": 8005, "url_env": "BUILDING_AI_URL"}, "status": "operational", "external_facing": true, "tool_registry_name": "building_ai_anomaly"},
       {"id": "F10c", "name": "building_ai EMS optimize (GB)", "method": "POST", "path": "/v1/ai/ems-optimize", "backend": {"kind": "http_microservice", "host_port": 8005, "url_env": "BUILDING_AI_URL"}, "status": "operational", "external_facing": true, "tool_registry_name": "building_ai_ems_optimize"},
