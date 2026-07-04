@@ -49,28 +49,6 @@ VWorld(L1), GridBridge(L2), EdgeAgent(L3) 3개 프로젝트 간 **인터페이�
 | `building_energy_eui_calculator.py` (외부 DB 의존) | 외부 시스템 호출 — 인프라 분리 → 도메인 폴더에 |
 | `carte_renderer.py` (UI 렌더링) | C 계층 — be-3d / frontend repo 에 |
 
-## 통신 경로 (4개)
-
-```
-경로 0: 사용자 → VW     (브라우저/음성/텔레그램/카카오톡)
-경로 1: VW → GB → EA   (ESG/DR 그룹 제어)
-경로 2: VW → EA         (개별 건물 직접 제어)
-경로 3: EA → VW         (직접 텔레메트리/알림)
-경로 4: EA → GB → VW   (그룹 텔레메트리 집계)
-```
-
-```
-사용자 (브라우저 🖥️ / 음성 🎤 / 텔레그램 💬 / 카카오톡 💬)
-  │ 경로 0
-  ▼
-VWorld (L1) ──경로1──→ GridBridge (L2) ──→ EdgeAgent (L3) ×N
-  │                                            │
-  ├──────────경로2 (직접)─────────────────→     │
-  │                                            │
-  ◀──────────경로3 (직접 피드백)────────────     │
-  ◀──────────경로4 (GB 경유)──── GridBridge ◀───┘
-```
-
 ## 규칙
 
 1. **스펙 변경 시 반드시 이 프로젝트에 먼저 반영** → 각 프로젝트가 참조
@@ -79,123 +57,36 @@ VWorld (L1) ──경로1──→ GridBridge (L2) ──→ EdgeAgent (L3) ×N
 4. 버전 태그로 호환성 관리: `v1.0`, `v1.1` (minor = 필드 추가, major = 호환 깨짐)
 5. **변경 제안은 PR로**. VW/GB 측과 Edge 측 양쪽 리뷰 후 머지. 스펙에 없는 필드는 수신자가 무시(forward-compat).
 
-## 수용가(VEN) 분류 용어
+## SSOT 변경 절차 (load-bearing)
 
-이 플랫폼은 수용가를 운영 모드 기준으로 이분한다:
-
-| 분류 | 한글 용어 | 영문 용어 (스키마 `kind`) | 대표 예 | 제어 가능 | 데이터 |
-|------|---------|--------------------------|--------|:---:|------|
-| 관측형 수용가 | Telemetry VEN / Observable | `telemetry` | 편의점 220채 (DB replay) | X (read-only) | 단일 채널 시간별 |
-| 제어형 수용가 | Dispatchable VEN | `dispatch` | E+ 가상, 실 설비(BACnet/Modbus) | O (양방향) | 다채널, Tier A 15+ 필드 |
-
-GridBridge는 `venue.kind` 에 따라 `gridbridge/command/*`·`schedule/*` 발행을 분기(관측형 스킵). 구현 기술은 `backend: replay|energyplus|real_bas|virtual` 로 별도 기술한다.
-
-### ESG 사전 정의 그룹
-
-| group_id | 이름 | kind | 수량 | 용도 |
-|----------|------|:---:|:---:|------|
-| `ESG-STORE-100` | 편의점 100 (에너지) | telemetry | 100 | 실측 벤치마크 |
-| `ESG-STORE-120` | 편의점 120 (센서) | telemetry | 120 | 센서 분석 |
-| `ESG-EP-OFFICE` | E+ 가상 오피스 | dispatch | N | 제어 검증 |
-| `ESG-EP-APT` | E+ 가상 아파트 | dispatch | N | 제어 검증 |
-
-## 디렉토리 (2026-05-19 — Phase C 재배치)
+스키마·상수 변경 시 **반드시 이 순서**로 진행한다 (`myjob/docs/SSOT_GOVERNANCE.md` 절차):
 
 ```
-energy-contracts/
-├── CLAUDE.md              ← 이 파일
-├── pyproject.toml         ← 패키지 정의 (Phase C 신규, a12 wheel)
-├── energy_contracts/      ← Python 패키지 진입점 (Phase C 신규)
-│   ├── __init__.py              — load_schema(), list_schemas(), SCHEMAS_DIR
-│   ├── schemas/                 ← JSON Schema (SSOT) — wheel package data
-│   │   ├── common.json               — 공용 enum·패턴 (Strategy M00~M15)   [v2.0]
-│   │   ├── ems_strategies.json       — EMS 전략 코드표 + DR매핑 + 레거시   [v2.0 신규]
-│   │   ├── emission_factors.json     — CO2 배출계수 (KR/ID, Scope 1/2)     [v2.0 신규]
-│   │   ├── energy_constants.json     — PE factor, ZEB, 등급, 기후 기준값   [v2.0 신규]
-│   │   ├── market_prices.json        — KAU, SMP, 전기요금, REC, PPA        [v2.0 신규]
-│   │   ├── building_archetypes.json  — B01~B17, 용도매핑, EUI, 리트로핏    [v2.0 신규]
-│   │   ├── region_codes.json         — C01~C11, H_A~H_G, 일사량            [v2.0 신규]
-│   │   ├── dr_event.json             — DR 이벤트 (GB 생성)
-│   │   ├── reduction_schedule.json   — 감축 스케줄 (VW/GB → Edge)
-│   │   ├── control_command.json      — 제어 명령 (VW/GB → Edge)
-│   │   ├── telemetry.json            — 텔레메트리 (Edge → GB/VW)
-│   │   ├── venue.json                — 수용가 레지스트리 (GB SSOT)          [v1.1]
-│   │   ├── virtual_prosumer.json     — E+ 가상 수용가 I/O 계약 (Edge)       [v1.0]
-│   │   ├── control_response.json     — 제어 결과 (Edge → GB/VW)             [v1.0]
-│   │   ├── edge_registration.json    — Edge 자동 등록 메타 (Edge → GB)      [v1.1]
-│   │   └── edge_status.json          — heartbeat + 설비·드라이버 (Edge)     [v1.0]
-│   └── _pydantic_models/        ← 자동 생성 모델 (Phase C 이동)
-│       └── run_modes.py              — RunMode/AuthPolicy/DataScope enum
-├── scripts/               ← 도구 (path 갱신: SCHEMAS_DIR = energy_contracts/schemas/)
-│   ├── gen_constants.py             — Tier 3 자동 생성기
-│   ├── validate_ssot.py             — SSOT 위반 검사
-│   ├── gen_pydantic_models.py       — schemas → _pydantic_models 자동 생성
-│   └── classify_tests.py            — test_classification.json 적용
-├── protocols/             ← 프로토콜 규칙
-│   ├── broker-architecture.md    — MQTT 브로커 배포·인증·Edge 유형 (VW)
-│   ├── mqtt-topics.md            — 토픽·QoS·retain·ACL·네이밍 (통합)
-│   └── openleadr-profile.md      — OpenADR 프로파일 (레거시)
-├── openapi/               ← API 스펙 (미정)
-├── examples/              ← 예제 JSON
-└── tests/                 ← scripts 단위 테스트
+1. schemas/*.json 수정 (SSOT — 값·필드는 여기서만 정의)
+2. python scripts/validate_ssot.py          # SSOT 위반 검사
+3. python scripts/gen_constants.py --all     # Tier 3 자동 생성 (_generated_constants)
+4. 각 consumer repo: pytest tests/test_ssot_consistency.py
+5. commit (pre-commit hook 이 validate + gen_constants --check 재검증)
 ```
 
-## Phase C — wheel 배포 (a12, 2026-05-19)
+- **손편집 리터럴 금지**: 배출계수·PE·ZEB·시장가격 등 값은 `energy_contracts/schemas/` 단일 root 에서만 정의. consumer 는 `gen_constants.py --all` 생성본(`_generated_constants`) 을 파생.
+- **필드 삭제/이름 변경 금지** (하위 호환). 필드 추가는 자유. 버전 태그: minor = 필드 추가, major = 호환 깨짐.
+- 검증: `python scripts/validate_ssot.py`. 빌드: `.venv/Scripts/python.exe -m build --wheel`.
 
-`agents` Track 의 a12 결정에 따라 패키징 추가. `building.energy-3d` 와 `agents` repo 가 동일 wheel SHA pin 으로 schema/model drift 차단.
+## Consumer / pin-lockstep (load-bearing)
 
-**사용**:
+5 consumer repo (**be-3d, edge-agent, gridbridge, agentleague, eduarena**) 는 `gen_constants.py --all` 로 Tier 3 자동 생성 + ssot-drift CI 검증. `agents`(ingestion-worker) 측만 wheel import 로 진입 — 동일 wheel SHA pin 으로 schema/model drift 차단.
+
+- **EC pin lockstep** (`validate_ssot.py EC_PIN_CONSUMERS`): edge-agent / gridbridge / building-energy-3d 는 `pyproject.toml` 의 energy-contracts git pin 태그가 `_generated_constants` regen 버전과 lockstep. skew 시 CI 에서 jsonschema 가 신규 M-code 거부.
+- pin bump / 신규 schema cascade 는 **schema 변경 시에만** 6-repo regen. reference-only schema(gen 미진입)는 hash cascade 없음.
+
+## 사용 (wheel import)
+
 ```python
 from energy_contracts import load_schema, list_schemas, SCHEMAS_DIR
 from energy_contracts._pydantic_models.run_modes import RunMode
-
-run_modes = load_schema("run_modes")           # dict
-all_schemas = list_schemas()                   # ['agent_contracts', ...]
 ```
 
-**빌드**:
-```bash
-.venv/Scripts/python.exe -m build --wheel    # → dist/energy_contracts-0.1.0-py3-none-any.whl
-```
+## 상세 (catalog / 아키텍처 / 버전 이력)
 
-**기존 `_generated_constants` 패턴과 공존**: 5 consumer repo (be-3d, edge-agent, gridbridge, agentleague, eduarena) 는 그대로 `gen_constants.py --all` 로 Tier 3 자동 생성 + ssot-drift CI 검증 (변경 없음). agents 측만 wheel import 로 신규 진입.
-
-## 작성 책임 분담
-
-| 영역 | 작성 주체 | 리뷰어 |
-|------|:---:|:---:|
-| dr_event · reduction_schedule · control_command · broker-architecture | VW/GB 팀 | Edge 팀 |
-| telemetry(보강) · control_response · virtual_prosumer · edge_registration · edge_status | Edge 팀 | VW/GB 팀 |
-| mqtt-topics (통합) · venue · CLAUDE.md | 양쪽 공동 | 전원 |
-
-## 버전
-
-| 버전 | 날짜 | 변경 |
-|:---:|:---:|------|
-| v1.0 | 2026-04-19 | 초기 스펙: 감축 스케줄, DR 이벤트, 텔레메트리, 제어 명령 |
-| v1.1 | 2026-04-19 | **관측형/제어형 이분화**. Edge측 스펙 4종 추가(virtual_prosumer, control_response, edge_registration, edge_status). venue.json 신설(kind+backend). mqtt-topics에 fleet/register · ACL · ven_id 네이밍 추가. |
-| v2.0 | 2026-05-16 | **4-Module SSOT 확장**. EMS 코드 M0~M8→M00~M15 (16전략). 6개 공유 스키마 신설: ems_strategies(전략코드표), emission_factors(배출계수), energy_constants(PE/ZEB/등급), market_prices(시장가), building_archetypes(건물유형·EUI), region_codes(도시·HVAC). Layer 0(ENERGY_SSOT.md)→Layer 1(이 프로젝트)→Layer 2(각 프로젝트 constants) 3계층 거버넌스 확립. |
-| v2.0.1 | 2026-05-16 | **통합 전략표 확정**. BuildWise+DR 의미 충돌 해소. M00=Baseline 공통화. 16 전략 단일 코드표: BuildWise(M00~M06,M11~M13), DR Control(M00,M01,M02,M04,M07~M09,M14~M15). M10=reserved. |
-| v2.0.2 | 2026-05-20 | **`_utils.redact_pnu` 추가** (Phase E #5, E8). PNU PII redaction cross-repo SSOT — ems_transformer + be-3d 의 동일 함수 중복 제거. commit `c660812`. consumer 측은 wheel SHA bump 후 `from energy_contracts._utils import redact_pnu` 로 전환. 신규 단위 8 PASS. |
-| v2.0.3 | 2026-05-22 | **`ai_model_registry` ecmhs 등재** — Phase 0-A baseline. ECMHS MPC 서로게이트(:8050) 모델 카드 추가. commit `6a7d755`. |
-| v2.0.4 | 2026-05-24 | **KI-031 i18n + CSP 보강** — control/auth i18n 키 9 신규 + control optgroup 키 7 신규 (F-09). CSP 4 directive 추가 + `script-src 'unsafe-inline'` 제거, vworld/unpkg 화이트리스트. commits `29421fd`, `efb676f`, `9fa7f88`. |
-| v2.0.5 | 2026-05-24 | **`korea_buildings` 정정** — 627만 → **729만** (VWorld footprint DB 실측 7,293,517). 전국 건물 카운트 SSOT 갱신. commit `0e91f67`. ~~외부 의존 note 추가 — agents Phase DI W12 진입 시 conflict_policy.json + negotiation_decision.json 신설 예정~~ → **v2.0.6 에서 정정**. |
-| v2.0.6 | 2026-05-25 | **외부 의존 note 정정 (arch A11)** — agents `PHASE_DI_PLAN.md §4.5` 3-tier SSOT 결정에 따라 `conflict_policy` + `negotiation_decision` 은 agents local Tier 2 로 확정 (wheel 진입 X). agents commit `45a99e8` 에서 `policies/conflict_policy.yaml` local SSOT 신설 완료. 본 repo Tier 1 wheel 신규 후보는 별개로 **`drift_report`, `retrain_request`, `auto_retrain_policy`** 3건 (agents Phase DI 진행 시 trigger). |
-| v2.0.7 | 2026-05-26 | **arch A5 3-tier 분류 확정 — `auto_retrain_policy` Tier 2 재분류** — agents `src/ingestion/_schemas/__init__.py` 가 명시한 분류에 따라 `auto_retrain_policy` 는 wheel 후보에서 제외, agents local Tier 2 로 확정 (`negotiation_decision`, `post_validation_result` 와 동일 계층). 본 repo Tier 1 wheel 후보는 **`drift_report`, `retrain_request`** 2건으로 축소. retrain_jobs queue 자체는 agents DB schema 009 + smartbuilding W7-ext (`545755a`) polling consumer 로 처리, wheel 불요. 보조 노트: agents/be-3d wheel pin `c660812` (2026-05-20) 이후 본 repo 12 commit 진행 (`83dc459`/`b0faa13` ai_model_registry v1.1, `316d857` security_policy v1.1, `0de924f`/`a71ebba` rq_ai_intent, `29421fd`/`efb676f`/`9fa7f88` KI-031, `0e91f67` korea_buildings 정정 등) — pin bump 는 consumer 측 trigger 대기. |
-| **0.2.0** | **2026-05-27** | **critics 패키지 신설 (SSOT_GOVERNANCE §9 도메인 횡단 분리)** — `energy_contracts/critics/` 신규 (4 Critic + CriticsGate 조합자). be-3d `src/critics/` + `src/agents/dr/critics_gate.py` 이동. lockstep: be-3d import 마이그 + GB realtime owner wire-up (`POST /api/v1/dr/debate/{event_id}` 신설, be-3d 와 동일 path). 18 신규 EC tests + 9 신규 GB tests PASS, be-3d/GB 회귀 0. |
-| 0.2.1~0.3.3 | 2026-05-27~06-08 | **(요약)** critics 0.2.1~0.2.4 (fail_threshold·Pydantic mirror·TS enum) · retry_policy 0.2.5 · rate_limit_policy 0.2.6/0.3.x · esg composer 0.3.0 · 신규 schema (tenant_regions/policy_evaluation_contract/dr_dispatch_event/esg_policy/hvac_ems_matrix/legacy_ems_code_mapping/ai_model_registry v1.2 등). pyproject = **0.3.3** (= `__version__`, 사냥꾼 라운드 M13 으로 동기). 개별 이력은 `git log` + `CHANGELOG.md` 참조. |
-| 0.3.4 | 2026-06-08 | **사냥꾼 라운드 — 34건 self-contained fix** (HIGH 1 gate cache fail-open + MEDIUM 룰별 차등 safety/carbon regex/esg NaN 가드/validate_ssot 검사공백/hvac matrix 정본화/freeze pin/버전 동기 + LOW 다수). M4(_usage)/M7(legacy_mapping) 2건은 6 consumer regen 유발 → `docs/DEFERRED_INTEGRATIONS.md` 분리. |
-| 0.3.5 | 2026-06-08 | **Deferred D-1/D-2 coordinated bump** — 사냥꾼 M4/M7 cross-folder 해소. D-1: `esg_policy`/`dr_dispatch_event` `_usage`→`hybrid` + `check_codegen_input_usage()` 역방향 가드. D-2: `ems_strategies.gcs_e_codes` E1/E2/E7/E10/E11 정본 정정 + `check_legacy_code_consistency()` 가드. 6 consumer regen(hash `f462482943b38ce1`→`05d50c0601204d89`), edge/gb/be-3d SSOT 테스트 PASS. |
-| 0.3.6 | 2026-06-08 | **Deferred D-3** — 20 BASE CORE_KEYWORDS 로컬 검증. CLAUDE.md `MIRROR_CORE_KEYWORDS_BASE_V1` enumeration 블록 + `check_mirror_core_keywords()` 로컬 가드 + ai-champion-2026 verifier lock-step(`check_energy_contracts_enumeration()`). schema 무관 = consumer cascade 없음. |
-| 0.3.7 | 2026-06-17 | **CarbonCritic overclaim 게이트** (`critics/c_carbon.py`, P2-c) — claimed vs known_rate 독립 키 비교, known 부재 시 skip. schema 무관 = cascade 없음. |
-| 0.3.8 | 2026-06-17 | **policy_measures.json 신설 + Objective enum** (AgentLeague debate SSOT 승격) — MeasureCode 8종(ENV/PV/SRC/MAT, 자본·설계 조치, ems_strategies StrategyCode 와 직교 네임스페이스) + metric/base/eplus_ref. `policy_evaluation_contract.json` v1.1 `$defs.Objective`(5종 F14 목적함수). 둘 다 **reference-only** → gen 미진입, 6-repo hash cascade 없음(EC + agentleague/ems_transformer/building-energy-3d 4-repo wheel 소비). consumer inline 교체는 follow-up. |
-
-## 참조하는 프로젝트
-
-| 프로젝트 | 경로 | 역할 |
-|---------|------|------|
-| VWorld (M1) | `projects/building-energy-3d/` | L1 — 스케줄 생성, 시각화, 직접 제어(경로2), 텔레메트리 수신(경로3) |
-| GridBridge (M1) | `projects/gridbridge/` | L2 — 스케줄 배분, DR 정산, 텔레메트리 집계(경로4) |
-| EdgeAgent (M2) | `projects/edge-agent/` | L3 — 스케줄 실행, 텔레메트리 발행(경로3,4) |
-| AI Engine (M3) | `8.simulation/` | 배출계수·EMS전략·건물유형·PE factor 참조 (v2.0) |
-| Agent Platform (M4) | 신규 (아이로) | 전략코드·등급·시장가·리트로핏 참조 (v2.0) |
+> 통신 경로 4개 · 수용가(VEN) 분류 · ESG 그룹 · 디렉토리 트리 · Phase C wheel · 작성 책임 분담 · **전체 버전 이력(v1.0~0.3.8)** · 참조 프로젝트 표 → **[docs/CLAUDE_DETAIL.md](docs/CLAUDE_DETAIL.md)** (2026-07-04 diet 로 분리, verbatim).
