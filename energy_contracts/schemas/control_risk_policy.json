@@ -1,0 +1,49 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "energy-contracts/control_risk_policy.json",
+  "title": "ControlRiskPolicy",
+  "description": "killer 오케스트레이터 조건부 자동집행 위험 tier 경계. LOW=CriticsGate pass 시 자동 dispatch, HIGH=HITL 승인. killer/docs/ARCHITECTURE.md §5.",
+  "_usage": "runtime-validate",
+  "_consumers": [
+    "killer"
+  ],
+  "version": "1.0",
+  "type": "object",
+  "required": [
+    "setpoint_delta_c_max_low",
+    "duration_min_max_low",
+    "auto_dispatch_default"
+  ],
+  "properties": {
+    "setpoint_delta_c_max_low": {
+      "type": "number",
+      "default": 1.0,
+      "description": "LOW tier 상한: 현재 대비 setpoint Δ°C 절댓값. 초과 시 HIGH."
+    },
+    "duration_min_max_low": {
+      "type": "integer",
+      "default": 120,
+      "description": "LOW tier 상한: duration_minutes. 초과 시 HIGH."
+    },
+    "ess_always_high": {
+      "type": "boolean",
+      "default": true,
+      "description": "ess_discharge=true 는 무조건 HIGH."
+    },
+    "setpoint_must_be_in_comfort_band_for_low": {
+      "type": "boolean",
+      "default": true,
+      "description": "comfort band 밖 setpoint 는 HIGH."
+    },
+    "auto_dispatch_default": {
+      "type": "string",
+      "enum": [
+        "low_only",
+        "none",
+        "low_and_high"
+      ],
+      "default": "low_only",
+      "description": "자동집행 정책. v1=low_only (LOW auto, HIGH HITL). none=전면 shadow, low_and_high=고위험까지 자동(비권장)."
+    }
+  }
+}

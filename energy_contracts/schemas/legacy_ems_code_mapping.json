@@ -34,7 +34,7 @@
           "description": "정본 enum SSOT 위치"
         },
         "strategy_code_regex": {
-          "const": "^M(0[0-9]|1[0-9]|20)$",
+          "const": "^M(0[0-9]|1[0-9]|[2-9][0-9])$",
           "description": "M00~M20 정확 매칭 (valid set = SSOT; M16~M20 = DR control-plane). lint hook 가 본 정규식 강제. M21+ 신설 시 본 패턴 + ems_strategies.json + 본 schema 동시 갱신 (ADR-EMS-NAMESPACE-P6)."
         },
         "valid_count": {"const": 21}

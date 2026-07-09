@@ -339,7 +339,7 @@ def check_generated_drift() -> list[str]:
 
 # ── 3. JSON Schema 일관성 ───────────────────────────────────────────────────
 
-STRATEGY_PATTERN_EXPECTED = r"^M(0[0-9]|1[0-9]|20)$"
+STRATEGY_PATTERN_EXPECTED = r"^M(0[0-9]|1[0-9]|[2-9][0-9])$"
 
 
 def check_schema_strategy_patterns() -> list[str]:

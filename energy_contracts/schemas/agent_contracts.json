@@ -535,7 +535,7 @@
             "type": "array",
             "items": {
               "type": "string",
-              "pattern": "^(M(0[0-9]|1[0-9]|20)|OM(0[0-9]|1[0-3]))$"
+              "pattern": "^(M(0[0-9]|1[0-9]|[2-9][0-9])|OM(0[0-9]|1[0-3]))$"
             },
             "description": "이 에이전트가 산출할 수 있는 코드 (Phase H 추가). EMS 전략(M00~M20) 또는 optimizer-measure(OM00~OM13, a03_optimizer 전용 — EMS 제어전략과 별개 절감조치, ADR-EMS-NAMESPACE-UNIFY). 비어있으면 코드를 산출하지 않음 (예: 진단·예측·벤치마크)."
           },

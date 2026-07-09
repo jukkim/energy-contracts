@@ -1,0 +1,127 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "energy-contracts/control_decision.json",
+  "title": "ControlDecision",
+  "description": "killer 오케스트레이터 단일 인지 결정 기록 — 감사·재현·학습용. proposed_command 는 control_command.json 준수(runtime 별도 검증, cross-file $ref 회피). killer/docs/DATA_CONTRACTS.md §2.",
+  "_usage": "runtime-validate",
+  "_consumers": [
+    "killer"
+  ],
+  "version": "1.0",
+  "type": "object",
+  "required": [
+    "decision_id",
+    "ven_id",
+    "trace_id",
+    "ts",
+    "trigger",
+    "disposition"
+  ],
+  "properties": {
+    "decision_id": {
+      "type": "string",
+      "description": "예: dec_20260706_ab12cd34"
+    },
+    "ven_id": {
+      "type": "string"
+    },
+    "trace_id": {
+      "type": "string",
+      "pattern": "^trc_[0-9]{8}_[a-z0-9]{6,32}$",
+      "description": "게이트웨이 분석 호출과 동일 trace (GAP5)."
+    },
+    "ts": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "trigger": {
+      "type": "object",
+      "required": [
+        "kind"
+      ],
+      "properties": {
+        "kind": {
+          "type": "string",
+          "enum": [
+            "threshold",
+            "cadence",
+            "external"
+          ]
+        },
+        "detail": {
+          "type": "string",
+          "description": "예: power_kw 210 > peak_band 180"
+        }
+      }
+    },
+    "proposed_command": {
+      "type": "object",
+      "description": "LLM 제안 control_command (control_command.json 준수 — killer 가 발행 전 별도 검증). block/거부 시 생략."
+    },
+    "risk_tier": {
+      "type": "string",
+      "enum": [
+        "LOW",
+        "HIGH"
+      ]
+    },
+    "critic_verdict": {
+      "type": "object",
+      "properties": {
+        "decision": {
+          "type": "string",
+          "enum": [
+            "pass",
+            "warn",
+            "block"
+          ]
+        },
+        "reasons": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "disposition": {
+      "type": "string",
+      "enum": [
+        "auto_dispatched",
+        "hitl_pending",
+        "hitl_approved",
+        "hitl_rejected",
+        "hitl_expired",
+        "blocked",
+        "shadow_only"
+      ],
+      "description": "shadow_only = Phase 1 자문 전용."
+    },
+    "reasoning": {
+      "type": "string",
+      "description": "LLM 근거 요약."
+    },
+    "analysis_refs": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "호출한 ems_transformer tool + 핵심 수치 (forecast peak, recommend payback 등)."
+    },
+    "outcome": {
+      "type": "object",
+      "description": "FEEDBACK 관측 (ack + 후속 telemetry).",
+      "properties": {
+        "ack_status": {
+          "type": "string"
+        },
+        "observed_power_kw_after": {
+          "type": "number"
+        },
+        "comfort_held": {
+          "type": "boolean"
+        }
+      }
+    }
+  }
+}
