@@ -283,6 +283,14 @@
             20
           ],
           "note": "DR 긴급 감축 cascade — 가용 레버 총동원 (HVAC 무관)"
+        },
+        "M21": {
+          "compatibility": "compatible",
+          "note": "추가 직후 default — 실제 호환성 reviewer 갱신 필요 (M21 열저장/M22 PV=발전측, 대부분 compatible)"
+        },
+        "M22": {
+          "compatibility": "compatible",
+          "note": "추가 직후 default — 실제 호환성 reviewer 갱신 필요 (M21 열저장/M22 PV=발전측, 대부분 compatible)"
         }
       },
       "B": {
@@ -401,6 +409,14 @@
             20
           ],
           "note": "DR 긴급 감축 cascade — 가용 레버 총동원 (HVAC 무관)"
+        },
+        "M21": {
+          "compatibility": "compatible",
+          "note": "추가 직후 default — 실제 호환성 reviewer 갱신 필요 (M21 열저장/M22 PV=발전측, 대부분 compatible)"
+        },
+        "M22": {
+          "compatibility": "compatible",
+          "note": "추가 직후 default — 실제 호환성 reviewer 갱신 필요 (M21 열저장/M22 PV=발전측, 대부분 compatible)"
         }
       },
       "C": {
@@ -505,6 +521,14 @@
             20
           ],
           "note": "DR 긴급 감축 cascade — 가용 레버 총동원 (HVAC 무관)"
+        },
+        "M21": {
+          "compatibility": "compatible",
+          "note": "추가 직후 default — 실제 호환성 reviewer 갱신 필요 (M21 열저장/M22 PV=발전측, 대부분 compatible)"
+        },
+        "M22": {
+          "compatibility": "compatible",
+          "note": "추가 직후 default — 실제 호환성 reviewer 갱신 필요 (M21 열저장/M22 PV=발전측, 대부분 compatible)"
         }
       },
       "D": {
@@ -608,6 +632,14 @@
             20
           ],
           "note": "DR 긴급 감축 cascade — 가용 레버 총동원 (HVAC 무관)"
+        },
+        "M21": {
+          "compatibility": "compatible",
+          "note": "추가 직후 default — 실제 호환성 reviewer 갱신 필요 (M21 열저장/M22 PV=발전측, 대부분 compatible)"
+        },
+        "M22": {
+          "compatibility": "compatible",
+          "note": "추가 직후 default — 실제 호환성 reviewer 갱신 필요 (M21 열저장/M22 PV=발전측, 대부분 compatible)"
         }
       },
       "E": {
@@ -703,6 +735,14 @@
             20
           ],
           "note": "DR 긴급 감축 cascade — 가용 레버 총동원 (HVAC 무관)"
+        },
+        "M21": {
+          "compatibility": "compatible",
+          "note": "추가 직후 default — 실제 호환성 reviewer 갱신 필요 (M21 열저장/M22 PV=발전측, 대부분 compatible)"
+        },
+        "M22": {
+          "compatibility": "compatible",
+          "note": "추가 직후 default — 실제 호환성 reviewer 갱신 필요 (M21 열저장/M22 PV=발전측, 대부분 compatible)"
         }
       },
       "HD": {
@@ -797,6 +837,14 @@
             20
           ],
           "note": "DR 긴급 감축 cascade — 가용 레버 총동원 (HVAC 무관)"
+        },
+        "M21": {
+          "compatibility": "compatible",
+          "note": "추가 직후 default — 실제 호환성 reviewer 갱신 필요 (M21 열저장/M22 PV=발전측, 대부분 compatible)"
+        },
+        "M22": {
+          "compatibility": "compatible",
+          "note": "추가 직후 default — 실제 호환성 reviewer 갱신 필요 (M21 열저장/M22 PV=발전측, 대부분 compatible)"
         }
       },
       "HE": {
@@ -893,6 +941,14 @@
             20
           ],
           "note": "DR 긴급 감축 cascade — 가용 레버 총동원 (HVAC 무관)"
+        },
+        "M21": {
+          "compatibility": "compatible",
+          "note": "추가 직후 default — 실제 호환성 reviewer 갱신 필요 (M21 열저장/M22 PV=발전측, 대부분 compatible)"
+        },
+        "M22": {
+          "compatibility": "compatible",
+          "note": "추가 직후 default — 실제 호환성 reviewer 갱신 필요 (M21 열저장/M22 PV=발전측, 대부분 compatible)"
         }
       },
       "HF": {
@@ -986,6 +1042,14 @@
             20
           ],
           "note": "DR 긴급 감축 cascade — 가용 레버 총동원 (HVAC 무관)"
+        },
+        "M21": {
+          "compatibility": "compatible",
+          "note": "추가 직후 default — 실제 호환성 reviewer 갱신 필요 (M21 열저장/M22 PV=발전측, 대부분 compatible)"
+        },
+        "M22": {
+          "compatibility": "compatible",
+          "note": "추가 직후 default — 실제 호환성 reviewer 갱신 필요 (M21 열저장/M22 PV=발전측, 대부분 compatible)"
         }
       },
       "HG": {
@@ -1080,6 +1144,14 @@
             20
           ],
           "note": "DR 긴급 감축 cascade — 가용 레버 총동원 (HVAC 무관)"
+        },
+        "M21": {
+          "compatibility": "compatible",
+          "note": "추가 직후 default — 실제 호환성 reviewer 갱신 필요 (M21 열저장/M22 PV=발전측, 대부분 compatible)"
+        },
+        "M22": {
+          "compatibility": "compatible",
+          "note": "추가 직후 default — 실제 호환성 reviewer 갱신 필요 (M21 열저장/M22 PV=발전측, 대부분 compatible)"
         }
       }
     }

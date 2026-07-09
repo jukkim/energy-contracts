@@ -36,9 +36,11 @@
         "M17",
         "M18",
         "M19",
-        "M20"
+        "M20",
+        "M21",
+        "M22"
       ],
-      "description": "통일 EMS 전략 코드 (21종, M00~M20). M00~M20=시뮬 EMS(NAMING §1.1), M16~M20=DR 제어 액션(ADR-EMS-NAMESPACE-UNIFY)."
+      "description": "통일 EMS 전략 코드 (23종, M00~M22). M00~M20=시뮬 EMS(NAMING §1.1), M16~M20=DR 제어 액션(ADR-EMS-NAMESPACE-UNIFY), M21~M22=시뮬 확장 전략(ThermalStorage/PV 자가소비, 2026-07-10 승격)."
     }
   },
   "type": "object",
@@ -360,6 +362,18 @@
           "M09",
           "M18"
         ]
+      },
+      "M21": {
+        "name_en": "ThermalStorage",
+        "name_kr": "빙축열/수축열 (열저장)",
+        "type": "single",
+        "components": []
+      },
+      "M22": {
+        "name_en": "PV_SelfConsumption",
+        "name_kr": "태양광 자가소비 최적화",
+        "type": "single",
+        "components": []
       }
     },
     "signal_mapping": {
