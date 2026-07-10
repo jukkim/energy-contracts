@@ -12,8 +12,8 @@
     "gridbridge",
     "agentleague"
   ],
-  "version": "1.1",
-  "updated": "2026-06-17",
+  "version": "1.1.1",
+  "updated": "2026-07-10",
   "$defs": {
     "Objective": {
       "type": "string",
@@ -37,7 +37,7 @@
     "PolicyInputSchema": {
       "$id": "#/definitions/PolicyInputSchema",
       "title": "PolicyInputSchema",
-      "description": "Policy Evaluation Contract Stage 1 출력 / Stage 2~4 입력 (plan v1.9.2 §6.5.2)",
+      "description": "Policy Evaluation Contract Stage 1 출력 / Stage 2~4 입력 (plan v1.9.2 §6.5.2). ⚠ wire 계약 아님 (ADR-012, 2026-07-10): 게이트웨이 POST /v1/policy-evaluate (F14 fast) 의 요청 body = PolicyVector (ems_transformer serving/schemas/policy_vector.py + SPEC_POLICY_VECTOR.md). 본 스키마는 국가정책 어휘(도메인 모델) — consumer 가 M-code 매핑 후 PolicyVector 로 전송 (setback_limit→M04 / peak_pricing→M10, carbon_tax·zeb_mandate·retrofit_subsidy=매핑 불가→mock).",
       "type": "object",
       "required": [
         "policy_type",
