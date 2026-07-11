@@ -2,17 +2,18 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "energy-contracts/region_codes.json",
   "title": "Region Codes",
-  "description": "도시·기후구역·일사량 SSOT. NAMING_UNIFICATION.md §4 + ENERGY_SSOT.md §6 기반.",
+  "description": "도시·기후구역·일사량 SSOT. NAMING_UNIFICATION.md §4 + ENERGY_SSOT.md §6 기반. v2.1 (2026-07-11): KEP C12-C18 도시확장 반영 (KEP_C12C18_CAMPAIGN_2026-07-05.md) — 18도시 + kbep_city_id(0~17) 신설. C12~C18 의 climate_zone/solar 는 권위값 미확보로 의도적 미등재 (캠페인 엔진 = 전 도시 중부2 baked envelope + 도시별 EPW).",
   "_usage": "reference-only",
   "_consumers": [
-    "building-energy-3d"
+    "building-energy-3d",
+    "8sim-shared (drift-guard read-only: ems_transformer kbep_client._CITY_TO_ID 대조)"
   ],
-  "version": "2.0",
+  "version": "2.1",
   "type": "object",
   "properties": {
     "simulation_cities": {
       "type": "object",
-      "description": "시뮬레이션 도시 코드 C01~C11",
+      "description": "시뮬레이션 도시 코드 C01~C18 (C12~C18 = 2026-07-11 KEP 도시확장)",
       "additionalProperties": {
         "type": "object",
         "properties": {
@@ -21,6 +22,10 @@
           },
           "name_kr": {
             "type": "string"
+          },
+          "kbep_city_id": {
+            "type": "integer",
+            "description": "KBEP/F14 city_id 인코딩 (0-base, C01=0 … C18=17). ems_transformer kbep_client._CITY_TO_ID 및 KBEP :8020 city_id 바운드(le=17)와 정합"
           },
           "climate_zone": {
             "type": "string",
@@ -70,68 +75,114 @@
       "C01": {
         "name_en": "Seoul",
         "name_kr": "서울",
+        "kbep_city_id": 0,
         "climate_zone": "중부2",
         "solar_kwh_m2_yr": 1314
       },
       "C02": {
         "name_en": "Busan",
         "name_kr": "부산",
+        "kbep_city_id": 1,
         "climate_zone": "남부",
         "solar_kwh_m2_yr": 1380
       },
       "C03": {
         "name_en": "Daegu",
         "name_kr": "대구",
+        "kbep_city_id": 2,
         "climate_zone": "남부",
         "solar_kwh_m2_yr": 1395
       },
       "C04": {
         "name_en": "Incheon",
         "name_kr": "인천",
+        "kbep_city_id": 3,
         "climate_zone": "중부2",
         "solar_kwh_m2_yr": 1298
       },
       "C05": {
         "name_en": "Gwangju",
         "name_kr": "광주",
+        "kbep_city_id": 4,
         "climate_zone": "남부",
         "solar_kwh_m2_yr": 1355
       },
       "C06": {
         "name_en": "Daejeon",
         "name_kr": "대전",
+        "kbep_city_id": 5,
         "climate_zone": "중부2",
         "solar_kwh_m2_yr": 1338
       },
       "C07": {
         "name_en": "Ulsan",
         "name_kr": "울산",
+        "kbep_city_id": 6,
         "climate_zone": "남부",
         "solar_kwh_m2_yr": 1382
       },
       "C08": {
         "name_en": "Gangneung",
         "name_kr": "강릉",
+        "kbep_city_id": 7,
         "climate_zone": "중부2",
         "solar_kwh_m2_yr": 1406
       },
       "C09": {
         "name_en": "Jeju",
         "name_kr": "제주",
+        "kbep_city_id": 8,
         "climate_zone": "제주",
         "solar_kwh_m2_yr": 1400
       },
       "C10": {
         "name_en": "Cheongju",
         "name_kr": "청주",
+        "kbep_city_id": 9,
         "climate_zone": "중부2",
         "solar_kwh_m2_yr": 1332
       },
       "C11": {
         "name_en": "Chuncheon",
         "name_kr": "춘천",
+        "kbep_city_id": 10,
         "climate_zone": "중부1",
         "solar_kwh_m2_yr": 1312
+      },
+      "C12": {
+        "name_en": "Suwon",
+        "name_kr": "수원",
+        "kbep_city_id": 11
+      },
+      "C13": {
+        "name_en": "Jeonju",
+        "name_kr": "전주",
+        "kbep_city_id": 12
+      },
+      "C14": {
+        "name_en": "Pohang",
+        "name_kr": "포항",
+        "kbep_city_id": 13
+      },
+      "C15": {
+        "name_en": "Changwon",
+        "name_kr": "창원",
+        "kbep_city_id": 14
+      },
+      "C16": {
+        "name_en": "Andong",
+        "name_kr": "안동",
+        "kbep_city_id": 15
+      },
+      "C17": {
+        "name_en": "Cheorwon",
+        "name_kr": "철원",
+        "kbep_city_id": 16
+      },
+      "C18": {
+        "name_en": "Mokpo",
+        "name_kr": "목포",
+        "kbep_city_id": 17
       }
     },
     "hvac_types": {
