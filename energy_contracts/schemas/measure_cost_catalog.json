@@ -1,0 +1,299 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "energy-contracts/measure_cost_catalog.json",
+  "title": "Measure Cost Catalog (조치 경제성 카탈로그 — MACC)",
+  "description": "조치별 깜냥절감(deemed savings) + 단위 CAPEX + 수명 SSOT. 운영(EMS)·패시브(외피)·설비교체를 '돈'으로 비교(한계저감비용곡선 MACC)하기 위한 근거 데이터. Spec source = 공모전/2026-04-24_AI챔피언_전국민AI경진대회/docs/MEASURE_ECONOMICS_SPEC.md (2026-07-12). sibling policy_measures.json#$defs.MeasureCode(자본·설계 조치 8종, 공학 기여분) + ems_strategies.json#StrategyCode(운영 M00~M20)에 '비용 축'을 additive 로 얹는다 — measure_ref 로 두 네임스페이스를 참조. 탄소가격·요금·배출계수는 재정의하지 않고 market_prices.json(kau/unit_prices) + emission_factors.json(0.4173) 을 인용한다(ssot-canonical-compliance). ⚠ deemed 절감률=조사 근거(신뢰도 A~C), CAPEX 단위단가=국제값 현지화 추정(한국 공개 단가표 부재=no_korean_data). 실측/E+ 정밀화 시 상위호환 교체.",
+  "_usage": "reference-only",
+  "$comment": "reference-only — gen_constants.py load_schemas() 미진입(SOURCE_HASH 무관, codegen cascade 회피, sibling policy_measures.json 과 동일 패턴). consumer 는 wheel `from energy_contracts import load_schema; load_schema('measure_cost_catalog')` 로 소비. 상태=designed (F16 후보 economics 축, 서빙 미구현). 값 정정 시 bulk-edit-verify.",
+  "_consumers": [
+    "agentleague",
+    "ems_transformer",
+    "building-energy-3d"
+  ],
+  "version": "1.0",
+  "updated": "2026-07-12",
+  "$defs": {
+    "MeasureClass": {
+      "type": "string",
+      "enum": ["operational", "passive", "equipment_replacement"],
+      "description": "조치 3분류. operational=운영(EMS 제어·커미셔닝, 저CAPEX·즉효) / passive=외피(단열·창호·기밀·차양, 고CAPEX·장수명) / equipment_replacement=설비교체(고효율 열원·조명·전동기)."
+    },
+    "EndUse": {
+      "type": "string",
+      "enum": ["heating_gas", "cooling_elec", "lighting_elec", "fanpump_elec", "plug_elec", "vent_elec"],
+      "description": "절감이 적용되는 용도별 에너지 버킷. 연료(gas/elec) 접미사로 요금·배출계수 매핑."
+    },
+    "Confidence": {
+      "type": "string",
+      "enum": ["A", "B", "C"],
+      "description": "A=권위기관 정량(DOE/ASHRAE/LBNL) / B=업계 다수 수렴 / C=단일·마케팅 경향."
+    },
+    "Transferability": {
+      "type": "string",
+      "enum": ["validated", "estimated", "no_korean_data"],
+      "description": "policy_evaluation_contract.json#assumptions[].transferability 와 동일 어휘(UI 3색 배지). no_korean_data=한국 실측/공개단가 부재로 국제값 현지화."
+    }
+  },
+  "type": "object",
+  "required": ["measures"],
+  "properties": {
+    "method": {
+      "type": "object",
+      "description": "경제성 계산 기본 파라미터. NPV/SIR/할인회수기간=ISO 15686-5 / ASTM E964·E1121 / NIST BLCC 표준.",
+      "properties": {
+        "discount_rate_default": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 0.2,
+          "description": "실질 할인율 기본값(민간 3~8%). NIST Handbook 135 공공 실질 ~3%. 순위 좌우 → 근거 명시 의무."
+        },
+        "non_additive": {
+          "type": "boolean",
+          "description": "비가산성 가드(스펙 §2). true=순차 적용 시 앞 조치가 고갈시킨 잔여 에너지에만 뒤 조치 적용(중복 제거). 독립 합산은 저감 과대평가."
+        }
+      }
+    },
+    "carbon_price_scenarios": {
+      "type": "object",
+      "description": "탄소가격 3-시나리오(스펙 §5). 편익=ΔkWh×단가 + ΔtCO₂×탄소가격. 시나리오별 조치 순위 뒤집힘 → 민감도 제시.",
+      "properties": {
+        "market": {
+          "type": "object",
+          "description": "시장가 — market_prices.json#kau.fallback_krw_per_tco2 (canonical) 인용. 재정의 금지. 변동 큼 → KRX(ets.krx.co.kr) 실시간 재확인.",
+          "properties": {
+            "ref": {"type": "string", "const": "market_prices.json#/default/kau/fallback_krw_per_tco2"}
+          }
+        },
+        "policy_upside_krw_per_tco2": {
+          "type": "number",
+          "description": "정책 상승 전망(K-ETS 4기 유상경매 30→50%, 5년 뒤 5만 전망). 신규 reference(estimated)."
+        },
+        "social_cost_krw_per_tco2": {
+          "type": "number",
+          "description": "사회적 탄소비용(SCC) — 미 EPA 중앙값 $190 ≈ 25만원(할인율 2%). 신규 reference(estimated, 출처 EPA/RFF)."
+        }
+      }
+    },
+    "measures": {
+      "type": "object",
+      "description": "조치 경제성 카탈로그. 키=조치 코드(경제-축, 대문자). measure_ref 로 policy_measures/ems_strategies/equipment 네임스페이스 참조.",
+      "propertyNames": {"pattern": "^[A-Z][A-Z0-9_]{1,15}$"},
+      "additionalProperties": {
+        "type": "object",
+        "required": ["name", "measure_class", "savings_by_enduse", "capex_krw_per_m2", "lifetime_yr", "savings_confidence", "capex_confidence", "transferability", "source"],
+        "additionalProperties": false,
+        "properties": {
+          "name": {"type": "string", "description": "조치 한글 식별명."},
+          "measure_class": {"$ref": "#/$defs/MeasureClass"},
+          "measure_ref": {"type": "string", "description": "원 네임스페이스 참조 — 'policy_measures:ENV01' / 'ems:M06' / 'equipment:led'."},
+          "savings_by_enduse": {
+            "type": "object",
+            "description": "용도별 절감 분율(deemed, 0~1). 예: {\"cooling_elec\": 0.35}. 다용도 조치는 복수 키.",
+            "propertyNames": {"$ref": "#/$defs/EndUse"},
+            "additionalProperties": {"type": "number", "minimum": 0, "maximum": 1}
+          },
+          "fuel_switch": {
+            "type": "object",
+            "description": "연료전환 조치(히트펌프 등) — 가스 제거 + 전기 추가. 없으면 순수 절감.",
+            "required": ["elec_add_from", "cop", "source_efficiency"],
+            "properties": {
+              "elec_add_from": {"$ref": "#/$defs/EndUse", "description": "전기로 대체되는 용도(예: heating_gas)."},
+              "cop": {"type": "number", "minimum": 1, "description": "대체 설비 성능계수(히트펌프 COP)."},
+              "source_efficiency": {"type": "number", "minimum": 0, "maximum": 1, "description": "기존 설비 효율(보일러 열효율)."}
+            }
+          },
+          "capex_krw_per_m2": {"type": "number", "minimum": 0, "description": "연면적당 초기 투자비(원/m²). ⚠ 대부분 국제값 현지화 추정(capex_confidence 참조)."},
+          "lifetime_yr": {"type": "integer", "minimum": 1, "description": "조치 수명(년) — NPV/할인회수 분석기간."},
+          "simple_payback_yr_ref": {"type": "string", "description": "조사 관측 회수기간 범위(참조용, 계산값 아님)."},
+          "savings_confidence": {"$ref": "#/$defs/Confidence"},
+          "capex_confidence": {"$ref": "#/$defs/Confidence"},
+          "transferability": {"$ref": "#/$defs/Transferability"},
+          "source": {"type": "string", "description": "근거 출처(DOE/LBNL/ASHRAE/KEA/그린리모델링 등)."},
+          "note": {"type": "string", "description": "가정·함정 메모."}
+        }
+      }
+    }
+  },
+  "default": {
+    "method": {
+      "discount_rate_default": 0.05,
+      "non_additive": true
+    },
+    "carbon_price_scenarios": {
+      "market": {"ref": "market_prices.json#/default/kau/fallback_krw_per_tco2"},
+      "policy_upside_krw_per_tco2": 50000,
+      "social_cost_krw_per_tco2": 250000
+    },
+    "measures": {
+      "RCX": {
+        "name": "재커미셔닝(설비 재조정)",
+        "measure_class": "operational",
+        "measure_ref": "ems:recommissioning",
+        "savings_by_enduse": {"cooling_elec": 0.16, "lighting_elec": 0.16, "fanpump_elec": 0.16, "vent_elec": 0.16, "heating_gas": 0.10},
+        "capex_krw_per_m2": 4000,
+        "lifetime_yr": 5,
+        "simple_payback_yr_ref": "1.1~1.7 (LBNL 1,500동 중앙값)",
+        "savings_confidence": "A",
+        "capex_confidence": "A",
+        "transferability": "validated",
+        "source": "LBNL Building Commissioning ($0.30/ft², 중앙값 16%)",
+        "note": "운영 조치 중 payback 최우수. 성능 드리프트로 주기 재실시 필요."
+      },
+      "BEMS": {
+        "name": "BEMS 최적제어(M00~M20)",
+        "measure_class": "operational",
+        "measure_ref": "ems:M00_M20",
+        "savings_by_enduse": {"cooling_elec": 0.10, "fanpump_elec": 0.10, "vent_elec": 0.10, "heating_gas": 0.05},
+        "capex_krw_per_m2": 6000,
+        "lifetime_yr": 12,
+        "simple_payback_yr_ref": "수개월~수년",
+        "savings_confidence": "B",
+        "capex_confidence": "C",
+        "transferability": "estimated",
+        "source": "KEA BEMS 실증(신라대 12.2%/BC카드 7.6%/KT선릉 7.0%)",
+        "note": "RCx 와 용도 중복 — 순차 적용 시 marginal 감소(비가산성)."
+      },
+      "LED": {
+        "name": "LED 조명",
+        "measure_class": "equipment_replacement",
+        "measure_ref": "equipment:led",
+        "savings_by_enduse": {"lighting_elec": 0.60},
+        "capex_krw_per_m2": 15000,
+        "lifetime_yr": 20,
+        "simple_payback_yr_ref": "1.5~3",
+        "savings_confidence": "A",
+        "capex_confidence": "C",
+        "transferability": "no_korean_data",
+        "source": "DOE / LED 리트로핏 실측(50프로젝트)",
+        "note": "제어 결합 시 최대 85%(상한). 조명 용도만."
+      },
+      "CHIL": {
+        "name": "인버터 냉동기",
+        "measure_class": "equipment_replacement",
+        "measure_ref": "equipment:inverter_chiller",
+        "savings_by_enduse": {"cooling_elec": 0.35},
+        "capex_krw_per_m2": 25000,
+        "lifetime_yr": 23,
+        "simple_payback_yr_ref": "<2 (VSD 리트로핏)",
+        "savings_confidence": "A",
+        "capex_confidence": "C",
+        "transferability": "no_korean_data",
+        "source": "DOE FEMP 전기 냉동기(부분부하 30~50%)",
+        "note": "부분부하 인버터 이득. 미래기후(냉방↑)에서 회수 단축."
+      },
+      "VSD": {
+        "name": "가변속 펌프/팬",
+        "measure_class": "equipment_replacement",
+        "measure_ref": "equipment:vsd",
+        "savings_by_enduse": {"fanpump_elec": 0.35},
+        "capex_krw_per_m2": 8000,
+        "lifetime_yr": 12,
+        "simple_payback_yr_ref": "1~3",
+        "savings_confidence": "A",
+        "capex_confidence": "C",
+        "transferability": "no_korean_data",
+        "source": "DOE/EERE 가변속 펌핑(친화법칙 회전수³∝전력)",
+        "note": "⚠ '고효율 전동기 교체' 자체는 1~2%뿐 — 절감은 가변속 제어에서. 합산 금지."
+      },
+      "COND": {
+        "name": "콘덴싱 보일러",
+        "measure_class": "equipment_replacement",
+        "measure_ref": "equipment:condensing_boiler",
+        "savings_by_enduse": {"heating_gas": 0.20},
+        "capex_krw_per_m2": 12000,
+        "lifetime_yr": 18,
+        "simple_payback_yr_ref": "3~5",
+        "savings_confidence": "A",
+        "capex_confidence": "C",
+        "transferability": "no_korean_data",
+        "source": "DOE FEMP 상업용 보일러(80→95%, 연료 15~30%)",
+        "note": "저부하·저환수온도 운전에서만 잠열 회수. 고온 급탕 전용이면 하한."
+      },
+      "HP": {
+        "name": "히트펌프(가스보일러 대체)",
+        "measure_class": "equipment_replacement",
+        "measure_ref": "policy_measures:SRC02",
+        "savings_by_enduse": {"heating_gas": 1.0},
+        "fuel_switch": {"elec_add_from": "heating_gas", "cop": 3.5, "source_efficiency": 0.85},
+        "capex_krw_per_m2": 40000,
+        "lifetime_yr": 18,
+        "simple_payback_yr_ref": "3~6 (연료전환·인센티브 의존)",
+        "savings_confidence": "B",
+        "capex_confidence": "C",
+        "transferability": "no_korean_data",
+        "source": "연료전환(가스→전기 COP 2.8~4.0), policy_measures SRC02",
+        "note": "가스 제거+전기 추가. 비용·탄소 절감은 전기/가스 요금비·배출계수(0.4173) 의존. 미래기후(난방↓)에서 회수 지연."
+      },
+      "ERV": {
+        "name": "폐열회수 환기",
+        "measure_class": "equipment_replacement",
+        "measure_ref": "equipment:erv",
+        "savings_by_enduse": {"heating_gas": 0.12, "cooling_elec": 0.12},
+        "capex_krw_per_m2": 30000,
+        "lifetime_yr": 20,
+        "simple_payback_yr_ref": "2~5",
+        "savings_confidence": "B",
+        "capex_confidence": "C",
+        "transferability": "no_korean_data",
+        "source": "ASHRAE 90.1(열회수 코드최소 50%, 실측 60~75%)",
+        "note": "마케팅 '70%'는 상한. HRV(현열만)는 습한 기후 열세."
+      },
+      "INS": {
+        "name": "외벽 단열(외단열)",
+        "measure_class": "passive",
+        "measure_ref": "policy_measures:ENV01",
+        "savings_by_enduse": {"heating_gas": 0.25, "cooling_elec": 0.10},
+        "capex_krw_per_m2": 120000,
+        "lifetime_yr": 35,
+        "simple_payback_yr_ref": "15~40 (심층 외피, 길다)",
+        "savings_confidence": "B",
+        "capex_confidence": "C",
+        "transferability": "no_korean_data",
+        "source": "그린리모델링(외피 종합 평균 33.6%), DOE 단열",
+        "note": "그린리모델링 비용편익 순위 최하위권(외단열·내단열이 payback 최장)."
+      },
+      "WIN": {
+        "name": "고성능 창호(삼중)",
+        "measure_class": "passive",
+        "measure_ref": "policy_measures:ENV02",
+        "savings_by_enduse": {"heating_gas": 0.07, "cooling_elec": 0.05},
+        "capex_krw_per_m2": 90000,
+        "lifetime_yr": 25,
+        "simple_payback_yr_ref": "15~35+ (온난기후 수명 내 미회수 다수)",
+        "savings_confidence": "B",
+        "capex_confidence": "C",
+        "transferability": "no_korean_data",
+        "source": "Solartech/DOE(삼중창 한랭지 2~3% 추가)",
+        "note": "에너지 회수만으론 온난기후 정당화 어려움. 소음·결로 목적 시."
+      },
+      "SEAL": {
+        "name": "기밀 개선(침기 저감)",
+        "measure_class": "passive",
+        "measure_ref": "policy_measures:ENV03",
+        "savings_by_enduse": {"heating_gas": 0.15, "cooling_elec": 0.08},
+        "capex_krw_per_m2": 10000,
+        "lifetime_yr": 15,
+        "simple_payback_yr_ref": "0~7 (패시브 중 최단)",
+        "savings_confidence": "B",
+        "capex_confidence": "C",
+        "transferability": "no_korean_data",
+        "source": "NIST/Energy-Solutions(노후 침기 25~40% 손실)",
+        "note": "패시브 항목 중 payback 최우수. ENV03 종합의 기밀 부분."
+      },
+      "SHAD": {
+        "name": "외부 차양",
+        "measure_class": "passive",
+        "measure_ref": "equipment:external_shading",
+        "savings_by_enduse": {"cooling_elec": 0.25},
+        "capex_krw_per_m2": 35000,
+        "lifetime_yr": 15,
+        "simple_payback_yr_ref": "3~7 (냉방 우세 기후)",
+        "savings_confidence": "B",
+        "capex_confidence": "C",
+        "transferability": "no_korean_data",
+        "source": "Enviroscreen/WSAA(냉방수요 최대 30%, 외부>내부 43~47%)",
+        "note": "한국 여름 냉방 피크 대응 유리. 미래기후(냉방↑)에서 회수 단축."
+      }
+    }
+  }
+}

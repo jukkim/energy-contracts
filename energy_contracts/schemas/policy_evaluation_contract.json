@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "energy-contracts/policy_evaluation_contract.json",
   "title": "Policy Evaluation Contract (F14)",
-  "description": "AI 챔피언 plan v1.9.2 §6.5 Policy Evaluation Contract — Gateway F14 (POST /v1/policy-evaluate) 의 입출력 SSOT. Stage 1 (PolicyInputSchema) + Stage 4 (PolicyEvaluationResult) 두 정의 포함. 5 policy_type (carbon_tax / setback_limit / peak_pricing / zeb_mandate / retrofit_subsidy) 지원. Spec source = 공모전/2026-04-24_AI챔피언_전국민AI경진대회/docs/POLICY_EVALUATION_SCHEMA_SPEC.md v1.9.2 B5. ADR-001 (F14 namespace) 정합. 본 PR (2026-06-02) = schema 신설 + _index.yaml 등재. Tier 2 Python/TypeScript codegen 진입 + 5 consumer (be-3d / ems_transformer / ingestion-worker / gridbridge / agentleague) regen 은 follow-up PR.",
+  "description": "AI 챔피언 plan v1.9.2 §6.5 Policy Evaluation Contract — Gateway F14 (POST /v1/policy-evaluate) 의 입출력 SSOT. Stage 1 (PolicyInputSchema) + Stage 4 (PolicyEvaluationResult) 두 정의 포함. 5 policy_type (carbon_tax / setback_limit / peak_pricing / zeb_mandate / retrofit_subsidy) 지원. Spec source = 공모전/2026-04-24_AI챔피언_전국민AI경진대회/docs/POLICY_EVALUATION_SCHEMA_SPEC.md v1.9.2 B5. ADR-001 (F14 namespace) 정합. 본 PR (2026-06-02) = schema 신설 + _index.yaml 등재. Tier 2 Python/TypeScript codegen 진입 + 5 consumer (be-3d / ems_transformer / ingestion-worker / gridbridge / agentleague) regen 은 follow-up PR. v1.2.0 (2026-07-12): PolicyEvaluationResult 에 optional `economics` 블록 additive(조치 경제성/MACC 축, F16 후보, 상태=designed) — 조치 카탈로그 sibling measure_cost_catalog.json. reference-only 유지(codegen cascade 없음).",
   "_usage": "reference-only",
   "$comment": "follow-up PR 에서 _usage='codegen' 전환 + gen_constants.py load_schemas() 등록 + datamodel-codegen Pydantic/TS 생성. ADR-001 (F14 namespace) + plan v1.9.2 §6.5 정합.",
   "_consumers": [
@@ -12,8 +12,8 @@
     "gridbridge",
     "agentleague"
   ],
-  "version": "1.1.1",
-  "updated": "2026-07-10",
+  "version": "1.2.0",
+  "updated": "2026-07-12",
   "$defs": {
     "Objective": {
       "type": "string",
@@ -292,6 +292,40 @@
             "data_critic": {"type": "string", "enum": ["PASS", "FAIL"]},
             "dual_sign_off": {"type": "string", "enum": ["REQUIRED", "GRANTED", "DENIED"]},
             "audit_chain_hash": {"type": "string", "pattern": "^sha256:[0-9a-f]{64}$"}
+          }
+        },
+        "economics": {
+          "type": "object",
+          "description": "조치 경제성/MACC 축 (F16 후보 · additive · 상태=designed, 서빙 미구현). 운영·패시브·설비교체를 CAPEX/회수기간/NPV/한계저감비용으로 비교. 조치 카탈로그=measure_cost_catalog.json. 탄소가격·요금·배출계수(0.4173)는 market_prices.json + emission_factors.json 인용(재정의 금지). Spec=공모전/.../docs/MEASURE_ECONOMICS_SPEC.md. optional — 미포함 시 기존 응답과 byte-identical.",
+          "properties": {
+            "per_measure": {
+              "type": "array",
+              "description": "조치별 경제성. NPV/SIR/할인회수=ISO 15686-5 / ASTM E964·E1121 / NIST BLCC.",
+              "items": {
+                "type": "object",
+                "required": ["measure_code", "measure_class", "capex_won", "annual_savings_won", "annual_tco2_saved", "abatement_cost_won_per_tco2"],
+                "properties": {
+                  "measure_code": {"type": "string", "description": "measure_cost_catalog.json#measures 키 (예: RCX/LED/HP)."},
+                  "measure_class": {"type": "string", "enum": ["operational", "passive", "equipment_replacement"]},
+                  "capex_won": {"type": "integer", "minimum": 0, "description": "초기 투자비."},
+                  "annual_savings_won": {"type": "number", "description": "ΔkWh×단가 + ΔtCO₂×탄소가격. 음수 가능(연료전환 전기증가)."},
+                  "annual_tco2_saved": {"type": "number"},
+                  "simple_payback_yr": {"type": "number"},
+                  "discounted_payback_yr": {"type": "number"},
+                  "npv_won": {"type": "number"},
+                  "sir": {"type": "number", "description": "절감투자비율(ASTM E964, >1 타당)."},
+                  "abatement_cost_won_per_tco2": {"type": "number", "description": "MACC 정렬 키. 음수=순절감(돈 버는 조치)."},
+                  "marginal": {"type": "boolean", "description": "true=순차(비가산성) marginal / false=독립(standalone). 스펙 §2."}
+                }
+              }
+            },
+            "macc_ranked": {"type": "array", "items": {"type": "string"}, "description": "저비용→고비용 measure_code 정렬(한계저감비용곡선)."},
+            "carbon_price_won_per_tco2": {"type": "number", "minimum": 0, "description": "적용 탄소가격. market_prices.json#/default/kau/fallback_krw_per_tco2 인용 또는 시나리오값."},
+            "carbon_price_scenario": {"type": "string", "enum": ["market", "policy", "scc"], "description": "measure_cost_catalog.json#carbon_price_scenarios (시장가/정책상승/사회적비용)."},
+            "discount_rate": {"type": "number", "minimum": 0, "maximum": 0.2},
+            "sequencing": {"type": "array", "items": {"type": "string", "enum": ["operational", "passive", "equipment_replacement"]}, "description": "비가산성 순차 적용 순서(스펙 §2 — 앞 조치 고갈분 제외)."},
+            "non_additive_note": {"type": "string", "description": "독립합산 vs 순차실제 저감 차이(중복 제거) 정직성 메모."},
+            "climate_scenario": {"type": "string", "enum": ["baseline", "ssp245_2050", "ssp585_2050", "ssp585_2080"], "description": "F15 기후 축 합성 시 회수기간 재계산 근거(스펙 §7). 냉방조치 단축/난방조치 지연."}
           }
         }
       }
