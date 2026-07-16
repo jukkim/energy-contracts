@@ -10,8 +10,8 @@
     "ems_transformer",
     "building-energy-3d"
   ],
-  "version": "1.0",
-  "updated": "2026-07-12",
+  "version": "1.1",
+  "updated": "2026-07-16",
   "$defs": {
     "MeasureClass": {
       "type": "string",
@@ -26,12 +26,12 @@
     "Confidence": {
       "type": "string",
       "enum": ["A", "B", "C"],
-      "description": "A=권위기관 정량(DOE/ASHRAE/LBNL) / B=업계 다수 수렴 / C=단일·마케팅 경향."
+      "description": "A=권위기관 정량(DOE/ASHRAE/LBNL) / B=업계 다수 수렴 또는 국내 공공기관 공식 단가 / C=단일·마케팅 경향."
     },
     "Transferability": {
       "type": "string",
       "enum": ["validated", "estimated", "no_korean_data"],
-      "description": "policy_evaluation_contract.json#assumptions[].transferability 와 동일 어휘(UI 3색 배지). no_korean_data=한국 실측/공개단가 부재로 국제값 현지화."
+      "description": "policy_evaluation_contract.json#assumptions[].transferability 와 동일 어휘(UI 3색 배지). validated=한국 공공기관 실증·공식 단가 / estimated=간접 역산·보조금 기준 추정 / no_korean_data=한국 실측/공개단가 부재로 국제값 현지화."
     }
   },
   "type": "object",
@@ -178,8 +178,8 @@
         "savings_confidence": "A",
         "capex_confidence": "C",
         "transferability": "no_korean_data",
-        "source": "DOE FEMP 전기 냉동기(부분부하 30~50%)",
-        "note": "부분부하 인버터 이득. 미래기후(냉방↑)에서 회수 단축."
+        "source": "DOE FEMP 전기 냉동기(부분부하 30~50%) + EIA 2022 상업용 설비 설치비(수냉식 원심 $560~590/RT≈76~80만원/RT, 공냉식 스크류 $820~1,250/RT≈111~169만원/RT, 환율 1,350원/USD)",
+        "note": "capex_krw_per_m2=25,000은 인버터 VSD 리트로핏 기준(냉동기 전체교체 아님). 전체교체 시 EIA 2022 기준 수냉식 0.3RT/m²×76만/RT=228,000원/m² — 용도 유의. 부분부하 인버터 이득. 미래기후(냉방↑)에서 회수 단축."
       },
       "VSD": {
         "name": "가변속 펌프/팬",
@@ -190,10 +190,10 @@
         "lifetime_yr": 12,
         "simple_payback_yr_ref": "1~3",
         "savings_confidence": "A",
-        "capex_confidence": "C",
-        "transferability": "no_korean_data",
-        "source": "DOE/EERE 가변속 펌핑(친화법칙 회전수³∝전력)",
-        "note": "⚠ '고효율 전동기 교체' 자체는 1~2%뿐 — 절감은 가변속 제어에서. 합산 금지."
+        "capex_confidence": "B",
+        "transferability": "estimated",
+        "source": "KEPCO 효율향상사업 인버터(VFD) 지원단가 2025(실내 27천원/kW · 실외 82천원/kW, 보조금 역산 총CAPEX 약 3배) + DOE/EERE 가변속 펌핑(친화법칙 회전수³∝전력)",
+        "note": "8,000원/m²는 0.030kW/m²(사무소 동력밀도) × 270,000원/kW(KEPCO 역산 총CAPEX 상한) 기준. KEPCO 보조금은 CAPEX의 약 30%로 역산(추정). ⚠ '고효율 전동기 교체' 자체는 1~2%뿐 — 절감은 가변속 제어에서. 합산 금지."
       },
       "COND": {
         "name": "콘덴싱 보일러",
@@ -247,10 +247,10 @@
         "lifetime_yr": 35,
         "simple_payback_yr_ref": "15~40 (심층 외피, 길다)",
         "savings_confidence": "B",
-        "capex_confidence": "C",
-        "transferability": "no_korean_data",
-        "source": "그린리모델링(외피 종합 평균 33.6%), DOE 단열",
-        "note": "그린리모델링 비용편익 순위 최하위권(외단열·내단열이 payback 최장)."
+        "capex_confidence": "B",
+        "transferability": "validated",
+        "source": "국토안전관리원 그린리모델링 이자지원사업 외피 공사 단가 2024(종합 190~266만원/3.3㎡=576~806천원/m²시공면적, 단열 단독 약 30~40% 분리 적용) + DOE 단열 절감률",
+        "note": "그린리모델링 2024 종합공사비 576~806천원/m²(시공면적기준). 연면적 환산·외단열 단독 분리: 120,000원/m²연면적. 그린리모델링 비용편익 순위 최하위권(외단열·내단열이 payback 최장). ESCO 융자 가능(에너지이용합리화법 §25, 70~100%, 1.75% 고정)."
       },
       "WIN": {
         "name": "고성능 창호(삼중)",
@@ -261,10 +261,10 @@
         "lifetime_yr": 25,
         "simple_payback_yr_ref": "15~35+ (온난기후 수명 내 미회수 다수)",
         "savings_confidence": "B",
-        "capex_confidence": "C",
-        "transferability": "no_korean_data",
-        "source": "Solartech/DOE(삼중창 한랭지 2~3% 추가)",
-        "note": "에너지 회수만으론 온난기후 정당화 어려움. 소음·결로 목적 시."
+        "capex_confidence": "B",
+        "transferability": "validated",
+        "source": "국토안전관리원 그린리모델링 이자지원사업 창호 공사 2024(고성능 창호 교체, 종합 단가 중 창호 분리) + Solartech/DOE(삼중창 한랭지 2~3% 추가)",
+        "note": "에너지 회수만으론 온난기후 정당화 어려움. 소음·결로 목적 시 별도 편익 산정. 그린리모델링 공식 단가 대상(국내 실증)."
       },
       "SEAL": {
         "name": "기밀 개선(침기 저감)",
@@ -275,10 +275,10 @@
         "lifetime_yr": 15,
         "simple_payback_yr_ref": "0~7 (패시브 중 최단)",
         "savings_confidence": "B",
-        "capex_confidence": "C",
-        "transferability": "no_korean_data",
-        "source": "NIST/Energy-Solutions(노후 침기 25~40% 손실)",
-        "note": "패시브 항목 중 payback 최우수. ENV03 종합의 기밀 부분."
+        "capex_confidence": "B",
+        "transferability": "validated",
+        "source": "국토안전관리원 그린리모델링 이자지원사업 기밀 보강 공사 2024(코킹·웨더스트리핑·문틈 밀봉) + NIST/Energy-Solutions(노후 침기 25~40% 손실)",
+        "note": "패시브 항목 중 payback 최우수. 10,000원/m²는 코킹·웨더스트리핑 저비용 처치 기준(대규모 외피 기밀공사 아님). ENV03 종합의 기밀 부분."
       },
       "SHAD": {
         "name": "외부 차양",
