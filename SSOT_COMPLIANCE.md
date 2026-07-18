@@ -40,5 +40,14 @@ canonical 값(아래)은 **`energy-contracts/schemas/*.json` 한 곳에서만** 
 
 scan N건 ≠ N건 수정. occurrence별 맥락 판정. 예: `제2024-1026호`는 **PE 환산계수 출처=정당(불변)** / **ZEB baseline 출처=구값(→ 제2025-738호)**. 일괄 치환 금지.
 
+## 6. 절감 부호·에너지 범위(scope) 표기 관례 (ADR-015, 2026-07-18)
+
+**SSOT = `8.simulation/ems_transformer/docs/adr/ADR-015-sign-scope-convention.md`.** 새 필드·새 도구·새 스키마 설계 시 의무:
+
+- **이름이 부호를 결정**: `*_delta_*` = 적용후−baseline (**음수=절감**) / `*_savings_*`·"절감" = baseline−적용후 (**항상 양수**, IPMVP) / `abatement_cost_*` = 음수=순절감 (MACC 표준). 같은 응답에 두 이름 혼용 금지.
+- **사람 대면 표기**: 부호 있는 원시값 노출 금지 — "X% 절감/증가" 동사+양수로 변환 (F14 MCP `presentation.human_summary` 패턴).
+- **scope 동봉**: 정량 델타에는 범위 enum(`site_total`/`electricity`/`gas`/`cooling_electricity`/`primary_energy`) 또는 범위 명사("냉방 전기의 X%")를 반드시 동반.
+- 스키마 delta 필드 신설 시 description 에 부호 방향·scope 명문화 (기존 스키마 소급은 다음 개정 시 cascade 1회로 batch).
+
 ---
-*신설 2026-06-23. Claude 세션 측 트리거 룰: `~/.claude/rules/ssot-canonical-compliance.md`. 값 SSOT: `~/.claude/ENERGY_SSOT.md`.*
+*신설 2026-06-23. §6 추가 2026-07-18 (ADR-015). Claude 세션 측 트리거 룰: `~/.claude/rules/ssot-canonical-compliance.md`. 값 SSOT: `~/.claude/ENERGY_SSOT.md`.*
