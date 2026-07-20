@@ -15,6 +15,7 @@ dependencies = [
 dev = [
     "pytest>=8.0",
     "datamodel-code-generator>=0.26",  # gen_pydantic_models.py
+    "jsonschema>=4.0",  # tests/test_telemetry_zones.py (JSON Schema draft 검증)
 ]
 
 # 패키지: energy_contracts/ 디렉토리만 wheel 에 포함.
