@@ -11,7 +11,7 @@
     "agentleague",
     "eduarena"
   ],
-  "version": "3.0",
+  "version": "3.1",
   "$defs": {
     "StrategyCode": {
       "type": "string",
@@ -41,6 +41,65 @@
         "M22"
       ],
       "description": "통일 EMS 전략 코드 (23종, M00~M22). M00~M20=시뮬 EMS(NAMING §1.1), M16~M20=DR 제어 액션(ADR-EMS-NAMESPACE-UNIFY), M21~M22=시뮬 확장 전략(ThermalStorage/PV 자가소비, 2026-07-10 승격)."
+    },
+    "ObjectiveType": {
+      "type": "string",
+      "enum": [
+        "reliability",
+        "economic",
+        "carbon",
+        "optimal"
+      ],
+      "description": "운영 목적(objective) 축 — APE 운영 프로파일 · signal_mapping_dr dr_type · dr_dispatch_event.DispatchSource(∪ microgrid_safety) 의 단일 SSOT (R18 Item 1). reliability=신뢰성 우선 / economic=비용최적 / carbon=탄소최소 / optimal=통합 균형. dr_dispatch_event.json 은 이 enum 을 재사용(DispatchSource = ObjectiveType ∪ {microgrid_safety}); validate_ssot.check_objective_dispatch_sync 가 동기 강제."
+    },
+    "SignalDrMapping": {
+      "type": "object",
+      "description": "한 SignalLevel 에서 objective(ObjectiveType) 별 전략 코드. 4 objective 전부 필수.",
+      "required": [
+        "reliability",
+        "economic",
+        "carbon",
+        "optimal"
+      ],
+      "properties": {
+        "reliability": {
+          "$ref": "#/$defs/StrategyCode"
+        },
+        "economic": {
+          "$ref": "#/$defs/StrategyCode"
+        },
+        "carbon": {
+          "$ref": "#/$defs/StrategyCode"
+        },
+        "optimal": {
+          "$ref": "#/$defs/StrategyCode"
+        }
+      },
+      "additionalProperties": false
+    },
+    "PersonaStrategy": {
+      "type": "object",
+      "description": "한 운영 프로파일(objective)의 기본 전략 — 상시(normal)·피크(peak) M-code + ESS 예비율. APE 가 objective 해석 시 사용.",
+      "required": [
+        "normal",
+        "peak",
+        "ess_reserve_pct"
+      ],
+      "properties": {
+        "normal": {
+          "$ref": "#/$defs/StrategyCode"
+        },
+        "peak": {
+          "$ref": "#/$defs/StrategyCode"
+        },
+        "ess_reserve_pct": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 100,
+          "description": "피크 대비 유지할 ESS 최소 예비율(%). reliability↑ → 예비 보수적, economic/carbon → 적극 방전."
+        }
+      },
+      "additionalProperties": false
     }
   },
   "type": "object",
@@ -106,7 +165,7 @@
     },
     "signal_mapping_dr": {
       "type": "object",
-      "description": "DR SignalLevel → 전략 매핑, dr_type별 분기 (Phase 4 도입). esg_policy.dr_type ∈ {reliability,economic,both} 시 사용. 4 SignalLevel × 2 dr_type = 8 키 모두 필수. Fallback 체인: signal_mapping_dr.{level}.{type} 정의 누락 시 → signal_mapping_dr.{level}.reliability (보수적 가정) → signal_mapping.{level} (flat) → M00. dr_agent loader가 startup 시 8 키 모두 존재 검증.",
+      "description": "DR SignalLevel → 전략 매핑, objective(dr_type)별 분기 (Phase 4 도입, R18 Item 1 에서 2 objective→4 objective 확장). esg_policy.dr_type / APE 운영 프로파일 ∈ ObjectiveType {reliability,economic,carbon,optimal} 시 사용. 4 SignalLevel × 4 objective = 16 키 모두 필수. Fallback 체인: signal_mapping_dr.{level}.{objective} 정의 누락(신규 carbon/optimal 포함) 시 → signal_mapping_dr.{level}.reliability (보수적 가정) → signal_mapping.{level} (flat) → M00. dr_agent / APE loader 가 startup 시 16 키 모두 존재 검증(edge·be-3d 소관; GB 는 DispatchSource 생성측이라 본 매핑 비소비).",
       "required": [
         "NORMAL",
         "MODERATE",
@@ -115,70 +174,44 @@
       ],
       "properties": {
         "NORMAL": {
-          "type": "object",
-          "required": [
-            "reliability",
-            "economic"
-          ],
-          "properties": {
-            "reliability": {
-              "$ref": "#/$defs/StrategyCode"
-            },
-            "economic": {
-              "$ref": "#/$defs/StrategyCode"
-            }
-          },
-          "additionalProperties": false
+          "$ref": "#/$defs/SignalDrMapping"
         },
         "MODERATE": {
-          "type": "object",
-          "required": [
-            "reliability",
-            "economic"
-          ],
-          "properties": {
-            "reliability": {
-              "$ref": "#/$defs/StrategyCode"
-            },
-            "economic": {
-              "$ref": "#/$defs/StrategyCode"
-            }
-          },
-          "additionalProperties": false
+          "$ref": "#/$defs/SignalDrMapping"
         },
         "HIGH": {
-          "type": "object",
-          "required": [
-            "reliability",
-            "economic"
-          ],
-          "properties": {
-            "reliability": {
-              "$ref": "#/$defs/StrategyCode"
-            },
-            "economic": {
-              "$ref": "#/$defs/StrategyCode"
-            }
-          },
-          "additionalProperties": false
+          "$ref": "#/$defs/SignalDrMapping"
         },
         "EMERGENCY": {
-          "type": "object",
-          "required": [
-            "reliability",
-            "economic"
-          ],
-          "properties": {
-            "reliability": {
-              "$ref": "#/$defs/StrategyCode"
-            },
-            "economic": {
-              "$ref": "#/$defs/StrategyCode"
-            }
-          },
-          "additionalProperties": false
+          "$ref": "#/$defs/SignalDrMapping"
         }
-      }
+      },
+      "additionalProperties": false
+    },
+    "persona_strategy_map": {
+      "type": "object",
+      "description": "APE 운영 프로파일(objective) → 기본 전략(상시/피크 M-code + ESS 예비율) 매핑 (R18 Item 1). ObjectiveType 4종 전부 필수. APE 가 dr_dispatch_event 없이 자율 운영할 때의 기본 프로파일. peak M-code 는 SignalLevel HIGH/EMERGENCY 시 참고값(실제 발령은 signal_mapping_dr 우선).",
+      "required": [
+        "reliability",
+        "economic",
+        "carbon",
+        "optimal"
+      ],
+      "properties": {
+        "reliability": {
+          "$ref": "#/$defs/PersonaStrategy"
+        },
+        "economic": {
+          "$ref": "#/$defs/PersonaStrategy"
+        },
+        "carbon": {
+          "$ref": "#/$defs/PersonaStrategy"
+        },
+        "optimal": {
+          "$ref": "#/$defs/PersonaStrategy"
+        }
+      },
+      "additionalProperties": false
     },
     "legacy_mapping": {
       "type": "object",
@@ -385,19 +418,49 @@
     "signal_mapping_dr": {
       "NORMAL": {
         "reliability": "M16",
-        "economic": "M17"
+        "economic": "M17",
+        "carbon": "M22",
+        "optimal": "M19"
       },
       "MODERATE": {
         "reliability": "M04",
-        "economic": "M04"
+        "economic": "M04",
+        "carbon": "M02",
+        "optimal": "M19"
       },
       "HIGH": {
         "reliability": "M19",
-        "economic": "M19"
+        "economic": "M19",
+        "carbon": "M18",
+        "optimal": "M19"
       },
       "EMERGENCY": {
         "reliability": "M20",
-        "economic": "M19"
+        "economic": "M19",
+        "carbon": "M20",
+        "optimal": "M20"
+      }
+    },
+    "persona_strategy_map": {
+      "reliability": {
+        "normal": "M16",
+        "peak": "M20",
+        "ess_reserve_pct": 40
+      },
+      "economic": {
+        "normal": "M17",
+        "peak": "M19",
+        "ess_reserve_pct": 10
+      },
+      "carbon": {
+        "normal": "M22",
+        "peak": "M18",
+        "ess_reserve_pct": 15
+      },
+      "optimal": {
+        "normal": "M19",
+        "peak": "M20",
+        "ess_reserve_pct": 25
       }
     },
     "legacy_mapping": {

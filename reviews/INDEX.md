@@ -10,6 +10,7 @@
 | R15 | 2026-04-21 | VW/GB | Edge, VW, GB | 데모 모드 데이터 관리 — 편의점 리플레이 + 리셋 | 0 | 0 | 0 | 7 | |
 | R16 | 2026-04-21 | VW/GB | Edge, VW, GB | 3계층 E2E 통합 테스트 — 데모 편의점 5개 | 0 | 0 | 0 | 5 | Phase A·B·C 완료 (5/5 VEN, G4 24pts, G5 이상탐지 정상) |
 | R17 | 2026-04-21 | VW/GB | Edge | 3-Phase 통합 테스트 — Edge 협조 요청 | 0 | 0 | 0 | 6 | ✅ 전건 CLOSED (05-16) |
+| R18 | 2026-07-21 | Edge | VW/GB, bems-console | Edge 자율 운영 정책 엔진(APE) — cross-repo 경계 합의 | 0 | 0 | 0 | 6 | ✅ 전건 CLOSED (07-21). 경계 합의 완료 → GB Item1~4 EC 스키마 작성 → 단일 release cascade. Edge: A-3 생성본 교체·A-6 mandatory/contract_id 검증·Lot D mock_mgcc |
 
 ---
 

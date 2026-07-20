@@ -444,6 +444,47 @@ def check_strategy_pattern_consistency() -> list[str]:
     return violations
 
 
+def check_objective_dispatch_sync() -> list[str]:
+    """ObjectiveType(ems_strategies) ↔ DispatchSource(dr_dispatch_event) lock-step (R18 Item 1·3).
+
+    DispatchSource.enum 은 ObjectiveType.enum ∪ {microgrid_safety} 여야 한다.
+    두 파일이 별도 인라인 enum 이라(gen_constants 가 DISPATCH_SOURCES 를 .enum 으로 파싱하므로
+    cross-file $ref 불가) 값 drift 를 본 가드가 강제한다. signal_mapping_dr / persona_strategy_map
+    의 objective 키도 ObjectiveType 과 일치해야 한다.
+    """
+    try:
+        ems = json.loads((SCHEMAS_DIR / "ems_strategies.json").read_text(encoding="utf-8"))
+        disp = json.loads((SCHEMAS_DIR / "dr_dispatch_event.json").read_text(encoding="utf-8"))
+    except Exception as e:
+        return [f"objective/dispatch 동기 검사 로드 실패: {e}"]
+    violations: list[str] = []
+    obj = ems.get("$defs", {}).get("ObjectiveType", {}).get("enum")
+    src = disp.get("$defs", {}).get("DispatchSource", {}).get("enum")
+    if obj is None:
+        return ["ems_strategies.json $defs.ObjectiveType.enum 누락 (R18 Item 1)"]
+    if src is None:
+        return ["dr_dispatch_event.json $defs.DispatchSource.enum 누락 (R18 Item 3)"]
+    expected_src = set(obj) | {"microgrid_safety"}
+    if set(src) != expected_src:
+        violations.append(
+            f"DispatchSource.enum {sorted(src)} != ObjectiveType ∪ {{microgrid_safety}} "
+            f"{sorted(expected_src)} — R18 Item 1·3 lock-step 위반")
+    # signal_mapping_dr / persona_strategy_map objective 키 정합
+    obj_set = set(obj)
+    smd = ems.get("default", {}).get("signal_mapping_dr", {})
+    for level, mp in smd.items():
+        if set(mp.keys()) != obj_set:
+            violations.append(
+                f"signal_mapping_dr[{level}] objective 키 {sorted(mp.keys())} != "
+                f"ObjectiveType {sorted(obj_set)}")
+    psm = ems.get("default", {}).get("persona_strategy_map", {})
+    if psm and set(psm.keys()) != obj_set:
+        violations.append(
+            f"persona_strategy_map objective 키 {sorted(psm.keys())} != "
+            f"ObjectiveType {sorted(obj_set)}")
+    return violations
+
+
 def check_index_completeness() -> list[str]:
     """_index.yaml 카탈로그가 schemas/*.json 전수를 등재했는지 (사냥꾼 라운드 LOW, 2026-06-08).
 
@@ -867,6 +908,7 @@ def main() -> int:
     if args.check in ("schemas", "all"):
         v = check_schema_strategy_patterns()
         v += check_strategy_pattern_consistency()  # 사냥꾼 M6
+        v += check_objective_dispatch_sync()       # R18 Item 1·3 — ObjectiveType↔DispatchSource lock-step
         v += check_index_completeness()            # 사냥꾼 LOW — _index.yaml 전수 등재
         v += check_legacy_code_consistency()       # Deferred D-2 (M7) — E-code 교차 정합
         v += check_mirror_core_keywords()          # Deferred D-3 — 20 BASE CORE_KEYWORDS 로컬 검증

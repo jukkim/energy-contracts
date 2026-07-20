@@ -5,9 +5,10 @@
   "description": "EdgeAgent 기동 시 MQTT `fleet/register/{ven_id}` 또는 `gridbridge/registration/{ven_id}` 토픽으로 발행하는 자동 등록 메타. Edge → GB. VW broker-architecture §5 호환.",
   "_usage": "runtime-validate",
   "_consumers": [
-    "edge-agent"
+    "edge-agent",
+    "gridbridge"
   ],
-  "version": "1.1",
+  "version": "1.2",
   "type": "object",
   "required": [
     "ven_id",
@@ -68,7 +69,33 @@
     },
     "group_id": {
       "type": "string",
-      "description": "ESG 그룹. 예: ESG-STORE-100, ESG-STORE-120, ESG-EP-OFFICE, ESG-EP-APT"
+      "description": "[DEPRECATED — affiliations[] 로 대체, R18 Item 2] 단일 ESG 그룹. 하위호환 유지: 신규 발행은 affiliations[{type:esg, id:...}] 사용. group_id 만 온 구형 페이로드는 GB 가 affiliations[{type:esg, id:group_id}] 로 자동 마이그레이션(무회귀). 예: ESG-STORE-100, ESG-EP-OFFICE"
+    },
+    "affiliations": {
+      "type": "array",
+      "description": "소속 다형 (R18 Item 2). 한 VEN 이 여러 소속 동시 보유 가능(ESG + microgrid). type 축 분리: esg=논리적 감축 포트폴리오(GB 정산 단위, esg_group_venues 정션 반영) / microgrid=물리적 배전 도메인(Edge 실행 컨텍스트 — GB 정산 무연동, passthrough) / independent=무소속. GB 는 type=esg 만 esg_group_venues 에 upsert.",
+      "items": {
+        "type": "object",
+        "required": [
+          "type",
+          "id"
+        ],
+        "properties": {
+          "type": {
+            "type": "string",
+            "enum": [
+              "esg",
+              "microgrid",
+              "independent"
+            ]
+          },
+          "id": {
+            "type": "string",
+            "description": "소속 식별자. type=esg → esg_groups.group_id · type=microgrid → microgridDomainId · type=independent → 자유"
+          }
+        },
+        "additionalProperties": false
+      }
     },
     "pnu": {
       "type": "string"

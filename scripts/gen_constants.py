@@ -57,7 +57,8 @@ PROJECT_TARGETS: dict[str, dict] = {
                 "ERROR_CODES", "GRIDBRIDGE_URL_COMPUTER_A",
                 "GRIDBRIDGE_URL_DEFAULT", "I18N_KEYS", "INTENT_TYPES",
                 "LEGACY_MAPPING", "LINT_CONFIG", "LOGGING_FORMAT",
-                "MQTT_TOPIC_PATTERNS", "OPENAPI_RESPONSES", "PIPELINE_DATASETS",
+                "MQTT_TOPIC_PATTERNS", "OBJECTIVE_TYPES", "OPENAPI_RESPONSES",
+                "PERSONA_STRATEGY_MAP", "PIPELINE_DATASETS",
                 "PORTS", "RUN_MODES", "RUN_MODE_BEHAVIOR", "SECURITY_HEADERS",
                 "SIGNAL_MAPPING", "SIGNAL_MAPPING_DR",
                 "SIM_EMS_PATTERNS", "STRATEGIES",
@@ -78,7 +79,7 @@ PROJECT_TARGETS: dict[str, dict] = {
                 "EMISSION_FACTORS_KR", "ENERGY_CONVERSIONS", "ERROR_CODES",
                 "GRIDBRIDGE_URL_COMPUTER_A", "LOGGING_FORMAT",
                 "MANAGEMENT_MODES", "MARKET_PRICES", "MQTT_TOPIC_PATTERNS",
-                "OPENAPI_RESPONSES", "PIPELINE_DATASETS", "PORTS",
+                "OBJECTIVE_TYPES", "OPENAPI_RESPONSES", "PIPELINE_DATASETS", "PORTS",
                 "RUN_MODES", "RUN_MODE_BEHAVIOR", "SECURITY_HEADERS",
                 "SIGNAL_MAPPING", "SIGNAL_MAPPING_DR",
                 "SIM_EMS_PATTERNS", "STRATEGY_CODES",
@@ -104,7 +105,8 @@ PROJECT_TARGETS: dict[str, dict] = {
                 "MANAGEMENT_MODES", "MQTT_NAMESPACES", "MQTT_TOPIC_PATTERNS",
                 "NL_CONSTRAINTS",
                 "NL_CONTROL_KEYWORDS", "NL_GATE_TOKENS", "NL_STRATEGIES_BY_KEYWORD",
-                "OPENAPI_RESPONSES", "PIPELINE_DATASETS", "PRIMARY_ENERGY_FACTORS",
+                "OBJECTIVE_TYPES", "OPENAPI_RESPONSES", "PERSONA_STRATEGY_MAP",
+                "PIPELINE_DATASETS", "PRIMARY_ENERGY_FACTORS",
                 "RUN_MODES", "RUN_MODE_BEHAVIOR", "SECURITY_CORS", "SECURITY_HEADERS",
                 "SIGNAL_MAPPING_DR",
                 "MARKET_PRICES",
@@ -323,6 +325,17 @@ def gen_python(schemas: dict) -> str:
     if "signal_mapping_dr" in ems:
         lines.append("# ─ Phase 4 — DR signal → strategy, dr_type 분기 ─────────────")
         lines.append(f"SIGNAL_MAPPING_DR: dict[str, dict[str, str]] = {ems['signal_mapping_dr']!r}")
+        lines.append("")
+
+    # R18 Item 1 — ObjectiveType + persona_strategy_map (APE 운영 프로파일)
+    objective_types = (schemas["ems"].get("$defs", {})
+                                     .get("ObjectiveType", {}).get("enum"))
+    if objective_types:
+        lines.append("# ─ R18 Item 1 — Objective 축 (APE 운영 프로파일) ────────────")
+        lines.append(f"OBJECTIVE_TYPES: list[str] = {objective_types!r}")
+    if "persona_strategy_map" in ems:
+        lines.append(f"PERSONA_STRATEGY_MAP: dict[str, dict] = {ems['persona_strategy_map']!r}")
+    if objective_types or "persona_strategy_map" in ems:
         lines.append("")
 
     # Phase 4 — DR Aggregator enums (esg_policy.json + dr_dispatch_event.json)
