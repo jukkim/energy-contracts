@@ -1,0 +1,72 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "energy-contracts/ppa_contract.json",
+  "title": "PPA Contract",
+  "description": "전력구매계약(PPA) (R18 Item 4). 재생에너지 직접구매 — 단가·탄소배출계수·take-or-pay 최소인수. APE 비용최적(edge-agent)의 목적함수 하한 제약 + a23_tariff(be-3d) 소비. canonical 값(단가·계수)은 생성본 import — 손편집 금지. 콘솔은 contract_id 참조만.",
+  "_usage": "reference-only",
+  "_consumers": [
+    "edge-agent",
+    "building-energy-3d"
+  ],
+  "version": "1.0",
+  "type": "object",
+  "required": [
+    "contract_id",
+    "price_krw_per_kwh"
+  ],
+  "properties": {
+    "contract_id": {
+      "type": "string",
+      "description": "계약 식별자 — 콘솔 ppaContractId 가 이 값으로 조회(참조 무결성). UNIQUE."
+    },
+    "counterparty": {
+      "type": "string",
+      "description": "발전 사업자/공급자명(선택)."
+    },
+    "price_krw_per_kwh": {
+      "type": "number",
+      "minimum": 0,
+      "description": "PPA 단가(원/kWh). canonical — 생성본 import."
+    },
+    "carbon_factor_kgco2_per_kwh": {
+      "type": "number",
+      "minimum": 0,
+      "description": "PPA 전원 탄소배출계수(kgCO2/kWh). 재생 PPA=0 근사. canonical = emission_factors.json 파생(손편집 금지)."
+    },
+    "take_or_pay": {
+      "type": "object",
+      "description": "최소인수 약정 — 비용최적 목적함수의 하한 제약.",
+      "properties": {
+        "min_offtake_kwh": {
+          "type": "number",
+          "minimum": 0,
+          "description": "기간 내 최소 인수량(kWh). 미달분도 지불 의무."
+        },
+        "period": {
+          "type": "string",
+          "enum": [
+            "monthly",
+            "quarterly",
+            "annual"
+          ]
+        }
+      },
+      "additionalProperties": false
+    },
+    "term": {
+      "type": "object",
+      "properties": {
+        "start": {
+          "type": "string",
+          "format": "date"
+        },
+        "end": {
+          "type": "string",
+          "format": "date"
+        }
+      },
+      "additionalProperties": false
+    }
+  },
+  "additionalProperties": false
+}

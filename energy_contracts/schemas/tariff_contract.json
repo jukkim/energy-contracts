@@ -1,0 +1,85 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "energy-contracts/tariff_contract.json",
+  "title": "Tariff Contract",
+  "description": "전력 요금 계약 (R18 Item 4). KEPCO 고압 요금제 — 계약전력·기본요금·TOU(시간대별 에너지요금). APE 비용최적(edge-agent) + a23_tariff(be-3d) 가 소비. canonical 값(요금단가·계약종별)은 생성본 import — 손편집 금지. 콘솔(bems-console)은 contract_id 참조만 저장(값 중복 금지).",
+  "_usage": "reference-only",
+  "_consumers": [
+    "edge-agent",
+    "building-energy-3d"
+  ],
+  "version": "1.0",
+  "$defs": {
+    "TariffClass": {
+      "type": "string",
+      "enum": [
+        "highvoltage_A_I",
+        "highvoltage_A_II",
+        "highvoltage_A_III",
+        "highvoltage_B_I",
+        "highvoltage_B_II",
+        "highvoltage_B_III"
+      ],
+      "description": "KEPCO 고압 계약종별. 고압A(3.3~66kV)·고압B(154kV↑) × 선택 I/II/III(기본요금↔에너지요금 트레이드오프)."
+    },
+    "TouPeriod": {
+      "type": "string",
+      "enum": [
+        "off_peak",
+        "mid_peak",
+        "on_peak"
+      ],
+      "description": "TOU 시간대. 경부하/중간부하/최대부하 — 계절(여름/봄가을/겨울)별 시간 경계는 KEPCO 약관."
+    }
+  },
+  "type": "object",
+  "required": [
+    "contract_id",
+    "tariff_class",
+    "contract_power_kw"
+  ],
+  "properties": {
+    "contract_id": {
+      "type": "string",
+      "description": "계약 식별자 — 콘솔 tariffContractId 가 이 값으로 조회(참조 무결성). UNIQUE."
+    },
+    "tariff_class": {
+      "$ref": "#/$defs/TariffClass"
+    },
+    "contract_power_kw": {
+      "type": "number",
+      "minimum": 0,
+      "description": "계약전력(kW). 기본요금 산정 기준."
+    },
+    "base_charge_krw_per_kw": {
+      "type": "number",
+      "minimum": 0,
+      "description": "기본요금 단가(원/kW·월). tariff_class 별 canonical — 생성본 import."
+    },
+    "tou_energy_krw_per_kwh": {
+      "type": "object",
+      "description": "TOU 시간대별 에너지요금(원/kWh). 계절별 세분은 seasons 로 표현.",
+      "properties": {
+        "off_peak": {
+          "type": "number",
+          "minimum": 0
+        },
+        "mid_peak": {
+          "type": "number",
+          "minimum": 0
+        },
+        "on_peak": {
+          "type": "number",
+          "minimum": 0
+        }
+      },
+      "additionalProperties": false
+    },
+    "effective_from": {
+      "type": "string",
+      "format": "date",
+      "description": "요금 적용 개시일(KEPCO 약관 개정 추적)."
+    }
+  },
+  "additionalProperties": false
+}

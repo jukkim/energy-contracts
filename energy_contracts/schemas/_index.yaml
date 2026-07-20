@@ -67,6 +67,7 @@ components:
     PolicyEvaluationContract: {$ref: 'policy_evaluation_contract.json'}
     PolicyMeasures:           {$ref: 'policy_measures.json'}
     PortAllocation:           {$ref: 'port_allocation.json'}
+    PpaContract:              {$ref: 'ppa_contract.json'}
     Provision:                {$ref: 'provision.json'}
     ProvisionAck:             {$ref: 'provision_ack.json'}
     RateLimitPolicy:          {$ref: 'rate_limit_policy.json'}
@@ -77,6 +78,7 @@ components:
     RunModes:                 {$ref: 'run_modes.json'}
     SecurityPolicy:           {$ref: 'security_policy.json'}
     SimulationScenarios:      {$ref: 'simulation_scenarios.json'}
+    TariffContract:           {$ref: 'tariff_contract.json'}
     Telemetry:                {$ref: 'telemetry.json'}
     TenantRegions:            {$ref: 'tenant_regions.json'}
     TestClassification:       {$ref: 'test_classification.json'}

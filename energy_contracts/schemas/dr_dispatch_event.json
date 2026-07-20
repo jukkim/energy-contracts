@@ -9,16 +9,85 @@
     "gridbridge",
     "edge-agent"
   ],
-  "_security": "dispatched_by는 서버측 JWT sub claim에서 derive — 클라이언트 입력은 무시·덮어쓴다. mandatory=true 발령은 acknowledgement 후 cancel 불가 (DB FSM trigger). jti(JWT ID)로 replay 방어 — gridbridge가 Redis nonce store에 보존. dispatched_at는 서버 시각 검증 (±60s 윈도).",
-  "version": "1.1",
+  "_security": "dispatched_by는 서버측 JWT sub claim에서 derive — 클라이언트 입력은 무시·덮어쓴다. mandatory=true 발령은 acknowledgement 후 cancel 불가 (DB FSM trigger). jti(JWT ID)로 replay 방어 — gridbridge가 Redis nonce store에 보존. dispatched_at는 서버 시각 검증 (±60s 윈도). setpoint_command 경로(command.setpoint_command)는 mandatory=false 필수 — Edge 수신측(A-6 microgrid_listener)이 강제 검증(GB 정산 커널 무오염).",
+  "version": "1.2",
   "$defs": {
     "DispatchSource": {
       "type": "string",
       "enum": [
         "reliability",
-        "economic"
+        "economic",
+        "carbon",
+        "optimal",
+        "microgrid_safety"
       ],
-      "description": "발령 출처. reliability=외부 발령창(수동/KPX 대체), economic=경제성 정책 엔진 자동."
+      "description": "발령 출처 (R18 Item 1·3 확장). DispatchSource = ems_strategies.json#/$defs/ObjectiveType {reliability,economic,carbon,optimal} ∪ {microgrid_safety}. reliability=외부 발령창(수동/KPX 대체) · economic=경제성 정책 엔진 자동 · carbon=탄소최소 정책 · optimal=통합 균형 · microgrid_safety=마이크로그리드 안전 급전(MGCC, 물리 배전 도메인 — GB 정산축 아님). objective 4종은 ObjectiveType 과 lock-step(validate_ssot.check_objective_dispatch_sync 강제). 인라인 enum 유지 이유=gen_constants 가 DISPATCH_SOURCES 를 .enum 으로 파싱."
+    },
+    "SetpointCommand": {
+      "type": "object",
+      "description": "설정온도 직접 지정 (how). MGCC/APE 가 절감량(what) 대신 설정온도를 직접 준다. Edge 가 인터록·critics_gate 통과 후 clamp. GB 는 kW 의무 산출 불가 → 정산 대상 아님(measured passthrough).",
+      "required": [
+        "setpoint_c"
+      ],
+      "properties": {
+        "setpoint_c": {
+          "type": "number",
+          "description": "목표 설정온도(°C)."
+        },
+        "ramp": {
+          "type": "number",
+          "minimum": 0,
+          "description": "설정온도 도달까지 램프 시간(분). 0=즉시."
+        },
+        "zone": {
+          "type": "string",
+          "description": "대상 존(선택). 미지정=건물 전체."
+        }
+      },
+      "additionalProperties": false
+    },
+    "DispatchCommand": {
+      "type": "object",
+      "description": "발령 명령 (R18 Item 3). 정확히 하나: target_kw(감축량) | setpoint_command(설정온도) | peak_limit_kw(계약전력 상한). GB 정산 경계 — target_kw·peak_limit_kw = GB settlement 대상(kW 의무배분·패널티 산출) / setpoint_command = Edge 직접제어(GB measured passthrough, 상위 mandatory=false 필수).",
+      "oneOf": [
+        {
+          "required": [
+            "target_kw"
+          ],
+          "properties": {
+            "target_kw": {
+              "type": "number",
+              "minimum": 0,
+              "description": "목표 감축량(kW). GB settlement 대상."
+            }
+          },
+          "additionalProperties": false
+        },
+        {
+          "required": [
+            "setpoint_command"
+          ],
+          "properties": {
+            "setpoint_command": {
+              "$ref": "#/$defs/SetpointCommand"
+            }
+          },
+          "additionalProperties": false
+        },
+        {
+          "required": [
+            "peak_limit_kw"
+          ],
+          "properties": {
+            "peak_limit_kw": {
+              "type": "number",
+              "minimum": 0,
+              "description": "계약전력 상한(kW) — 초과 억제분. kW 환산 가능 → GB settlement 대상."
+            }
+          },
+          "additionalProperties": false
+        }
+      ]
     },
     "DispatchStatus": {
       "type": "string",
@@ -63,7 +132,12 @@
         },
         "allocated_kw": {
           "type": "number",
-          "minimum": 0
+          "minimum": 0,
+          "description": "할당 감축량(kW). setpoint_command 경로에선 0 허용(kW 의무 없음) + setpoint_c 병기."
+        },
+        "setpoint_c": {
+          "type": "number",
+          "description": "설정온도 경로(command.setpoint_command) 시 이 멤버에 적용된 목표 설정온도(°C). optional — kW 경로에선 생략. GB 정산 무연동(measured passthrough)."
         },
         "strategy": {
           "type": "string",
@@ -154,7 +228,11 @@
     "target_kw": {
       "type": "number",
       "minimum": 0,
-      "description": "목표 감축량 (kW)"
+      "description": "목표 감축량 (kW). 하위호환 필수 필드 유지 — command 미사용 시 이 값이 GB settlement 입력. command.setpoint_command 경로에선 target_kw=0 + mandatory=false."
+    },
+    "command": {
+      "$ref": "#/$defs/DispatchCommand",
+      "description": "발령 명령 다형 (R18 Item 3, 선택). oneOf(target_kw|setpoint_command|peak_limit_kw). 생략 시 top-level target_kw 사용(하위호환). setpoint_command 경로는 mandatory=false 필수(GB measured passthrough)."
     },
     "window": {
       "$ref": "#/$defs/DispatchWindow"

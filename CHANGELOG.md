@@ -4,6 +4,44 @@
 
 ---
 
+## 0.3.19 — 2026-07-21 R18 APE cross-repo 경계 — ems_strategies/dr_dispatch_event/edge_registration + tariff/ppa 신규
+
+### 변경 (codegen 진입 — 상수 캐스케이드 O, pin lockstep bump 필수)
+- **`ems_strategies.json` v3.0→v3.1** (R18 Item 1):
+  - `$defs/ObjectiveType` 신설 = `{reliability, economic, carbon, optimal}` — objective 축 단일 SSOT.
+    dr_dispatch_event.DispatchSource 가 이 값집합을 재사용(∪ microgrid_safety), `signal_mapping_dr` /
+    `persona_strategy_map` objective 키도 이 enum 과 lock-step.
+  - `signal_mapping_dr` 2 objective→4 objective 확장 (8키→16키). 신규 `carbon`/`optimal` 누락 시
+    `reliability` 보수 fallback (description 명문화). `$defs/SignalDrMapping` 로 추출.
+  - `persona_strategy_map` 신설 — APE 운영 프로파일(objective)→{상시 M-code, 피크 M-code, ess_reserve_pct 0~100}.
+    M-code = `StrategyCode $ref` 재사용(손코딩 금지). `$defs/PersonaStrategy`.
+  - 신규 상수: `OBJECTIVE_TYPES`(전 consumer), `PERSONA_STRATEGY_MAP`(edge-agent·be-3d).
+- **`dr_dispatch_event.json` v1.1→v1.2** (R18 Item 3):
+  - `DispatchSource` enum 2종→5종 = ObjectiveType ∪ {microgrid_safety}. 하위호환(기존 producer 는 2종만 emit).
+  - `command` (선택) 추가 = `$defs/DispatchCommand` oneOf(`target_kw` | `setpoint_command` | `peak_limit_kw`).
+    **GB 정산 경계**: target_kw·peak_limit_kw = GB settlement 대상 / setpoint_command = Edge 직접제어
+    (GB measured passthrough, `mandatory=false` 필수 — Edge A-6 수신검증). top-level `target_kw` 필수 유지(하위호환).
+  - `MemberAllocation` += `setpoint_c`(optional, 설정온도 경로). `allocated_kw=0` 병기 허용.
+- **`edge_registration.json` v1.1→v1.2** (R18 Item 2):
+  - `affiliations[]` 다형 추가 = `[{type: esg|microgrid|independent, id}]`. 다중 소속(ESG+microgrid) 지원.
+    `group_id` = DEPRECATED(하위호환 유지 — 구형 페이로드는 GB 가 `affiliations[{type:esg, id:group_id}]` 로 자동 마이그레이션).
+    microgrid = Edge 실행 컨텍스트(GB 정산 무연동, esg 만 esg_group_venues 반영).
+  - `_consumers += gridbridge` (GB `_handle_register` 가 fleet/register 소비 — 메타 반영).
+
+### 신규 (reference-only — gen_constants 미진입, GB `_consumers` 미포함)
+- **`tariff_contract.json` v1.0** (R18 Item 4): KEPCO 고압 요금(계약전력·기본요금 고압A/B I/II/III·TOU).
+  `contract_id` required(콘솔 tariffContractId 참조키). `_consumers=[edge-agent, building-energy-3d]`.
+- **`ppa_contract.json` v1.0** (R18 Item 4): PPA(단가·탄소계수·take-or-pay). `contract_id` required(콘솔 ppaContractId 참조키).
+  `_consumers=[edge-agent, building-energy-3d]`. canonical 값 = 생성본 import(손편집 금지).
+
+### 가드
+- `validate_ssot.check_objective_dispatch_sync` 신설 — ObjectiveType↔DispatchSource enum + signal_mapping_dr/
+  persona_strategy_map objective 키 lock-step 강제(별도 인라인 enum drift 차단).
+- `_index.yaml` += TariffContract·PpaContract (전수 등재 게이트).
+- **pin lockstep**: edge-agent·gridbridge·building-energy-3d `pyproject.toml` @v0.3.19 bump + `--all` regen (SOURCE_HASH 캐스케이드).
+
+---
+
 ## 0.3.18 — 2026-07-20 telemetry.json v1.0→v1.1 존별 세부 텔레메트리(zones[]) 추가
 
 ### 변경 (runtime-validate schema — gen_constants 미진입, 상수 캐스케이드 없음)
