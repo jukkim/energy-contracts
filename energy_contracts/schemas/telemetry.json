@@ -8,7 +8,7 @@
     "edge-agent",
     "gridbridge"
   ],
-  "version": "1.0",
+  "version": "1.1",
   "type": "object",
   "required": [
     "ven_id",
@@ -18,6 +18,49 @@
   "properties": {
     "ven_id": {
       "type": "string"
+    },
+    "zones": {
+      "type": "array",
+      "description": "존별 세부 텔레메트리 (선택 — 존/포인트 단위 계측 가능 장치만 방출. 미지원 장치는 생략, 건물 집계값만). v1.1 추가(하위호환 — 미지원 수신자는 무시). 콘솔 공간 IR(zone.id)와 zone_id 매핑 시 measured 승격.",
+      "items": {
+        "type": "object",
+        "required": [
+          "zone_id"
+        ],
+        "properties": {
+          "zone_id": {
+            "type": "string",
+            "description": "존 식별자 — 콘솔/BAS 모델 zone.id 와 매핑"
+          },
+          "indoor_temp_c": {
+            "type": "number",
+            "description": "존 실내 온도 (°C)"
+          },
+          "hvac_setpoint_c": {
+            "type": "number",
+            "description": "존 설정 온도 (°C)"
+          },
+          "co2_ppm": {
+            "type": "number",
+            "minimum": 0,
+            "description": "존 CO2 농도 (ppm)"
+          },
+          "humidity_pct": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 100,
+            "description": "존 상대습도 (%)"
+          },
+          "occupancy": {
+            "type": "boolean",
+            "description": "존 재실 여부"
+          },
+          "power_kw": {
+            "type": "number",
+            "description": "존 전력 소비 (kW)"
+          }
+        }
+      }
     },
     "timestamp": {
       "type": "string",

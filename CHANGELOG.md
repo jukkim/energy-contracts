@@ -4,6 +4,21 @@
 
 ---
 
+## 0.3.18 — 2026-07-20 telemetry.json v1.0→v1.1 존별 세부 텔레메트리(zones[]) 추가
+
+### 변경 (runtime-validate schema — gen_constants 미진입, 상수 캐스케이드 없음)
+- **`telemetry.json` v1.0→v1.1**: `properties.zones` (선택 배열) 추가 — 존/포인트 단위 계측
+  가능 장치가 존별 세부값을 방출. item = `{zone_id(필수), indoor_temp_c, hvac_setpoint_c,
+  co2_ppm, humidity_pct, occupancy, power_kw}`. **하위 호환**(필드 추가 = minor): 미지원 장치는
+  생략(건물 집계값만), 미지원 수신자(구 pin consumer)는 무시(forward-compat, `additionalProperties`
+  미제한). `zone_id` = 콘솔 공간 IR `zone.id` / BAS 모델 `zone.id` 매핑 키 — 매핑 시 콘솔이
+  존 provenance 를 estimate ◐→measured ● 승격.
+- **동기**: bems-console 공간축 라이브 바인딩 — 기존 venue-level 텔레메트리는 건물당 값 1개씩이라
+  존별 measured 승격 불가였음. 본 필드가 그 데이터 통로.
+- **소비**: edge-agent(방출 — E+ 드라이버 존별 온도) / gridbridge(passthrough 검증) / bems-console(승격 소비).
+  telemetry = runtime-validate(gen_constants 미진입) → 상수 SOURCE_HASH 캐스케이드 없음.
+  pin lockstep = edge-agent · gridbridge `pyproject.toml` @v0.3.18 bump.
+
 ## 0.3.8 — 2026-06-17 policy_measures.json 신설 + Objective enum 등재 (AgentLeague debate SSOT 승격)
 
 ### 변경 (reference-only schema — gen 미진입, hash cascade 없음)
