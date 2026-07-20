@@ -4,6 +4,20 @@
 
 ---
 
+## 0.3.20 — 2026-07-21 MGCC operating_mode 4번째 modality (§5.5) + setpoint required 결함 수정
+
+### 변경 (dr_dispatch_event.json v1.2→v1.3, 필드 추가 = minor)
+- **`OperatingModeCommand` $defs 신설** — `{profile(ObjectiveType 4종), enforce}`. MG(MGCC)가 엣지 APE 운영 프로파일을 **상시 설정**(§5.5, MG 적극성). 일회성 액션(target/setpoint/peak)과 달리 해제까지 지속되는 정책. 정산 무관(mandatory=false).
+- **`DispatchCommand` oneOf += operating_mode** — 4번째 modality. producer=**MGCC**(GB 아님 — GB는 생성·소비 무관), consumer=edge-agent(APE persona 갱신).
+- **`_consumers += mgcc`** — MGCC(신규 repo `projects/mgcc/`, :8070)가 dr_dispatch_event producer 로 등재. R18 당시 mock 이라 미등재였던 것.
+- **결함 수정 (R18 command oneOf 도입 시 누락)**: top-level `required` 에서 `target_kw` 제거 → `allOf.if(command 없음).then(target_kw required)` 조건부로 전환. **기존 setpoint_command 이벤트가 target_kw required 로 거부되던 결함** 동반 수정(operating_mode·setpoint 모두 command 만으로 유효).
+
+### cascade
+- gen_constants --all 재생성(SOURCE_HASH drift 0). consumer pin-lockstep bump(v0.3.19→v0.3.20) 별도 흐름.
+- mgcc 는 schema consumer(계약 준수)이나 codegen 상수 미소비(dict 조립) → PROJECT_TARGETS 미등록(파급 최소).
+
+---
+
 ## 0.3.19 — 2026-07-21 R18 APE cross-repo 경계 — ems_strategies/dr_dispatch_event/edge_registration + tariff/ppa 신규
 
 ### 변경 (codegen 진입 — 상수 캐스케이드 O, pin lockstep bump 필수)
