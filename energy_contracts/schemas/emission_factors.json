@@ -47,6 +47,18 @@
               "type": "number"
             }
           }
+        },
+        "TW": {
+          "type": "object",
+          "description": "타이완 (台電 grid, 경제부 능원서 公告)",
+          "properties": {
+            "electricity": {
+              "type": "number"
+            },
+            "gas": {
+              "type": "number"
+            }
+          }
         }
       },
       "required": [
@@ -85,10 +97,14 @@
       "ID": {
         "electricity": 0.85,
         "gas": 0.2036
+      },
+      "TW": {
+        "electricity": 0.474,
+        "gas": 0.2036
       }
     },
     "metadata": {
-      "source": "기후에너지환경부 2025.12.17 공표 (KR), PLN 2024 (ID)",
+      "source": "기후에너지환경부 2025.12.17 공표 (KR), PLN 2024 (ID), 경제부 능원서 113년도(2024) 電力排碳係數 0.474 (TW)",
       "reference_year": 2023,
       "publish_date": "2025-12-17",
       "next_update": "2026-12 (2024 확정치)",

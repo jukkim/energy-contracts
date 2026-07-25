@@ -203,6 +203,24 @@
         "timezone": "Asia/Manila",
         "climate_zone": "1A",
         "is_tropical": true
+      },
+      "TW-TPE": {
+        "code": "TW-TPE",
+        "name_kr": "타이베이",
+        "name_en": "Taipei",
+        "country": "TW",
+        "timezone": "Asia/Taipei",
+        "climate_zone": "2A",
+        "is_tropical": true
+      },
+      "TW-KHH": {
+        "code": "TW-KHH",
+        "name_kr": "가오슝",
+        "name_en": "Kaohsiung",
+        "country": "TW",
+        "timezone": "Asia/Taipei",
+        "climate_zone": "1A",
+        "is_tropical": true
       }
     },
     "tenant_to_region": {
@@ -212,7 +230,8 @@
       "th": "TH-BKK",
       "sg": "SG-SG",
       "vn": "VN-HCMC",
-      "ph": "PH-MNL"
+      "ph": "PH-MNL",
+      "tw": "TW-TPE"
     }
   }
 }
