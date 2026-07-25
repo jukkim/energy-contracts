@@ -74,6 +74,20 @@
         }
       }
     },
+    "electricity_tariff_by_region": {
+      "type": "object",
+      "description": "리전(국가)별 시간대 전기요금 — 국제 additive. KR 은 상위 electricity_tariff(원/kWh)가 canonical, TW=台電 3단(元/kWh, TWD).",
+      "additionalProperties": {
+        "type": "object",
+        "properties": {
+          "currency": { "type": "string" },
+          "off_peak": { "type": "number" },
+          "mid_peak": { "type": "number" },
+          "peak": { "type": "number" },
+          "peak_hours": { "type": "array", "items": { "type": "integer" } }
+        }
+      }
+    },
     "unit_prices": {
       "type": "object",
       "description": "에너지 평균 단가 (원/kWh)",
@@ -168,6 +182,16 @@
         6,
         7
       ]
+    },
+    "electricity_tariff_by_region": {
+      "TW": {
+        "currency": "TWD",
+        "off_peak": 2.06,
+        "mid_peak": 4.69,
+        "peak": 7.13,
+        "peak_hours": [ 16, 17, 18, 19, 20, 21 ],
+        "_comment": "台電 住商型 간이 3단 시간전가 여름철(6~9월) 尖峰7.13/半尖峰4.69/離峰2.06 元(TWD)/度. 경제부 능원서/台電 2025. KR canonical=상위 electricity_tariff."
+      }
     },
     "unit_prices": {
       "electricity_krw": 120.0,
