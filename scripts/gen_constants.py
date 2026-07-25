@@ -99,7 +99,7 @@ PROJECT_TARGETS: dict[str, dict] = {
                 "COMPUTER_PROFILES", "DATA_SOURCES", "DATA_SOURCE_LABELS",
                 "DB_MIGRATIONS", "DISPATCH_SOURCES", "DISPATCH_STATUSES",
                 "DISTRIBUTION_ALGORITHMS", "DR_TYPES",
-                "EMISSION_FACTORS_KR", "ENERGY_CONVERSIONS",
+                "EMISSION_FACTORS_KR", "EMISSION_FACTORS", "ENERGY_CONVERSIONS",
                 "ERROR_CODES", "ERROR_TYPE_PREFIX", "I18N_FALLBACK_LANG",
                 "I18N_KEYS", "INTENT_TYPES", "LINT_CONFIG", "LOGGING_FORMAT",
                 "MANAGEMENT_MODES", "MQTT_NAMESPACES", "MQTT_TOPIC_PATTERNS",
@@ -116,7 +116,7 @@ PROJECT_TARGETS: dict[str, dict] = {
                 "ZEB_BASELINE_KWH_M2_YR", "ZEB_GRADES", "ZEB_THRESHOLDS",
             ],
             "ts": [
-                "EMISSION_FACTORS_KR", "PRIMARY_ENERGY_FACTORS",
+                "EMISSION_FACTORS_KR", "EMISSION_FACTORS", "PRIMARY_ENERGY_FACTORS",
                 "MARKET_PRICES", "ZEB_BASELINE_KWH_M2_YR", "ZEB_THRESHOLDS",
                 "I18N_FALLBACK_LANG", "I18N_KEYS",
                 # Critics SSOT (0.2.3) — Layer 5 UI 의 verdict 라벨 / critic name 매핑
@@ -233,6 +233,8 @@ def load_schemas() -> dict:
     # Phase M 신규 (2개 — SSOT 단일 root: 시장/정책 기준값 + ZEB baseline)
     market = _load("market_prices.json")
     enconst = _load("energy_constants.json")
+    # 리전(국가) 배출계수 SSOT — 국제(TW/ID) additive. EMISSION_FACTORS_KR(energy_units)과 병존.
+    emissions = _load("emission_factors.json")
     return {"ems": ems, "ports": ports, "common": common,
             "agents": agents, "intents": intents,
             "modes": modes, "dataclass": dataclass, "tests": tests,
@@ -245,7 +247,7 @@ def load_schemas() -> dict:
             "sim_scn": sim_scn, "dbmig": dbmig,
             "oapi_resp": oapi_resp, "lintfmt": lintfmt,
             "esg_policy": esg_policy, "dr_dispatch": dr_dispatch,
-            "market": market, "enconst": enconst}
+            "market": market, "enconst": enconst, "emissions": emissions}
 
 
 def schemas_hash(data: dict) -> str:
@@ -589,6 +591,13 @@ def gen_python(schemas: dict) -> str:
                      f"{units.get('zeb_thresholds_kwh_m2_yr', {})!r}")
         lines.append("")
 
+    # ─ Emission Factors 리전 인덱스 (국제 additive — KR/ID/TW 단일 root) ─────
+    _emis = schemas.get("emissions", {}).get("default", {}).get("co2_kgco2eq_per_kwh", {})
+    if _emis:
+        lines.append("# ─ Emission Factors by region (국제 SSOT — KR/ID/TW) ────────")
+        lines.append(f"EMISSION_FACTORS: dict[str, dict] = {_emis!r}")
+        lines.append("")
+
     # ── Phase M 신규 (2개 — SSOT 단일 root) ──────────────────────────────────
 
     market = schemas.get("market", {}).get("default", {})
@@ -871,6 +880,7 @@ def gen_typescript(schemas: dict) -> str:
     _ts_dump("units",      "ENERGY_CONVERSIONS",  ["conversions"])
     _ts_dump("units",      "PRIMARY_ENERGY_FACTORS", ["primary_energy_factors"])
     _ts_dump("units",      "EMISSION_FACTORS_KR", ["emission_factors_kr"])
+    _ts_dump("emissions",  "EMISSION_FACTORS",    ["co2_kgco2eq_per_kwh"])
     _ts_dump("units",      "ZEB_THRESHOLDS",      ["zeb_thresholds_kwh_m2_yr"])
     _ts_dump("market",     "MARKET_PRICES")
     _ts_dump("enconst",    "ZEB_GRADES",          ["zeb", "grades"])
