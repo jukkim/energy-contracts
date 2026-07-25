@@ -4,6 +4,18 @@
 
 ---
 
+## 0.3.21 — 2026-07-25 telemetry CanonicalPointAddress(CPA) $def + zones.point_id (필드 추가 = minor)
+
+### 변경 (telemetry.json v1.1→v1.2, 필드 추가 = minor, 하위호환)
+- **`$defs.CanonicalPointAddress` 신설** — 정규 관제점 주소 `{country}.{site}.{domain}.{equip}.{point}`(pattern). bems-console `lib/point-address` 정본. 노드 SSOT=ven_id·필지=pnu 는 별도(익명 site 파생).
+- **`zones[].point_id` optional 추가** — 존의 CPA 앵커. required 불변(`["zone_id"]`)=하위호환, 미제공 시 소비단이 zone_id 로 파생.
+
+### cascade
+- telemetry.json = runtime-validate(비 codegen 입력) → **gen_constants drift 0**(8 consumer 전수 확인), consumer regen 불요. pydantic `_pydantic_models/telemetry.py` 재생성(위생). `validate_ssot --check all` 통과.
+- consumer: edge-agent/gridbridge(런타임 소비, 코드변경 불요), bems-console(`ZoneTelemetry.point_id?` 소비). CPA blast radius = EC+bems only(사냥꾼 조사 확정).
+
+---
+
 ## 0.3.20 — 2026-07-21 MGCC operating_mode 4번째 modality (§5.5) + setpoint required 결함 수정
 
 ### 변경 (dr_dispatch_event.json v1.2→v1.3, 필드 추가 = minor)
