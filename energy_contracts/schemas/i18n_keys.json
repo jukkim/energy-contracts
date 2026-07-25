@@ -23,7 +23,8 @@
         "ms",
         "th",
         "vi",
-        "tl"
+        "tl",
+        "zh"
       ]
     }
   },
@@ -32,239 +33,286 @@
     "supported_langs": [
       "ko",
       "en",
-      "id"
+      "id",
+      "zh"
     ],
     "fallback_lang": "en",
     "keys": {
       "common.save": {
         "ko": "저장",
         "en": "Save",
-        "id": "Simpan"
+        "id": "Simpan",
+        "zh": "儲存"
       },
       "common.cancel": {
         "ko": "취소",
         "en": "Cancel",
-        "id": "Batal"
+        "id": "Batal",
+        "zh": "取消"
       },
       "common.confirm": {
         "ko": "확인",
         "en": "Confirm",
-        "id": "Konfirmasi"
+        "id": "Konfirmasi",
+        "zh": "確認"
       },
       "common.delete": {
         "ko": "삭제",
         "en": "Delete",
-        "id": "Hapus"
+        "id": "Hapus",
+        "zh": "刪除"
       },
       "common.edit": {
         "ko": "편집",
         "en": "Edit",
-        "id": "Ubah"
+        "id": "Ubah",
+        "zh": "編輯"
       },
       "common.loading": {
         "ko": "로딩 중...",
         "en": "Loading...",
-        "id": "Memuat..."
+        "id": "Memuat...",
+        "zh": "載入中..."
       },
       "common.error": {
         "ko": "오류",
         "en": "Error",
-        "id": "Kesalahan"
+        "id": "Kesalahan",
+        "zh": "錯誤"
       },
       "common.search": {
         "ko": "검색",
         "en": "Search",
-        "id": "Cari"
+        "id": "Cari",
+        "zh": "搜尋"
       },
       "auth.login": {
         "ko": "로그인",
         "en": "Sign in",
-        "id": "Masuk"
+        "id": "Masuk",
+        "zh": "登入"
       },
       "auth.logout": {
         "ko": "로그아웃",
         "en": "Sign out",
-        "id": "Keluar"
+        "id": "Keluar",
+        "zh": "登出"
       },
       "auth.invalid_token": {
         "ko": "토큰이 유효하지 않습니다",
         "en": "Invalid token",
-        "id": "Token tidak valid"
+        "id": "Token tidak valid",
+        "zh": "權杖無效"
       },
       "demo.banner": {
         "ko": "DEMO 환경 — 시연용 데이터",
         "en": "DEMO mode — sample data only",
-        "id": "Mode DEMO — data sampel saja"
+        "id": "Mode DEMO — data sampel saja",
+        "zh": "DEMO 模式 — 僅為展示資料"
       },
       "demo.guest_only": {
         "ko": "데모 모드는 읽기 전용입니다",
         "en": "Demo is read-only",
-        "id": "Demo hanya bisa dibaca"
+        "id": "Demo hanya bisa dibaca",
+        "zh": "展示模式為唯讀"
       },
       "energy.consumption": {
         "ko": "에너지 소비량",
         "en": "Energy Consumption",
-        "id": "Konsumsi Energi"
+        "id": "Konsumsi Energi",
+        "zh": "能源消耗量"
       },
       "energy.heating": {
         "ko": "난방",
         "en": "Heating",
-        "id": "Pemanas"
+        "id": "Pemanas",
+        "zh": "暖氣"
       },
       "energy.cooling": {
         "ko": "냉방",
         "en": "Cooling",
-        "id": "Pendingin"
+        "id": "Pendingin",
+        "zh": "冷氣"
       },
       "energy.lighting": {
         "ko": "조명",
         "en": "Lighting",
-        "id": "Pencahayaan"
+        "id": "Pencahayaan",
+        "zh": "照明"
       },
       "energy.ventilation": {
         "ko": "환기",
         "en": "Ventilation",
-        "id": "Ventilasi"
+        "id": "Ventilasi",
+        "zh": "通風"
       },
       "energy.hot_water": {
         "ko": "급탕",
         "en": "Hot Water",
-        "id": "Air Panas"
+        "id": "Air Panas",
+        "zh": "熱水"
       },
       "building.usage": {
         "ko": "용도",
         "en": "Usage",
-        "id": "Penggunaan"
+        "id": "Penggunaan",
+        "zh": "用途"
       },
       "building.area": {
         "ko": "면적",
         "en": "Area",
-        "id": "Luas"
+        "id": "Luas",
+        "zh": "面積"
       },
       "building.floors": {
         "ko": "층수",
         "en": "Floors",
-        "id": "Lantai"
+        "id": "Lantai",
+        "zh": "樓層數"
       },
       "building.built_year": {
         "ko": "준공년도",
         "en": "Built Year",
-        "id": "Tahun Dibangun"
+        "id": "Tahun Dibangun",
+        "zh": "竣工年份"
       },
       "agent.diagnose": {
         "ko": "진단",
         "en": "Diagnose",
-        "id": "Diagnosis"
+        "id": "Diagnosis",
+        "zh": "診斷"
       },
       "agent.forecast": {
         "ko": "예측",
         "en": "Forecast",
-        "id": "Prakiraan"
+        "id": "Prakiraan",
+        "zh": "預測"
       },
       "agent.optimize": {
         "ko": "최적화",
         "en": "Optimize",
-        "id": "Optimasi"
+        "id": "Optimasi",
+        "zh": "最佳化"
       },
       "agent.carbon": {
         "ko": "탄소",
         "en": "Carbon",
-        "id": "Karbon"
+        "id": "Karbon",
+        "zh": "碳"
       },
       "control.apply": {
         "ko": "전략 적용",
         "en": "Apply Strategy",
-        "id": "Terapkan Strategi"
+        "id": "Terapkan Strategi",
+        "zh": "套用策略"
       },
       "control.dispatch": {
         "ko": "제어 송신",
         "en": "Dispatch",
-        "id": "Kirim"
+        "id": "Kirim",
+        "zh": "送出控制"
       },
       "ssot.violation": {
         "ko": "SSOT 계약 위반",
         "en": "SSOT contract violation",
-        "id": "Pelanggaran kontrak SSOT"
+        "id": "Pelanggaran kontrak SSOT",
+        "zh": "SSOT 合約違規"
       },
       "control.dispatch_now": {
         "ko": "즉시 적용",
         "en": "Dispatch Now",
-        "id": "Terapkan Sekarang"
+        "id": "Terapkan Sekarang",
+        "zh": "立即套用"
       },
       "control.baseline_return": {
         "ko": "M00 복귀",
         "en": "Return to M00",
-        "id": "Kembali ke M00"
+        "id": "Kembali ke M00",
+        "zh": "返回 M00"
       },
       "control.telemetry_badge": {
         "ko": "관측형",
         "en": "Telemetry",
-        "id": "Telemetri"
+        "id": "Telemetri",
+        "zh": "遙測"
       },
       "control.telemetry_no_dispatch": {
         "ko": "관측형 VEN — 제어 불가",
         "en": "Telemetry-only VEN — Dispatch disabled",
-        "id": "VEN telemetri saja — Pengiriman dinonaktifkan"
+        "id": "VEN telemetri saja — Pengiriman dinonaktifkan",
+        "zh": "僅遙測 VEN — 無法派送"
       },
       "control.telemetry_no_schedule": {
         "ko": "관측형 VEN — 스케줄 불가",
         "en": "Telemetry-only VEN — Schedule disabled",
-        "id": "VEN telemetri saja — Penjadwalan dinonaktifkan"
+        "id": "VEN telemetri saja — Penjadwalan dinonaktifkan",
+        "zh": "僅遙測 VEN — 無法排程"
       },
       "control.optgroup_dispatch": {
         "ko": "[송출 가능]",
         "en": "[Dispatchable]",
-        "id": "[Dapat Dikirim]"
+        "id": "[Dapat Dikirim]",
+        "zh": "[可派送]"
       },
       "control.optgroup_telemetry_only": {
         "ko": "[관측 전용] — 송출 불가",
         "en": "[Telemetry only] — Dispatch disabled",
-        "id": "[Hanya telemetri] — Pengiriman dinonaktifkan"
+        "id": "[Hanya telemetri] — Pengiriman dinonaktifkan",
+        "zh": "[僅遙測] — 無法派送"
       },
       "control.no_dispatch_warning": {
         "ko": "송출 가능 VEN 0건 · 관측 전용",
         "en": "0 dispatchable VEN · telemetry only",
-        "id": "0 VEN dapat dikirim · hanya telemetri"
+        "id": "0 VEN dapat dikirim · hanya telemetri",
+        "zh": "0 個可派送 VEN · 僅遙測"
       },
       "control.no_dispatch_hint": {
         "ko": "관측 전용 VEN 은 텔레메트리 수신만 가능. 송출을 시연하려면 dispatch VEN 등록 필요.",
         "en": "Telemetry-only VEN can only receive telemetry. Register a dispatch VEN to demo dispatch.",
-        "id": "VEN telemetri hanya dapat menerima telemetri. Daftarkan VEN dispatch untuk demo pengiriman."
+        "id": "VEN telemetri hanya dapat menerima telemetri. Daftarkan VEN dispatch untuk demo pengiriman.",
+        "zh": "僅遙測 VEN 只能接收遙測。若要展示派送，請註冊可派送 VEN。"
       },
       "control.ven_count_summary": {
         "ko": "{total}개 VEN 등록됨 (송출 {dispatch} · 관측 {telemetry})",
         "en": "{total} VEN registered (dispatch {dispatch} · telemetry {telemetry})",
-        "id": "{total} VEN terdaftar (dispatch {dispatch} · telemetri {telemetry})"
+        "id": "{total} VEN terdaftar (dispatch {dispatch} · telemetri {telemetry})",
+        "zh": "已註冊 {total} 個 VEN (派送 {dispatch} · 遙測 {telemetry})"
       },
       "control.ven_none": {
         "ko": "등록된 VEN이 없습니다.",
         "en": "No VEN registered.",
-        "id": "Tidak ada VEN terdaftar."
+        "id": "Tidak ada VEN terdaftar.",
+        "zh": "沒有已註冊的 VEN。"
       },
       "control.ven_manual_input": {
         "ko": "— VEN 없음 (수동 입력) —",
         "en": "— No VEN (manual input) —",
-        "id": "— Tidak ada VEN (input manual) —"
+        "id": "— Tidak ada VEN (input manual) —",
+        "zh": "— 無 VEN (手動輸入) —"
       },
       "auth.admin_required": {
         "ko": "관리자 인증 필요",
         "en": "Admin authentication required",
-        "id": "Autentikasi admin diperlukan"
+        "id": "Autentikasi admin diperlukan",
+        "zh": "需要管理員驗證"
       },
       "auth.admin_jwt_required": {
         "ko": "관리자 JWT 입력 필요 (수동 Tick 시연용)",
         "en": "Admin JWT required (for manual Tick demo)",
-        "id": "JWT admin diperlukan (untuk demo Tick manual)"
+        "id": "JWT admin diperlukan (untuk demo Tick manual)",
+        "zh": "需要管理員 JWT (供手動 Tick 展示)"
       },
       "auth.admin_only_tick": {
         "ko": "관리자만 수동 Tick 가능",
         "en": "Only admin can manual Tick",
-        "id": "Hanya admin yang dapat Tick manual"
+        "id": "Hanya admin yang dapat Tick manual",
+        "zh": "僅管理員可手動 Tick"
       },
       "auth.admin_login_required": {
         "ko": "관리자 로그인 필요 (수동 Tick 시연용)",
         "en": "Admin login required (for manual Tick demo)",
-        "id": "Login admin diperlukan (untuk demo Tick manual)"
+        "id": "Login admin diperlukan (untuk demo Tick manual)",
+        "zh": "需要管理員登入 (供手動 Tick 展示)"
       }
     }
   }

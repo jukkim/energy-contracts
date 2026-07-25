@@ -3,7 +3,7 @@
   "$id": "energy-contracts/emission_factors.json",
   "title": "Emission Factors",
   "description": "CO2 배출계수 SSOT. ENERGY_SSOT.md §1 기반. 모든 모듈은 이 값을 단일 원본으로 사용.",
-  "_usage": "reference-only",
+  "_usage": "hybrid",
   "_consumers": [
     "building-energy-3d"
   ],
