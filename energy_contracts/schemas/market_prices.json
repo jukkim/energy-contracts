@@ -80,11 +80,24 @@
       "additionalProperties": {
         "type": "object",
         "properties": {
-          "currency": { "type": "string" },
-          "off_peak": { "type": "number" },
-          "mid_peak": { "type": "number" },
-          "peak": { "type": "number" },
-          "peak_hours": { "type": "array", "items": { "type": "integer" } }
+          "currency": {
+            "type": "string"
+          },
+          "off_peak": {
+            "type": "number"
+          },
+          "mid_peak": {
+            "type": "number"
+          },
+          "peak": {
+            "type": "number"
+          },
+          "peak_hours": {
+            "type": "array",
+            "items": {
+              "type": "integer"
+            }
+          }
         }
       }
     },
@@ -134,6 +147,13 @@
         "ppa_self_consumption": {
           "type": "number"
         }
+      }
+    },
+    "carbon_fee_by_region": {
+      "type": "object",
+      "description": "리전(국가)별 탄소가격 — 국제 additive. KR 은 kau(K-ETS, 원/tCO2)가 canonical. TW=碳費(氣候變遷因應法, TWD/tCO2e, 2025.1.1 발효).",
+      "additionalProperties": {
+        "type": "object"
       }
     }
   },
@@ -189,7 +209,14 @@
         "off_peak": 2.06,
         "mid_peak": 4.69,
         "peak": 7.13,
-        "peak_hours": [ 16, 17, 18, 19, 20, 21 ],
+        "peak_hours": [
+          16,
+          17,
+          18,
+          19,
+          20,
+          21
+        ],
         "_comment": "台電 住商型 간이 3단 시간전가 여름철(6~9월) 尖峰7.13/半尖峰4.69/離峰2.06 元(TWD)/度. 경제부 능원서/台電 2025. KR canonical=상위 electricity_tariff."
       }
     },
@@ -209,6 +236,22 @@
       "rec_weight_building": 1.5,
       "ppa_price_krw_per_kwh": 100.0,
       "ppa_self_consumption": 0.4
+    },
+    "carbon_fee_by_region": {
+      "TW": {
+        "currency": "TWD",
+        "standard_twd_per_tco2e": 300,
+        "preferential_a_twd_per_tco2e": 50,
+        "preferential_b_twd_per_tco2e": 100,
+        "threshold_tco2e_per_yr": 25000,
+        "effective_date": "2025-01-01",
+        "legal_basis": "氣候變遷因應法 (Climate Change Response Act)",
+        "future_target_twd_range": [
+          1200,
+          1800
+        ],
+        "_comment": "台灣 碳費 — 標準 NT00/tCO2e, 自主減量 우대 A 50/B 100. 전력·가스·제조 中 연 25,000 tCO2e 초과 대상. 2026년 첫 징수(2025 배출 기준). 出처=環境部 2024.10 공고."
+      }
     }
   }
 }
