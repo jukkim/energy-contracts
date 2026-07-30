@@ -10,7 +10,7 @@
 // 기계가 만드는 부분(gen_corpus.py 가 canonical source 에서 파생):
 //   · 96 opcode 목록 + consumerClass(A8/B85/C3)  ← be-3d op_registry.json
 //   · 43 라우터 클래스                            ← gateway router_meta.json
-//   · 35 지역 + bbox                              ← be-3d region_camera.ts
+//   · 34 지역 + bbox                              ← be-3d region_camera.ts
 //   · 15 metric_key                              ← studio METRIC_LABEL / be-3d metric_catalog
 //   · 7 executor                                 ← studio executor_keys.ts
 //   · B-op 85종 NL 커버리지                       ← play100 ∪ scenario_nl import(차집합 산출)
