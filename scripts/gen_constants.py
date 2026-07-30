@@ -60,6 +60,7 @@ PROJECT_TARGETS: dict[str, dict] = {
                 "GRIDBRIDGE_URL_DEFAULT", "I18N_KEYS", "INTENT_TYPES",
                 "LEGACY_MAPPING", "LINT_CONFIG", "LOGGING_FORMAT",
                 "MQTT_TOPIC_PATTERNS", "OBJECTIVE_TYPES", "OPENAPI_RESPONSES",
+                "OP_MODES", "OPMODE_STRATEGY_MAP",
                 "PERSONA_STRATEGY_MAP", "PIPELINE_DATASETS",
                 "PORTS", "RUN_MODES", "RUN_MODE_BEHAVIOR", "SECURITY_HEADERS",
                 "SIGNAL_MAPPING", "SIGNAL_MAPPING_DR",
@@ -347,6 +348,17 @@ def gen_python(schemas: dict) -> str:
     if "persona_strategy_map" in ems:
         lines.append(f"PERSONA_STRATEGY_MAP: dict[str, dict] = {ems['persona_strategy_map']!r}")
     if objective_types or "persona_strategy_map" in ems:
+        lines.append("")
+
+    # OpMode (BEMS 스케줄 구간 축) + opmode_strategy_map (OpMode → M-code)
+    op_modes = (schemas["ems"].get("$defs", {})
+                              .get("OpMode", {}).get("enum"))
+    if op_modes or "opmode_strategy_map" in ems:
+        lines.append("# ─ OpMode (BEMS 스케줄 구간 → M-code, console 저작→edge 실행) ─")
+        if op_modes:
+            lines.append(f"OP_MODES: list[str] = {op_modes!r}")
+        if "opmode_strategy_map" in ems:
+            lines.append(f"OPMODE_STRATEGY_MAP: dict[str, str] = {ems['opmode_strategy_map']!r}")
         lines.append("")
 
     # 설비 taxonomy — EquipmentKind · DeviceAction · capability 매트릭스 · value 스펙
