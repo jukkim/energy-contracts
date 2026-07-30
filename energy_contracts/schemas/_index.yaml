@@ -47,6 +47,7 @@ components:
     EnergyConstants:          {$ref: 'energy_constants.json'}
     EnergyUnits:              {$ref: 'energy_units.json'}
     EngineeringDiff:          {$ref: 'engineering_diff.json'}
+    EquipmentTaxonomy:        {$ref: 'equipment_taxonomy.json'}
     EngineeringSession:       {$ref: 'engineering_session.json'}
     ErrorResponse:            {$ref: 'error_response.json'}
     EsgPolicy:                {$ref: 'esg_policy.json'}

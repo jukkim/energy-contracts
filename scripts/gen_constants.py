@@ -53,7 +53,9 @@ PROJECT_TARGETS: dict[str, dict] = {
                 "BUILDING_USAGES", "COMPUTER_PROFILES", "DATA_SOURCES",
                 "DATA_SOURCE_LABELS", "DB_MIGRATIONS",
                 "EMISSION_FACTORS_KR", "ENERGY_CONVERSIONS",
+                "DEVICE_ACTIONS", "DEVICE_ACTION_VALUE_SPEC",
                 "DISPATCH_SOURCES", "DISPATCH_STATUSES",
+                "EQUIPMENT_CAPABILITIES", "EQUIPMENT_KINDS",
                 "ERROR_CODES", "GRIDBRIDGE_URL_COMPUTER_A",
                 "GRIDBRIDGE_URL_DEFAULT", "I18N_KEYS", "INTENT_TYPES",
                 "LEGACY_MAPPING", "LINT_CONFIG", "LOGGING_FORMAT",
@@ -97,9 +99,11 @@ PROJECT_TARGETS: dict[str, dict] = {
                 "AUTH_PROJECT_DEFAULT_SCOPES", "AUTH_SCOPES",
                 "BID_STRATEGIES", "BUILDING_USAGES",
                 "COMPUTER_PROFILES", "DATA_SOURCES", "DATA_SOURCE_LABELS",
-                "DB_MIGRATIONS", "DISPATCH_SOURCES", "DISPATCH_STATUSES",
+                "DB_MIGRATIONS", "DEVICE_ACTIONS", "DEVICE_ACTION_VALUE_SPEC",
+                "DISPATCH_SOURCES", "DISPATCH_STATUSES",
                 "DISTRIBUTION_ALGORITHMS", "DR_TYPES",
                 "EMISSION_FACTORS_KR", "EMISSION_FACTORS", "ENERGY_CONVERSIONS",
+                "EQUIPMENT_CAPABILITIES", "EQUIPMENT_KINDS",
                 "ERROR_CODES", "ERROR_TYPE_PREFIX", "I18N_FALLBACK_LANG",
                 "I18N_KEYS", "INTENT_TYPES", "LINT_CONFIG", "LOGGING_FORMAT",
                 "MANAGEMENT_MODES", "MQTT_NAMESPACES", "MQTT_TOPIC_PATTERNS",
@@ -119,6 +123,8 @@ PROJECT_TARGETS: dict[str, dict] = {
                 "EMISSION_FACTORS_KR", "EMISSION_FACTORS", "PRIMARY_ENERGY_FACTORS",
                 "MARKET_PRICES", "ZEB_BASELINE_KWH_M2_YR", "ZEB_THRESHOLDS",
                 "I18N_FALLBACK_LANG", "I18N_KEYS",
+                "EQUIPMENT_KINDS", "DEVICE_ACTIONS", "EQUIPMENT_CAPABILITIES",
+                "DEVICE_ACTION_VALUE_SPEC",
                 # Critics SSOT (0.2.3) — Layer 5 UI 의 verdict 라벨 / critic name 매핑
                 "CRITIC_NAMES", "CRITIC_LABEL_KO",
                 "VERDICT_VALUES", "VERDICT_LABEL_KO",
@@ -235,6 +241,8 @@ def load_schemas() -> dict:
     enconst = _load("energy_constants.json")
     # 리전(국가) 배출계수 SSOT — 국제(TW/ID) additive. EMISSION_FACTORS_KR(energy_units)과 병존.
     emissions = _load("emission_factors.json")
+    # 설비 taxonomy SSOT — 수용가 마스터 데이터 모델의 설비 축(kind·action·capability).
+    equipment = _load("equipment_taxonomy.json")
     return {"ems": ems, "ports": ports, "common": common,
             "agents": agents, "intents": intents,
             "modes": modes, "dataclass": dataclass, "tests": tests,
@@ -247,7 +255,8 @@ def load_schemas() -> dict:
             "sim_scn": sim_scn, "dbmig": dbmig,
             "oapi_resp": oapi_resp, "lintfmt": lintfmt,
             "esg_policy": esg_policy, "dr_dispatch": dr_dispatch,
-            "market": market, "enconst": enconst, "emissions": emissions}
+            "market": market, "enconst": enconst, "emissions": emissions,
+            "equipment": equipment}
 
 
 def schemas_hash(data: dict) -> str:
@@ -338,6 +347,26 @@ def gen_python(schemas: dict) -> str:
     if "persona_strategy_map" in ems:
         lines.append(f"PERSONA_STRATEGY_MAP: dict[str, dict] = {ems['persona_strategy_map']!r}")
     if objective_types or "persona_strategy_map" in ems:
+        lines.append("")
+
+    # 설비 taxonomy — EquipmentKind · DeviceAction · capability 매트릭스 · value 스펙
+    equip = (schemas.get("equipment") or {})
+    equip_defs = equip.get("$defs", {})
+    equip_default = equip.get("default", {})
+    equip_kinds = equip_defs.get("EquipmentKind", {}).get("enum")
+    device_actions = equip_defs.get("DeviceAction", {}).get("enum")
+    if equip_kinds or device_actions or equip_default:
+        lines.append("# ─ 설비 taxonomy (수용가 마스터 — kind·action·capability) ────")
+        if equip_kinds:
+            lines.append(f"EQUIPMENT_KINDS: list[str] = {equip_kinds!r}")
+        if device_actions:
+            lines.append(f"DEVICE_ACTIONS: list[str] = {device_actions!r}")
+        cap = equip_default.get("capability_matrix")
+        if cap:
+            lines.append(f"EQUIPMENT_CAPABILITIES: dict[str, list[str]] = {cap!r}")
+        vspec = equip_default.get("value_specs")
+        if vspec:
+            lines.append(f"DEVICE_ACTION_VALUE_SPEC: dict[str, dict] = {vspec!r}")
         lines.append("")
 
     # Phase 4 — DR Aggregator enums (esg_policy.json + dr_dispatch_event.json)
@@ -772,6 +801,30 @@ def gen_typescript(schemas: dict) -> str:
                      f"{json.dumps(intents.get('patterns', {}), ensure_ascii=False)} as const;")
         lines.append(f"export const NL_CONSTRAINTS = "
                      f"{json.dumps(intents.get('constraints', {}))} as const;")
+        lines.append("")
+
+    # 설비 taxonomy — EquipmentKind · DeviceAction · capability 매트릭스 · value 스펙
+    equip = schemas.get("equipment") or {}
+    equip_defs = equip.get("$defs", {})
+    equip_default = equip.get("default", {})
+    equip_kinds = equip_defs.get("EquipmentKind", {}).get("enum")
+    device_actions = equip_defs.get("DeviceAction", {}).get("enum")
+    if equip_kinds or device_actions or equip_default:
+        lines.append("// ─ 설비 taxonomy (수용가 마스터 — kind·action·capability) ────")
+        if equip_kinds:
+            lines.append(f"export const EQUIPMENT_KINDS = {json.dumps(equip_kinds)} as const;")
+            lines.append("export type EquipmentKind = (typeof EQUIPMENT_KINDS)[number];")
+        if device_actions:
+            lines.append(f"export const DEVICE_ACTIONS = {json.dumps(device_actions)} as const;")
+            lines.append("export type DeviceAction = (typeof DEVICE_ACTIONS)[number];")
+        cap = equip_default.get("capability_matrix")
+        if cap:
+            lines.append(f"export const EQUIPMENT_CAPABILITIES: Record<string, string[]> = "
+                         f"{json.dumps(cap, ensure_ascii=False)};")
+        vspec = equip_default.get("value_specs")
+        if vspec:
+            lines.append(f"export const DEVICE_ACTION_VALUE_SPEC = "
+                         f"{json.dumps(vspec, ensure_ascii=False)} as const;")
         lines.append("")
 
     # Phase E
