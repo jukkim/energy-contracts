@@ -11,8 +11,8 @@
     "agentleague",
     "eduarena"
   ],
-  "version": "1.1.0",
-  "updated": "2026-05-19",
+  "version": "1.2.0",
+  "updated": "2026-07-28",
   "$comment": "SSOT_GOVERNANCE.md Phase A1 산출물. 헬스체크 스크립트·CI 검증·신규 서비스 포트 배정 시 이 파일을 단일 진실로 사용한다.",
   "ranges": {
     "http_api": {
@@ -157,12 +157,12 @@
     },
     {
       "port": 8021,
-      "name": "agents Backend (Track 2, AI 챔피언)",
-      "folder": "projects/agents/",
-      "purpose": "Phase D부터 be-3d ↔ agents HTTP/SSE. PRD Q1 결정으로 본선까지 be-3d 동일 프로세스 모듈 유지, repo는 스켈레톤",
-      "status": "scaffold",
-      "env_var": "AGENTS_PORT",
-      "history": "2026-05-19 8020→8021 이동 (KBEP 충돌 회피)"
+      "name": "ingestion-worker Backend (Track 2, AI 챔피언)",
+      "folder": "projects/ingestion-worker/",
+      "purpose": "medallion ETL(bronze→silver→gold) 데이터 수집·재학습 트리거. Phase DI 부터 단독 진행",
+      "status": "deployed",
+      "env_var": "INGESTION_WORKER_PORT",
+      "history": "2026-05-19 8020→8021 이동 (KBEP 충돌 회피). 2026-07-28 repo rename 반영 (agents→ingestion-worker, v1.2.0)"
     },
     {
       "port": 8030,
@@ -199,6 +199,98 @@
       "status": "deployed",
       "env_var": "REVERSE_URL",
       "history": "2026-05-19 8010 → 8060 이동 (AgentLeague Backend 8010 충돌 회피)"
+    },
+    {
+      "port": 8032,
+      "name": "Exaone LLM Server (qa/policy/stage4/capability)",
+      "folder": "8.simulation/ems_transformer/",
+      "purpose": "EXAONE qa·policy·stage4·capability 전용 LLM 서버. Gateway :8030 /v1/qa/* · /v1/capability-route 경유. compose 어댑터는 :8033 분리",
+      "status": "deployed",
+      "env_var": "LLM_BACKEND_URL_EXAONE",
+      "history": "2026-07-28 등재 (v1.2.0). compose 2026-07-15 분리 제거"
+    },
+    {
+      "port": 8033,
+      "name": "Exaone Compose Server",
+      "folder": "8.simulation/ems_transformer/operations/wrappers/",
+      "purpose": "EXAONE compose 전용 LLM 서버 (단일 어댑터, set_adapter 오버헤드 없음). Gateway :8030 → LLM_BACKEND_URL_COMPOSE. be-3d op_registry/anchors 로컬 의존으로 4090 유지",
+      "status": "deployed",
+      "env_var": "LLM_BACKEND_URL_COMPOSE",
+      "history": "2026-07-28 등재 (v1.2.0). 2026-07-15 신설"
+    },
+    {
+      "port": 8034,
+      "name": "5090 vLLM EXAONE Engine",
+      "folder": "8.simulation/ems_transformer/",
+      "purpose": "5090(192.168.1.23, WSL2) vLLM EXAONE 생성엔진 (bf16 base + 5 LoRA, ~78 tok/s). netsh portproxy LAN 노출. 게이트웨이는 shim :8035 경유",
+      "status": "deployed",
+      "env_var": null,
+      "note": "원격 호스트 192.168.1.23. 게이트웨이 직접 아닌 shim :8035 경유",
+      "history": "2026-07-28 등재 (v1.2.0). 2026-07-22 컷오버 LIVE"
+    },
+    {
+      "port": 8070,
+      "name": "MGCC (Microgrid Central Controller)",
+      "folder": "projects/mgcc/",
+      "purpose": "마이크로그리드 건물 그룹 관제 + 3 modality 발령 (source=microgrid_safety). GB 형제 별도 노드",
+      "status": "deployed",
+      "env_var": null,
+      "history": "2026-07-28 등재 (v1.2.0). 2026-07-21 신설"
+    },
+    {
+      "port": 8090,
+      "name": "building-energy-3d-lab Backend",
+      "folder": "projects/building-energy-3d-lab/",
+      "purpose": "be-3d-lab 격리 백엔드",
+      "status": "dormant",
+      "env_var": null,
+      "note": "V80(2026-06)부터 docker-compose.lab.yml 에서 제거, lab 은 production 백엔드 재사용. 슬롯 예약 목적 등재"
+    },
+    {
+      "port": 9030,
+      "name": "airo-energy MCP Server",
+      "folder": "8.simulation/ems_transformer/mcp/",
+      "purpose": "airo-energy MCP (HTTP transport). NSSM 서비스 EMS-mcp, cloudflared 공개. Gateway :8030 프록시. 14 도구",
+      "status": "deployed",
+      "env_var": "EMS_MCP_TRANSPORT",
+      "note": "배포형=HTTP :9030/mcp. 로컬 Claude Desktop 모드에서만 stdio",
+      "history": "2026-07-28 등재 (v1.2.0)"
+    },
+    {
+      "port": 9031,
+      "name": "series_rag MCP Server",
+      "folder": "8.simulation/ems_transformer/mcp/",
+      "purpose": "series_rag MCP (HTTP transport, FAISS RAG 도서 근거 검색 2 도구). NSSM 서비스 EMS-series-rag",
+      "status": "deployed",
+      "env_var": null,
+      "history": "2026-07-28 등재 (v1.2.0)"
+    },
+    {
+      "port": 3030,
+      "name": "energy-decision-canvas Frontend",
+      "folder": "projects/energy-decision-canvas/",
+      "purpose": "정보중심(비3D) 의사결정 UI. Next.js. LIVE decision.building-energy.xyz. 페르소나×22레버×decision-flow",
+      "status": "deployed",
+      "env_var": null,
+      "history": "2026-07-28 등재 (v1.2.0)"
+    },
+    {
+      "port": 3040,
+      "name": "energy-decision-studio Frontend",
+      "folder": "projects/energy-decision-studio/",
+      "purpose": "자연어 1급 + 신뢰(출처/검증/재생) UI. Next.js. LIVE studio.building-energy.xyz. NSSM ED-studio",
+      "status": "deployed",
+      "env_var": null,
+      "history": "2026-07-28 등재 (v1.2.0)"
+    },
+    {
+      "port": 3050,
+      "name": "bems-console Frontend",
+      "folder": "projects/bems-console/",
+      "purpose": "BEMS/BAS 범용 관제 화면. Next.js 15",
+      "status": "dev",
+      "env_var": null,
+      "history": "2026-07-28 등재 (v1.2.0). 2026-06-29 개발 착수"
     },
     {
       "port_range": "8011-8016",
