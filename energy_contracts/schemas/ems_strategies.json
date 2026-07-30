@@ -100,6 +100,17 @@
         }
       },
       "additionalProperties": false
+    },
+    "OpMode": {
+      "type": "string",
+      "enum": [
+        "occupied",
+        "night",
+        "weekend",
+        "peak",
+        "emergency"
+      ],
+      "description": "건물 운영 모드(BEMS 스케줄 구간 축) — bems-console lib/presets.ts OpMode 의 단일 SSOT. occupied=근무중(업무시간 점유) / night=야간(비점유·셋백) / weekend=주말(휴일·최소) / peak=피크(수요반응·부하감축) / emergency=비상(안전 우선). 콘솔이 시간구간(from~to)에 이 모드를 저작 → provision → edge ScheduleRunner 가 opmode_strategy_map 으로 M-code 해석해 실행."
     }
   },
   "type": "object",
@@ -209,6 +220,35 @@
         },
         "optimal": {
           "$ref": "#/$defs/PersonaStrategy"
+        }
+      },
+      "additionalProperties": false
+    },
+    "opmode_strategy_map": {
+      "type": "object",
+      "description": "건물 운영 모드(OpMode) → 기본 EMS 전략(M-code) 매핑. bems-console 이 스케줄 구간에 저작한 OpMode 를 edge ScheduleRunner 가 실행 가능한 M-code 로 해석하는 SSOT. OpMode 5종 전부 필수. peak/emergency 는 signal_mapping_dr(DR 발령) 우선 — 본 매핑은 DR 신호 부재 시 스케줄 자율 운영 기본값. 건물 고유 override 는 provision schedule.entries[].strategy 로 개별 지정 가능(본 매핑은 미지정 시 폴백).",
+      "required": [
+        "occupied",
+        "night",
+        "weekend",
+        "peak",
+        "emergency"
+      ],
+      "properties": {
+        "occupied": {
+          "$ref": "#/$defs/StrategyCode"
+        },
+        "night": {
+          "$ref": "#/$defs/StrategyCode"
+        },
+        "weekend": {
+          "$ref": "#/$defs/StrategyCode"
+        },
+        "peak": {
+          "$ref": "#/$defs/StrategyCode"
+        },
+        "emergency": {
+          "$ref": "#/$defs/StrategyCode"
         }
       },
       "additionalProperties": false
@@ -462,6 +502,13 @@
         "peak": "M20",
         "ess_reserve_pct": 25
       }
+    },
+    "opmode_strategy_map": {
+      "occupied": "M11",
+      "night": "M06",
+      "weekend": "M00",
+      "peak": "M20",
+      "emergency": "M20"
     },
     "legacy_mapping": {
       "ems_simulation": {
