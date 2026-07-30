@@ -1,0 +1,143 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "energy-contracts/equipment_taxonomy.json",
+  "title": "EquipmentTaxonomy",
+  "description": "설비 종류(EquipmentKind) · 물리 동작(DeviceAction) · 종류→가능동작 capability 매트릭스 · 동작별 value 스펙 SSOT. 수용가(VEN) 마스터 데이터 모델의 설비 축을 정본화한다. 그 전엔 edge-agent(device_catalog.VALID_KINDS/value_spec._SPEC)·bems-console(EquipmentKind/OutputKind)·scope.py(Literal) 3벌이 서로 다른 vocabulary 로 조용히 드리프트했다(edge {hvac,lighting,...} vs console {ahu,vav,light,...}). 본 스키마가 단일 정본 → gen_constants.py 가 EQUIPMENT_KINDS/DEVICE_ACTIONS/EQUIPMENT_CAPABILITIES/DEVICE_ACTION_VALUE_SPEC 로 파생.",
+  "_usage": "codegen",
+  "_consumers": [
+    "edge-agent",
+    "bems-console",
+    "building-energy-3d"
+  ],
+  "version": "1.0.0",
+  "updated": "2026-07-30",
+  "$comment": "설계 원칙: (1) EquipmentKind = 물리 설비 종류(실 드라이버 바인딩 축). edge 8종 ∪ console 세분(ahu/vav/pump/pv/meter) 을 한 개념=한 이름으로 통합, light→lighting 통일. (2) DeviceAction = edge value_spec._SPEC 의 물리 동작 verb 를 authoritative 로 채택(driver.apply_device_action 1:1). console OutputKind(setpoint/onoff/dim/door/notify/m_code/dr_dispatch)는 상위 채널 추상 = 별도 축; 그 중 설비 지향 subset(setpoint→set_temp, onoff→on/off, dim→dim)만 capability_matrix 로 검증. (3) value_specs 는 edge value_spec._SPEC 범위를 정확히 보존(무 behavior 변경). meter=read-only(동작 없음). (4) capability_matrix 분해: {on,off,stop,emergency_off,emergency_on} = 모든 제어가능(비 meter) 종류 공통 '보편 제어 프리미티브'(비상정지=범용 안전동작). value 를 갖는 동작만 종류별(set_temp=냉난방류, dim=lighting, set_speed=공기이송류, discharge=ess) — 이 축에서만 (kind,action) 거부(예: lighting 에 set_temp 금지).",
+  "type": "object",
+  "required": [
+    "capability_matrix",
+    "value_specs"
+  ],
+  "additionalProperties": false,
+  "$defs": {
+    "EquipmentKind": {
+      "type": "string",
+      "enum": [
+        "hvac",
+        "ahu",
+        "vav",
+        "chiller",
+        "boiler",
+        "fan",
+        "pump",
+        "lighting",
+        "ess",
+        "pv",
+        "plug",
+        "meter",
+        "other"
+      ],
+      "description": "설비 종류. hvac=통합 공조(존 온도) · ahu=공기조화기 · vav=가변풍량 · chiller=냉동기 · boiler=보일러(난방) · fan=팬(환기) · pump=펌프 · lighting=조명(구 console 'light') · ess=에너지저장 · pv=태양광 · plug=플러그부하 · meter=계량기(read-only) · other=기타."
+    },
+    "DeviceAction": {
+      "type": "string",
+      "enum": [
+        "on",
+        "off",
+        "set_temp",
+        "dim",
+        "discharge",
+        "stop",
+        "set_speed",
+        "emergency_off",
+        "emergency_on"
+      ],
+      "description": "물리 동작 verb. driver.apply_device_action() 에 1:1 매핑(edge onsite authoritative). on/off/stop/discharge/emergency_* = value 없음 · set_temp/dim/set_speed = 수치 value(value_specs 참조)."
+    },
+    "ValueSpec": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "value_required"
+      ],
+      "properties": {
+        "value_required": {
+          "type": "boolean",
+          "description": "value 필수 여부. false 면 on/off 처럼 인자 없음."
+        },
+        "value_type": {
+          "type": "string",
+          "enum": [
+            "number"
+          ],
+          "description": "허용 value 타입. bool 은 항상 거부(True/False 가 1/0 통과 함정 차단). value_required=false 면 omit."
+        },
+        "min": {
+          "type": "number",
+          "description": "허용 최소값(포함). value_required=true 일 때만."
+        },
+        "max": {
+          "type": "number",
+          "description": "허용 최대값(포함)."
+        },
+        "unit": {
+          "type": "string",
+          "description": "표시 단위(°C, %). UI 라벨용."
+        }
+      }
+    }
+  },
+  "properties": {
+    "capability_matrix": {
+      "type": "object",
+      "description": "EquipmentKind → 지원 DeviceAction 목록. 이 표에 없는 (kind, action) 조합은 저작/실행 단계에서 거부(예: lighting 에 set_temp 금지). meter=[](read-only).",
+      "additionalProperties": false,
+      "patternProperties": {
+        "^(hvac|ahu|vav|chiller|boiler|fan|pump|lighting|ess|pv|plug|meter|other)$": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/DeviceAction"
+          },
+          "uniqueItems": true
+        }
+      }
+    },
+    "value_specs": {
+      "type": "object",
+      "description": "DeviceAction → ValueSpec. edge value_spec._SPEC 범위 정본(무 behavior 변경).",
+      "additionalProperties": false,
+      "patternProperties": {
+        "^(on|off|set_temp|dim|discharge|stop|set_speed|emergency_off|emergency_on)$": {
+          "$ref": "#/$defs/ValueSpec"
+        }
+      }
+    }
+  },
+  "default": {
+    "capability_matrix": {
+      "hvac": ["on", "off", "stop", "emergency_off", "emergency_on", "set_temp"],
+      "ahu": ["on", "off", "stop", "emergency_off", "emergency_on", "set_temp", "set_speed"],
+      "vav": ["on", "off", "stop", "emergency_off", "emergency_on", "set_temp", "set_speed"],
+      "chiller": ["on", "off", "stop", "emergency_off", "emergency_on", "set_temp"],
+      "boiler": ["on", "off", "stop", "emergency_off", "emergency_on", "set_temp"],
+      "fan": ["on", "off", "stop", "emergency_off", "emergency_on", "set_speed"],
+      "pump": ["on", "off", "stop", "emergency_off", "emergency_on", "set_speed"],
+      "lighting": ["on", "off", "stop", "emergency_off", "emergency_on", "dim"],
+      "ess": ["on", "off", "stop", "emergency_off", "emergency_on", "discharge"],
+      "pv": ["on", "off", "stop", "emergency_off", "emergency_on"],
+      "plug": ["on", "off", "stop", "emergency_off", "emergency_on"],
+      "meter": [],
+      "other": ["on", "off", "stop", "emergency_off", "emergency_on"]
+    },
+    "value_specs": {
+      "on": { "value_required": false },
+      "off": { "value_required": false },
+      "stop": { "value_required": false },
+      "discharge": { "value_required": false },
+      "emergency_off": { "value_required": false },
+      "emergency_on": { "value_required": false },
+      "set_temp": { "value_required": true, "value_type": "number", "min": 16.0, "max": 32.0, "unit": "°C" },
+      "dim": { "value_required": true, "value_type": "number", "min": 0.0, "max": 100.0, "unit": "%" },
+      "set_speed": { "value_required": true, "value_type": "number", "min": 0.0, "max": 100.0, "unit": "%" }
+    }
+  }
+}
