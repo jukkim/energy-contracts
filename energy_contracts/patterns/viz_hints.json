@@ -1,0 +1,15 @@
+{
+  "_comment": "viz_hint 정규식 4종의 정본(SSOT). studio(TS)·게이트웨이(Python) 두 소비자가 이 패턴 문자열에서 코드젠으로 파생한다.",
+  "_why_here_not_schemas": "이 값들은 canonical 에너지 값(배출계수/PE/ZEB)이 아니라 NL→viz 라우팅 정규식이다. schemas/ 에 넣으면 schemas_hash 가 전 8 consumer(edge/gridbridge/be-3d/agentleague/eduarena/…)로 cascade → 두 파일을 위해 무관 repo 전수 regen. 그래서 schemas/ 밖 patterns/ 에 두고 전용 에미터(scripts/gen_viz_hints.py)만 studio+gateway 를 생성한다(false coupling 0).",
+  "_consumers": {
+    "studio": "energy-decision-studio/lib/actions/_generated_viz_hints.ts (VIZ_HINT_PATTERNS) → detect.ts 가 RegExp 로 컴파일",
+    "gateway": "8.simulation/_shared/_generated_viz_hints.py (VIZ_HINT_PATTERNS) → serving/app.py 가 re.compile"
+  },
+  "_flags": "모든 패턴은 대소문자 무시(TS /…/i · Python re.I)로 컴파일된다. 패턴 본문에는 플래그를 넣지 않는다.",
+  "patterns": {
+    "dose_setpoint": "설정\\s*온도|냉방\\s*온도|난방\\s*온도|setpoint|냉방\\s*설정|난방\\s*설정",
+    "dose_climate": "미래|기후\\s*변화|온난화|ssp|2050|2080|폭염",
+    "climate_axis": "미래\\s*기후|기후\\s*변화|온난화|ssp|2050|2080|폭염",
+    "macc": "macc|한계\\s*저감|투자\\s*우선순위|경제성\\s*(비교|분석)|회수기간\\s*비교|비용\\s*효과"
+  }
+}
