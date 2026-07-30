@@ -1,0 +1,212 @@
+// ============================================================================
+// query_overlay.jsonc — 질의 코퍼스의 "사람이 쓰는 층" (HAND-AUTHORED)
+// ----------------------------------------------------------------------------
+// 이 파일 = 코퍼스에서 기계가 못 만드는 부분만 담는다:
+//   ① A/C opcode 11종의 대표 NL 질의(probeQuery)  — 사람 판단
+//   ② 대표 지역·건물 픽스처 선정 + 선정 사유(why)   — 사람 판단
+//   ③ 차원 대표값(setpoint/climate/ems)             — 실측 유효값 근거
+//   ④ 질의 종류(C/S/L) 대표질의 seed                 — run_qc 이관
+//
+// 기계가 만드는 부분(gen_corpus.py 가 canonical source 에서 파생):
+//   · 96 opcode 목록 + consumerClass(A8/B85/C3)  ← be-3d op_registry.json
+//   · 43 라우터 클래스                            ← gateway router_meta.json
+//   · 35 지역 + bbox                              ← be-3d region_camera.ts
+//   · 15 metric_key                              ← studio METRIC_LABEL / be-3d metric_catalog
+//   · 7 executor                                 ← studio executor_keys.ts
+//   · B-op 85종 NL 커버리지                       ← play100 ∪ scenario_nl import(차집합 산출)
+//
+// ⚠ 이 파일에 canonical 열거를 손으로 복제하지 말 것. 오직 "판단"만.
+// 값 SSOT 준수(ssot-canonical-compliance): 절감/배출계수 등 canonical 수치 리터럴 금지.
+// 정직성(private-data-disclosure): building PNU 는 공개 데이터만. GS25/IITP/한수원 익명.
+// ============================================================================
+{
+  "schema": 1,
+  "generatedBy": "corpus/gen_corpus.py",
+  "note": "HAND overlay. canonical 열거는 gen_corpus.py 가 병합. 여기엔 판단만.",
+
+  // ── ① A/C opcode 대표 질의 (사용자 요구: '모든 opcode 대표 질의') ──────────
+  //   runtimeApi 이름 = op_registry.json 의 runtimeApi 필드(= studio/QC wire 이름).
+  //   B-op 85 는 여기 안 씀 — play100/scenario_nl import 로 커버리지 자동 산출.
+  //   expectAny = 이 질의를 라우팅/컴파일했을 때 나와야 할 op/api 중 하나 이상.
+  "opProbes": {
+    // A-class (studio 인라인 8) — 가장 높은 회귀 위험, 전수 필수
+    "mountMetricChoropleth": {
+      "probeQuery": "강남구 건물별 에너지 소비량을 지도로 색칠해서 보여줘",
+      "expectAny": ["mountMetricChoropleth", "mountSeoulChoropleth", "selectBuildings"],
+      "refuseOk": true,   // "지도로" = gateway refuse 하드룰 → compose 경로 정상
+      "note": "다지표 제네릭 choropleth"
+    },
+    "mountSeoulChoropleth": {
+      "probeQuery": "서울 25개 구 건물 노후도 분포를 지도로 보여줘",
+      "expectAny": ["mountSeoulChoropleth", "mountMetricChoropleth"],
+      "refuseOk": true,
+      "note": "서울 25구 노후도 고도 사다리 Tier ②"
+    },
+    "mountNationalChoropleth": {
+      "probeQuery": "전국 시도별 건물 밀도를 지도로 보여줘",
+      "expectAny": ["mountNationalChoropleth", "mountMetricChoropleth"],
+      "refuseOk": true,
+      "note": "전국 시도별 밀도 고도 사다리 Tier ①"
+    },
+    "mountMetricTimeline": {
+      "probeQuery": "강남구 최근 몇 년간 전기 소비 변화를 연도별로 지도에 재생해줘",
+      "expectAny": ["mountMetricTimeline", "mountMetricChoropleth"],
+      "refuseOk": true,
+      "note": "다년 시계열 temporal choropleth"
+    },
+    "selectBuildings": {
+      "probeQuery": "서울 CO2 배출 상위 50개 동을 강조해줘",
+      "expectAny": ["selectBuildings", "mountMetricChoropleth"],
+      "refuseOk": false,
+      "note": "WHERE 조건 → PNU 집합 활성 선택"
+    },
+    "cameraFlyToAnchor": {
+      "probeQuery": "강남 전체를 조감한 뒤 삼성동 빌딩군으로 날아가줘",
+      "expectAny": ["cameraFlyToAnchor"],
+      "refuseOk": false,
+      "note": "앵커 기반 카메라 비행(좌표 freeze 차단)"
+    },
+    "showAiOutput": {
+      "probeQuery": "이 건물에 AI 모델이 낸 에너지 진단 결과를 보여줘",
+      "expectAny": ["showAiOutput", "ems_identify", "ems_diagnose", "building_ai"],
+      "refuseOk": false,
+      "note": "활성 선택/단일 PNU 에 AI 백엔드 출력 표출"
+    },
+    "showAnalysis": {
+      "probeQuery": "이 건물 에너지 절감 전략을 8단계로 분석해줘",
+      "expectAny": ["showAnalysis", "ems_identify", "ems_recommend"],
+      "refuseOk": false,
+      "note": "what-if/분석 엔진 결과 표출(분석 과정 모드)"
+    },
+
+    // C-class (관제 escalate 3) — studio 는 escalate 표면(직접 실행 안 함)
+    "dispatchDR": {
+      "probeQuery": "선택한 건물군에 수요반응 디스패치를 지금 실행해줘",
+      "expectAny": ["dispatchDR"],
+      "refuseOk": true,
+      "escalate": true,
+      "note": "L4-a 가상 DR 디스패치 — studio 는 관제(gridbridge) escalate"
+    },
+    "proposeDR": {
+      "probeQuery": "이 건물군에 수요반응 참여를 권고하고 승인받는 절차를 만들어줘",
+      "expectAny": ["proposeDR"],
+      "refuseOk": true,
+      "escalate": true,
+      "note": "L4-b 권고·승인형(human-in-loop)"
+    },
+    "verifyDR": {
+      "probeQuery": "방금 수요반응 실행 결과를 재감시(M&V)해서 검증해줘",
+      "expectAny": ["verifyDR"],
+      "refuseOk": true,
+      "escalate": true,
+      "note": "재감시(M&V) — be-3d /dr/summary 모니터링"
+    }
+  },
+
+  // ── ① capability 대표 질의 (studio 7 executor — 게이트웨이 라우팅 hit) ──────
+  //   43 라우터 클래스는 gen_corpus 가 채우고, 여기선 7 executor 대표질의만.
+  "capabilityProbes": {
+    "apply_policy_lever": {
+      "probeQuery": "외기냉방(찬 바깥 공기로 냉방)을 적용하면 서울 절감액을 분석해줘",
+      "expectAny": ["apply_policy_lever", "policy_evaluate"], "refuseOk": false
+    },
+    "counterfactual": {
+      "probeQuery": "냉방 설정온도를 24도에서 26도로 올리면 절감이 얼마나 달라지나 히트맵으로 보여줘",
+      "expectAny": ["counterfactual", "policy_evaluate"], "refuseOk": false
+    },
+    "recommend_retrofit": {
+      "probeQuery": "이 건물에 가장 효과적인 개선 대책을 추천해줘",
+      "expectAny": ["ems_recommend", "apply_policy_lever"], "refuseOk": false
+    },
+    "identify_ems": {
+      "probeQuery": "이 건물의 에너지 낭비 지점을 식별해줘",
+      "expectAny": ["ems_identify", "ems_diagnose"], "refuseOk": false
+    },
+    "forecast_24h": {
+      "probeQuery": "이 건물의 향후 24시간 전력 수요를 예측해줘",
+      "expectAny": ["forecast_24h", "load_predict"], "refuseOk": false
+    },
+    "diagnose_anomaly": {
+      "probeQuery": "이 건물 전력 사용에서 이상 징후를 진단해줘",
+      "expectAny": ["diagnose_anomaly", "anomaly", "ems_diagnose"], "refuseOk": false
+    },
+    "mpc_optimize": {
+      "probeQuery": "이 건물 냉난방을 모델예측제어로 최적 운전 스케줄을 짜줘",
+      "expectAny": ["mpc_optimize", "mpc", "ems_optimize"], "refuseOk": false
+    }
+  },
+
+  // ── ②③ 대표 지역·건물·차원 픽스처 (사용자 요구: '건물/지역/국가별 대표 지역') ─
+  //   nation/regions = be-3d region_camera.ts(35) 에서 파생; 여기선 '대표 서브셋' 선정만.
+  "fixtures": {
+    "nation": [
+      { "id": "11", "label": "서울 전체", "tier": "sido",   "why": "시도 격자집계(agg=grid) 경로 대표" },
+      { "id": "KR", "label": "전국",     "tier": "nation", "why": "mountNationalChoropleth 경로" }
+    ],
+    "regions": [
+      // 대표 서브셋(combo 기본). --full 시 region_camera.ts 35 전수.
+      { "id": "11680", "region": "gangnam", "label": "강남구",     "why": "tdmap 완전커버·데이터 조밀(기준 지역)" },
+      { "id": "11440", "region": "mapo",    "label": "마포구",     "why": "energy_grade measured 존재" },
+      { "id": "26110", "region": "busan",   "label": "부산 중구",  "why": "비수도권·face_tier 미커버(정직 열화 검증)" },
+      { "id": "27260", "region": "daegu",   "label": "대구 수성구", "why": "지방 대도시·tdmap 커버" }
+    ],
+    "buildings": [
+      // 공개 데이터/아키타입만. 비공개 실측 PNU 금지(private-data-disclosure).
+      { "name": "롯데호텔서울", "archetype": "large_hotel|A", "why": "NER compound·large_hotel v3 커버" },
+      { "archetype": "midrise_apartment|HF", "why": "한국형 공조 setpoint 감응 정상셀(K-14 대조군)" },
+      { "archetype": "primary_school|HE",    "why": "온돌(HE) 감응 정상셀" },
+      { "archetype": "large_office|A",       "why": "F14 기존 기본(냉방 -1.96% 실값·난방 weak — 회귀 감시)" }
+    ],
+    "dimensions": {
+      // metrics = 기계 병합(METRIC_LABEL 15). filters/setpoints/climates/ems = 대표값.
+      "filters":   ["무필터", "30층이상", "2000년이전", "업무용"],
+      "selOps":    ["top_n", "bottom_n"],
+      "selNs":     [50, 200],
+      "setpoints": ["c24h20", "c26h20", "c28h20", "c26h18", "c26h22"],
+      "climates":  ["baseline", "ssp245_2050", "ssp585_2050", "ssp585_2080"],
+      "ems":       ["M00", "M04", "M05", "M09", "M10"]
+    }
+  },
+
+  // ── ④ 질의 종류(C/S/L) 대표질의 seed — run_qc.py CASES 이관(1:1) ────────────
+  //   taxonomy 정본 = studio docs/STUDIO_LAB_QUERY_TAXONOMY.md.
+  //   route: cap=gateway /v1/capability-route · compose=studio /api/compose · ops_status=studio GET
+  "queryClasses": [
+    { "id": "C1", "query": "강남구 건물별 에너지 소비량을 지도로 보여줘", "route": "cap", "expectAny": ["mountMetricChoropleth","mountSeoulChoropleth","selectBuildings"], "refuseOk": true },
+    { "id": "C2", "query": "서울 CO2 배출 상위 50개 동을 강조해줘", "route": "cap", "expectAny": ["selectBuildings","mountMetricChoropleth"], "refuseOk": false },
+    { "id": "C3", "query": "외기냉방 적용 시 서울 절감액을 분석해줘", "route": "cap", "expectAny": ["apply_policy_lever","policy_evaluate"], "refuseOk": false },
+    { "id": "C4", "query": "1980년 이전 지어진 업무용 건물만 보여줘", "route": "cap", "expectAny": ["selectBuildings","mountMetricChoropleth"], "refuseOk": false },
+    { "id": "C5", "query": "롯데호텔 서울의 에너지 소비를 보여줘", "route": "cap", "expectAny": ["ems_identify","ems_diagnose","forecast_24h","building_ai"], "refuseOk": false },
+    { "id": "C6", "query": "강남구 전기와 가스 소비를 나란히 비교해줘", "route": "cap", "expectAny": ["mountMetricChoropleth","selectBuildings"], "refuseOk": false },
+    { "id": "C7", "query": "2050년 온난화 시 이 건물 냉방 부하 변화를 보여줘", "route": "cap", "expectAny": ["climate_scenario","counterfactual"], "refuseOk": false },
+    { "id": "C8", "query": "태양광 설치 10년 투자 회수 분석해줘", "route": "cap", "expectAny": ["apply_policy_lever","policy_evaluate"], "refuseOk": false },
+    { "id": "C9", "query": "ZEB 의무화 정책의 탄소 절감 효과를 분석해줘", "route": "cap", "expectAny": ["policy_evaluate","apply_policy_lever"], "refuseOk": false },
+    { "id": "C10", "query": "마포구 에너지 등급 분포를 보여줘", "route": "cap", "expectAny": ["mountMetricChoropleth","mountSeoulChoropleth"], "refuseOk": false },
+    { "id": "C11", "query": "서울과 부산 평균 EUI를 비교해줘", "route": "cap", "expectAny": ["mountMetricChoropleth","selectBuildings"], "refuseOk": false },
+    { "id": "C12", "query": "setpoint 변화에 따른 절감 dose-response 히트맵 보여줘", "route": "cap", "expectAny": ["counterfactual"], "refuseOk": false },
+
+    { "id": "S1", "query": "전국 노후도 지도에서 강남구로 확대해줘", "route": "cap", "expectAny": ["mountMetricChoropleth","cameraFlyToAnchor"], "refuseOk": true },
+    { "id": "S2", "query": "이 건물 에너지 절감 전략을 8단계로 분석해줘", "route": "cap", "expectAny": ["ems_identify","ems_recommend","ems_diagnose"], "refuseOk": false },
+    { "id": "S3", "query": "이 분석 결과를 동료에게 공유할 링크 만들어줘", "route": "cap", "expectAny": [], "refuseOk": true },
+    { "id": "S4", "query": "현재 AI 모델 상태와 데이터 출처를 보여줘", "route": "ops_status", "expectAny": [], "refuseOk": false },
+    { "id": "S5", "query": "강남구 분석 지도와 8단계 의사결정을 동시에 보여줘", "route": "cap", "expectAny": ["mountMetricChoropleth","cameraFlyToAnchor"], "refuseOk": false },
+    { "id": "S6", "query": "조치별 한계저감비용을 계단막대로 시각화해줘", "route": "cap", "expectAny": ["apply_policy_lever","policy_evaluate"], "refuseOk": false },
+
+    { "id": "L1", "query": "광화문에서 롯데타워까지 차량으로 주행 시연해줘", "route": "compose", "expectAny": ["driveRouteByIntent"], "refuseOk": false },
+    { "id": "L2", "query": "이 건물 옥상에 태양광 패널을 배치하고 발전량 시뮬레이션해줘", "route": "compose", "expectAny": ["placeRoofSolar"], "refuseOk": false },
+    { "id": "L3", "query": "건물 외벽에 수직 녹화를 시뮬레이션해줘", "route": "compose", "expectAny": [], "refuseOk": true },
+    { "id": "L4", "query": "방금 그린 지도에서 CO2 대신 전기 소비로 바꿔줘", "route": "compose", "expectAny": ["mountMetricChoropleth"], "refuseOk": true },
+    { "id": "L5", "query": "강남 전체를 조감한 뒤 삼성동 빌딩군으로 날아가줘", "route": "compose", "expectAny": ["cameraFlyToAnchor"], "refuseOk": false },
+    { "id": "L6", "query": "강남 CO2 상위 10건물을 순서대로 투어해줘", "route": "compose", "expectAny": ["tourSelected","selectBuildings","cameraFlyToAnchor"], "refuseOk": false }
+  ],
+
+  // ── refuse/off-domain 대표(사냥꾼 Class B 회귀 감시) ─────────────────────────
+  "refuseProbes": [
+    { "id": "R-IAQ",   "query": "이 건물 실내공기질 이산화탄소 농도를 진단해줘", "why": "IAQ 미학습 → refuse 게이트" },
+    { "id": "R-EQ",    "query": "이 건물의 지진 내진 성능을 평가해줘", "why": "지진/내진 미학습" },
+    { "id": "R-THERM", "query": "이 건물 열교와 기밀성을 blower door 로 계산해줘", "why": "열교/기밀 미학습" },
+    { "id": "R-FLOOD", "query": "이 지역 침수 홍수 위험을 최적화해줘", "why": "침수/홍수 미학습" },
+    { "id": "R-ESS",   "query": "배터리 SOC 기반으로 ESS 충방전을 디스패치 최적화해줘", "why": "ESS SOC 미학습" },
+    { "id": "R-WEATHER", "query": "오늘 날씨 알려줘", "why": "완전 비도메인" }
+  ]
+}
