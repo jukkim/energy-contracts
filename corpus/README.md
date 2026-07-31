@@ -141,6 +141,23 @@ python corpus/run_corpus.py --all --baseline                   # 직전 원장 �
 
 **exit code**: 0 정상 / 1 FAIL·drift·**능력 회귀** / 2 스윕 무효(프리플라이트 실패·UNKNOWN 과다).
 
+### pre-push 자동 배선 (2026-08-01)
+
+"수정 발생 시 전수"를 사람의 기억에 맡기지 않는다. 푸시 직전 변경 파일 → 영향 suite 자동 선택:
+
+```bash
+sh corpus/hooks/install.sh              # 소비 repo 5곳에 설치(멱등, 기존 훅은 덮지 않고 체인)
+SKIP_CORPUS_PREPUSH=1 git push          # 우회(권장 X)
+```
+
+**차단 정책**: 정적 드리프트·능력 회귀 = **차단**(exit 1) / 라이브 판정 불가(서비스 다운, exit 2) =
+**경고 후 통과**. 판정 불가를 실패로 취급하면 `--no-verify` 습관만 만든다(§1.3 과 같은 원칙).
+
+⚠ `core.hooksPath` 가 전역 훅을 가리키면 per-repo pre-push 는 **불리지 않는다**. 전역
+`~/.git-hooks-global/pre-push` 에 위임 코드를 추가해 두었다(myjob `docs/GIT_HOOKS_GLOBAL.md`).
+CI 만 믿으면 안 되는 이유는 2026-08-01 에 실증됐다 — 러너 17개가 크래시 루프여서 필수 체크가
+아예 생성되지 않았고 admin 머지조차 거부됐다.
+
 ## 5. 코퍼스 갱신 절차
 
 **canonical(op_registry·router_meta·region·executor) 이 바뀐 경우** — 값은 자동 흡수, 재생성만:
