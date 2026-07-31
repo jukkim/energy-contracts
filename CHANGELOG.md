@@ -4,6 +4,31 @@
 
 ---
 
+## 0.3.23 — 2026-07-31 equipment_taxonomy 신설 + opmode_strategy_map + port_allocation v1.2.0 + TW 碳費 (전부 additive = minor)
+
+v0.3.22 이후 master 에 누적된 8 커밋을 태그로 확정. **consumer 가 이미 regen 한 생성본(`OPMODE_STRATEGY_MAP`·`EQUIPMENT_*`)이 태그에 없어 `ssot-drift` CI 가 6 PR 연속 실패**하던 pin skew 를 해소하는 릴리스.
+
+### 변경 (schemas)
+- **`equipment_taxonomy.json` 신설** — 설비 종류·동작·capability SSOT 정본. bems-console(저작)·edge-agent(수신·검증) 양측이 손코딩 대신 생성본 파생. codegen 진입.
+- **`ems_strategies.json` += `opmode_strategy_map`** — BEMS 스케줄 구간 OpMode(`occupied`/`night`/`weekend`/`peak`/`emergency`) → M-code. console 주간 스케줄 저작 → edge `ScheduleRunner` 실행의 의미매핑 정본(edge-agent DEFERRED 해소 근거).
+- **`port_allocation.json` v1.1.0→v1.2.0** — 실 포트 등재(8032 Exaone 등) + `agents`→`ingestion-worker` repo rename 반영.
+- **`market_prices.json` += `carbon_fee_by_region`** — 대만 탄소비(碳費, 氣候變遷因應法, TWD/tCO2e). KR canonical(kau) 불변 = additive.
+- **`patterns/viz_hints.json` + `scripts/gen_viz_hints.py`** — viz_hint 정규식 scoped codegen SSOT.
+
+### cascade
+- `gen_constants.py --all` regen 필요(SOURCE_HASH bump) — **KR canonical 값 불변**(배출계수·PE·ZEB·요금 전부 무변경, 신규 키 추가만).
+- EC pin lockstep 3 consumer(edge-agent·gridbridge·building-energy-3d) pin `v0.3.22`→`v0.3.23` + 각 repo `ssot-drift.yml` 의 EC checkout `ref:` 동반 갱신(`bump_ec_pin.py` 가 이번 릴리스부터 자동 처리).
+- corpus(`corpus/`): shared query corpus + combo·scenario suite 추가(5→7). 스키마 무관, 소비 repo 영향 0.
+
+---
+
+## 0.3.22 — 2026-07-25 TW 台電 시간대별 요금 additive (필드 추가 = minor) *(소급 기록)*
+
+- **`market_prices.json` += `electricity_tariff_by_region.TW`** — 대만 台電 시간대별 요금(TWD, off/mid/peak + peak_hours). KR 요금 불변 = additive.
+- 태그 릴리스 시 CHANGELOG 항목이 누락되어 0.3.23 릴리스에서 소급 기록.
+
+---
+
 ## 0.3.21 — 2026-07-25 telemetry CanonicalPointAddress(CPA) $def + zones.point_id (필드 추가 = minor)
 
 ### 변경 (telemetry.json v1.1→v1.2, 필드 추가 = minor, 하위호환)
