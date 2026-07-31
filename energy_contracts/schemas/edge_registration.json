@@ -6,7 +6,8 @@
   "_usage": "runtime-validate",
   "_consumers": [
     "edge-agent",
-    "gridbridge"
+    "gridbridge",
+    "mgcc"
   ],
   "version": "1.2",
   "type": "object",

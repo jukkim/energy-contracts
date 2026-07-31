@@ -4,12 +4,21 @@
   "title": "Dispatch Acknowledgement",
   "description": "Edge → GB 발령 이행 확인. 토픽 gridbridge/dispatch_ack/{event_id}/{ven_id} (mqtt_topics.json). dr_dispatch_event 를 수신한 Edge 가 실제 적용 결과를 회신한다. **정산 오귀속 방지(D7) 의 생산자** — MG 안전 발령(source=microgrid_safety)으로 발생한 감축량을 GB 가 dr_participation.mg_attributed_kw 에 귀속시켜 DR 보상에서 차감한다.",
   "_usage": "runtime-validate",
-  "_consumers": ["edge-agent", "gridbridge"],
+  "_consumers": [
+    "edge-agent",
+    "gridbridge",
+    "mgcc"
+  ],
   "_security": "ven_id 는 토픽 경로와 payload 가 일치해야 한다(불일치 = 위조 의심, 수신측 폐기). Edge 는 자기 VEN_ID 만 발행 가능(1 Edge=1 VEN). reduction_kw 는 Edge 자기보고 값 = 정산 근거로 쓰기 전 GB 가 telemetry_history 와 교차 검증할 것(단독 신뢰 금지).",
   "version": "1.0",
   "updated": "2026-07-31",
   "type": "object",
-  "required": ["event_id", "ven_id", "status", "acked_at"],
+  "required": [
+    "event_id",
+    "ven_id",
+    "status",
+    "acked_at"
+  ],
   "properties": {
     "event_id": {
       "type": "string",
@@ -21,7 +30,12 @@
     },
     "status": {
       "type": "string",
-      "enum": ["applied", "rejected", "expired", "unsupported"],
+      "enum": [
+        "applied",
+        "rejected",
+        "expired",
+        "unsupported"
+      ],
       "description": "applied=실 적용 / rejected=arbiter·critics 게이트 거부(상위 권한 점유 등) / expired=수신 시점에 이미 발령 창 종료 / unsupported=해석 불가 modality."
     },
     "reason": {
@@ -34,7 +48,10 @@
     },
     "settlement_track": {
       "type": "string",
-      "enum": ["gb_settlement", "measured"],
+      "enum": [
+        "gb_settlement",
+        "measured"
+      ],
       "description": "정산 귀속 축. gb_settlement=kW 의무배분·패널티 대상(target_kw·peak_limit_kw) / measured=실측 회계만(setpoint_command·operating_mode, GB 정산 무관). Edge microgrid_listener.SettlementTrack 과 lock-step."
     },
     "strategy": {
@@ -53,7 +70,9 @@
     },
     "interlocks": {
       "type": "array",
-      "items": { "type": "string" },
+      "items": {
+        "type": "string"
+      },
       "description": "적용 중 발동한 안전 인터록 메시지. 비어있지 않으면 요청이 그대로 적용되지 않았다는 뜻."
     },
     "acked_at": {

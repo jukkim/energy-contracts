@@ -4,6 +4,36 @@
 
 ---
 
+## 0.3.26 — 2026-07-31 MGCC 설정 평면 — authority 축 + microgrid 설정 채널 (additive = minor)
+
+MGCC(마이크로그리드 중앙 컨트롤러)는 그룹 **발령**만 할 수 있고 멤버 엣지의 **설정**을 하달·회수할 수 없었다. 엣지엔 이미 자리가 있었는데(`config_lock.ConfigSource.MGCC=20`, 현장 운영자 > MGCC > GB > 자동) 계약이 두 가지를 막고 있었다.
+
+**막고 있던 것 ① — 권한 축 부재**: `provision.source` 는 발행 *경로*(xlsx_upload/ui_edit/api/bulk_replay)이지 *권한*이 아니다. ConfigSource 별칭과 교집합이 0 이라, 엣지는 provision 으로 온 설정을 **무조건 GB(10)로 강등**해 왔다(edge `main.py` F2 판정 주석). MGCC 가 `source: "mgcc"` 를 보내도 GB 로 취급된다.
+
+**막고 있던 것 ② — 슬롯 공유**: `fleet/provision/{ven_id}` 는 VEN 당 retained 슬롯 1개다. GB 와 MGCC 가 같이 쓰면 서로의 설정을 덮어쓰고, 엣지 `revision` 단조성(슬롯 단위)이 충돌해 한쪽 개정이 조용히 reject 된다 — 발령 축 분리 P1-1 과 **동형 사고**.
+
+### 변경
+- **`provision.json` v1.0→v1.1** — `authority` 필드 신설 (`auto|gb|mgcc`, 기본 `gb` = 하위호환)
+  - `source`(경로)와 **다른 축**. edge `ConfigSource` 와 lock-step: auto=0 / gb=10 / mgcc=20
+  - ⚠ `field_operator`(30)는 **enum 에서 제외** — 원격 채널이 현장 권한을 참칭하면 해제 경로가 사라져 MGCC 안전 설정을 영구 차단할 수 있다(edge F1 판정 계승)
+  - `_consumers += mgcc`
+- **`mqtt_topics.json` v1.2→v1.3**
+  - `microgrid/provision/{ven_id}` 신설 (pub=**mgcc**, sub=edge-agent, retained) — GB 슬롯과 분리
+  - `microgrid/provision_ack/{ven_id}` 신설 (pub=edge-agent, sub=**mgcc**) — 발행자별 응답 분리
+  - `fleet/register/{ven_id}` subscriber += mgcc (연결 신청 수신)
+  - `fleet/heartbeat/{ven_id}` subscriber += mgcc (생존 판정)
+  - `gridbridge/dispatch_ack/…` subscriber += mgcc (이미 구독 중이던 사실의 선언 반영)
+- `edge_registration.json`·`dispatch_ack.json` — `_consumers += mgcc`
+
+### cascade
+`gen_constants.py --all` 8 대상 regen (edge-agent·gridbridge·be-3d py/ts·agentleague·eduarena·8.simulation·ingestion-worker). 값 변경 없음 — 토픽 표·consumer 목록만.
+
+### consumer 후속
+- **edge-agent**: `microgrid/provision/+` 구독 + `payload.authority` → ConfigSource 판정(원격은 MGCC 상한 clamp) + `microgrid/provision_ack` 발행
+- **mgcc**: provision 발행자 구현(revision 단조·ack 회수), `fleet/register` 승인 큐
+
+---
+
 ## 0.3.25 — 2026-07-31 dispatch_ack 계약 신설 (정산 오귀속 루프 폐쇄, additive = minor)
 
 `gridbridge/dispatch_ack/{event_id}/{ven_id}` 는 토픽만 선언돼 있고 **payload 계약이 없었으며, Edge 가 발행조차 하지 않았다**(발령이 completed 로 전이되지 않음). 그 결과 D7(정산 오귀속)의 생산자가 부재했다 — GB 는 MG 발령분을 알 방법이 없어 DR 실적으로 이중계상했다.
