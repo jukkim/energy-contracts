@@ -26,7 +26,8 @@
 | `query_overlay.jsonc` | **판단 층** — A/C opcode 대표질의(probeQuery)·capability 프로브·픽스처(대표 지역/건물/차원)·질의종류(C/S/L 24)·refuse 프로브 | **사람** (기계가 못 만드는 것만) |
 | `gen_corpus.py` | **병합 생성기** — canonical source + overlay → 단일 아티팩트 | 스키마 변경 시만 |
 | `query_corpus.generated.json` | **생성 산출물** — 모든 소비자가 읽는 단일 코퍼스 | ❌ 손대지 말 것(overlay 고쳐라) |
-| `run_corpus.py` | **단일 진입점** — 7 suite HTTP 실행 + 변경감지 | — |
+| `run_corpus.py` | **단일 진입점** — 7 suite HTTP 실행 + 변경감지 + **능력 원장 산출** | — |
+| `capability_ledger.json` | **능력 원장(생성물, 커밋 대상)** — 셀별 실측 상태·사유·증거 + greenList + 회귀 | ❌ 손대지 말 것(러너가 씀) |
 | `README.md` | 본 문서 | — |
 
 **파생 관계(단방향)**:
@@ -110,6 +111,35 @@ python corpus/run_corpus.py --changed $(git diff --name-only origin/master)
 - `--combo-limit N` 으로 combo 케이스 상한(기본 12, 0=전부). combo/scenario 차원은 **fixtures/canonical 에서 파생** — `gen_combo_qc.py` 의 인라인 REGIONS/METRICS 드리프트 문제를 코퍼스가 흡수(전수 pairwise 는 여전히 studio `qc/gen_combo_qc.py` 소관, 여기선 fixtures 대표 조합 스모크).
 
 ---
+
+## 4-B. 능력 원장 (2026-08-01 신설) — "무엇이 진짜 되는가"를 파일로 확정
+
+suite 결과를 화면에만 뿌리면 *지난주엔 됐는데 지금은?* 을 기계로 비교할 수 없다. `--report` 는
+셀 단위 실측을 `capability_ledger.json` 으로 고정한다. 상위 절차 = 캠페인
+`docs/CAPABILITY_DISCOVERY_PROCEDURE.md`.
+
+```bash
+python corpus/run_corpus.py --all --sweep full --report        # 전수 실측 + 원장 기록
+python corpus/run_corpus.py --all --baseline                   # 직전 원장 대비 회귀 판정
+```
+
+**셀 상태**: `GREEN`(4층 통과 — 시연·제안 가능) · `AMBER`(부분/추정 — 정직 문구 동반) ·
+`RED`(불가 — 제안 금지) · `UNKNOWN`(판정 실패 — **RED 로 강등 금지**) · `SKIP`.
+
+**핵심 규칙 4**:
+1. **P0 프리플라이트** — gateway/studio/be-3d 생존 확인 후에만 스윕. 실패 시 중단(`--allow-degraded` 로만 강행, 원장 미기록).
+2. **UNKNOWN 격리** — 연결 실패·429 는 3회 백오프 재시도 후 UNKNOWN. UNKNOWN 비율 >5% 면 **스윕 무효**(exit 2, 원장 미기록). 서비스 다운을 능력 부재로 오독하면 멀쩡한 기능을 지운다.
+3. **회귀 = 잃어버린 능력** — 총계가 아니라 `prevStatus GREEN → RED` 만 센다(축이 늘면 총계는 같이 는다). 회귀 발생 시 exit 1.
+4. **이월(carry-over)** — `--suite combo` 처럼 일부만 돌려도 나머지 셀은 직전 값·시각과 함께 보존되고 `carriedOver: true` 로 표시. 사라진 것과 잃은 것은 다르다.
+
+**sweep 등급**(§7 대응): `smoke`(대표 12, 커밋마다) · `rep`(대표지역×전지표) ·
+`full`(**전 지역×전 지표 510셀** — be-3d `/api/v1/metric/coverage/matrix` **단일 콜**, 실측 ~28s).
+
+**greenList** — GREEN 셀에서 뽑은 시연 안전 질의(274건). `verifiedBy` 필수 확인:
+`router`(자연어→op 라우팅까지 실증) vs `data`(데이터 존재만 확인, 문장은 합성). 섞으면
+"된다고 했는데 못 알아듣는" 사고가 난다.
+
+**exit code**: 0 정상 / 1 FAIL·drift·**능력 회귀** / 2 스윕 무효(프리플라이트 실패·UNKNOWN 과다).
 
 ## 5. 코퍼스 갱신 절차
 
