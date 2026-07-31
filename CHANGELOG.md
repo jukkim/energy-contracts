@@ -4,6 +4,25 @@
 
 ---
 
+## 0.3.27 — 2026-07-31 provision config_merge — 단일 축 하달이 설정을 지우던 것 (additive = minor)
+
+v0.3.26 로 MGCC 가 설정을 하달할 수 있게 됐지만, **보내면 안 되는 상태**였다. 수신측은 `config` 를 로컬 YAML 로 **통째로 저장**한다(`_save_yaml` 이 전체 문서를 덮어씀). MGCC 는 운영 모드·계약전력만 관장하므로 그 축만 담아 보내는데, 그러면 엣지의 `kind`·`backend`·`connection` 이 **사라져 재기동 시 드라이버를 잃는다**.
+
+### 변경
+- **`provision.json` v1.1→v1.2** — `config_merge` 신설 (boolean, 기본 false)
+  - `true` = 기존 설정에 **deep merge**, `false`(기본) = 통째로 교체(기존 동작 그대로)
+  - 조건부 필수키: `config_merge=true` 면 `config` 는 부분 문서(`ven_id` 만) / 아니면 기존대로 `kind`·`backend` 필수. `if/then/else` 로 표현 — `allOf` 는 conjunctive 라 완화가 안 된다
+  - 병합 기준(기존 설정)이 없는 엣지에는 적용 불가 — 수신측이 거부해야 한다(반쪽 설정을 쓰느니 명시적 실패)
+
+### cascade
+`gen_constants --all` 8 대상 (값 변경 없음).
+
+### consumer 후속
+- **edge-agent**: `config_merge=true` 수신 시 기존 YAML 과 deep merge 후 저장·적용, 기준 부재 시 거부
+- **mgcc**: 단일 축 하달을 merge 로 발행
+
+---
+
 ## 0.3.26 — 2026-07-31 MGCC 설정 평면 — authority 축 + microgrid 설정 채널 (additive = minor)
 
 MGCC(마이크로그리드 중앙 컨트롤러)는 그룹 **발령**만 할 수 있고 멤버 엣지의 **설정**을 하달·회수할 수 없었다. 엣지엔 이미 자리가 있었는데(`config_lock.ConfigSource.MGCC=20`, 현장 운영자 > MGCC > GB > 자동) 계약이 두 가지를 막고 있었다.
