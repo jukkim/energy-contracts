@@ -4,6 +4,22 @@
 
 ---
 
+## 0.3.25 — 2026-07-31 dispatch_ack 계약 신설 (정산 오귀속 루프 폐쇄, additive = minor)
+
+`gridbridge/dispatch_ack/{event_id}/{ven_id}` 는 토픽만 선언돼 있고 **payload 계약이 없었으며, Edge 가 발행조차 하지 않았다**(발령이 completed 로 전이되지 않음). 그 결과 D7(정산 오귀속)의 생산자가 부재했다 — GB 는 MG 발령분을 알 방법이 없어 DR 실적으로 이중계상했다.
+
+### 변경
+- **`dispatch_ack.json` 신설** (`_usage: runtime-validate`, consumers = edge-agent·gridbridge)
+  - `status` = `applied|rejected|expired|unsupported` — 게이트 거부·만료를 **정직하게** 구분
+  - **`settlement_track`** = `gb_settlement|measured` (edge `SettlementTrack` lock-step) — 정산 귀속 축
+  - `reduction_kw` = Edge **자기보고** 감축량. `_security` 에 "GB 는 정산 반영 전 telemetry_history 와 교차 검증(단독 신뢰 금지)" 명시
+  - `interlocks[]`·`setpoint_c` — 요청과 실제 적용의 차이를 보고
+- `mqtt_topics.json` v1.1→v1.2 — dispatch_ack 토픽에 `payload_schema` 연결
+- `_index.yaml` 등재
+
+### cascade
+`gen_constants --all` regen(SOURCE_HASH). **KR canonical 값 불변.** pin lockstep v0.3.24→v0.3.25.
+
 ## 0.3.24 — 2026-07-31 microgrid 네임스페이스 분리 + 텔레메트리 provenance (전부 additive = minor)
 
 Edge 개념 축 분리 판정(edge-agent `docs/ANALYSIS-EDGE-CONCEPT-AXES.md`) 의 계약 반영분.

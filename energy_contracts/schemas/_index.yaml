@@ -38,6 +38,7 @@ components:
     ControlRiskPolicy:        {$ref: 'control_risk_policy.json'}
     DataClassification:       {$ref: 'data_classification.json'}
     DbMigrations:             {$ref: 'db_migrations.json'}
+    DispatchAck:              {$ref: 'dispatch_ack.json'}
     DrDispatchEvent:          {$ref: 'dr_dispatch_event.json'}
     DrEvent:                  {$ref: 'dr_event.json'}
     EdgeRegistration:         {$ref: 'edge_registration.json'}
