@@ -2,12 +2,13 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "energy-contracts/provision.json",
   "title": "Provision",
-  "description": "GB → Edge 프로비저닝 페이로드. VW 엑셀 업로드 또는 관리자 UI 편집의 결과로 GB 가 `fleet/provision/{ven_id}` 토픽에 발행. Edge 는 수신 후 로컬 YAML 적용 → 재기동 또는 핫리로드. R6-3 옵션 a (관측형 replay 데이터 배포) 도 같은 토픽으로 CSV 참조 전달.",
+  "description": "GB → Edge 프로비저닝 페이로드. VW 엑셀 업로드 또는 관리자 UI 편집의 결과로 GB 가 `fleet/provision/{ven_id}` 토픽에 발행. Edge 는 수신 후 로컬 YAML 적용 → 재기동 또는 핫리로드. R6-3 옵션 a (관측형 replay 데이터 배포) 도 같은 토픽으로 CSV 참조 전달. v1.1(2026-07-31): authority 축 신설 — 발행 '경로'(source)와 설정 '권한'(authority)은 다른 것이다. MGCC(그리드 안전)와 GB(ESG)가 같은 채널 규약으로 하달하되 우선순위가 다르므로, 수신측이 권한을 알 방법이 필요했다.",
   "_usage": "runtime-validate",
   "_consumers": [
-    "edge-agent"
+    "edge-agent",
+    "mgcc"
   ],
-  "version": "1.0",
+  "version": "1.1",
   "type": "object",
   "required": [
     "provisioning_id",
@@ -50,6 +51,16 @@
         "bulk_replay"
       ],
       "description": "발행 경로. xlsx_upload=엑셀 업로드, ui_edit=관리자 UI, api=VW API, bulk_replay=R6-3 관측 데이터 배포."
+    },
+    "authority": {
+      "type": "string",
+      "enum": [
+        "auto",
+        "gb",
+        "mgcc"
+      ],
+      "default": "gb",
+      "description": "설정 **권한**(누가 하달했나) — 발행 '경로'인 source 와 별개 축. edge-agent config_lock.ConfigSource 와 lock-step: auto=0(자동 프리셋) / gb=10(ESG 그룹) / mgcc=20(마이크로그리드 그리드 안전). 수신측은 현재 설정 소유자보다 낮은 권한의 하달을 거부한다. ⚠ field_operator(30)는 이 enum에 없다 — 원격 채널이 현장 운영자 권한을 참칭하면 해제 경로가 없어져 MGCC 안전 설정을 영구 차단할 수 있다(edge F1 판정). 현장 권한은 로컬 API 에만 부여. 미지정 시 기본 gb — v1.0 하위호환(기존 GB 발행분은 그대로 GB 권한)."
     },
     "expected_config_hash": {
       "type": "string",
