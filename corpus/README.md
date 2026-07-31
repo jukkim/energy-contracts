@@ -26,7 +26,7 @@
 | `query_overlay.jsonc` | **판단 층** — A/C opcode 대표질의(probeQuery)·capability 프로브·픽스처(대표 지역/건물/차원)·질의종류(C/S/L 24)·refuse 프로브 | **사람** (기계가 못 만드는 것만) |
 | `gen_corpus.py` | **병합 생성기** — canonical source + overlay → 단일 아티팩트 | 스키마 변경 시만 |
 | `query_corpus.generated.json` | **생성 산출물** — 모든 소비자가 읽는 단일 코퍼스 | ❌ 손대지 말 것(overlay 고쳐라) |
-| `run_corpus.py` | **단일 진입점** — 5 suite HTTP 실행 + 변경감지 | — |
+| `run_corpus.py` | **단일 진입점** — 7 suite HTTP 실행 + 변경감지 | — |
 | `README.md` | 본 문서 | — |
 
 **파생 관계(단방향)**:
