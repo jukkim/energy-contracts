@@ -31,7 +31,7 @@
 
 **파생 관계(단방향)**:
 ```
-be-3d op_registry.json (96 op, consumerClass A8/B85/C3, runtimeApi) ─┐
+be-3d op_registry.json (96 op, consumerClass A8/B77/C11, runtimeApi) ─┐
 gateway router_meta.json (43 라우터 클래스)                          │
 be-3d region_camera.ts (34 region), metric_catalog (15 metric)       ├─ gen_corpus.py ─→ query_corpus.generated.json
 studio executor_keys.ts (7 executor)                                 │                        │
@@ -133,9 +133,10 @@ python corpus/gen_corpus.py --check    # drift 0 확인 후 커밋
 ## 6. 커버리지 현황 (2026-07-30 생성 기준)
 
 ```
-opcode 96 (A8 / B85 / C3)   router 43   executor 7   metric 15   region 34   queryClass 24
+opcode 96 (A8 / B77 / C11)   router 43   executor 7   metric 15   region 34   queryClass 24
+    ※ C11 = control plane(control 3 + edge 5 + gb 3) — 위험도 기반 escalate(2026-07-31 재분류)
 A/C probeQuery : 11/11 커버 (하드 게이트)
-B-op           : play100 ∪ scenario_nl 토큰 → 5/85 커버, 80 conformance-only(경고)
+B-op           : play100 ∪ scenario_nl 토큰 → 5/77 커버, 72 conformance-only(경고)
 ```
 
 - **A/C 11종** = studio 직접 책임(최고 회귀 위험) → probeQuery 필수, 없으면 static FAIL.
