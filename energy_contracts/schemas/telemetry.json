@@ -8,7 +8,7 @@
     "edge-agent",
     "gridbridge"
   ],
-  "version": "1.2",
+  "version": "1.3",
   "$defs": {
     "CanonicalPointAddress": {
       "type": "string",
@@ -131,6 +131,20 @@
     "mode_locked": {
       "type": "boolean",
       "description": "첫 telemetry에서 lock 후 mode 변경 시 alert + suspend (변조 탐지)."
+    },
+    "data_source": {
+      "type": "string",
+      "enum": [
+        "measured",
+        "simulated",
+        "synthetic"
+      ],
+      "description": "이 텔레메트리 값의 출처 계층 (축 분리 2026-07-31, additive). measured=실 계량/현장 디바이스·실측 재생, simulated=물리 시뮬(E+), synthetic=규칙 합성 생성기. 값 정본 = data_sources.json DATA_SOURCES. **왜 필요한가**: 그동안 합성 데이터가 실측과 동일 스키마·동일 토픽으로 흘러 정산·학습 파이프라인이 구분할 수 없었다(구분하려면 fleet/register 의 edge_type 을 별도 join 해야 했고, 그건 노드 단위라 점별 혼합을 표현 못 함). 미제공 시 소비단은 '미상' 으로 취급할 것 — 실측으로 가정 금지."
+    },
+    "data_source_detail": {
+      "type": "string",
+      "description": "출처 정밀 표기(엣지 backend). virtual|replay|energyplus|real_bas. replay 는 실측이지만 **연도 시프트 재생**이라 measured 와 구분이 필요할 때 사용."
     }
-  }
+  },
+  "updated": "2026-07-31"
 }
