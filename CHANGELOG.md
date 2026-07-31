@@ -4,6 +4,27 @@
 
 ---
 
+## 0.3.24 — 2026-07-31 microgrid 네임스페이스 분리 + 텔레메트리 provenance (전부 additive = minor)
+
+Edge 개념 축 분리 판정(edge-agent `docs/ANALYSIS-EDGE-CONCEPT-AXES.md`) 의 계약 반영분.
+사용자 결정: "노드는 쪼개지 말고 축을 쪼갠다 — 최대한 확장성 있게".
+
+### 변경 (mqtt_topics.json v1.0→v1.1)
+- **`microgrid` 네임스페이스 신설** + **`microgrid/dispatch/{event_id}`** (publisher=**mgcc**, subscriber=edge-agent, retained). MGCC 그리드 안전 발령 전용 축.
+  - 이전엔 MGCC 가 `gridbridge/dispatch/{event_id}`(선언상 publisher=gridbridge **단독**)에 미선언 발행자로 끼어들었고, event_id 공간을 공유해 **retained 슬롯을 상호 덮어썼다**. 구독자는 payload `source` 문자열 하나로만 출처를 구분.
+  - 전환 기간: edge-agent 는 두 토픽 모두 구독(event_id dedup 보유) → **무중단 컷오버**.
+- `_consumers += mgcc` (MGCC 독립 repo 승격 2026-07-31 반영).
+
+### 변경 (telemetry.json v1.2→v1.3, 필드 추가 = minor, required 불변)
+- **`data_source`** optional 신설 — `measured|simulated|synthetic`. 값 정본 = `data_sources.json DATA_SOURCES`.
+  - **왜**: 합성 데이터가 실측과 **동일 스키마·동일 토픽**으로 흘러 정산·학습 파이프라인이 구분할 수 없었다. 구분하려면 `fleet/register` 의 `edge_type` 을 별도 join 해야 했고 그건 노드 단위라 점별 혼합을 표현 못 한다.
+  - 미제공 = "미상". 소비단은 **실측으로 가정 금지**.
+- **`data_source_detail`** optional — 엣지 backend 정밀 표기(`virtual|replay|energyplus|real_bas`). replay 는 실측이나 **연도 시프트 재생**이라 measured 와 구분이 필요할 때.
+
+### cascade
+- `gen_constants --all` regen (SOURCE_HASH bump). **KR canonical 값 불변** — 신규 키 추가만.
+- pin lockstep: edge-agent·gridbridge·be-3d `v0.3.23`→`v0.3.24` + 각 `ssot-drift.yml` ref 동반(`bump_ec_pin.py` 자동).
+
 ## 0.3.23 — 2026-07-31 equipment_taxonomy 신설 + opmode_strategy_map + port_allocation v1.2.0 + TW 碳費 (전부 additive = minor)
 
 v0.3.22 이후 master 에 누적된 8 커밋을 태그로 확정. **consumer 가 이미 regen 한 생성본(`OPMODE_STRATEGY_MAP`·`EQUIPMENT_*`)이 태그에 없어 `ssot-drift` CI 가 6 PR 연속 실패**하던 pin skew 를 해소하는 릴리스.

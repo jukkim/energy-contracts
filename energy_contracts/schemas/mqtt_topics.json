@@ -9,10 +9,11 @@
     "gridbridge",
     "building-energy-3d",
     "agentleague",
-    "eduarena"
+    "eduarena",
+    "mgcc"
   ],
-  "version": "1.0",
-  "updated": "2026-05-17",
+  "version": "1.1",
+  "updated": "2026-07-31",
   "$defs": {
     "TopicEntry": {
       "type": "object",
@@ -92,6 +93,10 @@
       "eduarena": {
         "prefix": "eduarena",
         "domain": "AI 교육 게임"
+      },
+      "microgrid": {
+        "prefix": "microgrid",
+        "domain": "마이크로그리드 중앙관제 (MGCC ↔ Edge). 그리드 안전 발령 — DR 시장 이벤트와 별개 축"
       }
     },
     "topics": [
@@ -154,7 +159,17 @@
         "publisher": "gridbridge",
         "subscriber": "edge-agent",
         "payload_schema": "energy-contracts/dr_dispatch_event.json",
-        "$comment": "Phase 4 — ESG Aggregator가 분배 결정한 dispatch 이벤트 전체를 EdgeAgent로 발행. retained=true (지연 가입자에게도 최신 명령 전달)."
+        "$comment": "Phase 4 — ESG Aggregator가 분배 결정한 dispatch 이벤트 전체를 EdgeAgent로 발행. retained=true (지연 가입자에게도 최신 명령 전달). (MG 안전 발령은 microgrid/dispatch/{event_id} 로 분리 — 2026-07-31.)"
+      },
+      {
+        "pattern": "microgrid/dispatch/{event_id}",
+        "namespace": "microgrid",
+        "qos": 1,
+        "retained": true,
+        "publisher": "mgcc",
+        "subscriber": "edge-agent",
+        "payload_schema": "energy-contracts/dr_dispatch_event.json",
+        "$comment": "축 분리(2026-07-31) — MGCC 그리드 안전 발령 전용 네임스페이스. 이전엔 MGCC 가 gridbridge/dispatch/{event_id}(publisher=gridbridge 단독 선언)에 미선언 발행자로 끼어들어, event_id 공간 공유로 retained 슬롯을 상호 덮어썼다. 구독자는 payload source 문자열 하나로만 출처를 구분했다. 전환 기간: edge-agent 는 두 토픽 모두 구독(event_id dedup 보유)."
       },
       {
         "pattern": "gridbridge/dispatch_ack/{event_id}/{ven_id}",
