@@ -5,9 +5,15 @@
 유발했다. 본 스크립트는 새 energy-contracts 태그 릴리스 시 cascade 를 원자적으로 수행:
 
   1) 전 consumer pyproject.toml 의 energy-contracts pin 을 target 태그로 통일
-  2) gen_constants.py --all 로 _generated_constants 전부 regen
-  3) validate_ssot.py --check generated 로 pin↔regen lockstep 재검증 (P1 게이트)
-  4) mirror 키워드 cascade 안내 (CORE_KEYWORDS 변경 시 sibling CLAUDE.md 헤더 갱신 필요)
+  2) 전 consumer .github/workflows/ssot-drift.yml 의 EC checkout `ref:` 를 동일 태그로 통일
+  3) gen_constants.py --all 로 _generated_constants 전부 regen
+  4) validate_ssot.py --check generated 로 pin↔regen lockstep 재검증 (P1 게이트)
+  5) mirror 키워드 cascade 안내 (CORE_KEYWORDS 변경 시 sibling CLAUDE.md 헤더 갱신 필요)
+
+(2) 는 2026-07-21·2026-07-31 두 차례 재발한 CI 함정의 근절책이다. pyproject pin 만
+bump 하면 ssot-drift 워크플로가 **옛 태그의 스키마**로 gen_constants --check 를 돌려
+regen 된 생성본을 DRIFT 로 오탐(또는 신규 상수를 못 보고 실패)한다. pin 과 ref 는
+항상 같이 움직여야 한다.
 
 사용:
   python bump_ec_pin.py v0.3.6           # 일괄 bump + regen + 검증
@@ -30,10 +36,19 @@ PROJECTS = WORKSPACE_ROOT / "projects"
 # validate_ssot.EC_PIN_CONSUMERS 와 동기 (lockstep 그룹)
 CONSUMERS = ("edge-agent", "gridbridge", "building-energy-3d")
 _PIN_RE = re.compile(r"(energy-contracts.*?@)(v[0-9][\w.\-]*)")
+# ssot-drift.yml 의 EC checkout step — `repository: jukkim/energy-contracts` 뒤따르는
+# `ref: vX.Y.Z`(주석 유무 무관). 다른 repo checkout 의 ref 는 건드리지 않는다.
+_WF_REF_RE = re.compile(
+    r"(repository:\s*jukkim/energy-contracts\b(?:[^\n]*\n(?!\s*ref:)[^\n]*)*?\n\s*ref:\s*)(v[0-9][\w.\-]*)"
+)
 
 
 def _pyproject(repo: str) -> Path:
     return PROJECTS / repo / "pyproject.toml"
+
+
+def _workflow(repo: str) -> Path:
+    return PROJECTS / repo / ".github" / "workflows" / "ssot-drift.yml"
 
 
 def current_pins() -> dict[str, str | None]:
@@ -46,6 +61,17 @@ def current_pins() -> dict[str, str | None]:
         m = _PIN_RE.search(pp.read_text(encoding="utf-8"))
         pins[repo] = m.group(2) if m else None
     return pins
+
+
+def current_wf_refs() -> dict[str, list[str]]:
+    """consumer 별 ssot-drift.yml 의 EC checkout ref 목록(파일당 2회 이상 가능)."""
+    refs: dict[str, list[str]] = {}
+    for repo in CONSUMERS:
+        wf = _workflow(repo)
+        if not wf.exists():
+            continue
+        refs[repo] = [m.group(2) for m in _WF_REF_RE.finditer(wf.read_text(encoding="utf-8"))]
+    return refs
 
 
 def bump_pins(target: str) -> list[str]:
@@ -62,6 +88,21 @@ def bump_pins(target: str) -> list[str]:
     return changed
 
 
+def bump_wf_refs(target: str) -> list[str]:
+    """ssot-drift.yml 의 EC checkout ref 를 target 으로 통일 (pin 과 lockstep)."""
+    changed: list[str] = []
+    for repo in CONSUMERS:
+        wf = _workflow(repo)
+        if not wf.exists():
+            continue
+        txt = wf.read_text(encoding="utf-8")
+        new = _WF_REF_RE.sub(lambda m: m.group(1) + target, txt)
+        if new != txt:
+            wf.write_text(new, encoding="utf-8", newline="\n")
+            changed.append(repo)
+    return changed
+
+
 def run(cmd: list[str]) -> int:
     print(f"  $ {' '.join(cmd)}")
     return subprocess.call(cmd, cwd=str(CONTRACTS_ROOT))
@@ -74,16 +115,24 @@ def main() -> int:
     args = ap.parse_args()
 
     pins = current_pins()
-    print("[bump_ec_pin] 현재 pin:")
+    wf_refs = current_wf_refs()
+    print("[bump_ec_pin] 현재 pin / ssot-drift ref:")
     for r, p in pins.items():
-        print(f"  {r:22} {p}")
+        refs = wf_refs.get(r) or ["(ref 없음)"]
+        print(f"  {r:22} pin={p:12} ref={','.join(refs)}")
 
     if args.check:
         distinct = {p for p in pins.values() if p}
+        distinct_refs = {x for v in wf_refs.values() for x in v}
         if len(distinct) > 1:
             print(f"\n[bump_ec_pin] ✗ pin lockstep 위반: {distinct} — bump 필요")
             return 1
-        print("\n[bump_ec_pin] ✓ pin lockstep OK")
+        skew = distinct_refs - distinct
+        if skew:
+            print(f"\n[bump_ec_pin] ✗ ssot-drift ref 가 pin 과 skew: ref={distinct_refs} vs pin={distinct}")
+            print("  → CI 가 옛 스키마로 --check 를 돌려 DRIFT 오탐한다. bump 로 동반 갱신할 것.")
+            return 1
+        print("\n[bump_ec_pin] ✓ pin lockstep OK (ssot-drift ref 포함)")
         return 0
 
     if not args.target:
@@ -95,7 +144,9 @@ def main() -> int:
 
     print(f"\n[bump_ec_pin] → {args.target} 일괄 bump")
     changed = bump_pins(args.target)
-    print(f"  변경: {changed or '없음(이미 동일)'}")
+    print(f"  pyproject pin 변경: {changed or '없음(이미 동일)'}")
+    changed_wf = bump_wf_refs(args.target)
+    print(f"  ssot-drift ref 변경: {changed_wf or '없음(이미 동일)'}")
 
     print("\n[bump_ec_pin] regen (gen_constants.py --all):")
     if run([sys.executable, "scripts/gen_constants.py", "--all"]) != 0:
