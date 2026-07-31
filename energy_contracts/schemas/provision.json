@@ -2,13 +2,13 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "energy-contracts/provision.json",
   "title": "Provision",
-  "description": "GB → Edge 프로비저닝 페이로드. VW 엑셀 업로드 또는 관리자 UI 편집의 결과로 GB 가 `fleet/provision/{ven_id}` 토픽에 발행. Edge 는 수신 후 로컬 YAML 적용 → 재기동 또는 핫리로드. R6-3 옵션 a (관측형 replay 데이터 배포) 도 같은 토픽으로 CSV 참조 전달. v1.1(2026-07-31): authority 축 신설 — 발행 '경로'(source)와 설정 '권한'(authority)은 다른 것이다. MGCC(그리드 안전)와 GB(ESG)가 같은 채널 규약으로 하달하되 우선순위가 다르므로, 수신측이 권한을 알 방법이 필요했다.",
+  "description": "GB → Edge 프로비저닝 페이로드. VW 엑셀 업로드 또는 관리자 UI 편집의 결과로 GB 가 `fleet/provision/{ven_id}` 토픽에 발행. Edge 는 수신 후 로컬 YAML 적용 → 재기동 또는 핫리로드. R6-3 옵션 a (관측형 replay 데이터 배포) 도 같은 토픽으로 CSV 참조 전달. v1.1(2026-07-31): authority 축 신설 — 발행 '경로'(source)와 설정 '권한'(authority)은 다른 것이다. MGCC(그리드 안전)와 GB(ESG)가 같은 채널 규약으로 하달하되 우선순위가 다르므로, 수신측이 권한을 알 방법이 필요했다. v1.2(2026-07-31): config_merge 신설 — 수신측이 config 를 통째로 덮어쓰기 때문에, 단일 축(운영 모드 등)만 하달하면 driver·connection 설정이 사라진다. MGCC 처럼 한 축만 관장하는 발행자를 위한 병합 의미.",
   "_usage": "runtime-validate",
   "_consumers": [
     "edge-agent",
     "mgcc"
   ],
-  "version": "1.1",
+  "version": "1.2",
   "type": "object",
   "required": [
     "provisioning_id",
@@ -69,11 +69,9 @@
     },
     "config": {
       "type": "object",
-      "description": "Edge 설정 본문. edge-agent/templates/ 의 YAML 구조와 동일.",
+      "description": "Edge 설정 본문. edge-agent/templates/ 의 YAML 구조와 동일. ⚠ config_merge=true 일 때는 **부분 문서**다 — 필수 키(kind/backend)는 병합 후 기준 설정이 채운다(수신측 검증).",
       "required": [
-        "ven_id",
-        "kind",
-        "backend"
+        "ven_id"
       ],
       "properties": {
         "schema_version": {
@@ -269,6 +267,11 @@
       "default": "hot_reload",
       "description": "적용 방식. hot_reload=무중단 반영(드라이버 재생성 불필요 필드만), restart_required=재기동 필요(backend·kind 변경 등), dry_run=검증만 하고 ack 만 보냄."
     },
+    "config_merge": {
+      "type": "boolean",
+      "default": false,
+      "description": "true = `config` 를 **기존 설정에 병합**(deep merge), false(기본) = 통째로 교체. 수신측은 config 를 로컬 YAML 로 저장하는데 그게 전체 문서다 — 한 축만 담아 보내면 나머지(kind·backend·connection)가 지워져 재기동 시 드라이버를 잃는다. MGCC 는 운영 모드·계약전력만 관장하므로 merge 로 하달한다. ⚠ 병합 기준(기존 설정)이 없는 엣지에는 적용 불가 — 수신측이 거부해야 한다(반쪽 설정을 쓰느니 명시적 실패)."
+    },
     "secrets_ref": {
       "type": "string",
       "description": "민감정보(BACnet 비밀키·API 토큰) 별도 전달 레퍼런스. 옵션 — 미래 mTLS R6-8 과 연계."
@@ -308,6 +311,33 @@
         }
       },
       "apply_mode": "hot_reload"
+    }
+  ],
+  "allOf": [
+    {
+      "$comment": "config_merge=true → config 는 부분 문서(병합 기준이 나머지를 채운다). false/미지정(=기존 동작) → 전체 문서라 kind·backend 필수.",
+      "if": {
+        "required": [
+          "config_merge"
+        ],
+        "properties": {
+          "config_merge": {
+            "const": true
+          }
+        }
+      },
+      "then": true,
+      "else": {
+        "properties": {
+          "config": {
+            "required": [
+              "ven_id",
+              "kind",
+              "backend"
+            ]
+          }
+        }
+      }
     }
   ]
 }
