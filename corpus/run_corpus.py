@@ -879,7 +879,18 @@ def build_ledger(corpus, cells: list[dict], services: dict, ctx, baseline: dict 
     fresh_keys = {f"{r['suite']}:{r['id']}" for r in out_cells}
     fresh_count = len(out_cells)
     carried = 0
+    dropped_regions = 0
     live_ops = set(corpus.get("opProbes", {}))
+    # 현재 지역 축 — be-3d 가 SSOT. 못 받으면 None(=거르지 않음, 보수적).
+    live_regions: set[str] | None = None
+    try:
+        _ac, _ax = _get_json(f"{ctx['be3d']}/api/v1/metric/coverage/axes",
+                             ctx["timeout"], retries=1)
+        if _ac == 200 and _ax.get("sigunguCodes"):
+            live_regions = set(_ax["sigunguCodes"]) | {
+                r.get("code") for r in (_ax.get("regions") or []) if r.get("code")}
+    except Exception:
+        live_regions = None
     for k, row in prev_rows.items():                 # 이번에 안 돌린 셀 이월(값·시각 보존)
         if k in fresh_keys:
             continue
@@ -887,6 +898,17 @@ def build_ledger(corpus, cells: list[dict], services: dict, ctx, baseline: dict 
         #   (2026-08-01 사냥꾼: 폐기된 주행 op 3종이 greenList 에 남아 있었다).
         if row.get("suite") == "opcode" and row.get("id") not in live_ops:
             continue
+        # 좀비 차단 2 — **축에서 빠진 지역**(폐지 코드·행정구역 개편 구코드)의 셀.
+        #   이월은 "안 잰 것을 사라진 것으로 만들지 않는" 장치인데, 축에서 제거된 지역은
+        #   **다시 잴 일이 영원히 없다** → 이월이 무한 연장되어 원장에 유령 셀로 남는다.
+        #   실측(2026-08-02): 강원 42·전북 45 구코드를 축에서 뺐는데도 531셀이 그대로였다.
+        #   be-3d 가 주는 현재 축(sigunguCodes)에 없는 지역만 거른다(축을 못 받으면 거르지 않음 —
+        #   서비스 일시 장애로 멀쩡한 셀을 지우면 안 되므로 보수적으로).
+        if live_regions is not None:
+            _rg = (row.get("axis") or {}).get("region")
+            if _rg and _rg not in live_regions:
+                dropped_regions += 1
+                continue
         r = dict(row)
         r["carriedOver"] = True
         r.setdefault("probedAt", baseline.get("generatedAt") if baseline else None)
@@ -938,7 +960,7 @@ def build_ledger(corpus, cells: list[dict], services: dict, ctx, baseline: dict 
         "corpusCounts": corpus.get("counts", {}),
         "services": services,
         "cells": out_cells,
-        "summary": {**summary, "total": total, "fresh": fresh_count, "carriedOver": carried,
+        "summary": {**summary, "total": total, "fresh": fresh_count, "carriedOver": carried, "droppedStaleRegions": dropped_regions,
                     "unknownRatio": round(unknown / fresh_count, 4) if fresh_count else 0.0},
         "byReason": by_reason,
         # 이 suite 들은 UNKNOWN 이 30% 를 넘어 **측정된 것으로 취급하면 안 된다**.
