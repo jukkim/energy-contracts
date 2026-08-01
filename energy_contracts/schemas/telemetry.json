@@ -8,17 +8,40 @@
     "edge-agent",
     "gridbridge"
   ],
-  "version": "1.3",
+  "version": "1.4",
   "$defs": {
     "CanonicalPointAddress": {
       "type": "string",
-      "pattern": "^[a-z]{2}\\.[a-z][a-zA-Z0-9]*\\.(mg|sld|hvac|wtp|campus)\\.[a-z][a-z0-9-]*\\.[A-Z][A-Z0-9_]*$",
-      "description": "정규 관제점 주소 {country}.{site}.{domain}.{equip}.{point} — 다국가 플릿 유일 점 주소. 노드 SSOT=ven_id·필지=pnu 는 별도(익명 site 파생). bems-console lib/point-address 정본.",
+      "pattern": "^[a-z]{2}\\.[a-z][a-zA-Z0-9]*(\\.[a-z][a-zA-Z0-9-]*)?\\.(mg|sld|hvac|wtp|campus)\\.[a-z][a-z0-9-]*\\.[A-Z][A-Z0-9_]*$",
+      "description": "정규 관제점 주소 {country}.{site}[.{building}].{domain}.{equip}.{point} — 다국가 플릿 유일 점 주소. 노드 SSOT=ven_id·필지=pnu 는 별도(익명 site 파생). bems-console lib/point-address 정본.\n**{building} 는 선택**(v1.4 추가, 하위호환): 한 site 안에 건물이 여럿이면 site 만으로는 'A동 3층 AHU'와 'B동 3층 AHU'를 구분할 수 없다 — 캠퍼스·산단·단지처럼 MG 가 다루는 단위가 바로 그런 곳이다(MGCC 수용가 30동 사례). 5-세그먼트 기존 주소는 그대로 유효하다.\n**파싱**: {domain} 은 닫힌 집합(mg|sld|hvac|wtp|campus)이라 위치가 아니라 값으로 찾을 수 있다 — domain 앞이 2개면 building 없음, 3개면 있음. 세그먼트 수로 갈라 읽지 말 것(그렇게 하면 새 domain 추가 때 조용히 깨진다).",
       "examples": [
         "kr.siteA.hvac.ahu-3f.SAT",
         "kr.siteA.mg.ess-1.SOC",
-        "kr.siteA.wtp.pump-p2.PMP"
+        "kr.siteA.bldgB.hvac.ahu-3f.SAT",
+        "kr.campusN.wall-07.hvac.fan-1.SPD"
       ]
+    },
+    "PointKind": {
+      "type": "string",
+      "enum": [
+        "physical",
+        "virtual",
+        "group",
+        "schedule"
+      ],
+      "description": "관제점 종류. physical=현장 계측/제어점(센서·액추에이터) · virtual=계산으로 만든 점(합계·효율 등, 물리 대응 없음) · group=여러 점을 묶어 한 점처럼 다루는 것 · schedule=시간표가 값을 만드는 점.\n**왜 구분하나**: 소비단이 '이 값이 실제 계측인가'를 알아야 한다. 가상점을 실측처럼 표시하면 화면이 거짓이 된다(measured/estimate 구분과 같은 축)."
+    },
+    "PointBindingMode": {
+      "type": "string",
+      "enum": [
+        "bacnet",
+        "modbus",
+        "opcua",
+        "mqtt",
+        "internal",
+        "derived"
+      ],
+      "description": "점이 실제로 무엇에 묶여 있는가. bacnet/modbus/opcua/mqtt=현장 프로토콜 · internal=엣지 내부 상태 · derived=다른 점에서 계산.\n주소 체계(CPA)와 **바인딩은 다른 축**이다 — CPA 는 '무엇인가'(식별), 바인딩은 '어디에 연결됐나'(경로). 같은 점이 프로토콜을 바꿔도 CPA 는 유지된다 (mgcc docs/DECISION-POINT-ADDRESSING.md)."
     }
   },
   "type": "object",
@@ -74,6 +97,14 @@
           "power_kw": {
             "type": "number",
             "description": "존 전력 소비 (kW)"
+          },
+          "point_kind": {
+            "$ref": "#/$defs/PointKind",
+            "description": "(optional) 관제점 종류. 미제공 시 소비단은 **모른다**로 다뤄야 하며 physical 로 가정하지 않는다."
+          },
+          "binding_mode": {
+            "$ref": "#/$defs/PointBindingMode",
+            "description": "(optional) 바인딩 방식. 미제공 시 미상."
           }
         }
       }
@@ -146,5 +177,5 @@
       "description": "출처 정밀 표기(엣지 backend). virtual|replay|energyplus|real_bas. replay 는 실측이지만 **연도 시프트 재생**이라 measured 와 구분이 필요할 때 사용."
     }
   },
-  "updated": "2026-07-31"
+  "updated": "2026-08-01"
 }
