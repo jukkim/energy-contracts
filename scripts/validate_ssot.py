@@ -626,8 +626,12 @@ def check_mirror_core_keywords() -> list[str]:
 # M00~M20 으로 regen → CI 에서만 jsonschema 가 M19/M20 거부. be-3d 는 v0.3.6 으로 divergent.
 # ⚠ EC 를 checkout 하며 ref 를 고정하는 repo 는 **전부** 여기 있어야 한다 —
 # 빠지면 bump 때 조용히 뒤처진다(2026-08-01 ingestion-worker 실측).
+#: ⚠ **mgcc 추가 (2026-08-02)** — 핀은 갖고 있는데 이 목록에 없어서
+#: **lockstep 검사를 통째로 빠져나갔다**. 실제로 mgcc 만 v0.3.31, 나머지 4개는
+#: v0.3.29 인 상태가 게이트에 안 걸린 채로 있었다(실측). 핀을 선언하는 repo 는
+#: 여기 있어야 한다 — 없으면 조용히 갈라진다.
 EC_PIN_CONSUMERS = ("edge-agent", "gridbridge", "building-energy-3d",
-                    "ingestion-worker")
+                    "ingestion-worker", "mgcc")
 _EC_PIN_RE = re.compile(r"energy-contracts.*?@(v[0-9][\w.\-]*)")
 _GEN_CONST_RELPATHS = (
     "src/_generated_constants.py", "_generated_constants.py",

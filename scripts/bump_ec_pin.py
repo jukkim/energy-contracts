@@ -39,7 +39,12 @@ PROJECTS = WORKSPACE_ROOT / "projects"
 # (2026-08-01 실측: v0.3.29 bump 후 ingestion-worker 만 ssot-drift 빨간불 —
 # pyproject 핀은 없는데 ssot-drift.yml 이 v0.3.27 을 고정하고 있었다).
 # EC 를 checkout 하며 ref 를 고정하는 repo 는 **전부** 여기 있어야 한다.
-CONSUMERS = ("edge-agent", "gridbridge", "building-energy-3d", "ingestion-worker")
+#: ⚠ **mgcc 추가 (2026-08-02)** — 핀은 갖고 있는데 이 목록에 없어서
+#: **lockstep 검사를 통째로 빠져나갔다**. 실제로 mgcc 만 v0.3.31, 나머지 4개는
+#: v0.3.29 인 상태가 게이트에 안 걸린 채로 있었다(실측). 핀을 선언하는 repo 는
+#: 여기 있어야 한다 — 없으면 조용히 갈라진다.
+CONSUMERS = ("edge-agent", "gridbridge", "building-energy-3d", "ingestion-worker",
+             "mgcc")
 _PIN_RE = re.compile(r"(energy-contracts.*?@)(v[0-9][\w.\-]*)")
 # ssot-drift.yml 의 EC checkout step — `repository: jukkim/energy-contracts` 뒤따르는
 # `ref: vX.Y.Z`(주석 유무 무관). 다른 repo checkout 의 ref 는 건드리지 않는다.
