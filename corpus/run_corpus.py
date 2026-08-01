@@ -178,8 +178,13 @@ def _judge_cap(query, expect, refuse_ok, gw, timeout):
     resp = _post(f"{gw}/v1/capability-route", {"query": query}, timeout)
     if _unreachable(resp):
         return "UNKNOWN", f"gateway 미응답: {str(resp)[:50]}", "SERVICE_DOWN", {}
-    if "_http_error" in resp:
-        return "FAIL", f"HTTP {resp['_http_error']}", "HTTP_ERROR", {"http": resp["_http_error"]}
+    err = resp.get("_http_error")
+    if err:
+        # 5xx·429 = 서버 사정(일시) → UNKNOWN. 4xx = 계약 위반 → FAIL.
+        #   전자를 RED 로 적으면 과부하 한 번이 '능력 없음'으로 원장에 박힌다(§1.3 과 같은 원칙).
+        if err >= 500 or err == 429:
+            return "UNKNOWN", f"HTTP {err}(일시)", "SERVICE_DOWN" if err >= 500 else "RATE_LIMIT", {"http": err}
+        return "FAIL", f"HTTP {err}", "HTTP_ERROR", {"http": err}
     ops = resp.get("ops", [])
     refuse = resp.get("refuse", False)
     got = [op.get("api", "") for op in ops]
@@ -199,8 +204,11 @@ def _judge_compose(query, expect, refuse_ok, studio, timeout):
     resp = _post(f"{studio}/api/compose", {"query": query}, timeout)
     if _unreachable(resp):
         return "UNKNOWN", f"studio 미응답: {str(resp)[:50]}", "SERVICE_DOWN", {}
-    if "_http_error" in resp:
-        return "FAIL", f"HTTP {resp['_http_error']}", "HTTP_ERROR", {"http": resp["_http_error"]}
+    err = resp.get("_http_error")
+    if err:
+        if err >= 500 or err == 429:      # compose 과부하·일시 오류를 능력 부재로 적지 않는다
+            return "UNKNOWN", f"HTTP {err}(일시)", "SERVICE_DOWN" if err >= 500 else "RATE_LIMIT", {"http": err}
+        return "FAIL", f"HTTP {err}", "HTTP_ERROR", {"http": err}
     ops, cap_req = _ops_from_compose(resp.get("response", ""))
     got = [op.get("api", op.get("op", "")) for op in ops]
     ev = {"ops": got}
