@@ -232,6 +232,29 @@ def _judge_compose(query, expect, refuse_ok, studio, timeout):
     return "PASS", f"ops={got}", None, ev
 
 
+def _try_variants(judge, queries, *args):
+    """여러 표현으로 순차 시도 — 하나라도 PASS 면 통과(몇 번째인지 기록), 전부 실패해야 FAIL.
+
+    §1.2-B 를 compose 뿐 아니라 **모든 판정 경로**(cap 라우팅·class·capability)에 적용한다.
+    라우팅이 더 결정론적이라는 이유로 예외를 두면 그 예외가 사각지대가 된다.
+    """
+    st = note = reason = None
+    ev: dict = {}
+    for idx, q in enumerate(queries):
+        st, note, reason, ev = judge(q, *args)
+        if st in ("PASS", "UNKNOWN"):
+            if st == "PASS" and idx > 0:
+                note = f"{note} (변형 {idx+1}번째로 도달 — 1번 문장은 취약)"
+                ev = {**(ev or {}), "variantIndex": idx, "fragileQuery": queries[0]}
+            break
+    if len(queries) > 1:
+        ev = {**(ev or {}), "variantsTried": len(queries)}
+        if st == "FAIL":
+            note = f"{note} — 변형 {len(queries)}개 전부 미도달"
+    return st, note, reason, ev
+
+
+
 def _pmap(fn, items, jobs):
     """순서 보존 병렬 map(하나가 죽어도 나머지는 계속)."""
     if jobs <= 1:
@@ -244,16 +267,17 @@ def _pmap(fn, items, jobs):
 def suite_class(corpus, ctx):
     def one(c):
         rt = c["route"]
+        qs = [c["query"]] + list(c.get("queryVariants") or [])
         if rt == "cap":
-            st, note, reason, ev = _judge_cap(c["query"], c["expectAny"], c["refuseOk"],
-                                              ctx["gw"], ctx["timeout"])
+            st, note, reason, ev = _try_variants(
+                _judge_cap, qs, c["expectAny"], c["refuseOk"], ctx["gw"], ctx["timeout"])
         elif rt == "compose":
             if not ctx["compose"]:
                 st, note, reason, ev = "SKIP", "--compose 미지정", None, {}
             else:
-                st, note, reason, ev = _judge_compose(c["query"], c["expectAny"], c["refuseOk"],
-                                                      ctx["studio"],
-                                                      ctx.get("compose_timeout", ctx["timeout"]))
+                st, note, reason, ev = _try_variants(
+                    _judge_compose, qs, c["expectAny"], c["refuseOk"], ctx["studio"],
+                    ctx.get("compose_timeout", ctx["timeout"]))
         elif rt == "ops_status":
             code = _get(f"{ctx['studio']}/api/ops-status", ctx["timeout"])
             if code == 200:
@@ -299,8 +323,9 @@ def suite_opcode(corpus, ctx):
             if st == "FAIL" and len(queries) > 1:
                 note = f"{note} — 변형 {len(queries)}개 전부 미도달"
         else:
-            st, note, reason, ev = _judge_cap(p["probeQuery"], p.get("expectAny", []),
-                                              p.get("refuseOk", False), ctx["gw"], ctx["timeout"])
+            st, note, reason, ev = _try_variants(
+                _judge_cap, [p["probeQuery"]] + list(p.get("probeQueryVariants") or []),
+                p.get("expectAny", []), p.get("refuseOk", False), ctx["gw"], ctx["timeout"])
         return C(api, st, note, query=p["probeQuery"], reason=reason, evidence=ev,
                  axis={"op": api}, layer="R")
     return _pmap(one, items, ctx["jobs"])
@@ -311,8 +336,9 @@ def suite_capability(corpus, ctx):
 
     def one(kv):
         ex, p = kv
-        st, note, reason, ev = _judge_cap(p["probeQuery"], p.get("expectAny", []),
-                                          p.get("refuseOk", False), ctx["gw"], ctx["timeout"])
+        st, note, reason, ev = _try_variants(
+            _judge_cap, [p["probeQuery"]] + list(p.get("probeQueryVariants") or []),
+            p.get("expectAny", []), p.get("refuseOk", False), ctx["gw"], ctx["timeout"])
         return C(ex, st, note, query=p["probeQuery"], reason=reason, evidence=ev,
                  axis={"executor": ex}, layer="R")
     return _pmap(one, items, ctx["jobs"])
@@ -320,19 +346,23 @@ def suite_capability(corpus, ctx):
 
 def suite_refuse(corpus, ctx):
     def one(r):
-        resp = _post(f"{ctx['gw']}/v1/capability-route", {"query": r["query"]}, ctx["timeout"])
-        if _unreachable(resp):
-            return C(r["id"], "UNKNOWN", "gateway 미응답", query=r["query"],
-                     reason="SERVICE_DOWN", layer="R")
-        refuse = resp.get("refuse", False)
-        ops = resp.get("ops", [])
-        # off-domain → refuse 또는 ops empty 가 정답(오라우팅 = FAIL)
-        if refuse or not ops:
-            return C(r["id"], "PASS", "refuse/empty=OK", query=r["query"],
-                     reason="ESCALATE_BY_DESIGN", layer="R")
-        got = [op.get("api", "") for op in ops]
-        return C(r["id"], "FAIL", f"오라우팅 {got}", query=r["query"],
-                 reason="MISROUTED", evidence={"ops": got}, layer="R")
+        # 거절도 **여러 표현으로** 확인한다 — 한 문장만 막고 다른 말로는 새는 게 최악이다.
+        queries = [r["query"]] + list(r.get("queryVariants") or [])
+        leaked: list[str] = []
+        for q in queries:
+            resp = _post(f"{ctx['gw']}/v1/capability-route", {"query": q}, ctx["timeout"])
+            if _unreachable(resp):
+                return C(r["id"], "UNKNOWN", "gateway 미응답", query=q,
+                         reason="SERVICE_DOWN", layer="R")
+            if not (resp.get("refuse", False) or not resp.get("ops", [])):
+                leaked.append(f"{q[:18]}→{[o.get('api','') for o in resp.get('ops', [])]}")
+        if not leaked:
+            return C(r["id"], "PASS", f"표현 {len(queries)}개 전부 거절", query=r["query"],
+                     reason="ESCALATE_BY_DESIGN",
+                     evidence={"variantsTried": len(queries)}, layer="R")
+        return C(r["id"], "FAIL", f"오라우팅 {len(leaked)}/{len(queries)}: {leaked[0]}",
+                 query=r["query"], reason="MISROUTED",
+                 evidence={"leaked": leaked, "variantsTried": len(queries)}, layer="R")
     return _pmap(one, corpus["refuseProbes"], ctx["jobs"])
 
 
@@ -487,18 +517,33 @@ def suite_combo(corpus, ctx):
 
     # ── E층: 정책 조합(bldg × setpoint × climate) ─────────────────────────
     pcases = []
-    for b in buildings:
-        bt, hv = b["archetype"].split("|", 1)
-        pcases.append((f"bldg:{bt}|{hv}", {"bt": bt, "hv": hv, "sp": setpoints[1], "cl": climates[0]}))
-    for sp in setpoints:
-        pcases.append((f"sp:{sp}", {"bt": "large_office", "hv": "A", "sp": sp, "cl": climates[0]}))
-    if sweep == "smoke":
-        pcases = pcases[:4]
+    if sweep in ("full", "nationwide"):
+        # 전수: 건물 아키타입 × 설정온도 × 기후 시나리오(× EMS 전략). 셀당 ~0.2s 라 전부 가능하다.
+        #   대표 조합만 보면 "어떤 조합에서 F14 가 비는지"를 영원히 모른다.
+        ems_list = dims.get("ems") or ["M00"]
+        for b in buildings:
+            bt, hv = b["archetype"].split("|", 1)
+            for sp in setpoints:
+                for cl in climates:
+                    for em in ems_list:
+                        pcases.append((f"{bt}|{hv}/{sp}/{cl}/{em}",
+                                       {"bt": bt, "hv": hv, "sp": sp, "cl": cl, "ems": em}))
+    else:
+        for b in buildings:
+            bt, hv = b["archetype"].split("|", 1)
+            pcases.append((f"bldg:{bt}|{hv}", {"bt": bt, "hv": hv, "sp": setpoints[1],
+                                               "cl": climates[0], "ems": "M00"}))
+        for sp in setpoints:
+            pcases.append((f"sp:{sp}", {"bt": "large_office", "hv": "A", "sp": sp,
+                                        "cl": climates[0], "ems": "M00"}))
+        if sweep == "smoke":
+            pcases = pcases[:4]
     for label, p in pcases:
         body = {"building_type": p["bt"], "hvac_type": p["hv"], "city": "Seoul",
-                "scenario": p["cl"], "setpoint": p["sp"], "ems": "M00"}
+                "scenario": p["cl"], "setpoint": p["sp"], "ems": p.get("ems", "M00")}
         resp = _post(f"{ctx['gw']}/v1/climate-scenario", body, ctx["timeout"])
-        ax = {"buildingType": p["bt"], "hvac": p["hv"], "setpoint": p["sp"], "climate": p["cl"]}
+        ax = {"buildingType": p["bt"], "hvac": p["hv"], "setpoint": p["sp"],
+              "climate": p["cl"], "ems": p.get("ems", "M00")}
         if _unreachable(resp):
             rows.append(C(label, "UNKNOWN", "gateway 미응답", axis=ax,
                           reason="SERVICE_DOWN", layer="E")); continue
@@ -532,8 +577,8 @@ def suite_scenario(corpus, ctx):
     """B-op 3D 시연 = be-3d public_scenarios 재생 표면(E층) 등록 확인."""
     rows = []
     candidates = [
-        (f"{ctx['studio']}/api/v1/scenarios?limit=50", "studio-proxy"),
-        (f"{ctx['be3d']}/api/v1/scenarios?limit=50", "be3d-direct"),
+        (f"{ctx['studio']}/api/v1/scenarios?limit=100", "studio-proxy"),
+        (f"{ctx['be3d']}/api/v1/scenarios?limit=100", "be3d-direct"),
     ]
     listed = None
     for url, tag in candidates:
@@ -545,6 +590,20 @@ def suite_scenario(corpus, ctx):
             rows.append(C(f"registry:{tag}", "PASS" if items else "WARN",
                           f"{len(items)} scenario 등록" if items else "등록 0(빈 목록)",
                           evidence={"count": len(items)}, layer="E"))
+            # 등록 **개수**만 세면 "50개 있다"는 말밖에 못 한다. 각 시나리오가 실제로 재생
+            #   가능한 형상인지(id·ops 보유) 개별 셀로 남긴다 — 추가 호출 0(같은 응답 재사용).
+            for it in items:
+                sid = str(it.get("id") or "")[:16]
+                title = str(it.get("title") or "")[:40]
+                ops = it.get("ops") or it.get("spec", {}).get("ops") or []
+                has_id = bool(sid)
+                rows.append(C(f"scenario:{sid or '?'}",
+                              "PASS" if has_id else "FAIL",
+                              f"{title} (op {len(ops)})" if has_id else "id 없음(재생 불가)",
+                              axis={"scenarioId": sid, "title": title},
+                              reason=None if has_id else "NO_RENDERER",
+                              evidence={"ops": len(ops), "schema": it.get("schema_version")},
+                              layer="E"))
             break
         rows.append(C(f"registry:{tag}", "UNKNOWN" if code == 0 else "SKIP", f"HTTP {code}",
                       reason="SERVICE_DOWN" if code == 0 else None, layer="E"))
@@ -816,6 +875,24 @@ def build_ledger(corpus, cells: list[dict], services: dict, ctx, baseline: dict 
     # 무효 판정(§1.3)은 **이번에 실제로 돈 셀**로만 계산한다 — 이월된 옛 UNKNOWN 이 스윕을 무효로
     #   만들면 영원히 회복 못 한다.
     unknown = sum(1 for c in cells if _ledger_status(c) == "UNKNOWN")
+    # ⚠ 전체 비율만 보면 **큰 suite 가 작은 suite 의 실패를 희석**한다. 2026-08-01 실측:
+    #   combo 5003셀 덕에 전체 UNKNOWN 0.8% 였지만 opcode 는 50/68(74%) = 사실상 미측정인데
+    #   원장은 통과로 기록됐다. suite 별로도 본다.
+    by_suite: dict[str, list[int]] = {}
+    for c in cells:
+        b = by_suite.setdefault(c["suite"], [0, 0])
+        b[1] += 1
+        if _ledger_status(c) == "UNKNOWN":
+            b[0] += 1
+    unmeasured = {k: round(v[0] / v[1], 3) for k, v in by_suite.items()
+                  if v[1] >= 5 and v[0] / v[1] > 0.30}
+    # 미측정 suite 의 셀은 시연 후보에서 제외한다 — 판정되지 않은 것을 "안전"이라 부를 수 없다.
+    for r in out_cells:
+        if r["suite"] in unmeasured:
+            r["unmeasuredSuite"] = True
+    for g in greenlist:
+        if g.get("suite") in unmeasured:
+            g["demoSafe"] = False
     return {
         "schemaVersion": "1.0",
         "generatedAt": now,
@@ -827,6 +904,8 @@ def build_ledger(corpus, cells: list[dict], services: dict, ctx, baseline: dict 
         "summary": {**summary, "total": total, "fresh": fresh_count, "carriedOver": carried,
                     "unknownRatio": round(unknown / fresh_count, 4) if fresh_count else 0.0},
         "byReason": by_reason,
+        # 이 suite 들은 UNKNOWN 이 30% 를 넘어 **측정된 것으로 취급하면 안 된다**.
+        "unmeasuredSuites": unmeasured,
         "greenList": greenlist,
         "demoList": [g for g in greenlist if g.get("demoSafe")],   # 시연 대본 후보(router 실증·신선)
         "regressions": regressions,
@@ -847,6 +926,10 @@ def print_ledger_summary(ledger: dict) -> None:
     demo = len(ledger.get("demoList", []))
     print(f"  질의 목록: greenList {len(ledger['greenList'])}건 중 "
           f"**시연 대본 후보 {demo}건**(router 실증·신선)")
+    if ledger.get("unmeasuredSuites"):
+        print("  ⚠️  사실상 미측정 suite(UNKNOWN>30%): "
+              + ", ".join(f"{k} {v:.0%}" for k, v in ledger["unmeasuredSuites"].items())
+              + "  ← 전체 비율에 희석돼 통과로 보이지만 이 suite 는 판정된 게 아니다")
     if ledger["regressions"]:
         nc = sum(1 for r in ledger["regressions"] if r.get("confirmed"))
         print(f"  ❌ 능력 회귀 {len(ledger['regressions'])}건(확정 {nc}) — 잃어버린 능력:")
