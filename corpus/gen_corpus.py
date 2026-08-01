@@ -237,6 +237,13 @@ def build() -> tuple[dict, list[str]]:
     missing_ac = [a for a in ac_apis if a not in op_probes]
     if missing_ac:
         problems.append(f"A/C opcode {len(missing_ac)}종 probeQuery 누락: {missing_ac}")
+    # compose 경로 probe 는 **변형 2개 이상 필수**(§1.2-B). 한 문장으로 R층을 판정하면
+    #   확률적 생성의 단발 실패가 '능력 없음'으로 원장에 박힌다(2026-08-01 placeSmartLamp).
+    thin = [k for k, v in op_probes.items()
+            if v.get("route") == "compose" and len(v.get("probeQueryVariants") or []) < 2]
+    if thin:
+        problems.append(f"compose probe {len(thin)}종에 표현 변형 부족(2개 이상 필요): {thin[:8]}")
+
     stale_probes = [k for k in op_probes if k not in op_apis]
     if stale_probes:
         problems.append(f"overlay opProbes 에 registry 밖 op(고아): {stale_probes}")

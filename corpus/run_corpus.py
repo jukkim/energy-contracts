@@ -200,8 +200,17 @@ def _judge_cap(query, expect, refuse_ok, gw, timeout):
     return "PASS", f"ops={got}", None, ev
 
 
+# compose 는 GPU 한 장에서 직렬 생성이라 장시간 스윕에서 **누적 포화**가 온다.
+#   2026-08-01: 같은 코퍼스로 세 번 연속 돌리자 UNKNOWN 이 0 → 25% → 70% 로 올라 스윕이 무효가 됐고,
+#   잠시 쉰 뒤엔 5/5 정상이었다. 즉 능력이 아니라 부하 문제다. 타임아웃 직후 한 번 식히고 재시도한다.
+_COMPOSE_COOLDOWN_S = 45
+
+
 def _judge_compose(query, expect, refuse_ok, studio, timeout):
     resp = _post(f"{studio}/api/compose", {"query": query}, timeout)
+    if _unreachable(resp):
+        time.sleep(_COMPOSE_COOLDOWN_S)      # 포화 완화 후 1회 재시도(연속 실패 캐스케이드 차단)
+        resp = _post(f"{studio}/api/compose", {"query": query}, timeout)
     if _unreachable(resp):
         return "UNKNOWN", f"studio 미응답: {str(resp)[:50]}", "SERVICE_DOWN", {}
     err = resp.get("_http_error")
@@ -223,6 +232,29 @@ def _judge_compose(query, expect, refuse_ok, studio, timeout):
     return "PASS", f"ops={got}", None, ev
 
 
+def _try_variants(judge, queries, *args):
+    """여러 표현으로 순차 시도 — 하나라도 PASS 면 통과(몇 번째인지 기록), 전부 실패해야 FAIL.
+
+    §1.2-B 를 compose 뿐 아니라 **모든 판정 경로**(cap 라우팅·class·capability)에 적용한다.
+    라우팅이 더 결정론적이라는 이유로 예외를 두면 그 예외가 사각지대가 된다.
+    """
+    st = note = reason = None
+    ev: dict = {}
+    for idx, q in enumerate(queries):
+        st, note, reason, ev = judge(q, *args)
+        if st in ("PASS", "UNKNOWN"):
+            if st == "PASS" and idx > 0:
+                note = f"{note} (변형 {idx+1}번째로 도달 — 1번 문장은 취약)"
+                ev = {**(ev or {}), "variantIndex": idx, "fragileQuery": queries[0]}
+            break
+    if len(queries) > 1:
+        ev = {**(ev or {}), "variantsTried": len(queries)}
+        if st == "FAIL":
+            note = f"{note} — 변형 {len(queries)}개 전부 미도달"
+    return st, note, reason, ev
+
+
+
 def _pmap(fn, items, jobs):
     """순서 보존 병렬 map(하나가 죽어도 나머지는 계속)."""
     if jobs <= 1:
@@ -235,16 +267,17 @@ def _pmap(fn, items, jobs):
 def suite_class(corpus, ctx):
     def one(c):
         rt = c["route"]
+        qs = [c["query"]] + list(c.get("queryVariants") or [])
         if rt == "cap":
-            st, note, reason, ev = _judge_cap(c["query"], c["expectAny"], c["refuseOk"],
-                                              ctx["gw"], ctx["timeout"])
+            st, note, reason, ev = _try_variants(
+                _judge_cap, qs, c["expectAny"], c["refuseOk"], ctx["gw"], ctx["timeout"])
         elif rt == "compose":
             if not ctx["compose"]:
                 st, note, reason, ev = "SKIP", "--compose 미지정", None, {}
             else:
-                st, note, reason, ev = _judge_compose(c["query"], c["expectAny"], c["refuseOk"],
-                                                      ctx["studio"],
-                                                      ctx.get("compose_timeout", ctx["timeout"]))
+                st, note, reason, ev = _try_variants(
+                    _judge_compose, qs, c["expectAny"], c["refuseOk"], ctx["studio"],
+                    ctx.get("compose_timeout", ctx["timeout"]))
         elif rt == "ops_status":
             code = _get(f"{ctx['studio']}/api/ops-status", ctx["timeout"])
             if code == 200:
@@ -285,11 +318,14 @@ def suite_opcode(corpus, ctx):
                         note = f"{note} (변형 {idx+1}번째로 도달 — 1번 문장은 취약)"
                         ev = {**ev, "variantIndex": idx, "fragileQuery": queries[0]}
                     break
+            if len(queries) > 1:
+                ev = {**(ev or {}), "variantsTried": len(queries)}
             if st == "FAIL" and len(queries) > 1:
                 note = f"{note} — 변형 {len(queries)}개 전부 미도달"
         else:
-            st, note, reason, ev = _judge_cap(p["probeQuery"], p.get("expectAny", []),
-                                              p.get("refuseOk", False), ctx["gw"], ctx["timeout"])
+            st, note, reason, ev = _try_variants(
+                _judge_cap, [p["probeQuery"]] + list(p.get("probeQueryVariants") or []),
+                p.get("expectAny", []), p.get("refuseOk", False), ctx["gw"], ctx["timeout"])
         return C(api, st, note, query=p["probeQuery"], reason=reason, evidence=ev,
                  axis={"op": api}, layer="R")
     return _pmap(one, items, ctx["jobs"])
@@ -300,8 +336,9 @@ def suite_capability(corpus, ctx):
 
     def one(kv):
         ex, p = kv
-        st, note, reason, ev = _judge_cap(p["probeQuery"], p.get("expectAny", []),
-                                          p.get("refuseOk", False), ctx["gw"], ctx["timeout"])
+        st, note, reason, ev = _try_variants(
+            _judge_cap, [p["probeQuery"]] + list(p.get("probeQueryVariants") or []),
+            p.get("expectAny", []), p.get("refuseOk", False), ctx["gw"], ctx["timeout"])
         return C(ex, st, note, query=p["probeQuery"], reason=reason, evidence=ev,
                  axis={"executor": ex}, layer="R")
     return _pmap(one, items, ctx["jobs"])
@@ -309,19 +346,23 @@ def suite_capability(corpus, ctx):
 
 def suite_refuse(corpus, ctx):
     def one(r):
-        resp = _post(f"{ctx['gw']}/v1/capability-route", {"query": r["query"]}, ctx["timeout"])
-        if _unreachable(resp):
-            return C(r["id"], "UNKNOWN", "gateway 미응답", query=r["query"],
-                     reason="SERVICE_DOWN", layer="R")
-        refuse = resp.get("refuse", False)
-        ops = resp.get("ops", [])
-        # off-domain → refuse 또는 ops empty 가 정답(오라우팅 = FAIL)
-        if refuse or not ops:
-            return C(r["id"], "PASS", "refuse/empty=OK", query=r["query"],
-                     reason="ESCALATE_BY_DESIGN", layer="R")
-        got = [op.get("api", "") for op in ops]
-        return C(r["id"], "FAIL", f"오라우팅 {got}", query=r["query"],
-                 reason="MISROUTED", evidence={"ops": got}, layer="R")
+        # 거절도 **여러 표현으로** 확인한다 — 한 문장만 막고 다른 말로는 새는 게 최악이다.
+        queries = [r["query"]] + list(r.get("queryVariants") or [])
+        leaked: list[str] = []
+        for q in queries:
+            resp = _post(f"{ctx['gw']}/v1/capability-route", {"query": q}, ctx["timeout"])
+            if _unreachable(resp):
+                return C(r["id"], "UNKNOWN", "gateway 미응답", query=q,
+                         reason="SERVICE_DOWN", layer="R")
+            if not (resp.get("refuse", False) or not resp.get("ops", [])):
+                leaked.append(f"{q[:18]}→{[o.get('api','') for o in resp.get('ops', [])]}")
+        if not leaked:
+            return C(r["id"], "PASS", f"표현 {len(queries)}개 전부 거절", query=r["query"],
+                     reason="ESCALATE_BY_DESIGN",
+                     evidence={"variantsTried": len(queries)}, layer="R")
+        return C(r["id"], "FAIL", f"오라우팅 {len(leaked)}/{len(queries)}: {leaked[0]}",
+                 query=r["query"], reason="MISROUTED",
+                 evidence={"leaked": leaked, "variantsTried": len(queries)}, layer="R")
     return _pmap(one, corpus["refuseProbes"], ctx["jobs"])
 
 
@@ -332,7 +373,17 @@ def _combo_full_from_matrix(ctx):
     개별 choropleth 호출(셀당 수 MB)로는 전수 스윕이 불가능하다 — 그래서 be-3d 에
     `/api/v1/metric/coverage/matrix` 를 두었다(PR #434). 여기서는 그 결과를 원장 셀로 옮긴다.
     """
-    url = f"{ctx['be3d']}/api/v1/metric/coverage/matrix?regions=front"
+    # full = 프론트가 실제로 가는 34지역 / nationwide = 데이터가 있는 전국 297 시군구.
+    #   둘을 나누는 이유: 34는 "UI 로 도달 가능한 축", 297은 "데이터가 존재하는 축"이다.
+    #   시연 안전은 34 로 판단하고, 전국 확장 여지는 297 로 본다.
+    scope_arg = "all" if ctx.get("sweep") == "nationwide" else "front"
+    # 전국 스윕이라도 **프론트 34지역은 front 로 태깅**한다 — 색인이 그 지역만 풍부 형식으로
+    #   싣기 때문이다(나머지는 압축). 축 목록은 be-3d 가 준다(하드코딩 0).
+    front: set[str] = set()
+    fc, fa = _get_json(f"{ctx['be3d']}/api/v1/metric/coverage/axes", ctx["timeout"], retries=1)
+    if fc == 200:
+        front = {r.get("code") for r in (fa.get("regions") or []) if r.get("code")}
+    url = f"{ctx['be3d']}/api/v1/metric/coverage/matrix?regions={scope_arg}"
     code, d = _get_json(url, max(ctx["timeout"], 60))
     if code != 200:
         return [C("coverage-matrix", "UNKNOWN" if code == 0 else "FAIL",
@@ -355,7 +406,10 @@ def _combo_full_from_matrix(ctx):
                       f"({round((cell.get('coverage_ratio') or 0) * 100, 1)}%)",
                       query=f"{label} {disp.get(cell['metric'], cell['metric'])} 지도로 보여줘",
                       axis={"region": cell["region"], "metric": cell["metric"],
-                            "regionLabel": cell.get("region_label")},
+                            "regionLabel": cell.get("region_label"),
+                            # scope: front=UI 로 도달 가능한 34지역 / nationwide=데이터가 있는 297.
+                            #   색인은 front 를 풍부하게, 나머지는 압축 형식으로 싣는다(번들 크기).
+                            "scope": "front" if cell["region"] in front else "nationwide"},
                       reason=reason,
                       evidence={"withValue": cell.get("with_value"),
                                 "measured": cell.get("measured"),
@@ -412,7 +466,7 @@ def suite_combo(corpus, ctx):
     rows: list[dict] = []
 
     # ── G층: region×metric ────────────────────────────────────────────────
-    if sweep == "full":
+    if sweep in ("full", "nationwide"):
         rows += _combo_full_from_matrix(ctx)
         greens = [r for r in rows if r.get("_ledger") == "GREEN"]
         rows += _combo_render_crosscheck(ctx, greens, sample=ctx.get("render_sample", 3))
@@ -463,18 +517,33 @@ def suite_combo(corpus, ctx):
 
     # ── E층: 정책 조합(bldg × setpoint × climate) ─────────────────────────
     pcases = []
-    for b in buildings:
-        bt, hv = b["archetype"].split("|", 1)
-        pcases.append((f"bldg:{bt}|{hv}", {"bt": bt, "hv": hv, "sp": setpoints[1], "cl": climates[0]}))
-    for sp in setpoints:
-        pcases.append((f"sp:{sp}", {"bt": "large_office", "hv": "A", "sp": sp, "cl": climates[0]}))
-    if sweep == "smoke":
-        pcases = pcases[:4]
+    if sweep in ("full", "nationwide"):
+        # 전수: 건물 아키타입 × 설정온도 × 기후 시나리오(× EMS 전략). 셀당 ~0.2s 라 전부 가능하다.
+        #   대표 조합만 보면 "어떤 조합에서 F14 가 비는지"를 영원히 모른다.
+        ems_list = dims.get("ems") or ["M00"]
+        for b in buildings:
+            bt, hv = b["archetype"].split("|", 1)
+            for sp in setpoints:
+                for cl in climates:
+                    for em in ems_list:
+                        pcases.append((f"{bt}|{hv}/{sp}/{cl}/{em}",
+                                       {"bt": bt, "hv": hv, "sp": sp, "cl": cl, "ems": em}))
+    else:
+        for b in buildings:
+            bt, hv = b["archetype"].split("|", 1)
+            pcases.append((f"bldg:{bt}|{hv}", {"bt": bt, "hv": hv, "sp": setpoints[1],
+                                               "cl": climates[0], "ems": "M00"}))
+        for sp in setpoints:
+            pcases.append((f"sp:{sp}", {"bt": "large_office", "hv": "A", "sp": sp,
+                                        "cl": climates[0], "ems": "M00"}))
+        if sweep == "smoke":
+            pcases = pcases[:4]
     for label, p in pcases:
         body = {"building_type": p["bt"], "hvac_type": p["hv"], "city": "Seoul",
-                "scenario": p["cl"], "setpoint": p["sp"], "ems": "M00"}
+                "scenario": p["cl"], "setpoint": p["sp"], "ems": p.get("ems", "M00")}
         resp = _post(f"{ctx['gw']}/v1/climate-scenario", body, ctx["timeout"])
-        ax = {"buildingType": p["bt"], "hvac": p["hv"], "setpoint": p["sp"], "climate": p["cl"]}
+        ax = {"buildingType": p["bt"], "hvac": p["hv"], "setpoint": p["sp"],
+              "climate": p["cl"], "ems": p.get("ems", "M00")}
         if _unreachable(resp):
             rows.append(C(label, "UNKNOWN", "gateway 미응답", axis=ax,
                           reason="SERVICE_DOWN", layer="E")); continue
@@ -508,8 +577,8 @@ def suite_scenario(corpus, ctx):
     """B-op 3D 시연 = be-3d public_scenarios 재생 표면(E층) 등록 확인."""
     rows = []
     candidates = [
-        (f"{ctx['studio']}/api/v1/scenarios?limit=50", "studio-proxy"),
-        (f"{ctx['be3d']}/api/v1/scenarios?limit=50", "be3d-direct"),
+        (f"{ctx['studio']}/api/v1/scenarios?limit=100", "studio-proxy"),
+        (f"{ctx['be3d']}/api/v1/scenarios?limit=100", "be3d-direct"),
     ]
     listed = None
     for url, tag in candidates:
@@ -521,6 +590,20 @@ def suite_scenario(corpus, ctx):
             rows.append(C(f"registry:{tag}", "PASS" if items else "WARN",
                           f"{len(items)} scenario 등록" if items else "등록 0(빈 목록)",
                           evidence={"count": len(items)}, layer="E"))
+            # 등록 **개수**만 세면 "50개 있다"는 말밖에 못 한다. 각 시나리오가 실제로 재생
+            #   가능한 형상인지(id·ops 보유) 개별 셀로 남긴다 — 추가 호출 0(같은 응답 재사용).
+            for it in items:
+                sid = str(it.get("id") or "")[:16]
+                title = str(it.get("title") or "")[:40]
+                ops = it.get("ops") or it.get("spec", {}).get("ops") or []
+                has_id = bool(sid)
+                rows.append(C(f"scenario:{sid or '?'}",
+                              "PASS" if has_id else "FAIL",
+                              f"{title} (op {len(ops)})" if has_id else "id 없음(재생 불가)",
+                              axis={"scenarioId": sid, "title": title},
+                              reason=None if has_id else "NO_RENDERER",
+                              evidence={"ops": len(ops), "schema": it.get("schema_version")},
+                              layer="E"))
             break
         rows.append(C(f"registry:{tag}", "UNKNOWN" if code == 0 else "SKIP", f"HTTP {code}",
                       reason="SERVICE_DOWN" if code == 0 else None, layer="E"))
@@ -528,6 +611,44 @@ def suite_scenario(corpus, ctx):
         rows.append(C("scenario-registry", "UNKNOWN",
                       "public_scenarios 미응답 — B-op 재생 표면 미검증",
                       reason="SERVICE_DOWN", layer="E"))
+    return rows
+
+
+
+# ── spatial (질의×지역) ──────────────────────────────────────────────────────
+# 지금까지 지역 축은 **지도 지표**에만 있었다. 3D 연출·앵커 카메라·건물 검색은 다른 자산에
+#   의존하므로 "부산에서 이 질의가 되는가"를 원장이 답하지 못했다(2026-08-01 사용자 지적).
+#   be-3d /coverage/spatial 이 자산 개수를 주고, 여기서 op 유형별 셀로 옮긴다.
+SPATIAL_LABEL = {
+    "metricMap":      "지표 지도(단계구분도)",
+    "drape3d":        "3D 건물 채색·옥상/외피 연출",
+    "anchorCamera":   "앵커 카메라·주행 연출",
+    "buildingSearch": "건물 지정·단건 분석",
+}
+
+
+def suite_spatial(corpus, ctx):
+    """지역별 공간 능력 — be-3d 단일 콜. 지도 커버리지(G층)와 **다른 축**이다."""
+    scope = "all" if ctx.get("sweep") == "nationwide" else "front"
+    url = f"{ctx['be3d']}/api/v1/metric/coverage/spatial?regions={scope}"
+    code, d = _get_json(url, max(ctx["timeout"], 60))
+    if code != 200:
+        return [C("spatial", "UNKNOWN" if code == 0 else "FAIL", f"HTTP {code}",
+                  reason="SERVICE_DOWN" if code == 0 else "HTTP_ERROR", layer="E")]
+    rows = []
+    for cell in d.get("cells", []):
+        rg, label = cell["region"], cell.get("region_label") or cell["region"]
+        for cap, ok in (cell.get("capabilities") or {}).items():
+            evidence = {"tdmapRows": cell.get("tdmapRows"), "anchors": cell.get("anchors"),
+                        "okMetrics": cell.get("okMetrics"), "buildings": cell.get("buildings")}
+            rows.append(C(f"{rg}/{cap}", "PASS" if ok else "WARN",
+                          f"{SPATIAL_LABEL.get(cap, cap)} {'가능' if ok else '불가'}"
+                          f" (타일 {cell.get('tdmapRows')}·앵커 {cell.get('anchors')})",
+                          axis={"region": rg, "regionLabel": label, "spatial": cap},
+                          reason=None if ok else "NO_SPATIAL_ASSET",
+                          evidence=evidence, layer="E"))
+            if not ok:
+                rows[-1]["_ledger"] = "RED"     # 그 지역에서 그 유형 질의는 제안하면 안 된다
     return rows
 
 
@@ -557,12 +678,12 @@ def suite_static(corpus, ctx):
 
 SUITES = {"static": suite_static, "class": suite_class, "opcode": suite_opcode,
           "capability": suite_capability, "refuse": suite_refuse,
-          "combo": suite_combo, "scenario": suite_scenario}
+          "combo": suite_combo, "scenario": suite_scenario, "spatial": suite_spatial}
 
 SUITE_SERVICES = {                       # 각 suite 가 요구하는 서비스(P0 프리플라이트)
     "static": set(), "class": {"gw", "studio"}, "opcode": {"gw"},
     "capability": {"gw"}, "refuse": {"gw"}, "combo": {"gw", "studio", "be3d"},
-    "scenario": {"be3d"},
+    "scenario": {"be3d"}, "spatial": {"be3d"},
 }
 
 # git diff 파일 → 영향 suite 매핑(사용자 요구: '수정 발생 시 전수')
@@ -578,7 +699,10 @@ CHANGE_MAP = [
     ("f14",              ["combo"]),
     ("climate",          ["combo"]),
     ("sigungu",          ["combo"]),
-    ("region_camera",    ["combo", "scenario"]),
+    ("region_camera",    ["combo", "scenario", "spatial"]),
+    ("anchors",          ["spatial", "opcode"]),
+    ("vworld_tdmap",     ["spatial"]),
+    ("tdmap",            ["spatial"]),
     ("metric_catalog",   ["combo"]),
     ("public_scenarios", ["scenario"]),
     # 2026-08-01 사냥꾼: 아래는 능력에 직결되는데 어떤 토큰에도 안 걸리던 경로들.
@@ -701,8 +825,13 @@ def build_ledger(corpus, cells: list[dict], services: dict, ctx, baseline: dict 
             by_reason[c["reason"]] = by_reason.get(c["reason"], 0) + 1
         # 회귀 = '잃어버린 능력'만(총계 아님). UNKNOWN 은 회귀로 세지 않는다(§1.3).
         if prev_st == "GREEN" and led in ("RED",):
+            # ⚠ compose 는 확률적 생성이라 **단발 실패**가 곧 회귀는 아니다(2026-08-01 placeSmartLamp:
+            #   회귀로 떴는데 3표현 재시험 결과 원래 불안정한 op 이었다). 변형으로 여러 번 시도한
+            #   셀만 '확정 회귀'로 세고, 단발 셀은 미확정으로 표시해 사람이 재시험하게 한다.
+            confirmed = bool((c.get("evidence") or {}).get("variantsTried"))
             regressions.append({"key": key, "from": prev_st, "to": led,
-                                "reason": c.get("reason"), "axis": c.get("axis")})
+                                "reason": c.get("reason"), "axis": c.get("axis"),
+                                "confirmed": confirmed})
         if led == "GREEN" and c.get("query"):
             # verifiedBy 3단계로 나눈다(2026-08-01 사냥꾼: "router" 가 실증 없이 붙던 문제).
             #   router = 자연어→op 라우팅이 **실제 op 를 산출**했다  ← 시연 대본은 이것만 쓴다
@@ -746,6 +875,24 @@ def build_ledger(corpus, cells: list[dict], services: dict, ctx, baseline: dict 
     # 무효 판정(§1.3)은 **이번에 실제로 돈 셀**로만 계산한다 — 이월된 옛 UNKNOWN 이 스윕을 무효로
     #   만들면 영원히 회복 못 한다.
     unknown = sum(1 for c in cells if _ledger_status(c) == "UNKNOWN")
+    # ⚠ 전체 비율만 보면 **큰 suite 가 작은 suite 의 실패를 희석**한다. 2026-08-01 실측:
+    #   combo 5003셀 덕에 전체 UNKNOWN 0.8% 였지만 opcode 는 50/68(74%) = 사실상 미측정인데
+    #   원장은 통과로 기록됐다. suite 별로도 본다.
+    by_suite: dict[str, list[int]] = {}
+    for c in cells:
+        b = by_suite.setdefault(c["suite"], [0, 0])
+        b[1] += 1
+        if _ledger_status(c) == "UNKNOWN":
+            b[0] += 1
+    unmeasured = {k: round(v[0] / v[1], 3) for k, v in by_suite.items()
+                  if v[1] >= 5 and v[0] / v[1] > 0.30}
+    # 미측정 suite 의 셀은 시연 후보에서 제외한다 — 판정되지 않은 것을 "안전"이라 부를 수 없다.
+    for r in out_cells:
+        if r["suite"] in unmeasured:
+            r["unmeasuredSuite"] = True
+    for g in greenlist:
+        if g.get("suite") in unmeasured:
+            g["demoSafe"] = False
     return {
         "schemaVersion": "1.0",
         "generatedAt": now,
@@ -757,6 +904,8 @@ def build_ledger(corpus, cells: list[dict], services: dict, ctx, baseline: dict 
         "summary": {**summary, "total": total, "fresh": fresh_count, "carriedOver": carried,
                     "unknownRatio": round(unknown / fresh_count, 4) if fresh_count else 0.0},
         "byReason": by_reason,
+        # 이 suite 들은 UNKNOWN 이 30% 를 넘어 **측정된 것으로 취급하면 안 된다**.
+        "unmeasuredSuites": unmeasured,
         "greenList": greenlist,
         "demoList": [g for g in greenlist if g.get("demoSafe")],   # 시연 대본 후보(router 실증·신선)
         "regressions": regressions,
@@ -777,8 +926,13 @@ def print_ledger_summary(ledger: dict) -> None:
     demo = len(ledger.get("demoList", []))
     print(f"  질의 목록: greenList {len(ledger['greenList'])}건 중 "
           f"**시연 대본 후보 {demo}건**(router 실증·신선)")
+    if ledger.get("unmeasuredSuites"):
+        print("  ⚠️  사실상 미측정 suite(UNKNOWN>30%): "
+              + ", ".join(f"{k} {v:.0%}" for k, v in ledger["unmeasuredSuites"].items())
+              + "  ← 전체 비율에 희석돼 통과로 보이지만 이 suite 는 판정된 게 아니다")
     if ledger["regressions"]:
-        print(f"  ❌ 능력 회귀 {len(ledger['regressions'])}건 — 잃어버린 능력:")
+        nc = sum(1 for r in ledger["regressions"] if r.get("confirmed"))
+        print(f"  ❌ 능력 회귀 {len(ledger['regressions'])}건(확정 {nc}) — 잃어버린 능력:")
         for r in ledger["regressions"][:10]:
             print(f"     · {r['key']}  {r['from']}→{r['to']}  ({r['reason']})")
     else:
@@ -792,8 +946,9 @@ def main():
     ap.add_argument("--suite", nargs="+", choices=list(SUITES))
     ap.add_argument("--changed", nargs="+", metavar="FILE")
     ap.add_argument("--compose", action="store_true", help="compose 경로 라이브(느림)")
-    ap.add_argument("--sweep", choices=["smoke", "rep", "full"], default="smoke",
-                    help="G층 범위: smoke(대표 12) / rep(대표지역×전지표) / full(전지역×전지표 510셀)")
+    ap.add_argument("--sweep", choices=["smoke", "rep", "full", "nationwide"], default="smoke",
+                    help="G층 범위: smoke(대표 12) / rep(대표지역×전지표) / "
+                         "full(프론트 34지역×전지표 510셀) / nationwide(전국 297 시군구 4455셀)")
     ap.add_argument("--combo-limit", type=int, default=12, help="smoke 시 combo 상한(0=전부)")
     ap.add_argument("--render-sample", type=int, default=3, help="full 시 렌더 교차확인 표본 수")
     ap.add_argument("--jobs", type=int, default=4, help="라우팅 프로브 병렬도")
@@ -817,7 +972,7 @@ def main():
     corpus = json.loads(CORPUS_JSON.read_text(encoding="utf-8"))
 
     if args.all:
-        run = ["static", "opcode", "capability", "class", "refuse", "combo", "scenario"]
+        run = ["static", "opcode", "capability", "class", "refuse", "combo", "scenario", "spatial"]
     elif args.changed:
         run = suites_for_changes(args.changed)
         print(f"[changed] {args.changed} → suite: {run}")
@@ -908,7 +1063,12 @@ def main():
 
     if invalid:
         sys.exit(2)
-    if grand["FAIL"] or ledger["regressions"]:
+    confirmed_reg = [r for r in ledger["regressions"] if r.get("confirmed")]
+    unconfirmed = [r for r in ledger["regressions"] if not r.get("confirmed")]
+    if unconfirmed:
+        print(f"⚠️  미확정 회귀 {len(unconfirmed)}건(단발 실패 — 변형 재시험 필요): "
+              f"{', '.join(r['key'] for r in unconfirmed[:5])}")
+    if grand["FAIL"] or confirmed_reg:
         sys.exit(1)
     # SKIP 과다 = "게이트가 절반만 돌았다". exit 0 으로 뭉개면 --compose 없이 돈 스윕이
     #   '전부 통과'로 읽힌다(실측: --all 에서 SKIP 55/125). 자동화가 구분할 수 있게 별 코드로.

@@ -21,6 +21,7 @@ import argparse
 import json
 import subprocess
 import sys
+import time
 from pathlib import Path
 
 if sys.platform == "win32":
@@ -71,14 +72,21 @@ def recreate(r: dict) -> tuple[bool, str]:
         env_args += ["-e", e]                      # 값은 인자로만 전달(출력 없음)
     if not has_token:
         return False, "토큰 env 없음 — 수동 재등록 필요"
+    # ⚠ rm → run 순서는 run 이 실패하면 **컨테이너가 사라진 채 남는다**(2026-08-01 RCA:
+    #   같은 패턴의 recover_runners.sh 가 오늘 러너 4개를 그렇게 지웠다). 실패 시 즉시 재시도하고,
+    #   그래도 안 되면 "소멸"로 명시 보고한다 — 조용히 사라지는 것만은 막는다.
     subprocess.run(["docker", "rm", "-f", r["name"]], capture_output=True, text=True)
-    p = subprocess.run(
-        ["docker", "run", "-d", "--name", r["name"], "--restart", r["restart"] or "always",
-         *env_args, r["image"]],
-        capture_output=True, text=True, encoding="utf-8", errors="replace")
-    if p.returncode != 0:
-        return False, (p.stderr or "").strip()[:120]
-    return True, "재생성"
+    last = ""
+    for attempt in range(2):
+        p = subprocess.run(
+            ["docker", "run", "-d", "--name", r["name"], "--restart", r["restart"] or "always",
+             *env_args, r["image"]],
+            capture_output=True, text=True, encoding="utf-8", errors="replace")
+        if p.returncode == 0:
+            return True, "재생성" if attempt == 0 else "재생성(2회차)"
+        last = (p.stderr or "").strip()[:120]
+        time.sleep(5)
+    return False, f"**소멸 상태**(재시도 실패): {last}"
 
 
 EXPECTED = Path(__file__).resolve().parent / "runners.expected.json"
