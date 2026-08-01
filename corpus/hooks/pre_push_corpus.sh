@@ -103,6 +103,12 @@ fi
 
 case "$RC" in
   0) _journal "pass" "$NFILES"; exit 0 ;;
+  3)
+    # 불완전 스윕(SKIP 과다). 훅은 --compose 를 주지 않으므로 B-op R층 SKIP 은 **설계상 정상**이다.
+    #   차단하면 모든 푸시가 막힌다(2026-08-01 도입 직후 자기 푸시를 막아서 발견).
+    #   신호는 살려두되(저널·stderr) 통과시킨다 — exit 3 의 소비자는 수동 --all 과 CI 다.
+    echo "ℹ️  [corpus] 불완전 스윕(B-op R층은 --compose 필요) — 정적·라이브 검사는 통과." >&2
+    _journal "incomplete(skip)" "$NFILES"; exit 0 ;;
   2)
     # 라이브 판정 불가 — 그래도 **정적(D층)은 반드시** 통과시킨다.
     #   게이트가 강할수록(라이브 매핑) 서비스 하나에 통째로 무력화되던 역설을 막는다.
