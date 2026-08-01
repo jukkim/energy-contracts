@@ -4,6 +4,29 @@
 
 ---
 
+## v0.3.30 — 2026-08-01
+
+### provision v1.3 — `config.operating` 선언 (에이전트 동작 특성)
+
+생산자(mgcc `provisioner.operating_config`)와 소비자(edge-agent
+`persona_registry.resolve_persona_from_operating`)가 **둘 다 있는데 계약만 침묵**했다.
+`additionalProperties` 가 열려 있어 통과는 했지만 **검증도 발견도 안 됐다** —
+스키마를 보고 이 필드의 존재를 알 방법이 없었다.
+
+- `$defs.OperatingConfig` — `objective` + `customProfiles[]`
+- **발령과 다른 축**: 평시 운영의 주체는 **엣지 에이전트(APE)** 다. 이 블록은
+  에이전트에게 *어떤 성향으로* 돌리라고 말하는 것이지 *지금 무엇을 하라* 는 명령이
+  아니다. 명령은 `dr_dispatch_event` 이고 발령 창 동안만 유효하다 — 이쪽은 해제할
+  때까지 지속된다.
+- 미제공 시 엣지는 **자기 설정을 유지**한다(빈 블록으로 초기화되지 않는다)
+
+⚠ `objective` 값집합은 `ems_strategies.json#/$defs/ObjectiveType` 의 **guarded
+mirror** 다. 교차 파일 `$ref` 는 일반 jsonschema 검증기가 풀지 못해(실측) 복제했고,
+`tests/test_canonical_value_gate.py` 가 매 실행 원본과 대조한다.
+
+효과: 미지원 objective 가 **이제 거부된다**(선언 전에는 그냥 통과했다).
+생성 상수 drift 0.
+
 ## v0.3.29 — 2026-08-01
 
 ### equipment_taxonomy v1.1.0 — 설비별 표준 관제점 집합(point_sets)

@@ -8,7 +8,7 @@
     "edge-agent",
     "mgcc"
   ],
-  "version": "1.2",
+  "version": "1.3",
   "type": "object",
   "required": [
     "provisioning_id",
@@ -254,6 +254,10 @@
               "type": "number"
             }
           }
+        },
+        "operating": {
+          "$ref": "#/$defs/OperatingConfig",
+          "description": "(optional) 에이전트 동작 특성. 미제공 시 엣지는 **자기 설정을 유지**한다 — 빈 블록을 보내 초기화되지 않는다."
         }
       }
     },
@@ -339,5 +343,67 @@
         }
       }
     }
-  ]
+  ],
+  "$defs": {
+    "OperatingConfig": {
+      "type": "object",
+      "description": "엣지 **에이전트의 동작 특성**을 정하는 설정 조각.\n\n**왜 발령(dispatch)과 다른가**: 평시 운영의 주체는 **엣지 에이전트(APE)**다 — 스스로 판단해 돌린다. 이 블록은 그 에이전트에게 *어떤 성향으로* 돌리라고 말하는 것이지, *지금 무엇을 하라*는 명령이 아니다. 명령은 `dr_dispatch_event`(발령)이고 발령 창 동안만 유효하다. 이쪽은 **해제할 때까지 지속**된다.\n\n**왜 이제 선언하나**: 생산자(mgcc `provisioner.operating_config`)와 소비자(edge-agent `persona_registry.resolve_persona_from_operating`)가 **둘 다 있는데 계약만 침묵**했다. `additionalProperties` 가 열려 있어 통과는 했지만 검증도 발견도 안 됐다 — 스키마를 보고 이 필드의 존재를 알 방법이 없었다.",
+      "additionalProperties": true,
+      "properties": {
+        "objective": {
+          "type": "string",
+          "enum": [
+            "reliability",
+            "economic",
+            "carbon",
+            "optimal"
+          ],
+          "description": "에이전트 운영 목표.\n⚠ **guarded mirror**: 값집합 SSOT 는 `ems_strategies.json#/$defs/ObjectiveType` 다. 교차 파일 $ref 는 일반 검증기가 못 풀어(실측) 여기 복제하되, `tests/test_canonical_value_gate.py` 가 원본과 같은지 **매 실행 확인**한다 — 손으로 갈라지면 테스트가 먼저 깨진다.\n에이전트 운영 목표. 그룹 발령 `operating_mode.profile` 과 **같은 값집합**이지만 축이 다르다 — 이건 건물 단건·상시, 저건 그룹 일괄·한시.\n⚠ 소비 우선순위(edge-agent §7.6.1): **현장 운영자 명시 설정(env) > provision > 자동**. 원격이 현장을 덮지 않는다.\n⚠ 레지스트리에 없는 값은 **무시**된다(안전 기본으로 폴백) — 조용히 이상한 프로파일로 돌지 않는다."
+        },
+        "customProfiles": {
+          "type": "array",
+          "description": "현장 저작 프로파일. builtin 4종 밖의 성향을 콘솔에서 만들어 내려보낸다. `objective` 가 여기 등록한 id 를 가리킬 수 있다(등록이 해석보다 먼저 일어나야 한다).\n**부분 성공**: 항목 하나가 잘못돼도 나머지·builtin 은 정상이다 — 전부 아니면 전무가 아니다.",
+          "items": {
+            "type": "object",
+            "required": [
+              "id"
+            ],
+            "additionalProperties": true,
+            "properties": {
+              "id": {
+                "type": "string",
+                "pattern": "^[a-z][a-z0-9_-]*$",
+                "description": "프로파일 식별자. builtin 4종과 겹치면 덮어쓴다."
+              },
+              "label_kr": {
+                "type": "string"
+              },
+              "weights": {
+                "type": "object",
+                "description": "목적함수 가중치(비용·쾌적·탄소 등). 합이 1일 필요는 없다 — 상대 비중이다."
+              },
+              "strategy_normal": {
+                "type": "string"
+              },
+              "strategy_peak": {
+                "type": "string"
+              },
+              "ess_reserve_pct": {
+                "type": "number",
+                "minimum": 0,
+                "maximum": 100
+              },
+              "risk": {
+                "type": "string"
+              },
+              "dr_type": {
+                "type": "string"
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "updated": "2026-08-01"
 }

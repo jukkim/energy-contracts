@@ -138,3 +138,24 @@ def test_required_points_exist_for_the_equipment_mgcc_draws():
         assert kind in sets, f"MGCC 가 그리는 설비인데 점 집합이 없다: {kind}"
         assert any(p.get("required") for p in sets[kind]), \
             f"{kind}: 기대(required) 점이 하나도 없다 — 커버리지 판정이 불가능하다"
+
+
+def test_provision_objective_mirrors_the_strategy_ssot():
+    """`provision.config.operating.objective` 의 값집합이 SSOT 와 같은가.
+
+    교차 파일 `$ref`(`ems_strategies.json#/$defs/ObjectiveType`)는 일반 jsonschema
+    검증기가 풀지 못해(실측 2026-08-01) 값을 복제했다. 복제는 갈라지기 마련이므로
+    **매 실행 대조**한다 — 손으로 한쪽만 고치면 여기서 먼저 깨진다.
+    """
+    import json
+    from pathlib import Path
+
+    root = Path(__file__).resolve().parents[1] / "energy_contracts" / "schemas"
+    src = json.loads((root / "ems_strategies.json").read_text(encoding="utf-8"))
+    prov = json.loads((root / "provision.json").read_text(encoding="utf-8"))
+
+    ssot = src["$defs"]["ObjectiveType"]["enum"]
+    mirror = prov["$defs"]["OperatingConfig"]["properties"]["objective"]["enum"]
+    assert mirror == ssot, (
+        f"objective 값집합이 갈라졌다 — SSOT {ssot} ↔ provision {mirror}. "
+        "ems_strategies.json 이 원본이다.")
