@@ -45,6 +45,39 @@ WORKSPACE_ROOT = CONTRACTS_ROOT.parents[1]
 # 화이트리스트 → m4_survey_exports.py 산출 (`scratch/m4_exports_audit.json`)
 # 기반으로 결정. 새 symbol 필요 시 본 manifest 갱신 후 `--all` 재실행.
 PROJECT_TARGETS: dict[str, dict] = {
+    # ⚠ **2026-08-02 추가** — sejong 의 `_generated_constants.py` 는 "AUTO-GENERATED …
+    # gen_constants.py 로 재생성" 이라고 **스스로 밝히는데** 이 표에 없어서 `--all` 이
+    # 한 번도 건드리지 않았다. 한 번 생성되고 고아가 된 상태였다.
+    # 결과: EC 가 M21·M22 를 승격(2026-07-10)했는데 sejong 은 M00~M20 에 멈춰,
+    # 자기 테스트(`test_strategy_codes_match_ssot`)가 빨간불이었다 — CI 도 없어서
+    # 아무도 몰랐다. 파일이 "생성물" 이라고 선언하면 이 표에 있어야 한다.
+    "building-energy-sejong": {
+        "python": "projects/building-energy-sejong/src/shared/_generated_constants.py",
+        "ts": "projects/building-energy-sejong/frontend/src/shared/_generated_constants.ts",
+        "exports": {
+            # TS 는 프런트가 실제로 쓰는 i18n 만. py 와 심볼을 맞추려 넓히면
+            # 번들에 서버 전용 상수가 실린다. 단 **SOURCE_HASH 는 같아야** 한다
+            # (sejong `test_ts_and_py_have_same_source_hash` 가 고정).
+            "ts": ["I18N_KEYS", "I18N_FALLBACK_LANG"],
+            "python": [
+                "AGENT_REGISTRY", "AI_MODELS", "AUTH_JWT_POLICY",
+                "AUTH_PERMISSIONS", "AUTH_PROJECT_DEFAULT_SCOPES", "AUTH_SCOPES",
+                "BUILDING_USAGES", "COMPUTER_PROFILES", "DATA_SOURCES",
+                "DATA_SOURCE_LABELS", "DB_MIGRATIONS", "EMISSION_FACTORS_KR",
+                "ENERGY_CONVERSIONS", "ERROR_CODES", "ERROR_TYPE_PREFIX",
+                "I18N_FALLBACK_LANG", "I18N_KEYS", "INTENT_TYPES",
+                "LINT_CONFIG", "LOGGING_FORMAT", "MQTT_NAMESPACES",
+                "MQTT_TOPIC_PATTERNS", "NL_CONSTRAINTS", "NL_CONTROL_KEYWORDS",
+                "NL_GATE_TOKENS", "NL_STRATEGIES_BY_KEYWORD", "OPENAPI_RESPONSES",
+                "PIPELINE_DATASETS", "PRIMARY_ENERGY_FACTORS", "RUN_MODES",
+                "RUN_MODE_BEHAVIOR", "SECURITY_CORS", "SECURITY_HEADERS",
+                "SIM_EMS_PATTERNS", "SIM_PMV_THRESHOLDS", "SIM_RUN_PERIODS",
+                "STRATEGIES", "STRATEGY_CODES", "TENANT_REGIONS",
+                "TESTS_SHARED", "TEST_GROUPS", "TEST_STAGES",
+                "TEST_TIERS", "ZEB_THRESHOLDS",
+            ],
+        },
+    },
     "edge-agent": {
         "python": "projects/edge-agent/src/_generated_constants.py",
         "exports": {

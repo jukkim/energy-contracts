@@ -1,6 +1,6 @@
 {
-  "_note": "기대 러너 인벤토리 — fix_gh_runners.py --verify 의 분모. 이게 없으면 '사라진 러너'는 정의상 안 보인다(2026-08-01 실증: 17→14 소멸을 아무도 못 봄).",
-  "_updated": "2026-08-01",
+  "_note": "기대 러너 인벤토리 — fix_gh_runners.py --verify 의 분모. 이게 없으면 '사라진 러너'는 정의상 안 보인다(2026-08-01 실증: 17→14 소멸을 아무도 못 봄). | 2026-08-02: 아카이브 repo 러너 3개 제거 — 아카이브 repo 는 워크플로가 없어 잡이 오지 않는데 컨테이너만 4090 에 상주했다. 인벤토리에 남겨 두면 중지가 '소멸'로 오탐된다.",
+  "_updated": "2026-08-02",
   "runners": [
     {
       "container": "gh-runner-agentleague",
@@ -48,16 +48,6 @@
       "runnerName": "linux-4090-eduarena"
     },
     {
-      "container": "gh-runner-ems-transformer-1",
-      "repo": "ems-transformer",
-      "runnerName": "linux-4090-ems-transformer-1"
-    },
-    {
-      "container": "gh-runner-ems-transformer-2",
-      "repo": "ems-transformer",
-      "runnerName": "linux-4090-ems-transformer-2"
-    },
-    {
       "container": "gh-runner-energy-contracts",
       "repo": "energy-contracts",
       "runnerName": "linux-4090-energy-contracts"
@@ -76,11 +66,6 @@
       "container": "gh-runner-ingestion-worker-2",
       "repo": "ingestion-worker",
       "runnerName": "linux-4090-ingestion-worker-2"
-    },
-    {
-      "container": "gh-runner-reverse-ems",
-      "repo": "reverse-ems",
-      "runnerName": "linux-4090-reverse-ems"
     },
     {
       "container": "gh-runner-smartbuilding",
