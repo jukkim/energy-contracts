@@ -8,7 +8,7 @@
     "edge-agent",
     "mgcc"
   ],
-  "version": "1.3",
+  "version": "1.4",
   "type": "object",
   "required": [
     "provisioning_id",
@@ -401,8 +401,282 @@
               }
             }
           }
+        },
+        "point_settings": {
+          "type": "array",
+          "description": "건물별 **점 설정값**. `objective` 가 '어떤 성향으로 돌려라'라면 이쪽은 '이 점을 이 값으로 운영해라'다.\n**부분 성공**: 항목 하나가 안 먹어도 나머지는 적용된다 — 전부 아니면 전무가 아니다. 소비단은 항목별 결과를 ack 에 담아 무엇이 왜 안 됐는지 밝힌다.\n⚠ 빈 배열은 **전부 해제**를 뜻한다(미제공 = 무변경과 다르다).",
+          "items": {
+            "$ref": "#/$defs/PointSetting"
+          }
         }
       }
+    },
+    "PointSetting": {
+      "type": "object",
+      "description": "건물 하나의 **점 설정값** 한 건. \"이 점을 이렇게 운영해라\"이지 \"지금 이걸 해라\"가 아니다 — 후자는 발령(`dr_dispatch_event`)이고 발령 창 동안만 유효하다. 이쪽은 해제할 때까지 지속된다.\n\n**왜 필요한가**: 건물별로 내릴 수 있는 축이 `objective` 하나뿐이라, 같은 그룹 안에서 건물마다 다른 설정온도·조명·스케줄을 줄 방법이 없었다. 엣지엔 점 제어 계층이 이미 있는데(DeviceCatalog·Scope·Executor) 원격에서 들어갈 계약이 없었다.\n\n**세 축이 직교한다**: ① 무엇을 지목하나(`point_id` 정확 지목 / `selector` 다중) ② 어떤 성질의 점인가(`kind`) ③ 값이 하나인가 여럿인가 시간에 따라 변하나 (`value`/`values`/`schedule`).",
+      "required": [
+        "kind"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "point_id": {
+          "type": "string",
+          "description": "CPA 정규 주소 `{country}.{site}[.{building}].{domain}.{equip}.{point}`. **정확히 한 점**을 지목한다. `{point}` 세그먼트는 `equipment_taxonomy#/$defs/EquipmentPoint.mnemonic` 과 같은 어휘를 쓴다 — 여기서 새 이름을 발명하면 주소 어휘가 둘로 갈린다."
+        },
+        "selector": {
+          "type": "object",
+          "description": "여러 점을 **한 번에** 지목한다(층 전체 조명, 전 AHU 급기온도 등). 조건은 AND 로 결합한다. 현장의 device_id 는 발행자(MGCC)가 알 수 없으므로 **엣지가 자기 카탈로그로 푼다** — 매칭 0건은 오류가 아니라 `matched: 0` 으로 회신한다(없는 설비를 있다고 하지 않는다).",
+          "additionalProperties": false,
+          "minProperties": 1,
+          "properties": {
+            "equipment_kind": {
+              "type": "string",
+              "enum": [
+                "hvac",
+                "ahu",
+                "vav",
+                "chiller",
+                "boiler",
+                "fan",
+                "pump",
+                "lighting",
+                "ess",
+                "pv",
+                "plug",
+                "meter",
+                "other"
+              ],
+              "description": "⚠ **guarded mirror**: 값집합 SSOT 는 `equipment_taxonomy.json#/$defs/EquipmentKind` 다. 교차 파일 $ref 는 일반 검증기가 못 푼다(실측 — Unresolvable) 라 여기 복제하되, EC `tests/test_point_setting_mirror.py` 가 원본과 같은지 매 실행 확인한다.\n설비 종류."
+            },
+            "point_mnemonic": {
+              "type": "string",
+              "pattern": "^[A-Z][A-Z0-9_]*$",
+              "description": "설비 안에서 어느 점인가(SAT_SP·ZN_T_SP …)."
+            },
+            "floor": {
+              "type": "integer"
+            },
+            "zone": {
+              "type": "string"
+            }
+          }
+        },
+        "kind": {
+          "type": "string",
+          "enum": [
+            "physical",
+            "virtual",
+            "group",
+            "schedule"
+          ],
+          "description": "⚠ **guarded mirror**: 값집합 SSOT 는 `telemetry.json#/$defs/PointKind` 다. 교차 파일 $ref 는 일반 검증기가 못 푼다(실측 — Unresolvable) 라 여기 복제하되, EC `tests/test_point_setting_mirror.py` 가 원본과 같은지 매 실행 확인한다.\n점의 성질 — `physical`(실 계측·실 액추에이션) · `virtual`(계산·가상) · `group`(묶음) · `schedule`(시간표). 읽기 축(telemetry `zones[].point_kind`)과 **같은 어휘**를 쓴다: 같은 점을 읽을 때와 쓸 때 다른 이름으로 부르면 소비단마다 뜻이 갈린다.\n⚠ `schedule` 이면 `schedule` 배열이 있어야 한다 — 종류만 스케줄이라 해 놓고 단일값을 보내면 무엇을 기대한 건지 알 수 없다."
+        },
+        "role": {
+          "type": "string",
+          "enum": [
+            "sensor",
+            "sp",
+            "cmd"
+          ],
+          "default": "sp",
+          "description": "⚠ **guarded mirror**: 값집합 SSOT 는 `equipment_taxonomy.json#/$defs/PointRole` 다. 교차 파일 $ref 는 일반 검증기가 못 푼다(실측 — Unresolvable) 라 여기 복제하되, EC `tests/test_point_setting_mirror.py` 가 원본과 같은지 매 실행 확인한다.\n`sp`(설정값) 기본. **`cmd` 는 쓰면 설비가 움직인다** — 권한·감사가 달라야 하는 축이라 값에 섞지 않고 따로 밝힌다. `sensor` 는 쓰기 대상이 아니므로 소비단이 거부해야 한다."
+        },
+        "value": {
+          "type": [
+            "number",
+            "boolean",
+            "string"
+          ],
+          "description": "단일값. `values`·`schedule` 과 **함께 쓸 수 없다**."
+        },
+        "values": {
+          "type": "array",
+          "minItems": 1,
+          "description": "여러 대상에 **서로 다른 값**을 준다(존별 설정온도 등). 대상을 항목마다 밝히므로 `selector` 로 뭉뚱그리는 것과 다르다.",
+          "items": {
+            "type": "object",
+            "required": [
+              "value"
+            ],
+            "additionalProperties": false,
+            "properties": {
+              "point_id": {
+                "type": "string"
+              },
+              "zone": {
+                "type": "string"
+              },
+              "value": {
+                "type": [
+                  "number",
+                  "boolean",
+                  "string"
+                ]
+              }
+            }
+          }
+        },
+        "schedule": {
+          "type": "array",
+          "minItems": 1,
+          "description": "시간대별 값(주간 반복). 겹치는 구간은 **뒤 항목이 이긴다** — 순서가 뜻을 가지므로 소비단이 재정렬하면 안 된다. 어디에도 안 걸리는 시각은 `fallback` 이 있으면 그 값, 없으면 **직전 값을 유지**한다(임의 기본값으로 떨어뜨리면 밤중에 설비가 제멋대로 움직인다).",
+          "items": {
+            "type": "object",
+            "required": [
+              "start",
+              "end",
+              "value"
+            ],
+            "additionalProperties": false,
+            "properties": {
+              "days": {
+                "type": "array",
+                "minItems": 1,
+                "items": {
+                  "type": "string",
+                  "enum": [
+                    "mon",
+                    "tue",
+                    "wed",
+                    "thu",
+                    "fri",
+                    "sat",
+                    "sun",
+                    "holiday"
+                  ]
+                },
+                "description": "미지정 = 매일. `holiday` 는 현장 달력이 있어야 뜻이 있다 — 달력이 없으면 소비단이 무시하고 그 사실을 회신에 남긴다."
+              },
+              "start": {
+                "type": "string",
+                "pattern": "^([01]\\d|2[0-3]):[0-5]\\d$",
+                "description": "현장 시각 `HH:MM`. UTC 아님 — 스케줄은 사람의 시간표다."
+              },
+              "end": {
+                "type": "string",
+                "pattern": "^([01]\\d|2[0-3]):[0-5]\\d$",
+                "description": "`start` 보다 이르면 **자정을 넘는 구간**이다(야간 셋백 22:00~06:00)."
+              },
+              "value": {
+                "type": [
+                  "number",
+                  "boolean",
+                  "string"
+                ]
+              }
+            }
+          }
+        },
+        "fallback": {
+          "type": [
+            "number",
+            "boolean",
+            "string"
+          ],
+          "description": "스케줄 어디에도 안 걸리는 시각의 값. 없으면 직전 값 유지."
+        },
+        "unit": {
+          "type": "string",
+          "description": "단위(`°C`·`%`·`kW`). 표준 점 집합의 단위와 다르면 소비단이 **거부**한다 — 단위를 추측해 환산하면 조용히 틀린 값이 들어간다."
+        },
+        "priority": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 16,
+          "default": 16,
+          "description": "BACnet write priority 관례(1=최우선). 기본 16 = 가장 낮은 우선 — 원격 설정이 현장 수동 조작이나 생명안전 인터록을 밀어내지 않는다. 낮은 숫자를 쓰려면 그럴 권한이 있어야 한다(소비단 판단)."
+        },
+        "hold_minutes": {
+          "type": "integer",
+          "minimum": 1,
+          "description": "이 시간 뒤 자동 해제. 미지정 = **해제할 때까지 지속**(설정의 기본 성격). 발령과 헷갈리지 않게 여기선 `duration` 이라 부르지 않는다."
+        },
+        "note": {
+          "type": "string",
+          "description": "사람이 읽을 사유(MOC). 감사에 남는다."
+        }
+      },
+      "allOf": [
+        {
+          "$comment": "대상은 point_id 또는 selector 중 **하나**. 둘 다 없으면 무엇을 바꾸라는 건지 알 수 없고, 둘 다 있으면 어느 쪽이 이기는지 소비단마다 갈린다. 단 values 항목이 저마다 point_id 를 밝히면 상위 대상은 없어도 된다.",
+          "oneOf": [
+            {
+              "required": [
+                "point_id"
+              ],
+              "not": {
+                "required": [
+                  "selector"
+                ]
+              }
+            },
+            {
+              "required": [
+                "selector"
+              ],
+              "not": {
+                "required": [
+                  "point_id"
+                ]
+              }
+            },
+            {
+              "required": [
+                "values"
+              ],
+              "not": {
+                "required": [
+                  "point_id"
+                ]
+              },
+              "allOf": [
+                {
+                  "not": {
+                    "required": [
+                      "selector"
+                    ]
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "$comment": "값 축은 value·values·schedule 중 **정확히 하나**. 여럿이면 무엇이 이기는지 계약이 말해 주지 않는 상태가 되고, 하나도 없으면 설정이 아니다.",
+          "oneOf": [
+            {
+              "required": [
+                "value"
+              ]
+            },
+            {
+              "required": [
+                "values"
+              ]
+            },
+            {
+              "required": [
+                "schedule"
+              ]
+            }
+          ]
+        },
+        {
+          "$comment": "kind=schedule 이면 schedule 이 있어야 한다.",
+          "if": {
+            "properties": {
+              "kind": {
+                "const": "schedule"
+              }
+            }
+          },
+          "then": {
+            "required": [
+              "schedule"
+            ]
+          }
+        }
+      ]
     }
   },
   "updated": "2026-08-01"

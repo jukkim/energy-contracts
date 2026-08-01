@@ -4,6 +4,49 @@
 
 ---
 
+## v0.3.31 — 2026-08-01
+
+### provision v1.4 — 건물별 **점 설정** (`OperatingConfig.point_settings[]`)
+
+건물마다 내릴 수 있는 축이 `objective` **하나뿐**이었다. 실제 관제는 설정온도·조명·
+스케줄처럼 **점(point) 단위 값**을 건물마다 다르게 준다. 엣지엔 점 제어 계층이 이미
+있는데(`onsite/`: DeviceCatalog·Scope·Executor·value_spec) **원격에서 들어갈 계약이
+없었다** — 그래서 mgcc 가 `setpoints.default_c` 같은 키를 지어 보냈고,
+`additionalProperties` 가 열려 있어 검증을 통과한 뒤 **아무도 읽지 않았다**.
+성공 ack 까지 돌아오는데 설비는 안 움직이는 상태였다(mgcc §5.9).
+
+**세 축이 직교한다** — 이게 이 계약의 골자다:
+
+| 축 | 필드 | 값 |
+|---|---|---|
+| ① 무엇을 지목하나 | `point_id`(CPA 정확 지목) / `selector`(다중) | 둘 중 **하나** |
+| ② 어떤 성질의 점인가 | `kind` | physical · virtual · group · schedule |
+| ③ 값이 어떻게 생겼나 | `value` / `values[]` / `schedule[]` | 셋 중 **정확히 하나** |
+
+- `role`(sensor·sp·**cmd**) — 쓰면 설비가 움직이는 점을 값에 섞지 않고 따로 밝힌다.
+  권한·감사가 달라야 하는 축이다.
+- `priority` 기본 **16**(BACnet 관례의 최하위) — 원격 설정이 현장 수동 조작이나
+  생명안전 인터록을 밀어내지 않는다.
+- `schedule` 은 **현장 시각**이다(UTC 아님 — 사람의 시간표다). `start > end` 는
+  자정을 넘는 구간(야간 셋백). 겹치면 **뒤 항목이 이긴다**(순서가 뜻을 가지므로
+  소비단이 재정렬하면 안 된다). 어디에도 안 걸리면 `fallback`, 없으면 **직전 값
+  유지** — 임의 기본값으로 떨어뜨리면 밤중에 설비가 제멋대로 움직인다.
+- **빈 배열 = 전부 해제**. 미제공(무변경)과 구분된다.
+- **부분 성공**: 항목 하나가 안 먹어도 나머지는 적용된다. 소비단은 항목별 결과를
+  ack 에 담는다.
+- `selector` 매칭 0건은 오류가 아니라 `matched: 0` 이다 — 없는 설비를 있다고 하지
+  않는다. 현장 device_id 는 발행자가 알 수 없으므로 **엣지가 자기 카탈로그로 푼다**.
+
+⚠ **guarded mirror**: `kind`·`role`·`selector.equipment_kind` 는 각각 telemetry
+`PointKind`·equipment_taxonomy `PointRole`·`EquipmentKind` 의 복제다. 교차 파일
+`$ref` 는 일반 검증기가 못 푼다(실측 `Unresolvable`). `tests/
+test_point_setting_contract.py` 가 원본과 같은지 매 실행 확인한다 —
+**읽을 때와 쓸 때 같은 점을 다른 이름으로 부르면** 소비단마다 뜻이 갈린다.
+
+codegen drift 0 (provision 은 상수 생성 대상이 아니다).
+
+---
+
 ## v0.3.30 — 2026-08-01
 
 ### provision v1.3 — `config.operating` 선언 (에이전트 동작 특성)
