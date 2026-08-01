@@ -4,6 +4,27 @@
 
 ---
 
+## v0.3.32 — 2026-08-02
+
+### codegen: `building-energy-sejong` 등록 + 아카이브 러너 인벤토리 정리
+
+sejong 의 `_generated_constants.{py,ts}` 는 "AUTO-GENERATED … 재생성" 이라고
+스스로 밝히면서 `PROJECT_TARGETS` 에 없었다 — **한 번 생성되고 고아**가 된 상태.
+그 사이 M21·M22 승격(2026-07-10)을 놓쳤고 **배출계수도 0.4594 구값**으로 남아
+CO₂ 를 잘못 계산했다(정본 0.4173). sejong 엔 CI 도 없어 1,618 시험이 있는데도
+아무도 몰랐다.
+
+⚠ **self-hash 캐스케이드**: `gen_constants.py` 는 스키마 + **자기 자신**을 해시한다
+(위장 통과 방지, `_source_hash`). 따라서 PROJECT_TARGETS 를 건드리면 **전 소비자의
+SOURCE_HASH 가 바뀐다** — 이 릴리스는 소비자 일괄 재생성을 동반한다.
+
+- `PROJECT_TARGETS += building-energy-sejong` (python 44 심볼 / ts i18n 2종)
+- `runners.expected.json` — 아카이브 repo 러너 3개 제거(reverse-ems,
+  ems-transformer×2). 워크플로가 없어 잡이 오지 않는데 컨테이너만 상주했고,
+  인벤토리에 남기면 중지가 "소멸"로 오탐된다.
+
+---
+
 ## v0.3.31 — 2026-08-01
 
 ### provision v1.4 — 건물별 **점 설정** (`OperatingConfig.point_settings[]`)
