@@ -4,6 +4,52 @@
 
 ---
 
+## v0.3.28 — 2026-08-01
+
+### telemetry v1.4 — 관제점 종류·바인딩 + CPA 건물 세그먼트
+
+- **$defs.PointKind** 신설 (physical/virtual/group/schedule). 소비단이 "이 값이 실제
+  계측인가"를 알아야 한다 — 가상점을 실측처럼 표시하면 화면이 거짓이 된다.
+- **$defs.PointBindingMode** 신설 (bacnet/modbus/opcua/mqtt/internal/derived).
+  주소(CPA)와 바인딩은 **다른 축**이다 — CPA 는 "무엇인가"(식별), 바인딩은
+  "어디에 연결됐나"(경로). 같은 점이 프로토콜을 바꿔도 CPA 는 유지된다.
+- `zones[].point_kind` / `zones[].binding_mode` 추가 (둘 다 optional).
+  **배경**: MGCC `points.py` 가 이미 이 두 필드를 읽고 있었는데 계약에 정의가 없어
+  **항상 null** 이었다 — 받는 쪽은 있는데 보낼 방법이 없던 상태.
+- **CanonicalPointAddress 에 선택적 `{building}` 세그먼트**:
+  `{country}.{site}[.{building}].{domain}.{equip}.{point}`.
+  한 site 에 건물이 여럿이면 site 만으로 "A동 3층 AHU"와 "B동 3층 AHU"를 구분할 수
+  없다. 캠퍼스·산단·단지처럼 MG 가 다루는 단위가 바로 그런 곳이다(MGCC 수용가 30동).
+  **5-세그먼트 기존 주소는 그대로 유효**(하위호환).
+  파싱은 세그먼트 **수**가 아니라 **domain 값**으로 위치를 찾는다 — 개수로 갈라 읽으면
+  새 domain·계층이 생길 때 조용히 깨진다.
+
+생성 상수 drift **0** — telemetry 는 페이로드 스키마라 codegen 대상이 아니다.
+(이 변경을 "6-repo 재생성 캐스케이드" 때문에 미뤄 뒀었는데, 실제로 재보니 캐스케이드가
+없었다. 측정하지 않고 비용을 추정한 것이 미룬 이유였다.)
+
+소비단 갱신: bems-console `lib/point-address.ts`(정본 파서, 5~6계층 지원) ·
+mgcc `points.py`(자체 어휘 `field`/`virtual` → EC 두 축으로 교체).
+
+## telemetry v1.4 — 관제점 종류·바인딩 + CPA 건물 세그먼트
+
+- **$defs.PointKind** 신설 (physical/virtual/group/schedule). 소비단이 "이 값이 실제
+  계측인가"를 알아야 한다 — 가상점을 실측처럼 표시하면 화면이 거짓이 된다.
+- **$defs.PointBindingMode** 신설 (bacnet/modbus/opcua/mqtt/internal/derived).
+  주소(CPA)와 바인딩은 다른 축이다 — CPA 는 "무엇인가", 바인딩은 "어디에 연결됐나".
+-  /  추가 (둘 다 optional).
+  **배경**: MGCC  가 이미 이 두 필드를 읽고 있었는데 계약에 없어 **항상
+  null** 이었다. 받는 쪽이 있는데 보낼 방법이 없던 상태.
+- **CanonicalPointAddress 에 선택적 {building} 세그먼트**
+   — 한 site 에 건물이 여럿이면
+  site 만으로 "A동 3층 AHU"와 "B동 3층 AHU"를 구분할 수 없다. 캠퍼스·산단·단지처럼
+  MG 가 다루는 단위가 바로 그런 곳이다(MGCC 수용가 30동).
+  **5-세그먼트 기존 주소는 그대로 유효**(하위호환).
+  파싱은 세그먼트 수가 아니라 **domain 값**으로 위치를 찾는다.
+
+생성 상수 drift **0** — telemetry 는 페이로드 스키마라 codegen 대상이 아니다.
+소비단 갱신: bems-console (정본 파서) · mgcc .
+
 ## 0.3.27 — 2026-07-31 provision config_merge — 단일 축 하달이 설정을 지우던 것 (additive = minor)
 
 v0.3.26 로 MGCC 가 설정을 하달할 수 있게 됐지만, **보내면 안 되는 상태**였다. 수신측은 `config` 를 로컬 YAML 로 **통째로 저장**한다(`_save_yaml` 이 전체 문서를 덮어씀). MGCC 는 운영 모드·계약전력만 관장하므로 그 축만 담아 보내는데, 그러면 엣지의 `kind`·`backend`·`connection` 이 **사라져 재기동 시 드라이버를 잃는다**.
