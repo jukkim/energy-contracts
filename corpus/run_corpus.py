@@ -255,6 +255,36 @@ def _try_variants(judge, queries, *args):
 
 
 
+# 이월된 GREEN 셀이 시연 대본 후보 자격을 유지할 수 있는 최대 나이(시간).
+#   부분 스윕(예: spatial 만) 후에도 직전에 router 로 실증한 질의가 살아남게 하되,
+#   하루가 넘으면 "지금도 된다"고 말할 근거가 없으므로 떨군다.
+DEMO_STALE_MAX_H = 24.0
+
+
+def _age_h(cell: dict) -> float | None:
+    """셀의 probedAt 으로부터 경과 시간(h). 파싱 불가는 None(=나이 미상)."""
+    ts = cell.get("probedAt")
+    if not ts:
+        return None
+    try:
+        from datetime import datetime, timezone
+        t = datetime.fromisoformat(str(ts).replace("Z", "+00:00"))
+        if t.tzinfo is None:
+            t = t.replace(tzinfo=timezone.utc)
+        return round((datetime.now(timezone.utc) - t).total_seconds() / 3600.0, 2)
+    except Exception:
+        return None
+
+
+def _demo_safe_carry(cell: dict) -> bool:
+    """이월본의 시연 후보 자격 — router 실증분만, 그리고 나이가 예산 안일 때만."""
+    if (cell.get("verifiedBy") or ("router" if cell.get("layer") == "R" else "data")) != "router":
+        return False
+    age = _age_h(cell)
+    return age is not None and age <= DEMO_STALE_MAX_H
+
+
+
 def _pmap(fn, items, jobs):
     """순서 보존 병렬 map(하나가 죽어도 나머지는 계속)."""
     if jobs <= 1:
@@ -868,7 +898,14 @@ def build_ledger(corpus, cells: list[dict], services: dict, ctx, baseline: dict 
                               "layer": r.get("layer"), "axis": r.get("axis") or {},
                               "verifiedBy": r.get("verifiedBy") or (
                                   "router" if r.get("layer") == "R" else "data"),
-                              "demoSafe": False,      # 이월본은 시연 대본 후보에서 제외(신선도 미확인)
+                              # 이월본의 시연 후보 자격 — **시각 예산 안에서만** 승계한다.
+                              #   무조건 False 로 떨어뜨리면 spatial 만 재측정해도 2시간 전
+                              #   router 로 실증한 73건이 0 이 된다 = §1.3 "안 잰 것을 사라진
+                              #   것으로 만들지 않는다" 를 원장이 스스로 어기는 셈.
+                              #   반대로 무기한 승계하면 낡은 주장이 시연 대본에 남는다.
+                              #   → router 실증 + DEMO_STALE_MAX_H 이내면 유지, 넘으면 탈락.
+                              "demoSafe": _demo_safe_carry(r),
+                              "staleH": _age_h(r),
                               "stale": True})
 
     total = len(out_cells)
