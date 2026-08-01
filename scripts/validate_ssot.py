@@ -624,7 +624,10 @@ def check_mirror_core_keywords() -> list[str]:
 # energy-contracts 를 git+https 로 pin 하는 consumer (lockstep 그룹).
 # 이번 사고: gridbridge/edge-agent 가 pin v0.2.4(M00~M15) 인데 _generated_constants 는
 # M00~M20 으로 regen → CI 에서만 jsonschema 가 M19/M20 거부. be-3d 는 v0.3.6 으로 divergent.
-EC_PIN_CONSUMERS = ("edge-agent", "gridbridge", "building-energy-3d")
+# ⚠ EC 를 checkout 하며 ref 를 고정하는 repo 는 **전부** 여기 있어야 한다 —
+# 빠지면 bump 때 조용히 뒤처진다(2026-08-01 ingestion-worker 실측).
+EC_PIN_CONSUMERS = ("edge-agent", "gridbridge", "building-energy-3d",
+                    "ingestion-worker")
 _EC_PIN_RE = re.compile(r"energy-contracts.*?@(v[0-9][\w.\-]*)")
 _GEN_CONST_RELPATHS = (
     "src/_generated_constants.py", "_generated_constants.py",

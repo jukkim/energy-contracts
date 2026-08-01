@@ -28,9 +28,22 @@ for repo in $REPOS; do
   if [ -f "$HOOK" ] && grep -q "$MARK" "$HOOK" 2>/dev/null; then
     echo "  ✅ 이미 설치됨: $(basename "$repo")"; continue
   fi
-  if [ -f "$HOOK" ]; then                   # 기존 훅 보존 + 체인
-    printf '\n# corpus 능력 검사 체인(2026-08-01)\nsh "%s" "$@" || exit $?\n' "$SRC" >> "$HOOK"
-    echo "  ✅ 체인 추가: $(basename "$repo")"
+  if [ -f "$HOOK" ]; then
+    # ⚠ append 금지: 기존 훅이 `exit 0` 로 끝나면 뒤에 붙인 줄은 **영구 도달 불가**인데
+    #   grep 마커는 걸려서 "이미 설치됨"으로 재설치도 거부된다(2026-08-01 사냥꾼 실증).
+    #   → 기존 본문을 _pre-push.local 로 옮기고, 코퍼스 → 로컬 순으로 부르는 새 훅을 만든다.
+    LOCAL="$repo/.git/hooks/_pre-push.local"
+    mv "$HOOK" "$LOCAL"
+    chmod +x "$LOCAL" 2>/dev/null || true
+    {
+      echo '#!/bin/sh'
+      echo '# corpus 능력 검사 → 기존 훅 순차 호출(2026-08-01)'
+      echo "sh \"$SRC\" \"\$@\" || exit \$?"
+      echo "[ -f \"$LOCAL\" ] && exec sh \"$LOCAL\" \"\$@\""
+      echo 'exit 0'
+    } > "$HOOK"
+    chmod +x "$HOOK" 2>/dev/null || true
+    echo "  ✅ 체인 추가(기존 훅 → _pre-push.local): $(basename "$repo")"
   else
     printf '#!/bin/sh\nsh "%s" "$@" || exit $?\n' "$SRC" > "$HOOK"
     chmod +x "$HOOK" 2>/dev/null || true

@@ -34,7 +34,12 @@ WORKSPACE_ROOT = CONTRACTS_ROOT.parents[1]
 PROJECTS = WORKSPACE_ROOT / "projects"
 
 # validate_ssot.EC_PIN_CONSUMERS 와 동기 (lockstep 그룹)
-CONSUMERS = ("edge-agent", "gridbridge", "building-energy-3d")
+#
+# ⚠ 여기 없는 repo 가 워크플로에 `ref: vX.Y.Z` 를 박아 두면 **조용히 뒤처진다**
+# (2026-08-01 실측: v0.3.29 bump 후 ingestion-worker 만 ssot-drift 빨간불 —
+# pyproject 핀은 없는데 ssot-drift.yml 이 v0.3.27 을 고정하고 있었다).
+# EC 를 checkout 하며 ref 를 고정하는 repo 는 **전부** 여기 있어야 한다.
+CONSUMERS = ("edge-agent", "gridbridge", "building-energy-3d", "ingestion-worker")
 _PIN_RE = re.compile(r"(energy-contracts.*?@)(v[0-9][\w.\-]*)")
 # ssot-drift.yml 의 EC checkout step — `repository: jukkim/energy-contracts` 뒤따르는
 # `ref: vX.Y.Z`(주석 유무 무관). 다른 repo checkout 의 ref 는 건드리지 않는다.
