@@ -1,6 +1,6 @@
 {
   "schemaVersion": "1.0",
-  "generatedAt": "2026-08-01T03:30:21.478749+00:00",
+  "generatedAt": "2026-08-01T04:14:07.965670+00:00",
   "sweep": "smoke",
   "suitesRun": [
     "opcode"
@@ -44,7 +44,7 @@
         "refuse": true
       },
       "prevStatus": "GREEN",
-      "probedAt": "2026-08-01T03:30:21.478749+00:00",
+      "probedAt": "2026-08-01T04:14:07.965670+00:00",
       "carriedOver": false
     },
     {
@@ -64,7 +64,7 @@
         "refuse": true
       },
       "prevStatus": "GREEN",
-      "probedAt": "2026-08-01T03:30:21.478749+00:00",
+      "probedAt": "2026-08-01T04:14:07.965670+00:00",
       "carriedOver": false
     },
     {
@@ -84,7 +84,7 @@
         "refuse": true
       },
       "prevStatus": "GREEN",
-      "probedAt": "2026-08-01T03:30:21.478749+00:00",
+      "probedAt": "2026-08-01T04:14:07.965670+00:00",
       "carriedOver": false
     },
     {
@@ -106,7 +106,7 @@
         "refuse": false
       },
       "prevStatus": "GREEN",
-      "probedAt": "2026-08-01T03:30:21.478749+00:00",
+      "probedAt": "2026-08-01T04:14:07.965670+00:00",
       "carriedOver": false
     },
     {
@@ -128,7 +128,7 @@
         "refuse": false
       },
       "prevStatus": "GREEN",
-      "probedAt": "2026-08-01T03:30:21.478749+00:00",
+      "probedAt": "2026-08-01T04:14:07.965670+00:00",
       "carriedOver": false
     },
     {
@@ -150,7 +150,7 @@
         "refuse": false
       },
       "prevStatus": "GREEN",
-      "probedAt": "2026-08-01T03:30:21.478749+00:00",
+      "probedAt": "2026-08-01T04:14:07.965670+00:00",
       "carriedOver": false
     },
     {
@@ -172,7 +172,7 @@
         "refuse": false
       },
       "prevStatus": "GREEN",
-      "probedAt": "2026-08-01T03:30:21.478749+00:00",
+      "probedAt": "2026-08-01T04:14:07.965670+00:00",
       "carriedOver": false
     },
     {
@@ -194,7 +194,7 @@
         "refuse": false
       },
       "prevStatus": "GREEN",
-      "probedAt": "2026-08-01T03:30:21.478749+00:00",
+      "probedAt": "2026-08-01T04:14:07.965670+00:00",
       "carriedOver": false
     },
     {
@@ -216,7 +216,7 @@
         "refuse": false
       },
       "prevStatus": "AMBER",
-      "probedAt": "2026-08-01T03:30:21.478749+00:00",
+      "probedAt": "2026-08-01T04:14:07.965670+00:00",
       "carriedOver": false
     },
     {
@@ -238,7 +238,7 @@
         "refuse": false
       },
       "prevStatus": "GREEN",
-      "probedAt": "2026-08-01T03:30:21.478749+00:00",
+      "probedAt": "2026-08-01T04:14:07.965670+00:00",
       "carriedOver": false
     },
     {
@@ -260,7 +260,7 @@
         "refuse": false
       },
       "prevStatus": "GREEN",
-      "probedAt": "2026-08-01T03:30:21.478749+00:00",
+      "probedAt": "2026-08-01T04:14:07.965670+00:00",
       "carriedOver": false
     },
     {
@@ -280,7 +280,7 @@
         "refuse": true
       },
       "prevStatus": "GREEN",
-      "probedAt": "2026-08-01T03:30:21.478749+00:00",
+      "probedAt": "2026-08-01T04:14:07.965670+00:00",
       "carriedOver": false
     },
     {
@@ -300,7 +300,7 @@
         "refuse": true
       },
       "prevStatus": "GREEN",
-      "probedAt": "2026-08-01T03:30:21.478749+00:00",
+      "probedAt": "2026-08-01T04:14:07.965670+00:00",
       "carriedOver": false
     },
     {
@@ -320,7 +320,7 @@
         "refuse": true
       },
       "prevStatus": "GREEN",
-      "probedAt": "2026-08-01T03:30:21.478749+00:00",
+      "probedAt": "2026-08-01T04:14:07.965670+00:00",
       "carriedOver": false
     },
     {
@@ -340,7 +340,7 @@
         "refuse": true
       },
       "prevStatus": "GREEN",
-      "probedAt": "2026-08-01T03:30:21.478749+00:00",
+      "probedAt": "2026-08-01T04:14:07.965670+00:00",
       "carriedOver": false
     },
     {
@@ -362,7 +362,7 @@
         "refuse": false
       },
       "prevStatus": "AMBER",
-      "probedAt": "2026-08-01T03:30:21.478749+00:00",
+      "probedAt": "2026-08-01T04:14:07.965670+00:00",
       "carriedOver": false
     },
     {
@@ -382,7 +382,7 @@
         "refuse": true
       },
       "prevStatus": "GREEN",
-      "probedAt": "2026-08-01T03:30:21.478749+00:00",
+      "probedAt": "2026-08-01T04:14:07.965670+00:00",
       "carriedOver": false
     },
     {
@@ -404,7 +404,7 @@
         "refuse": false
       },
       "prevStatus": "AMBER",
-      "probedAt": "2026-08-01T03:30:21.478749+00:00",
+      "probedAt": "2026-08-01T04:14:07.965670+00:00",
       "carriedOver": false
     },
     {
@@ -426,7 +426,7 @@
         "refuse": false
       },
       "prevStatus": "AMBER",
-      "probedAt": "2026-08-01T03:30:21.478749+00:00",
+      "probedAt": "2026-08-01T04:14:07.965670+00:00",
       "carriedOver": false
     },
     {
@@ -447,7 +447,7 @@
         ]
       },
       "prevStatus": "GREEN",
-      "probedAt": "2026-08-01T03:30:21.478749+00:00",
+      "probedAt": "2026-08-01T04:14:07.965670+00:00",
       "carriedOver": false
     },
     {
@@ -468,7 +468,7 @@
         ]
       },
       "prevStatus": "GREEN",
-      "probedAt": "2026-08-01T03:30:21.478749+00:00",
+      "probedAt": "2026-08-01T04:14:07.965670+00:00",
       "carriedOver": false
     },
     {
@@ -490,7 +490,7 @@
         ]
       },
       "prevStatus": "AMBER",
-      "probedAt": "2026-08-01T03:30:21.478749+00:00",
+      "probedAt": "2026-08-01T04:14:07.965670+00:00",
       "carriedOver": false
     },
     {
@@ -511,7 +511,7 @@
         ]
       },
       "prevStatus": "GREEN",
-      "probedAt": "2026-08-01T03:30:21.478749+00:00",
+      "probedAt": "2026-08-01T04:14:07.965670+00:00",
       "carriedOver": false
     },
     {
@@ -532,7 +532,7 @@
         ]
       },
       "prevStatus": "GREEN",
-      "probedAt": "2026-08-01T03:30:21.478749+00:00",
+      "probedAt": "2026-08-01T04:14:07.965670+00:00",
       "carriedOver": false
     },
     {
@@ -553,7 +553,7 @@
         ]
       },
       "prevStatus": "GREEN",
-      "probedAt": "2026-08-01T03:30:21.478749+00:00",
+      "probedAt": "2026-08-01T04:14:07.965670+00:00",
       "carriedOver": false
     },
     {
@@ -573,8 +573,8 @@
           "driveRouteByIntent"
         ]
       },
-      "prevStatus": null,
-      "probedAt": "2026-08-01T03:30:21.478749+00:00",
+      "prevStatus": "GREEN",
+      "probedAt": "2026-08-01T04:14:07.965670+00:00",
       "carriedOver": false
     },
     {
@@ -595,7 +595,7 @@
         ]
       },
       "prevStatus": "GREEN",
-      "probedAt": "2026-08-01T03:30:21.478749+00:00",
+      "probedAt": "2026-08-01T04:14:07.965670+00:00",
       "carriedOver": false
     },
     {
@@ -615,8 +615,8 @@
           "orbitAnchor"
         ]
       },
-      "prevStatus": "RED",
-      "probedAt": "2026-08-01T03:30:21.478749+00:00",
+      "prevStatus": "GREEN",
+      "probedAt": "2026-08-01T04:14:07.965670+00:00",
       "carriedOver": false
     },
     {
@@ -637,7 +637,7 @@
         ]
       },
       "prevStatus": "AMBER",
-      "probedAt": "2026-08-01T03:30:21.478749+00:00",
+      "probedAt": "2026-08-01T04:14:07.965670+00:00",
       "carriedOver": false
     },
     {
@@ -658,7 +658,7 @@
         ]
       },
       "prevStatus": "GREEN",
-      "probedAt": "2026-08-01T03:30:21.478749+00:00",
+      "probedAt": "2026-08-01T04:14:07.965670+00:00",
       "carriedOver": false
     },
     {
@@ -678,8 +678,8 @@
           "paintFacadeAt"
         ]
       },
-      "prevStatus": "RED",
-      "probedAt": "2026-08-01T03:30:21.478749+00:00",
+      "prevStatus": "GREEN",
+      "probedAt": "2026-08-01T04:14:07.965670+00:00",
       "carriedOver": false
     },
     {
@@ -699,8 +699,8 @@
           "extrudeEnergyAura"
         ]
       },
-      "prevStatus": "RED",
-      "probedAt": "2026-08-01T03:30:21.478749+00:00",
+      "prevStatus": "GREEN",
+      "probedAt": "2026-08-01T04:14:07.965670+00:00",
       "carriedOver": false
     },
     {
@@ -720,8 +720,8 @@
           "tiledMediaFacade"
         ]
       },
-      "prevStatus": "RED",
-      "probedAt": "2026-08-01T03:30:21.478749+00:00",
+      "prevStatus": "GREEN",
+      "probedAt": "2026-08-01T04:14:07.965670+00:00",
       "carriedOver": false
     },
     {
@@ -742,7 +742,7 @@
         ]
       },
       "prevStatus": "GREEN",
-      "probedAt": "2026-08-01T03:30:21.478749+00:00",
+      "probedAt": "2026-08-01T04:14:07.965670+00:00",
       "carriedOver": false
     },
     {
@@ -763,8 +763,8 @@
           "mountReverseCascade"
         ]
       },
-      "prevStatus": "RED",
-      "probedAt": "2026-08-01T03:30:21.478749+00:00",
+      "prevStatus": "GREEN",
+      "probedAt": "2026-08-01T04:14:07.965670+00:00",
       "carriedOver": false
     },
     {
@@ -786,7 +786,7 @@
         ]
       },
       "prevStatus": "AMBER",
-      "probedAt": "2026-08-01T03:30:21.478749+00:00",
+      "probedAt": "2026-08-01T04:14:07.965670+00:00",
       "carriedOver": false
     },
     {
@@ -806,8 +806,8 @@
           "createFacadeAd"
         ]
       },
-      "prevStatus": null,
-      "probedAt": "2026-08-01T03:30:21.478749+00:00",
+      "prevStatus": "GREEN",
+      "probedAt": "2026-08-01T04:14:07.965670+00:00",
       "carriedOver": false
     },
     {
@@ -817,7 +817,7 @@
       "status": "RED",
       "verdict": "FAIL",
       "reason": "NL_UNREACHABLE",
-      "note": "empty raw={\"ops\": [], \"capability_request\": {\"intent\": \"came",
+      "note": "empty raw={\"ops\": [], \"capability_request\": {\"intent\": \"건물 외 — 변형 3개 전부 미도달",
       "axis": {
         "op": "createFacadeCamera"
       },
@@ -825,8 +825,8 @@
       "evidence": {
         "ops": []
       },
-      "prevStatus": null,
-      "probedAt": "2026-08-01T03:30:21.478749+00:00",
+      "prevStatus": "RED",
+      "probedAt": "2026-08-01T04:14:07.965670+00:00",
       "carriedOver": false
     },
     {
@@ -846,8 +846,8 @@
           "createFacadeDrSignal"
         ]
       },
-      "prevStatus": null,
-      "probedAt": "2026-08-01T03:30:21.478749+00:00",
+      "prevStatus": "GREEN",
+      "probedAt": "2026-08-01T04:14:07.965670+00:00",
       "carriedOver": false
     },
     {
@@ -867,8 +867,8 @@
           "createFacadeEvacuationArrow"
         ]
       },
-      "prevStatus": null,
-      "probedAt": "2026-08-01T03:30:21.478749+00:00",
+      "prevStatus": "GREEN",
+      "probedAt": "2026-08-01T04:14:07.965670+00:00",
       "carriedOver": false
     },
     {
@@ -888,8 +888,8 @@
           "createFacadeIotSensor"
         ]
       },
-      "prevStatus": null,
-      "probedAt": "2026-08-01T03:30:21.478749+00:00",
+      "prevStatus": "GREEN",
+      "probedAt": "2026-08-01T04:14:07.965670+00:00",
       "carriedOver": false
     },
     {
@@ -909,8 +909,8 @@
           "createFacadeLedText"
         ]
       },
-      "prevStatus": null,
-      "probedAt": "2026-08-01T03:30:21.478749+00:00",
+      "prevStatus": "GREEN",
+      "probedAt": "2026-08-01T04:14:07.965670+00:00",
       "carriedOver": false
     },
     {
@@ -930,8 +930,8 @@
           "createFacadeQrCode"
         ]
       },
-      "prevStatus": null,
-      "probedAt": "2026-08-01T03:30:21.478749+00:00",
+      "prevStatus": "GREEN",
+      "probedAt": "2026-08-01T04:14:07.965670+00:00",
       "carriedOver": false
     },
     {
@@ -951,18 +951,18 @@
           "createFacadeWindowGrid"
         ]
       },
-      "prevStatus": null,
-      "probedAt": "2026-08-01T03:30:21.478749+00:00",
+      "prevStatus": "GREEN",
+      "probedAt": "2026-08-01T04:14:07.965670+00:00",
       "carriedOver": false
     },
     {
       "suite": "opcode",
       "id": "createEntranceSign",
       "layer": "R",
-      "status": "AMBER",
-      "verdict": "WARN",
-      "reason": "MISROUTED",
-      "note": "got=['signOnSelected'] want∈['createEntranceSign']",
+      "status": "GREEN",
+      "verdict": "PASS",
+      "reason": null,
+      "note": "ops=['signOnSelected']",
       "axis": {
         "op": "createEntranceSign"
       },
@@ -972,8 +972,8 @@
           "signOnSelected"
         ]
       },
-      "prevStatus": null,
-      "probedAt": "2026-08-01T03:30:21.478749+00:00",
+      "prevStatus": "AMBER",
+      "probedAt": "2026-08-01T04:14:07.965670+00:00",
       "carriedOver": false
     },
     {
@@ -993,8 +993,8 @@
           "createVideoPanel"
         ]
       },
-      "prevStatus": null,
-      "probedAt": "2026-08-01T03:30:21.478749+00:00",
+      "prevStatus": "GREEN",
+      "probedAt": "2026-08-01T04:14:07.965670+00:00",
       "carriedOver": false
     },
     {
@@ -1014,8 +1014,8 @@
           "mediaPlay"
         ]
       },
-      "prevStatus": null,
-      "probedAt": "2026-08-01T03:30:21.478749+00:00",
+      "prevStatus": "GREEN",
+      "probedAt": "2026-08-01T04:14:07.965670+00:00",
       "carriedOver": false
     },
     {
@@ -1035,8 +1035,8 @@
           "mediaStop"
         ]
       },
-      "prevStatus": null,
-      "probedAt": "2026-08-01T03:30:21.478749+00:00",
+      "prevStatus": "GREEN",
+      "probedAt": "2026-08-01T04:14:07.965670+00:00",
       "carriedOver": false
     },
     {
@@ -1046,7 +1046,7 @@
       "status": "RED",
       "verdict": "FAIL",
       "reason": "NL_UNREACHABLE",
-      "note": "empty raw={\"ops\": [], \"capability_request\": {\"intent\": \"asse",
+      "note": "empty raw={\"ops\": [], \"capability_request\": {\"intent\": \"pars — 변형 3개 전부 미도달",
       "axis": {
         "op": "projectMediaFacadeFake"
       },
@@ -1054,8 +1054,8 @@
       "evidence": {
         "ops": []
       },
-      "prevStatus": null,
-      "probedAt": "2026-08-01T03:30:21.478749+00:00",
+      "prevStatus": "RED",
+      "probedAt": "2026-08-01T04:14:07.965670+00:00",
       "carriedOver": false
     },
     {
@@ -1075,27 +1075,31 @@
           "routePlay"
         ]
       },
-      "prevStatus": null,
-      "probedAt": "2026-08-01T03:30:21.478749+00:00",
+      "prevStatus": "GREEN",
+      "probedAt": "2026-08-01T04:14:07.965670+00:00",
       "carriedOver": false
     },
     {
       "suite": "opcode",
       "id": "applyCompositeShader",
       "layer": "R",
-      "status": "RED",
-      "verdict": "FAIL",
-      "reason": "NL_UNREACHABLE",
-      "note": "empty raw={\"ops\": [], \"capability_request\": null}",
+      "status": "GREEN",
+      "verdict": "PASS",
+      "reason": null,
+      "note": "ops=['applyCompositeShader'] (변형 2번째로 도달 — 1번 문장은 취약)",
       "axis": {
         "op": "applyCompositeShader"
       },
       "query": "여러 효과를 합쳐서 한 번에 입혀줘",
       "evidence": {
-        "ops": []
+        "ops": [
+          "applyCompositeShader"
+        ],
+        "variantIndex": 1,
+        "fragileQuery": "여러 효과를 합쳐서 한 번에 입혀줘"
       },
-      "prevStatus": null,
-      "probedAt": "2026-08-01T03:30:21.478749+00:00",
+      "prevStatus": "RED",
+      "probedAt": "2026-08-01T04:14:07.965670+00:00",
       "carriedOver": false
     },
     {
@@ -1115,8 +1119,8 @@
           "paintCompositeNightAndAura"
         ]
       },
-      "prevStatus": null,
-      "probedAt": "2026-08-01T03:30:21.478749+00:00",
+      "prevStatus": "GREEN",
+      "probedAt": "2026-08-01T04:14:07.965670+00:00",
       "carriedOver": false
     },
     {
@@ -1136,18 +1140,18 @@
           "paintLotteFacade"
         ]
       },
-      "prevStatus": null,
-      "probedAt": "2026-08-01T03:30:21.478749+00:00",
+      "prevStatus": "GREEN",
+      "probedAt": "2026-08-01T04:14:07.965670+00:00",
       "carriedOver": false
     },
     {
       "suite": "opcode",
       "id": "paintLotteFacadeOnScreenCenter",
       "layer": "R",
-      "status": "AMBER",
-      "verdict": "WARN",
-      "reason": "MISROUTED",
-      "note": "got=['cameraFlyToAnchor', 'paintFacadeAt'] want∈['paintLotteFacadeOnScreenCenter', 'paintLotteFacade']",
+      "status": "GREEN",
+      "verdict": "PASS",
+      "reason": null,
+      "note": "ops=['cameraFlyToAnchor', 'paintFacadeAt']",
       "axis": {
         "op": "paintLotteFacadeOnScreenCenter"
       },
@@ -1158,8 +1162,8 @@
           "paintFacadeAt"
         ]
       },
-      "prevStatus": null,
-      "probedAt": "2026-08-01T03:30:21.478749+00:00",
+      "prevStatus": "AMBER",
+      "probedAt": "2026-08-01T04:14:07.965670+00:00",
       "carriedOver": false
     },
     {
@@ -1179,8 +1183,8 @@
           "paintRoofFireZone"
         ]
       },
-      "prevStatus": null,
-      "probedAt": "2026-08-01T03:30:21.478749+00:00",
+      "prevStatus": "GREEN",
+      "probedAt": "2026-08-01T04:14:07.965670+00:00",
       "carriedOver": false
     },
     {
@@ -1190,7 +1194,7 @@
       "status": "RED",
       "verdict": "FAIL",
       "reason": "NL_UNREACHABLE",
-      "note": "empty raw={\"ops\": [], \"capability_request\": {\"intent\": \"환경 개",
+      "note": "empty raw={\"ops\": [], \"capability_request\": {\"intent\": \"asse — 변형 3개 전부 미도달",
       "axis": {
         "op": "placeAsset"
       },
@@ -1198,8 +1202,8 @@
       "evidence": {
         "ops": []
       },
-      "prevStatus": null,
-      "probedAt": "2026-08-01T03:30:21.478749+00:00",
+      "prevStatus": "RED",
+      "probedAt": "2026-08-01T04:14:07.965670+00:00",
       "carriedOver": false
     },
     {
@@ -1219,8 +1223,8 @@
           "placeSmartLamp"
         ]
       },
-      "prevStatus": null,
-      "probedAt": "2026-08-01T03:30:21.478749+00:00",
+      "prevStatus": "GREEN",
+      "probedAt": "2026-08-01T04:14:07.965670+00:00",
       "carriedOver": false
     },
     {
@@ -1230,7 +1234,7 @@
       "status": "RED",
       "verdict": "FAIL",
       "reason": "NL_UNREACHABLE",
-      "note": "empty raw={\"ops\": [], \"capability_request\": {\"intent\": \"crea",
+      "note": "empty raw={\"ops\": [], \"capability_request\": {\"intent\": \"장소에  — 변형 3개 전부 미도달",
       "axis": {
         "op": "placeWaterBody"
       },
@@ -1238,8 +1242,8 @@
       "evidence": {
         "ops": []
       },
-      "prevStatus": null,
-      "probedAt": "2026-08-01T03:30:21.478749+00:00",
+      "prevStatus": "RED",
+      "probedAt": "2026-08-01T04:14:07.965670+00:00",
       "carriedOver": false
     },
     {
@@ -1259,8 +1263,8 @@
           "placeUndergroundParking"
         ]
       },
-      "prevStatus": null,
-      "probedAt": "2026-08-01T03:30:21.478749+00:00",
+      "prevStatus": "GREEN",
+      "probedAt": "2026-08-01T04:14:07.965670+00:00",
       "carriedOver": false
     },
     {
@@ -1280,8 +1284,8 @@
           "placeLotteTowerAt"
         ]
       },
-      "prevStatus": null,
-      "probedAt": "2026-08-01T03:30:21.478749+00:00",
+      "prevStatus": "GREEN",
+      "probedAt": "2026-08-01T04:14:07.965670+00:00",
       "carriedOver": false
     },
     {
@@ -1301,8 +1305,8 @@
           "cameraFlyToAnchor"
         ]
       },
-      "prevStatus": null,
-      "probedAt": "2026-08-01T03:30:21.478749+00:00",
+      "prevStatus": "AMBER",
+      "probedAt": "2026-08-01T04:14:07.965670+00:00",
       "carriedOver": false
     },
     {
@@ -1312,7 +1316,7 @@
       "status": "RED",
       "verdict": "FAIL",
       "reason": "NL_UNREACHABLE",
-      "note": "empty raw={\"ops\": [], \"capability_request\": null}",
+      "note": "empty raw={\"ops\": [], \"capability_request\": null} — 변형 3개 전부 미도달",
       "axis": {
         "op": "swapBuildingAt"
       },
@@ -1320,8 +1324,8 @@
       "evidence": {
         "ops": []
       },
-      "prevStatus": null,
-      "probedAt": "2026-08-01T03:30:21.478749+00:00",
+      "prevStatus": "RED",
+      "probedAt": "2026-08-01T04:14:07.965670+00:00",
       "carriedOver": false
     },
     {
@@ -1341,8 +1345,8 @@
           "runGangnamScene"
         ]
       },
-      "prevStatus": null,
-      "probedAt": "2026-08-01T03:30:21.478749+00:00",
+      "prevStatus": "GREEN",
+      "probedAt": "2026-08-01T04:14:07.965670+00:00",
       "carriedOver": false
     },
     {
@@ -1362,27 +1366,31 @@
           "startGangnamCamera"
         ]
       },
-      "prevStatus": null,
-      "probedAt": "2026-08-01T03:30:21.478749+00:00",
+      "prevStatus": "GREEN",
+      "probedAt": "2026-08-01T04:14:07.965670+00:00",
       "carriedOver": false
     },
     {
       "suite": "opcode",
       "id": "startCitysetPreset",
       "layer": "R",
-      "status": "RED",
-      "verdict": "FAIL",
-      "reason": "NL_UNREACHABLE",
-      "note": "empty raw={\"ops\": [], \"capability_request\": null}",
+      "status": "AMBER",
+      "verdict": "WARN",
+      "reason": "MISROUTED",
+      "note": "got=['cameraFlyToAnchor', 'mountMetricChoropleth', 'mountMetricChoropleth'] want∈['startCitysetPreset', 'runGangnamScene']",
       "axis": {
         "op": "startCitysetPreset"
       },
       "query": "도시 프리셋을 한꺼번에 가동해줘",
       "evidence": {
-        "ops": []
+        "ops": [
+          "cameraFlyToAnchor",
+          "mountMetricChoropleth",
+          "mountMetricChoropleth"
+        ]
       },
-      "prevStatus": null,
-      "probedAt": "2026-08-01T03:30:21.478749+00:00",
+      "prevStatus": "RED",
+      "probedAt": "2026-08-01T04:14:07.965670+00:00",
       "carriedOver": false
     },
     {
@@ -1402,8 +1410,8 @@
           "startGoldFaceSliding"
         ]
       },
-      "prevStatus": null,
-      "probedAt": "2026-08-01T03:30:21.478749+00:00",
+      "prevStatus": "GREEN",
+      "probedAt": "2026-08-01T04:14:07.965670+00:00",
       "carriedOver": false
     },
     {
@@ -1423,27 +1431,31 @@
           "demoMetroFaceTier"
         ]
       },
-      "prevStatus": null,
-      "probedAt": "2026-08-01T03:30:21.478749+00:00",
+      "prevStatus": "GREEN",
+      "probedAt": "2026-08-01T04:14:07.965670+00:00",
       "carriedOver": false
     },
     {
       "suite": "opcode",
       "id": "impactRollup",
       "layer": "R",
-      "status": "RED",
-      "verdict": "FAIL",
-      "reason": "NL_UNREACHABLE",
-      "note": "empty raw={\"ops\": [], \"capability_request\": {\"intent\": \"poli",
+      "status": "GREEN",
+      "verdict": "PASS",
+      "reason": null,
+      "note": "ops=['impactRollup'] (변형 2번째로 도달 — 1번 문장은 취약)",
       "axis": {
         "op": "impactRollup"
       },
       "query": "선택한 건물들의 그린리모델링 정책효과를 합계로 보여줘",
       "evidence": {
-        "ops": []
+        "ops": [
+          "impactRollup"
+        ],
+        "variantIndex": 1,
+        "fragileQuery": "선택한 건물들의 그린리모델링 정책효과를 합계로 보여줘"
       },
-      "prevStatus": null,
-      "probedAt": "2026-08-01T03:30:21.478749+00:00",
+      "prevStatus": "RED",
+      "probedAt": "2026-08-01T04:14:07.965670+00:00",
       "carriedOver": false
     },
     {
@@ -15824,9 +15836,9 @@
     }
   ],
   "summary": {
-    "GREEN": 333,
-    "AMBER": 289,
-    "RED": 13,
+    "GREEN": 337,
+    "AMBER": 288,
+    "RED": 10,
     "total": 635,
     "fresh": 68,
     "carriedOver": 567,
@@ -15834,8 +15846,8 @@
   },
   "byReason": {
     "ESCALATE_BY_DESIGN": 8,
-    "MISROUTED": 10,
-    "NL_UNREACHABLE": 8
+    "MISROUTED": 9,
+    "NL_UNREACHABLE": 5
   },
   "greenList": [
     {
@@ -16199,6 +16211,16 @@
       "verifiedBy": "router"
     },
     {
+      "query": "건물 입구에 간판을 세워줘",
+      "suite": "opcode",
+      "id": "createEntranceSign",
+      "layer": "R",
+      "axis": {
+        "op": "createEntranceSign"
+      },
+      "verifiedBy": "router"
+    },
+    {
       "query": "건물 벽면에 영상 패널을 하나 붙여줘",
       "suite": "opcode",
       "id": "createVideoPanel",
@@ -16239,6 +16261,16 @@
       "verifiedBy": "router"
     },
     {
+      "query": "여러 효과를 합쳐서 한 번에 입혀줘",
+      "suite": "opcode",
+      "id": "applyCompositeShader",
+      "layer": "R",
+      "axis": {
+        "op": "applyCompositeShader"
+      },
+      "verifiedBy": "router"
+    },
+    {
       "query": "야간 조명이랑 에너지 오라를 같이 입혀줘",
       "suite": "opcode",
       "id": "paintCompositeNightAndAura",
@@ -16255,6 +16287,16 @@
       "layer": "R",
       "axis": {
         "op": "paintLotteFacade"
+      },
+      "verifiedBy": "router"
+    },
+    {
+      "query": "화면 가운데 건물을 유리 외피로 칠해줘",
+      "suite": "opcode",
+      "id": "paintLotteFacadeOnScreenCenter",
+      "layer": "R",
+      "axis": {
+        "op": "paintLotteFacadeOnScreenCenter"
       },
       "verifiedBy": "router"
     },
@@ -16335,6 +16377,16 @@
       "layer": "R",
       "axis": {
         "op": "demoMetroFaceTier"
+      },
+      "verifiedBy": "router"
+    },
+    {
+      "query": "선택한 건물들의 그린리모델링 정책효과를 합계로 보여줘",
+      "suite": "opcode",
+      "id": "impactRollup",
+      "layer": "R",
+      "axis": {
+        "op": "impactRollup"
       },
       "verifiedBy": "router"
     },
