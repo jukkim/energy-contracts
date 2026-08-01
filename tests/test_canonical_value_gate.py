@@ -73,3 +73,68 @@ def test_manifest_nonempty_and_well_formed():
         assert len(row) == 3  # (구값, 현행값, 설명)
         stale, current, _desc = row
         assert stale != current
+
+
+# --- equipment_taxonomy.point_sets (v1.1.0, 2026-08-01) -----------------------
+
+def test_point_set_mnemonics_share_the_cpa_point_vocabulary():
+    """point_sets 의 니모닉은 **CPA `{point}` 세그먼트와 같은 어휘**여야 한다.
+
+    여기서 새 니모닉을 발명하면 주소 어휘가 둘로 갈린다 — 같은 급기온도를 어떤
+    소비단은 SAT 로, 어떤 소비단은 DAT 로 부르게 된다.
+    """
+    import json
+    import re
+    from pathlib import Path
+
+    root = Path(__file__).resolve().parents[1] / "energy_contracts" / "schemas"
+    tax = json.loads((root / "equipment_taxonomy.json").read_text(encoding="utf-8"))
+    tele = json.loads((root / "telemetry.json").read_text(encoding="utf-8"))
+
+    # CPA 마지막 세그먼트({point})의 형식 = 대문자 니모닉
+    cpa = tele["$defs"]["CanonicalPointAddress"]["pattern"]
+    point_seg = re.search(r"\\.\(?\[A-Z\]\[A-Z0-9_\]\*\)?\$$", cpa)
+    assert point_seg, f"CPA 패턴에서 point 세그먼트를 못 찾았다: {cpa}"
+
+    kinds = set(tax["$defs"]["EquipmentKind"]["enum"])
+    sets = tax["default"]["point_sets"]
+    assert set(sets) <= kinds, f"EquipmentKind 밖의 설비: {sorted(set(sets) - kinds)}"
+
+    roles = set(tax["$defs"]["PointRole"]["enum"])
+    for kind, points in sets.items():
+        assert points, f"{kind}: 빈 점 집합"
+        seen = set()
+        for p in points:
+            m = p["mnemonic"]
+            assert re.fullmatch(r"[A-Z][A-Z0-9_]*", m), f"{kind}.{m}: CPA 니모닉 형식 아님"
+            assert m not in seen, f"{kind}: 니모닉 중복 {m}"
+            seen.add(m)
+            assert p["role"] in roles, f"{kind}.{m}: 미지원 role {p['role']}"
+            if "brick" in p:
+                assert p["brick"].startswith("brick:"), f"{kind}.{m}: brick 형식"
+
+
+def test_point_sets_declare_their_standard_sources():
+    """표준을 근거로 댔다면 **출처를 남긴다** — 근거 없는 표준을 만들지 않기 위해서다."""
+    import json
+    from pathlib import Path
+
+    tax = json.loads((Path(__file__).resolve().parents[1] / "energy_contracts"
+                      / "schemas" / "equipment_taxonomy.json").read_text(encoding="utf-8"))
+    src = tax["default"]["point_sets_sources"]
+    for key in ("haystack", "brick", "ashrae_g36"):
+        assert key in src and src[key], f"출처 누락: {key}"
+
+
+def test_required_points_exist_for_the_equipment_mgcc_draws():
+    """MGCC 관제도가 그리는 설비 6종에 **기대 점이 정의돼 있어야** 한다."""
+    import json
+    from pathlib import Path
+
+    tax = json.loads((Path(__file__).resolve().parents[1] / "energy_contracts"
+                      / "schemas" / "equipment_taxonomy.json").read_text(encoding="utf-8"))
+    sets = tax["default"]["point_sets"]
+    for kind in ("ahu", "chiller", "boiler", "fan", "lighting", "ess"):
+        assert kind in sets, f"MGCC 가 그리는 설비인데 점 집합이 없다: {kind}"
+        assert any(p.get("required") for p in sets[kind]), \
+            f"{kind}: 기대(required) 점이 하나도 없다 — 커버리지 판정이 불가능하다"

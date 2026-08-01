@@ -9,8 +9,8 @@
     "bems-console",
     "building-energy-3d"
   ],
-  "version": "1.0.0",
-  "updated": "2026-07-30",
+  "version": "1.1.0",
+  "updated": "2026-08-01",
   "$comment": "설계 원칙: (1) EquipmentKind = 물리 설비 종류(실 드라이버 바인딩 축). edge 8종 ∪ console 세분(ahu/vav/pump/pv/meter) 을 한 개념=한 이름으로 통합, light→lighting 통일. (2) DeviceAction = edge value_spec._SPEC 의 물리 동작 verb 를 authoritative 로 채택(driver.apply_device_action 1:1). console OutputKind(setpoint/onoff/dim/door/notify/m_code/dr_dispatch)는 상위 채널 추상 = 별도 축; 그 중 설비 지향 subset(setpoint→set_temp, onoff→on/off, dim→dim)만 capability_matrix 로 검증. (3) value_specs 는 edge value_spec._SPEC 범위를 정확히 보존(무 behavior 변경). meter=read-only(동작 없음). (4) capability_matrix 분해: {on,off,stop,emergency_off,emergency_on} = 모든 제어가능(비 meter) 종류 공통 '보편 제어 프리미티브'(비상정지=범용 안전동작). value 를 갖는 동작만 종류별(set_temp=냉난방류, dim=lighting, set_speed=공기이송류, discharge=ess) — 이 축에서만 (kind,action) 거부(예: lighting 에 set_temp 금지).",
   "type": "object",
   "required": [
@@ -84,6 +84,53 @@
           "description": "표시 단위(°C, %). UI 라벨용."
         }
       }
+    },
+    "PointRole": {
+      "type": "string",
+      "enum": [
+        "sensor",
+        "sp",
+        "cmd"
+      ],
+      "description": "점의 역할. Project Haystack 의 sensor/sp/cmd 3분 그대로다 — sensor=읽는 값 · sp=목표값(setpoint) · cmd=내리는 명령.\n**왜 표준을 따르나**: 이 3분이 '읽기만 하는 점'과 '쓰면 설비가 움직이는 점'을 가른다. 자체 어휘를 만들면 권한·감사 정책이 소비단마다 갈린다."
+    },
+    "EquipmentPoint": {
+      "type": "object",
+      "required": [
+        "mnemonic",
+        "role"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "mnemonic": {
+          "type": "string",
+          "pattern": "^[A-Z][A-Z0-9_]*$",
+          "description": "CPA 의 {point} 세그먼트와 **같은 어휘**(bems-console MNEMONICS 정본). 여기서 새 니모닉을 발명하지 않는다 — 주소 어휘가 둘로 갈린다."
+        },
+        "role": {
+          "$ref": "#/$defs/PointRole"
+        },
+        "required": {
+          "type": "boolean",
+          "default": false,
+          "description": "표준이 이 설비에 **기대하는** 점인가. 없다고 계약 위반은 아니다 — 현장마다 계측 범위가 다르다. 없으면 '미계측'으로 표시할 근거가 된다."
+        },
+        "unit": {
+          "type": "string"
+        },
+        "brick": {
+          "type": "string",
+          "pattern": "^brick:[A-Za-z0-9_]+$",
+          "description": "Brick Schema 클래스(있는 경우). 외부 온톨로지 연결점."
+        },
+        "haystack": {
+          "type": "string",
+          "description": "Project Haystack 태그 조합(있는 경우)."
+        },
+        "$comment": {
+          "type": "string"
+        }
+      }
     }
   },
   "properties": {
@@ -110,34 +157,534 @@
           "$ref": "#/$defs/ValueSpec"
         }
       }
+    },
+    "point_sets": {
+      "type": "object",
+      "description": "설비 종류 → 표준 관제점 집합. **왜 필요한가**: EquipmentKind 는 '무엇인가'만 말하고, 그 설비에 **어떤 점이 있어야 하는가**는 아무 데도 없었다. 그래서 소비단마다 점 목록을 손으로 적었다.\n용도: ① 커버리지 판정('AHU 인데 급기온도가 없다') ② 자동 점 생성 뼈대 ③ 외부 온톨로지(Brick/Haystack) 연결.\n⚠ 이 목록은 **기대치이지 강제가 아니다**. 현장마다 계측 범위가 다르므로 빠진 점은 '위반'이 아니라 '미계측'이다 — 없는 것을 있다고 하지 않기 위한 근거다.",
+      "additionalProperties": {
+        "type": "array",
+        "items": {
+          "$ref": "#/$defs/EquipmentPoint"
+        }
+      }
     }
   },
   "default": {
     "capability_matrix": {
-      "hvac": ["on", "off", "stop", "emergency_off", "emergency_on", "set_temp"],
-      "ahu": ["on", "off", "stop", "emergency_off", "emergency_on", "set_temp", "set_speed"],
-      "vav": ["on", "off", "stop", "emergency_off", "emergency_on", "set_temp", "set_speed"],
-      "chiller": ["on", "off", "stop", "emergency_off", "emergency_on", "set_temp"],
-      "boiler": ["on", "off", "stop", "emergency_off", "emergency_on", "set_temp"],
-      "fan": ["on", "off", "stop", "emergency_off", "emergency_on", "set_speed"],
-      "pump": ["on", "off", "stop", "emergency_off", "emergency_on", "set_speed"],
-      "lighting": ["on", "off", "stop", "emergency_off", "emergency_on", "dim"],
-      "ess": ["on", "off", "stop", "emergency_off", "emergency_on", "discharge"],
-      "pv": ["on", "off", "stop", "emergency_off", "emergency_on"],
-      "plug": ["on", "off", "stop", "emergency_off", "emergency_on"],
+      "hvac": [
+        "on",
+        "off",
+        "stop",
+        "emergency_off",
+        "emergency_on",
+        "set_temp"
+      ],
+      "ahu": [
+        "on",
+        "off",
+        "stop",
+        "emergency_off",
+        "emergency_on",
+        "set_temp",
+        "set_speed"
+      ],
+      "vav": [
+        "on",
+        "off",
+        "stop",
+        "emergency_off",
+        "emergency_on",
+        "set_temp",
+        "set_speed"
+      ],
+      "chiller": [
+        "on",
+        "off",
+        "stop",
+        "emergency_off",
+        "emergency_on",
+        "set_temp"
+      ],
+      "boiler": [
+        "on",
+        "off",
+        "stop",
+        "emergency_off",
+        "emergency_on",
+        "set_temp"
+      ],
+      "fan": [
+        "on",
+        "off",
+        "stop",
+        "emergency_off",
+        "emergency_on",
+        "set_speed"
+      ],
+      "pump": [
+        "on",
+        "off",
+        "stop",
+        "emergency_off",
+        "emergency_on",
+        "set_speed"
+      ],
+      "lighting": [
+        "on",
+        "off",
+        "stop",
+        "emergency_off",
+        "emergency_on",
+        "dim"
+      ],
+      "ess": [
+        "on",
+        "off",
+        "stop",
+        "emergency_off",
+        "emergency_on",
+        "discharge"
+      ],
+      "pv": [
+        "on",
+        "off",
+        "stop",
+        "emergency_off",
+        "emergency_on"
+      ],
+      "plug": [
+        "on",
+        "off",
+        "stop",
+        "emergency_off",
+        "emergency_on"
+      ],
       "meter": [],
-      "other": ["on", "off", "stop", "emergency_off", "emergency_on"]
+      "other": [
+        "on",
+        "off",
+        "stop",
+        "emergency_off",
+        "emergency_on"
+      ]
     },
     "value_specs": {
-      "on": { "value_required": false },
-      "off": { "value_required": false },
-      "stop": { "value_required": false },
-      "discharge": { "value_required": false },
-      "emergency_off": { "value_required": false },
-      "emergency_on": { "value_required": false },
-      "set_temp": { "value_required": true, "value_type": "number", "min": 16.0, "max": 32.0, "unit": "°C" },
-      "dim": { "value_required": true, "value_type": "number", "min": 0.0, "max": 100.0, "unit": "%" },
-      "set_speed": { "value_required": true, "value_type": "number", "min": 0.0, "max": 100.0, "unit": "%" }
+      "on": {
+        "value_required": false
+      },
+      "off": {
+        "value_required": false
+      },
+      "stop": {
+        "value_required": false
+      },
+      "discharge": {
+        "value_required": false
+      },
+      "emergency_off": {
+        "value_required": false
+      },
+      "emergency_on": {
+        "value_required": false
+      },
+      "set_temp": {
+        "value_required": true,
+        "value_type": "number",
+        "min": 16.0,
+        "max": 32.0,
+        "unit": "°C"
+      },
+      "dim": {
+        "value_required": true,
+        "value_type": "number",
+        "min": 0.0,
+        "max": 100.0,
+        "unit": "%"
+      },
+      "set_speed": {
+        "value_required": true,
+        "value_type": "number",
+        "min": 0.0,
+        "max": 100.0,
+        "unit": "%"
+      }
+    },
+    "point_sets": {
+      "ahu": [
+        {
+          "mnemonic": "SAT",
+          "role": "sensor",
+          "required": true,
+          "unit": "°C",
+          "brick": "brick:Supply_Air_Temperature_Sensor",
+          "haystack": "discharge air temp sensor",
+          "$comment": "Haystack 은 discharge, Brick 은 Supply/Discharge 를 동의어로 둔다."
+        },
+        {
+          "mnemonic": "RAT",
+          "role": "sensor",
+          "required": true,
+          "unit": "°C",
+          "brick": "brick:Return_Air_Temperature_Sensor",
+          "haystack": "return air temp sensor"
+        },
+        {
+          "mnemonic": "OAT",
+          "role": "sensor",
+          "required": false,
+          "unit": "°C",
+          "brick": "brick:Outside_Air_Temperature_Sensor",
+          "haystack": "outside air temp sensor"
+        },
+        {
+          "mnemonic": "SP",
+          "role": "sp",
+          "required": true,
+          "unit": "°C",
+          "brick": "brick:Supply_Air_Temperature_Setpoint",
+          "haystack": "discharge air temp sp"
+        },
+        {
+          "mnemonic": "FAN",
+          "role": "cmd",
+          "required": false,
+          "unit": "%",
+          "brick": "brick:Fan_Speed_Command",
+          "haystack": "fan cmd"
+        },
+        {
+          "mnemonic": "VLV",
+          "role": "cmd",
+          "required": false,
+          "unit": "%",
+          "brick": "brick:Valve_Position_Command",
+          "haystack": "valve cmd"
+        },
+        {
+          "mnemonic": "RUN",
+          "role": "cmd",
+          "required": false,
+          "brick": "brick:Start_Stop_Command",
+          "haystack": "run cmd"
+        },
+        {
+          "mnemonic": "KW",
+          "role": "sensor",
+          "required": false,
+          "unit": "kW",
+          "brick": "brick:Electrical_Power_Sensor",
+          "haystack": "elec power sensor"
+        }
+      ],
+      "hvac": [
+        {
+          "mnemonic": "ZT",
+          "role": "sensor",
+          "required": true,
+          "unit": "°C",
+          "brick": "brick:Zone_Air_Temperature_Sensor",
+          "haystack": "zone air temp sensor"
+        },
+        {
+          "mnemonic": "SP",
+          "role": "sp",
+          "required": true,
+          "unit": "°C",
+          "brick": "brick:Zone_Air_Temperature_Setpoint",
+          "haystack": "zone air temp sp"
+        },
+        {
+          "mnemonic": "RH",
+          "role": "sensor",
+          "required": false,
+          "unit": "%",
+          "brick": "brick:Relative_Humidity_Sensor",
+          "haystack": "zone air humidity sensor"
+        },
+        {
+          "mnemonic": "CO2",
+          "role": "sensor",
+          "required": false,
+          "unit": "ppm",
+          "brick": "brick:CO2_Level_Sensor",
+          "haystack": "zone air co2 sensor"
+        },
+        {
+          "mnemonic": "OCC",
+          "role": "sensor",
+          "required": false,
+          "brick": "brick:Occupancy_Sensor",
+          "haystack": "zone occupied sensor"
+        }
+      ],
+      "vav": [
+        {
+          "mnemonic": "SAT",
+          "role": "sensor",
+          "required": false,
+          "unit": "°C",
+          "brick": "brick:Discharge_Air_Temperature_Sensor",
+          "haystack": "discharge air temp sensor"
+        },
+        {
+          "mnemonic": "ZT",
+          "role": "sensor",
+          "required": true,
+          "unit": "°C",
+          "brick": "brick:Zone_Air_Temperature_Sensor",
+          "haystack": "zone air temp sensor"
+        },
+        {
+          "mnemonic": "SP",
+          "role": "sp",
+          "required": true,
+          "unit": "°C",
+          "brick": "brick:Zone_Air_Temperature_Setpoint",
+          "haystack": "zone air temp sp"
+        },
+        {
+          "mnemonic": "VLV",
+          "role": "cmd",
+          "required": false,
+          "unit": "%",
+          "brick": "brick:Damper_Position_Command",
+          "haystack": "damper cmd"
+        }
+      ],
+      "chiller": [
+        {
+          "mnemonic": "SAT",
+          "role": "sensor",
+          "required": true,
+          "unit": "°C",
+          "brick": "brick:Leaving_Chilled_Water_Temperature_Sensor",
+          "haystack": "leaving chilled water temp sensor",
+          "$comment": "냉수 공급(출구) 온도 — 니모닉은 '공급측 온도' 공통 어휘를 쓴다."
+        },
+        {
+          "mnemonic": "RAT",
+          "role": "sensor",
+          "required": false,
+          "unit": "°C",
+          "brick": "brick:Entering_Chilled_Water_Temperature_Sensor",
+          "haystack": "entering chilled water temp sensor"
+        },
+        {
+          "mnemonic": "SP",
+          "role": "sp",
+          "required": true,
+          "unit": "°C",
+          "brick": "brick:Chilled_Water_Temperature_Setpoint",
+          "haystack": "chilled water temp sp"
+        },
+        {
+          "mnemonic": "RUN",
+          "role": "cmd",
+          "required": false,
+          "brick": "brick:Start_Stop_Command",
+          "haystack": "run cmd"
+        },
+        {
+          "mnemonic": "KW",
+          "role": "sensor",
+          "required": true,
+          "unit": "kW",
+          "brick": "brick:Electrical_Power_Sensor",
+          "haystack": "elec power sensor"
+        }
+      ],
+      "boiler": [
+        {
+          "mnemonic": "SAT",
+          "role": "sensor",
+          "required": true,
+          "unit": "°C",
+          "brick": "brick:Leaving_Hot_Water_Temperature_Sensor",
+          "haystack": "leaving hot water temp sensor"
+        },
+        {
+          "mnemonic": "RAT",
+          "role": "sensor",
+          "required": false,
+          "unit": "°C",
+          "brick": "brick:Entering_Hot_Water_Temperature_Sensor",
+          "haystack": "entering hot water temp sensor"
+        },
+        {
+          "mnemonic": "SP",
+          "role": "sp",
+          "required": true,
+          "unit": "°C",
+          "brick": "brick:Hot_Water_Temperature_Setpoint",
+          "haystack": "hot water temp sp"
+        },
+        {
+          "mnemonic": "RUN",
+          "role": "cmd",
+          "required": false,
+          "brick": "brick:Start_Stop_Command",
+          "haystack": "run cmd"
+        }
+      ],
+      "fan": [
+        {
+          "mnemonic": "FAN",
+          "role": "cmd",
+          "required": true,
+          "unit": "%",
+          "brick": "brick:Fan_Speed_Command",
+          "haystack": "fan cmd"
+        },
+        {
+          "mnemonic": "RUN",
+          "role": "cmd",
+          "required": false,
+          "brick": "brick:Start_Stop_Command",
+          "haystack": "run cmd"
+        },
+        {
+          "mnemonic": "KW",
+          "role": "sensor",
+          "required": false,
+          "unit": "kW",
+          "brick": "brick:Electrical_Power_Sensor",
+          "haystack": "elec power sensor"
+        }
+      ],
+      "pump": [
+        {
+          "mnemonic": "PMP",
+          "role": "cmd",
+          "required": true,
+          "brick": "brick:Pump_Command",
+          "haystack": "pump cmd"
+        },
+        {
+          "mnemonic": "FLOW",
+          "role": "sensor",
+          "required": false,
+          "unit": "m³/h",
+          "brick": "brick:Water_Flow_Sensor",
+          "haystack": "water flow sensor"
+        },
+        {
+          "mnemonic": "KW",
+          "role": "sensor",
+          "required": false,
+          "unit": "kW",
+          "brick": "brick:Electrical_Power_Sensor",
+          "haystack": "elec power sensor"
+        }
+      ],
+      "lighting": [
+        {
+          "mnemonic": "LGT",
+          "role": "cmd",
+          "required": true,
+          "unit": "%",
+          "brick": "brick:Lighting_Level_Command",
+          "haystack": "light level cmd"
+        },
+        {
+          "mnemonic": "ILUM",
+          "role": "sensor",
+          "required": false,
+          "unit": "lux",
+          "brick": "brick:Illuminance_Sensor",
+          "haystack": "illuminance sensor"
+        },
+        {
+          "mnemonic": "OCC",
+          "role": "sensor",
+          "required": false,
+          "brick": "brick:Occupancy_Sensor",
+          "haystack": "occupied sensor"
+        }
+      ],
+      "ess": [
+        {
+          "mnemonic": "SOC",
+          "role": "sensor",
+          "required": true,
+          "unit": "%",
+          "brick": "brick:Battery_Energy_Storage_System",
+          "haystack": "battery soc sensor"
+        },
+        {
+          "mnemonic": "DISPATCH",
+          "role": "cmd",
+          "required": false,
+          "unit": "kW",
+          "brick": "brick:Power_Command",
+          "haystack": "battery power cmd",
+          "$comment": "충전(+)/방전(-) 부호 규약은 소비단 계약을 따른다."
+        },
+        {
+          "mnemonic": "MODE",
+          "role": "sp",
+          "required": false,
+          "haystack": "battery mode sp"
+        }
+      ],
+      "pv": [
+        {
+          "mnemonic": "PV_KW",
+          "role": "sensor",
+          "required": true,
+          "unit": "kW",
+          "brick": "brick:PV_Generation_System",
+          "haystack": "elec power sensor"
+        },
+        {
+          "mnemonic": "INV_KW",
+          "role": "sensor",
+          "required": false,
+          "unit": "kW",
+          "brick": "brick:Inverter",
+          "haystack": "elec power sensor"
+        }
+      ],
+      "meter": [
+        {
+          "mnemonic": "KWH",
+          "role": "sensor",
+          "required": true,
+          "unit": "kWh",
+          "brick": "brick:Building_Electrical_Meter",
+          "haystack": "elec energy sensor"
+        },
+        {
+          "mnemonic": "KW",
+          "role": "sensor",
+          "required": false,
+          "unit": "kW",
+          "brick": "brick:Electrical_Power_Sensor",
+          "haystack": "elec power sensor"
+        },
+        {
+          "mnemonic": "PF",
+          "role": "sensor",
+          "required": false,
+          "brick": "brick:Power_Factor_Sensor",
+          "haystack": "elec pf sensor"
+        }
+      ],
+      "plug": [
+        {
+          "mnemonic": "KW",
+          "role": "sensor",
+          "required": false,
+          "unit": "kW",
+          "brick": "brick:Electrical_Power_Sensor",
+          "haystack": "elec power sensor"
+        }
+      ]
+    },
+    "point_sets_sources": {
+      "haystack": "Project Haystack 4 — lib-phIoT 설비 proto(children). https://project-haystack.org/doc/lib-phIoT/ahu",
+      "brick": "Brick Schema v1.x point classes. https://brickschema.org/",
+      "ashrae_g36": "ASHRAE Guideline 36-2024 High-Performance Sequences of Operation for HVAC Systems — AHU Controls Points Lists. 규범 참조(본문 비공개, 목록을 복제하지 않았다).",
+      "$comment": "니모닉 어휘 자체는 bems-console lib/point-address.ts MNEMONICS 정본을 따른다. 표준은 '어떤 점이 있어야 하나'를 근거로 대고, 이름은 기존 어휘를 쓴다 — 표준 이름을 그대로 들여오면 CPA {point} 세그먼트와 어휘가 갈린다."
     }
   }
 }

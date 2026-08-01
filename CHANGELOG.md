@@ -4,6 +4,32 @@
 
 ---
 
+## v0.3.29 — 2026-08-01
+
+### equipment_taxonomy v1.1.0 — 설비별 표준 관제점 집합(point_sets)
+
+EquipmentKind 는 "무엇인가"만 말하고, 그 설비에 **어떤 점이 있어야 하는가**는 아무
+데도 없었다. 그래서 소비단마다 점 목록을 손으로 적었다.
+
+- $defs.PointRole (sensor/sp/cmd) — Project Haystack 의 3분 그대로. 이 3분이
+  "읽기만 하는 점"과 "쓰면 설비가 움직이는 점"을 가른다.
+- $defs.EquipmentPoint + default.point_sets — 설비 12종 · 점 44개
+- 각 점에 Brick 클래스 / Haystack 태그 조합을 연결(외부 온톨로지 접점)
+
+**근거**: Project Haystack 4 lib-phIoT 설비 proto · Brick Schema point classes ·
+ASHRAE Guideline 36-2024 AHU Controls Points Lists(규범 참조 — 본문 비공개라
+목록을 복제하지 않았다). 출처는 default.point_sets_sources 에 남긴다.
+
+⚠ **기대치이지 강제가 아니다**. 현장마다 계측 범위가 다르므로 빠진 점은 "위반"이
+아니라 "미계측"이다 — 없는 것을 있다고 하지 않기 위한 근거다.
+
+⚠ 니모닉은 **CPA {point} 세그먼트와 같은 어휘**(bems-console MNEMONICS 정본)를 쓴다.
+표준은 "어떤 점이 있어야 하나"의 근거로만 쓰고 이름은 기존 어휘를 유지한다 —
+표준 이름을 그대로 들여오면 주소 어휘가 갈린다.
+
+생성 상수: SOURCE_HASH 만 변경(point_sets 는 export 화이트리스트 밖) — 소비 6 repo
+해시 동기 필요, **값 변화 없음**.
+
 ## v0.3.28 — 2026-08-01
 
 ### telemetry v1.4 — 관제점 종류·바인딩 + CPA 건물 세그먼트
