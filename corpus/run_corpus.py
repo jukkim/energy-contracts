@@ -235,7 +235,8 @@ def suite_class(corpus, ctx):
                 st, note, reason, ev = "SKIP", "--compose 미지정", None, {}
             else:
                 st, note, reason, ev = _judge_compose(c["query"], c["expectAny"], c["refuseOk"],
-                                                      ctx["studio"], ctx["timeout"])
+                                                      ctx["studio"],
+                                                      ctx.get("compose_timeout", ctx["timeout"]))
         elif rt == "ops_status":
             code = _get(f"{ctx['studio']}/api/ops-status", ctx["timeout"])
             if code == 200:
@@ -256,8 +257,18 @@ def suite_opcode(corpus, ctx):
 
     def one(kv):
         api, p = kv
-        st, note, reason, ev = _judge_cap(p["probeQuery"], p.get("expectAny", []),
-                                          p.get("refuseOk", False), ctx["gw"], ctx["timeout"])
+        # B-op 은 capability-route 가 아니라 **compose(EXAONE)** 가 emit 한다 — 판정 경로가 다르다.
+        #   route:"compose" 인데 --compose 가 없으면 SKIP(못 돌린 것을 통과로 위장하지 않는다).
+        if p.get("route") == "compose":
+            if not ctx["compose"]:
+                return C(api, "SKIP", "--compose 미지정(B-op compose 경로)", query=p["probeQuery"],
+                         axis={"op": api}, layer="R")
+            st, note, reason, ev = _judge_compose(p["probeQuery"], p.get("expectAny", []),
+                                                  p.get("refuseOk", False), ctx["studio"],
+                                                  ctx.get("compose_timeout", ctx["timeout"]))
+        else:
+            st, note, reason, ev = _judge_cap(p["probeQuery"], p.get("expectAny", []),
+                                              p.get("refuseOk", False), ctx["gw"], ctx["timeout"])
         return C(api, st, note, query=p["probeQuery"], reason=reason, evidence=ev,
                  axis={"op": api}, layer="R")
     return _pmap(one, items, ctx["jobs"])
@@ -512,10 +523,14 @@ def suite_static(corpus, ctx):
                   "11/11" if not ac_missing else f"미커버 {ac_missing}",
                   reason=None if not ac_missing else "NOT_PROBED", layer="D"))
     bcov = cov.get("bop", {})
-    nun = len(bcov.get("uncovered", []))
-    rows.append(C("bop-coverage", "WARN" if nun else "PASS",
-                  f"{len(bcov.get('covered', []))}/85 커버, {nun} conformance-only",
-                  reason="NOT_PROBED" if nun else None, layer="D"))
+    nl_total, nl_cov = bcov.get("nlTarget", 0), bcov.get("nlCovered", 0)
+    nl_un = len(bcov.get("nlUncovered", []))
+    exempt = len(bcov.get("lifecycleExempt", []))
+    # 분모를 나눠 보고한다: 생명주기 op(clear*/unmount*)는 자연어 대표질의가 **원리적으로 불필요**.
+    #   하나로 뭉뚱그린 "5/85" 는 78개가 방치된 것처럼 읽혔지만 그중 18은 면제 대상이었다.
+    rows.append(C("bop-coverage", "WARN" if nl_un else "PASS",
+                  f"NL대상 {nl_cov}/{nl_total} 커버 · 미커버 {nl_un} · 생명주기 면제 {exempt}",
+                  reason="NOT_PROBED" if nl_un else None, layer="D"))
     return rows
 
 
@@ -716,6 +731,9 @@ def main():
     ap.add_argument("--studio", default=DEFAULT_STUDIO)
     ap.add_argument("--be3d", default=DEFAULT_BE3D)
     ap.add_argument("--timeout", type=int, default=30)
+    ap.add_argument("--compose-timeout", type=int, default=150,
+                    help="compose(EXAONE 생성) 경로 타임아웃 — 라우팅(30s)보다 훨씬 길다. "
+                         "짧게 두면 느린 성공이 UNKNOWN 으로 잡혀 스윕이 통째로 무효가 된다(2026-08-01 실증)")
     args = ap.parse_args()
 
     if not CORPUS_JSON.exists():
@@ -734,7 +752,8 @@ def main():
 
     ctx = {"gw": args.gateway, "studio": args.studio, "be3d": args.be3d,
            "timeout": args.timeout, "compose": args.compose, "combo_limit": args.combo_limit,
-           "sweep": args.sweep, "jobs": max(1, args.jobs), "render_sample": args.render_sample}
+           "sweep": args.sweep, "jobs": max(1, args.jobs), "render_sample": args.render_sample,
+           "compose_timeout": args.compose_timeout}
     c = corpus["counts"]
     print("=" * 74)
     print(f"  질의 코퍼스 전수 — opcode {c['opcodes']}(A{c['opA']}/B{c['opB']}/C{c['opC']}) "

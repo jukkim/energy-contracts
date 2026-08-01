@@ -154,18 +154,43 @@ def _ops_emitted_in(path: Path) -> set[str]:
     return found
 
 
-def compute_bop_coverage(op_apis: list[str]) -> dict:
-    """B-op 커버리지: play100 ∪ scenario_nl 가 언급하는 op ∩ 전체 op → 미커버 산출."""
+# 자연어 대표질의가 **원리적으로 불필요한** B-op — 생명주기·역연산.
+#   사용자는 "언마운트해줘"·"셰이더 지워줘"라고 말하지 않는다. 이들은 앞선 op 의 정리 단계로만
+#   호출되므로 NL 커버리지 분모에서 빼는 것이 정직하다. 하나의 뭉뚱그린 WARN("5/85") 은
+#   "78개가 방치됨"처럼 읽히지만 실제로는 그중 다수가 **면제 대상**이었다(2026-08-01 재분류).
+_LIFECYCLE_PREFIXES = ("clear", "unmount", "stop", "hide", "remove", "reset", "destroy", "dispose")
+
+
+def _is_lifecycle(api: str) -> bool:
+    short = api.split(".")[-1]
+    return short.startswith(_LIFECYCLE_PREFIXES)
+
+
+def compute_bop_coverage(op_apis: list[str], overlay_probes: dict | None = None) -> dict:
+    """B-op 커버리지.
+
+    분모를 둘로 나눈다:
+      · nlTarget  = 사용자가 자연어로 부를 수 있는 op (시연·회귀 대상)
+      · lifecycle = 정리/역연산 op (대표질의 면제 — 앞선 op 의 뒷정리로만 호출)
+    커버 판정 = play100 ∪ scenario_nl 토큰 **또는** overlay 의 명시 probeQuery.
+    """
     emitted = _ops_emitted_in(PLAY100) | _ops_emitted_in(SCENARIO_NL)
-    # runtimeApi 와 namespaced name 둘 다로 매칭 시도
+    probes = set(overlay_probes or {})
     covered = set()
     for api in op_apis:
         short = api.split(".")[-1]
-        if api in emitted or short in emitted or any(short.lower() in e.lower() for e in emitted):
+        if (api in probes or api in emitted or short in emitted
+                or any(short.lower() in e.lower() for e in emitted)):
             covered.add(api)
+    lifecycle = [a for a in op_apis if _is_lifecycle(a)]
+    nl_target = [a for a in op_apis if not _is_lifecycle(a)]
     uncovered = [a for a in op_apis if a not in covered]
+    nl_uncovered = [a for a in nl_target if a not in covered]
     return {"emittedTokens": len(emitted), "covered": sorted(covered),
-            "uncovered": sorted(uncovered)}
+            "uncovered": sorted(uncovered),
+            "nlTarget": len(nl_target), "nlCovered": len([a for a in nl_target if a in covered]),
+            "nlUncovered": sorted(nl_uncovered),
+            "lifecycleExempt": sorted(lifecycle)}
 
 
 def build() -> tuple[dict, list[str]]:
@@ -214,7 +239,7 @@ def build() -> tuple[dict, list[str]]:
         problems.append(f"capabilityProbes 누락 executor: {miss_cap}")
 
     # ── B-op 커버리지 산출(경고만; 게이트 아님) ─────────────────────────────
-    bcov = compute_bop_coverage(b_apis)
+    bcov = compute_bop_coverage(b_apis, op_probes)
 
     corpus = {
         "schema": 1,
