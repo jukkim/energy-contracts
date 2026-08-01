@@ -581,20 +581,58 @@ CHANGE_MAP = [
     ("region_camera",    ["combo", "scenario"]),
     ("metric_catalog",   ["combo"]),
     ("public_scenarios", ["scenario"]),
+    # 2026-08-01 사냥꾼: 아래는 능력에 직결되는데 어떤 토큰에도 안 걸리던 경로들.
+    ("run_corpus", ["static", "class", "opcode"]),       # 판정기 자신
+    ("gen_corpus", ["static", "class", "opcode"]),
+    ("capability_ledger", ["static"]),                    # 원장 손편집 탐지(정적 무결성)
+    ("gen_ops", ["static", "opcode", "scenario"]),        # op_registry 생성기
+    ("capability_index", ["static"]),                     # studio 능력 색인
+    ("db/migration_", ["combo"]),                         # DB 축(지표) 추가
+    ("metric_timeseries", ["combo"]),
+    ("serving/app.py", ["capability", "refuse", "class"]),  # 게이트웨이 본체
+    ("policy_eval", ["capability", "combo"]),
     ("compose",          ["class", "opcode"]),
     # 모델 스왑 = 전면
     ("run24", ["static", "class", "opcode", "capability", "refuse", "combo", "scenario"]),
 ]
 
 
+# 능력과 무관함이 **명백한** 것만 정적 검사로 내린다(allowlist). 그 외 미상 파일은 라이브로 승격.
+#   근거: 최근 129 커밋을 매핑에 통과시키니 **75%가 static-only** 로 끝났고, 그 안에 게이트웨이
+#   라우터·판정기 자신(run_corpus.py)·능력 원장 파일·studio 색인·gen_ops.py 가 전부 들어 있었다
+#   (2026-08-01 사냥꾼). 토큰 매칭은 화이트리스트가 아니라 **가속기**여야 한다.
+DOC_ONLY_SUFFIXES = (".md", ".txt", ".rst", ".png", ".jpg", ".jpeg", ".gif", ".svg", ".webp",
+                     ".mp4", ".webm", ".mov", ".pdf", ".hwpx", ".pptx", ".xlsx", ".ipynb")
+DOC_ONLY_DIRS = ("docs/", "scratch/", "archive/", "evidence/", "presentation/", "screenshots/",
+                 "이미지/", "본선/", ".github/ISSUE_TEMPLATE/")
+SMOKE_SUITES = ["static", "class", "opcode", "capability", "refuse"]
+
+
+def _is_doc_only(f: str) -> bool:
+    g = f.replace("\\", "/")
+    return g.lower().endswith(DOC_ONLY_SUFFIXES) or any(d in g for d in DOC_ONLY_DIRS)
+
+
 def suites_for_changes(files: list[str]) -> list[str]:
     picked: list[str] = []
+    unknown: list[str] = []
     for f in files:
+        hit = False
         for token, suites in CHANGE_MAP:
             if token in f:
+                hit = True
                 for s in suites:
                     if s not in picked:
                         picked.append(s)
+        if not hit and not _is_doc_only(f):
+            unknown.append(f)
+    if unknown:
+        # 모르는 파일 = "검사할 것 없음"이 아니라 "무엇이 영향받는지 모름" → 라이브 스모크로 승격.
+        print(f"[changed] 매핑 미상 {len(unknown)}건 → 라이브 스모크 승격 "
+              f"(예: {', '.join(unknown[:3])})")
+        for s in SMOKE_SUITES:
+            if s not in picked:
+                picked.append(s)
     return picked or ["static"]
 
 
@@ -666,17 +704,29 @@ def build_ledger(corpus, cells: list[dict], services: dict, ctx, baseline: dict 
             regressions.append({"key": key, "from": prev_st, "to": led,
                                 "reason": c.get("reason"), "axis": c.get("axis")})
         if led == "GREEN" and c.get("query"):
-            # verifiedBy 를 반드시 남긴다: router = 실제로 자연어→op 라우팅까지 확인된 질의,
-            #   data = 데이터 존재만 확인(문장은 합성). 둘을 섞으면 "된다고 했는데 못 알아듣는" 사고.
+            # verifiedBy 3단계로 나눈다(2026-08-01 사냥꾼: "router" 가 실증 없이 붙던 문제).
+            #   router = 자연어→op 라우팅이 **실제 op 를 산출**했다  ← 시연 대본은 이것만 쓴다
+            #   escalate = refuse/empty 가 정답이라 통과(=아무 op 도 안 나옴). 시연용 아님
+            #   data  = 데이터 존재만 확인, 문장은 합성. 라우팅 미검증
+            ops_out = (c.get("evidence") or {}).get("ops") or []
+            if c.get("layer") == "R":
+                vby = "router" if ops_out else "escalate"
+            else:
+                vby = "data"
             greenlist.append({"query": c["query"], "suite": c["suite"], "id": c["id"],
                               "layer": c.get("layer"), "axis": c.get("axis") or {},
-                              "verifiedBy": "router" if c.get("layer") == "R" else "data"})
+                              "verifiedBy": vby, "demoSafe": vby == "router"})
 
     fresh_keys = {f"{r['suite']}:{r['id']}" for r in out_cells}
     fresh_count = len(out_cells)
     carried = 0
+    live_ops = set(corpus.get("opProbes", {}))
     for k, row in prev_rows.items():                 # 이번에 안 돌린 셀 이월(값·시각 보존)
         if k in fresh_keys:
+            continue
+        # 좀비 차단: 코퍼스에서 제거된 op(폐기 등)의 셀이 GREEN 인 채 영구 잔존하던 문제
+        #   (2026-08-01 사냥꾼: 폐기된 주행 op 3종이 greenList 에 남아 있었다).
+        if row.get("suite") == "opcode" and row.get("id") not in live_ops:
             continue
         r = dict(row)
         r["carriedOver"] = True
@@ -687,7 +737,9 @@ def build_ledger(corpus, cells: list[dict], services: dict, ctx, baseline: dict 
         if r.get("status") == "GREEN" and r.get("query"):
             greenlist.append({"query": r["query"], "suite": r.get("suite"), "id": r.get("id"),
                               "layer": r.get("layer"), "axis": r.get("axis") or {},
-                              "verifiedBy": "router" if r.get("layer") == "R" else "data",
+                              "verifiedBy": r.get("verifiedBy") or (
+                                  "router" if r.get("layer") == "R" else "data"),
+                              "demoSafe": False,      # 이월본은 시연 대본 후보에서 제외(신선도 미확인)
                               "stale": True})
 
     total = len(out_cells)
@@ -706,6 +758,7 @@ def build_ledger(corpus, cells: list[dict], services: dict, ctx, baseline: dict 
                     "unknownRatio": round(unknown / fresh_count, 4) if fresh_count else 0.0},
         "byReason": by_reason,
         "greenList": greenlist,
+        "demoList": [g for g in greenlist if g.get("demoSafe")],   # 시연 대본 후보(router 실증·신선)
         "regressions": regressions,
         "honesty": ("UNKNOWN = 판정 실패(서비스 다운·미계산)이며 '능력 없음'이 아니다. "
                     "RED = 실측 결과 불가. 회귀 판정은 총계가 아니라 GREEN→RED 만 센다."),
@@ -721,7 +774,9 @@ def print_ledger_summary(ledger: dict) -> None:
     if ledger["byReason"]:
         top = sorted(ledger["byReason"].items(), key=lambda kv: -kv[1])[:6]
         print("  사유: " + ", ".join(f"{k}={v}" for k, v in top))
-    print(f"  시연 가능 질의(greenList): {len(ledger['greenList'])}건")
+    demo = len(ledger.get("demoList", []))
+    print(f"  질의 목록: greenList {len(ledger['greenList'])}건 중 "
+          f"**시연 대본 후보 {demo}건**(router 실증·신선)")
     if ledger["regressions"]:
         print(f"  ❌ 능력 회귀 {len(ledger['regressions'])}건 — 잃어버린 능력:")
         for r in ledger["regressions"][:10]:
@@ -853,7 +908,17 @@ def main():
 
     if invalid:
         sys.exit(2)
-    sys.exit(1 if (grand["FAIL"] or ledger["regressions"]) else 0)
+    if grand["FAIL"] or ledger["regressions"]:
+        sys.exit(1)
+    # SKIP 과다 = "게이트가 절반만 돌았다". exit 0 으로 뭉개면 --compose 없이 돈 스윕이
+    #   '전부 통과'로 읽힌다(실측: --all 에서 SKIP 55/125). 자동화가 구분할 수 있게 별 코드로.
+    skipped_ratio = grand["SKIP"] / total if total else 0.0
+    if skipped_ratio > 0.30:
+        print("")
+        print(f"⚠️  SKIP {grand['SKIP']}/{total} ({skipped_ratio:.0%}) — **불완전 스윕**. "
+              f"B-op R층은 `--compose` 없이는 판정되지 않는다.")
+        sys.exit(3)
+    sys.exit(0)
 
 
 if __name__ == "__main__":

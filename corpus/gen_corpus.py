@@ -171,9 +171,20 @@ def _is_lifecycle(api: str) -> bool:
     return short.startswith(_LIFECYCLE_PREFIXES)
 
 
-def _is_deprecated(summary: str) -> bool:
-    s = (summary or "").lower()
-    return any(m in s for m in _DEPRECATED_MARKERS)
+def _is_deprecated(meta) -> bool:
+    """폐기 판정. **구조적 필드(v74Legacy)가 정본**, 산문 마커는 보조.
+
+    2026-08-01 사냥꾼: op_registry 에 `v74Legacy` 불리언이 실재하는데 한국어 요약문 substring 을
+    쓰고 있었다. 요약문은 80자로 잘려 넘어오고("레거시"가 뒤에 오면 미탐), C클래스 escalate op 의
+    요약에 "거부" 어휘가 흔해 오탐 위험도 있었다. 필드 우선 + 불일치 시에만 산문 폴백.
+    """
+    if isinstance(meta, dict):
+        if meta.get("v74Legacy") is True:
+            return True
+        summary = meta.get("summary") or ""
+    else:
+        summary = meta or ""
+    return any(m in summary.lower() for m in _DEPRECATED_MARKERS)
 
 
 def compute_bop_coverage(op_apis: list[str], overlay_probes: dict | None = None,
@@ -195,7 +206,7 @@ def compute_bop_coverage(op_apis: list[str], overlay_probes: dict | None = None,
             covered.add(api)
     sums = summaries or {}
     lifecycle = [a for a in op_apis if _is_lifecycle(a)]
-    deprecated = [a for a in op_apis if a not in lifecycle and _is_deprecated(sums.get(a, ""))]
+    deprecated = [a for a in op_apis if a not in lifecycle and _is_deprecated(sums.get(a))]
     exempt = set(lifecycle) | set(deprecated)
     nl_target = [a for a in op_apis if a not in exempt]
     uncovered = [a for a in op_apis if a not in covered]
@@ -254,7 +265,7 @@ def build() -> tuple[dict, list[str]]:
         problems.append(f"capabilityProbes 누락 executor: {miss_cap}")
 
     # ── B-op 커버리지 산출(경고만; 게이트 아님) ─────────────────────────────
-    bcov = compute_bop_coverage(b_apis, op_probes, {o["api"]: o.get("summary", "") for o in ops})
+    bcov = compute_bop_coverage(b_apis, op_probes, {o["api"]: o for o in ops})
 
     corpus = {
         "schema": 1,

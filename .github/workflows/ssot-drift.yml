@@ -66,6 +66,7 @@ jobs:
   verify_cross_ref_drift:
     name: Verify schemas/ cross-ref drift
     runs-on: [self-hosted, Linux, X64]
+    timeout-minutes: 15
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -132,6 +133,7 @@ jobs:
   verify_gateway_namespace:
     name: Verify gateway_routing F1~F14 namespace (ADR-001)
     runs-on: [self-hosted, Linux, X64]
+    timeout-minutes: 15
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -203,6 +205,7 @@ jobs:
   verify_audit_chain:
     name: Verify audit_chain invariants
     runs-on: [self-hosted, Linux, X64]
+    timeout-minutes: 15
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
