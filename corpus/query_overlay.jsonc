@@ -193,22 +193,14 @@
     },
     // ⚠ driveRouteByIntent = 제공자(네이버/티맵/OSRM) 선택을 대신하는 **의도 기반 디스패처**.
     //   이게 나오는 것은 오라우팅이 아니라 설계된 상위 경로 → expectAny 에 포함(2026-08-01 실측 반영).
-    "placeVehicleAlongRoute": {
+    // ⚠ 주행 op 5종(driveNaver/Tmap/Osrm/Kakao/placeVehicleAlongRoute)과 cameraFlyTo 는
+    //   registry summary 가 "레거시 raw — V74 거부"로 명시한 **폐기** op 이다. 2026-08-01 첫 실측에서
+    //   이들을 기대값으로 잡는 바람에 모델이 정답(driveRouteByIntent)을 냈는데도 WARN/미도달로 찍혔다.
+    //   → 폐기 op 은 gen_corpus 가 summary 로 자동 면제하고, 주행 축은 권장 op 하나로 대표한다.
+    "driveRouteByIntent": {
       "probeQuery": "강남역에서 삼성역까지 차량이 달리는 모습을 보여줘",
-      "expectAny": ["placeVehicleAlongRoute", "driveOsrmRoute", "driveRouteByIntent"], "route": "compose", "refuseOk": false,
-      "note": "차량 주행 — 시연 대표(우측 차선 offset)"
-    },
-    "driveNaverRoute": {
-      "probeQuery": "네이버 경로로 강남역에서 코엑스까지 주행해줘",
-      "expectAny": ["driveNaverRoute", "placeVehicleAlongRoute", "driveRouteByIntent"], "route": "compose", "refuseOk": false
-    },
-    "driveTmapRoute": {
-      "probeQuery": "티맵 경로로 이 구간을 달려줘",
-      "expectAny": ["driveTmapRoute", "placeVehicleAlongRoute", "driveRouteByIntent"], "route": "compose", "refuseOk": false
-    },
-    "driveOsrmRoute": {
-      "probeQuery": "자체 경로 엔진으로 이 두 지점 사이를 주행해줘",
-      "expectAny": ["driveOsrmRoute", "placeVehicleAlongRoute", "driveRouteByIntent"], "route": "compose", "refuseOk": false
+      "expectAny": ["driveRouteByIntent"], "route": "compose", "refuseOk": false,
+      "note": "주행 대표(엔진 auto 선택) — 레거시 raw 5종을 대체하는 권장 경로"
     },
     "flyRoute": {
       "probeQuery": "이 경로를 따라 하늘에서 날아가며 보여줘",
@@ -251,6 +243,138 @@
     "mountBftDropdown": {
       "probeQuery": "도로 접면 등급 필터를 화면에 띄워줘",
       "expectAny": ["mountBftDropdown"], "route": "compose", "refuseOk": false
+    },
+    // ── B-class 잔여 32 (2026-08-01, Phase E 후속) ────────────────────────
+    //   레거시 2종(driveKakaoRoute·driveOsrmRouteVia = V74 거부)은 **폐기 면제** — 시스템이
+    //   스스로 거부하는 op 에 대표질의를 붙이는 것은 의미가 없다(gen_corpus 가 summary 로 자동 분류).
+    //   문장은 사용자가 실제로 칠 법한 말로 쓴다. op 이름을 읽은 문장은 R층을 측정하지 못한다.
+    "createFacadeAd": {
+      "probeQuery": "이 건물 외벽에 광고판을 붙여줘",
+      "expectAny": ["createFacadeAd"], "route": "compose", "refuseOk": false
+    },
+    "createFacadeCamera": {
+      "probeQuery": "건물 외벽에 CCTV 카메라를 달아줘",
+      "expectAny": ["createFacadeCamera"], "route": "compose", "refuseOk": false
+    },
+    "createFacadeDrSignal": {
+      "probeQuery": "외벽에 수요반응 신호등을 달아줘",
+      "expectAny": ["createFacadeDrSignal"], "route": "compose", "refuseOk": false
+    },
+    "createFacadeEvacuationArrow": {
+      "probeQuery": "외벽에 대피 방향 화살표를 표시해줘",
+      "expectAny": ["createFacadeEvacuationArrow"], "route": "compose", "refuseOk": false
+    },
+    "createFacadeIotSensor": {
+      "probeQuery": "건물 외벽에 IoT 센서를 부착해줘",
+      "expectAny": ["createFacadeIotSensor"], "route": "compose", "refuseOk": false
+    },
+    "createFacadeLedText": {
+      "probeQuery": "외벽에 흐르는 LED 글자를 띄워줘",
+      "expectAny": ["createFacadeLedText"], "route": "compose", "refuseOk": false
+    },
+    "createFacadeQrCode": {
+      "probeQuery": "건물 외벽에 QR 코드를 붙여줘",
+      "expectAny": ["createFacadeQrCode"], "route": "compose", "refuseOk": false
+    },
+    "createFacadeWindowGrid": {
+      "probeQuery": "창문 점등 비율을 격자로 외벽에 표시해줘",
+      "expectAny": ["createFacadeWindowGrid"], "route": "compose", "refuseOk": false
+    },
+    "createEntranceSign": {
+      "probeQuery": "건물 입구에 간판을 세워줘",
+      "expectAny": ["createEntranceSign"], "route": "compose", "refuseOk": false
+    },
+    "createVideoPanel": {
+      "probeQuery": "건물 벽면에 영상 패널을 하나 붙여줘",
+      "expectAny": ["createVideoPanel"], "route": "compose", "refuseOk": false
+    },
+    "mediaPlay": {
+      "probeQuery": "띄워둔 미디어 영상을 재생해줘",
+      "expectAny": ["mediaPlay"], "route": "compose", "refuseOk": false
+    },
+    "mediaStop": {
+      "probeQuery": "재생 중인 미디어를 멈춰줘",
+      "expectAny": ["mediaStop"], "route": "compose", "refuseOk": false
+    },
+    "projectMediaFacadeFake": {
+      "probeQuery": "이 좌표 건물에 프로젝션 미디어 외피를 쏴줘",
+      "expectAny": ["projectMediaFacadeFake", "tiledMediaFacade"], "route": "compose", "refuseOk": false
+    },
+    "routePlay": {
+      "probeQuery": "경로를 따라가며 연출 시퀀스를 재생해줘",
+      "expectAny": ["routePlay", "flyRoute"], "route": "compose", "refuseOk": false
+    },
+    "applyCompositeShader": {
+      "probeQuery": "여러 효과를 합쳐서 한 번에 입혀줘",
+      "expectAny": ["applyCompositeShader", "paintCompositeNightAndAura"], "route": "compose", "refuseOk": false
+    },
+    "paintCompositeNightAndAura": {
+      "probeQuery": "야간 조명이랑 에너지 오라를 같이 입혀줘",
+      "expectAny": ["paintCompositeNightAndAura", "applyCompositeShader"], "route": "compose", "refuseOk": false
+    },
+    "paintLotteFacade": {
+      "probeQuery": "롯데타워 유리 느낌으로 외벽을 칠해줘",
+      "expectAny": ["paintLotteFacade", "paintFacadeAt"], "route": "compose", "refuseOk": false
+    },
+    "paintLotteFacadeOnScreenCenter": {
+      "probeQuery": "화면 가운데 건물을 유리 외피로 칠해줘",
+      "expectAny": ["paintLotteFacadeOnScreenCenter", "paintLotteFacade"], "route": "compose", "refuseOk": false
+    },
+    "paintRoofFireZone": {
+      "probeQuery": "옥상 화재 위험 구역을 표시해줘",
+      "expectAny": ["paintRoofFireZone"], "route": "compose", "refuseOk": false
+    },
+    "placeAsset": {
+      "probeQuery": "길가에 벤치랑 가로수를 놓아줘",
+      "expectAny": ["placeAsset"], "route": "compose", "refuseOk": false
+    },
+    "placeSmartLamp": {
+      "probeQuery": "스마트 가로등을 세워줘",
+      "expectAny": ["placeSmartLamp", "placeAsset"], "route": "compose", "refuseOk": false
+    },
+    "placeWaterBody": {
+      "probeQuery": "이 자리에 분수 있는 광장을 만들어줘",
+      "expectAny": ["placeWaterBody", "placeAsset"], "route": "compose", "refuseOk": false
+    },
+    "placeUndergroundParking": {
+      "probeQuery": "지하주차장을 배치해줘",
+      "expectAny": ["placeUndergroundParking"], "route": "compose", "refuseOk": false
+    },
+    "placeLotteTowerAt": {
+      "probeQuery": "이 빈 땅에 롯데타워를 세워줘",
+      "expectAny": ["placeLotteTowerAt", "swapToLotteTowerAt"], "route": "compose", "refuseOk": false
+    },
+    "swapToLotteTowerAt": {
+      "probeQuery": "이 건물을 롯데타워로 바꿔줘",
+      "expectAny": ["swapToLotteTowerAt", "placeLotteTowerAt"], "route": "compose", "refuseOk": false
+    },
+    "swapBuildingAt": {
+      "probeQuery": "이 건물을 다른 박스 건물로 교체해줘",
+      "expectAny": ["swapBuildingAt", "swapToLotteTowerAt"], "route": "compose", "refuseOk": false
+    },
+    "runGangnamScene": {
+      "probeQuery": "강남 데모 장면을 재생해줘",
+      "expectAny": ["runGangnamScene", "startGangnamCamera"], "route": "compose", "refuseOk": false
+    },
+    "startGangnamCamera": {
+      "probeQuery": "강남 데모 카메라를 시작해줘",
+      "expectAny": ["startGangnamCamera", "runGangnamScene"], "route": "compose", "refuseOk": false
+    },
+    "startCitysetPreset": {
+      "probeQuery": "도시 프리셋을 한꺼번에 가동해줘",
+      "expectAny": ["startCitysetPreset", "runGangnamScene"], "route": "compose", "refuseOk": false
+    },
+    "startGoldFaceSliding": {
+      "probeQuery": "금색 면이 미끄러지는 연출을 시작해줘",
+      "expectAny": ["startGoldFaceSliding"], "route": "compose", "refuseOk": false
+    },
+    "demoMetroFaceTier": {
+      "probeQuery": "광역시 도로 접면 등급 시연을 보여줘",
+      "expectAny": ["demoMetroFaceTier", "mountBftDropdown"], "route": "compose", "refuseOk": false
+    },
+    "impactRollup": {
+      "probeQuery": "선택한 건물들의 그린리모델링 정책효과를 합계로 보여줘",
+      "expectAny": ["impactRollup", "showAnalysis"], "route": "compose", "refuseOk": false
     }
   },
 

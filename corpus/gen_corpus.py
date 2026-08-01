@@ -160,13 +160,24 @@ def _ops_emitted_in(path: Path) -> set[str]:
 #   "78개가 방치됨"처럼 읽히지만 실제로는 그중 다수가 **면제 대상**이었다(2026-08-01 재분류).
 _LIFECYCLE_PREFIXES = ("clear", "unmount", "stop", "hide", "remove", "reset", "destroy", "dispose")
 
+# 시스템이 스스로 거부하는 레거시 op — registry summary 가 "레거시"/"거부"를 명시한다.
+#   여기에 대표질의를 붙이는 건 의미가 없다(성공해도 실행이 거부된다). op 이름 하드코딩 대신
+#   canonical summary 에서 파생 → 새 레거시가 생겨도 자동 분류.
+_DEPRECATED_MARKERS = ("레거시", "거부", "deprecated")
+
 
 def _is_lifecycle(api: str) -> bool:
     short = api.split(".")[-1]
     return short.startswith(_LIFECYCLE_PREFIXES)
 
 
-def compute_bop_coverage(op_apis: list[str], overlay_probes: dict | None = None) -> dict:
+def _is_deprecated(summary: str) -> bool:
+    s = (summary or "").lower()
+    return any(m in s for m in _DEPRECATED_MARKERS)
+
+
+def compute_bop_coverage(op_apis: list[str], overlay_probes: dict | None = None,
+                         summaries: dict | None = None) -> dict:
     """B-op 커버리지.
 
     분모를 둘로 나눈다:
@@ -182,15 +193,19 @@ def compute_bop_coverage(op_apis: list[str], overlay_probes: dict | None = None)
         if (api in probes or api in emitted or short in emitted
                 or any(short.lower() in e.lower() for e in emitted)):
             covered.add(api)
+    sums = summaries or {}
     lifecycle = [a for a in op_apis if _is_lifecycle(a)]
-    nl_target = [a for a in op_apis if not _is_lifecycle(a)]
+    deprecated = [a for a in op_apis if a not in lifecycle and _is_deprecated(sums.get(a, ""))]
+    exempt = set(lifecycle) | set(deprecated)
+    nl_target = [a for a in op_apis if a not in exempt]
     uncovered = [a for a in op_apis if a not in covered]
     nl_uncovered = [a for a in nl_target if a not in covered]
     return {"emittedTokens": len(emitted), "covered": sorted(covered),
             "uncovered": sorted(uncovered),
             "nlTarget": len(nl_target), "nlCovered": len([a for a in nl_target if a in covered]),
             "nlUncovered": sorted(nl_uncovered),
-            "lifecycleExempt": sorted(lifecycle)}
+            "lifecycleExempt": sorted(lifecycle),
+            "deprecatedExempt": sorted(deprecated)}
 
 
 def build() -> tuple[dict, list[str]]:
@@ -239,7 +254,7 @@ def build() -> tuple[dict, list[str]]:
         problems.append(f"capabilityProbes 누락 executor: {miss_cap}")
 
     # ── B-op 커버리지 산출(경고만; 게이트 아님) ─────────────────────────────
-    bcov = compute_bop_coverage(b_apis, op_probes)
+    bcov = compute_bop_coverage(b_apis, op_probes, {o["api"]: o.get("summary", "") for o in ops})
 
     corpus = {
         "schema": 1,
