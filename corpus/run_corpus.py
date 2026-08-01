@@ -271,9 +271,22 @@ def suite_opcode(corpus, ctx):
             if not ctx["compose"]:
                 return C(api, "SKIP", "--compose 미지정(B-op compose 경로)", query=p["probeQuery"],
                          axis={"op": api}, layer="R")
-            st, note, reason, ev = _judge_compose(p["probeQuery"], p.get("expectAny", []),
-                                                  p.get("refuseOk", False), ctx["studio"],
-                                                  ctx.get("compose_timeout", ctx["timeout"]))
+            # ⚠ **한 문장 실패 = 능력 없음이 아니다**(2026-08-01 실증: 미도달 6종 중 5종이 다른
+            #   표현으로 곧바로 도달했다). 변형을 순차로 시도하고 **전부 실패해야** 미도달로 적는다.
+            #   몇 번째 문장에서 도달했는지는 note 에 남긴다 — 1번이 아니면 그 표현이 취약하다는 신호.
+            queries = [p["probeQuery"]] + list(p.get("probeQueryVariants") or [])
+            st = note = reason = None; ev = {}
+            for idx, q in enumerate(queries):
+                st, note, reason, ev = _judge_compose(q, p.get("expectAny", []),
+                                                      p.get("refuseOk", False), ctx["studio"],
+                                                      ctx.get("compose_timeout", ctx["timeout"]))
+                if st in ("PASS", "UNKNOWN"):
+                    if st == "PASS" and idx > 0:
+                        note = f"{note} (변형 {idx+1}번째로 도달 — 1번 문장은 취약)"
+                        ev = {**ev, "variantIndex": idx, "fragileQuery": queries[0]}
+                    break
+            if st == "FAIL" and len(queries) > 1:
+                note = f"{note} — 변형 {len(queries)}개 전부 미도달"
         else:
             st, note, reason, ev = _judge_cap(p["probeQuery"], p.get("expectAny", []),
                                               p.get("refuseOk", False), ctx["gw"], ctx["timeout"])

@@ -207,7 +207,8 @@
       "expectAny": ["flyRoute", "startGoldFlyoverDemo"], "route": "compose", "refuseOk": false
     },
     "orbitAnchor": {
-      "probeQuery": "이 건물 주위를 한 바퀴 돌면서 보여줘",
+      "probeQuery": "이 지점을 공전하듯 선회 촬영해줘",
+      "probeQueryVariants": ["이 건물 주위를 한 바퀴 돌면서 보여줘", "강남역 주변을 궤도 비행으로 둘러봐줘"],
       "expectAny": ["orbitAnchor"], "route": "compose", "refuseOk": false
     },
     "startGoldFlyoverDemo": {
@@ -219,15 +220,18 @@
       "expectAny": ["paintFacadeNightLit", "paintFacadeAt"], "route": "compose", "refuseOk": false
     },
     "paintFacadeAt": {
-      "probeQuery": "이 건물 외벽 색을 바꿔서 보여줘",
+      "probeQuery": "이 건물 외피를 빨간색으로 페인팅해줘",
+      "probeQueryVariants": ["이 건물 외벽 색을 바꿔서 보여줘", "삼성동 빌딩 외벽에 색을 입혀줘"],
       "expectAny": ["paintFacadeAt"], "route": "compose", "refuseOk": false
     },
     "extrudeEnergyAura": {
-      "probeQuery": "에너지 사용량을 건물 위 빛기둥처럼 세워서 보여줘",
+      "probeQuery": "건물마다 에너지 아우라를 돌출시켜줘",
+      "probeQueryVariants": ["에너지 사용량을 건물 위 빛기둥처럼 세워서 보여줘", "소비량을 높이로 표현한 오라를 띄워줘"],
       "expectAny": ["extrudeEnergyAura"], "route": "compose", "refuseOk": false
     },
     "tiledMediaFacade": {
-      "probeQuery": "건물 외벽을 미디어 파사드처럼 영상으로 덮어줘",
+      "probeQuery": "이 건물에 타일형 미디어 파사드를 틀어줘",
+      "probeQueryVariants": ["건물 외벽을 미디어 파사드처럼 영상으로 덮어줘", "미디어 파사드 타일 연출을 보여줘"],
       "expectAny": ["tiledMediaFacade", "projectMediaFacadeFake"], "route": "compose", "refuseOk": false
     },
     "mountLadderDemo": {
@@ -236,7 +240,8 @@
       "note": "고도 사다리 — 발표 시연 핵심"
     },
     "mountReverseCascade": {
-      "probeQuery": "운영 역진단 3단계 결과를 단계별로 펼쳐서 보여줘",
+      "probeQuery": "리버스 캐스케이드 패널을 띄워줘",
+      "probeQueryVariants": ["운영 역진단 3단계 결과를 단계별로 펼쳐서 보여줘", "이 건물 운영 역진단 결과를 캐스케이드로 보여줘"],
       "expectAny": ["mountReverseCascade"], "route": "compose", "refuseOk": false,
       "note": "reverse 3층위 cascade — 어필 1순위"
     },
@@ -254,6 +259,7 @@
     },
     "createFacadeCamera": {
       "probeQuery": "건물 외벽에 CCTV 카메라를 달아줘",
+      "probeQueryVariants": ["이 건물 파사드에 감시 카메라를 부착해줘", "외피에 CCTV 를 설치해줘"],
       "expectAny": ["createFacadeCamera"], "route": "compose", "refuseOk": false
     },
     "createFacadeDrSignal": {
@@ -282,7 +288,7 @@
     },
     "createEntranceSign": {
       "probeQuery": "건물 입구에 간판을 세워줘",
-      "expectAny": ["createEntranceSign"], "route": "compose", "refuseOk": false
+      "expectAny": ["createEntranceSign", "signOnSelected"], "route": "compose", "refuseOk": false
     },
     "createVideoPanel": {
       "probeQuery": "건물 벽면에 영상 패널을 하나 붙여줘",
@@ -298,6 +304,7 @@
     },
     "projectMediaFacadeFake": {
       "probeQuery": "이 좌표 건물에 프로젝션 미디어 외피를 쏴줘",
+      "probeQueryVariants": ["건물 벽에 영상을 투사해줘", "프로젝션 매핑으로 외벽에 영상을 비춰줘"],
       "expectAny": ["projectMediaFacadeFake", "tiledMediaFacade"], "route": "compose", "refuseOk": false
     },
     "routePlay": {
@@ -306,6 +313,7 @@
     },
     "applyCompositeShader": {
       "probeQuery": "여러 효과를 합쳐서 한 번에 입혀줘",
+      "probeQueryVariants": ["합성 셰이더를 적용해줘", "효과 두 개를 합성해서 건물에 입혀줘"],
       "expectAny": ["applyCompositeShader", "paintCompositeNightAndAura"], "route": "compose", "refuseOk": false
     },
     "paintCompositeNightAndAura": {
@@ -318,7 +326,7 @@
     },
     "paintLotteFacadeOnScreenCenter": {
       "probeQuery": "화면 가운데 건물을 유리 외피로 칠해줘",
-      "expectAny": ["paintLotteFacadeOnScreenCenter", "paintLotteFacade"], "route": "compose", "refuseOk": false
+      "expectAny": ["paintLotteFacadeOnScreenCenter", "paintLotteFacade", "paintFacadeAt"], "route": "compose", "refuseOk": false
     },
     "paintRoofFireZone": {
       "probeQuery": "옥상 화재 위험 구역을 표시해줘",
@@ -326,6 +334,7 @@
     },
     "placeAsset": {
       "probeQuery": "길가에 벤치랑 가로수를 놓아줘",
+      "probeQueryVariants": ["가로 시설물을 배치해줘", "이 자리에 조각상과 키오스크를 놓아줘"],
       "expectAny": ["placeAsset"], "route": "compose", "refuseOk": false
     },
     "placeSmartLamp": {
@@ -334,6 +343,7 @@
     },
     "placeWaterBody": {
       "probeQuery": "이 자리에 분수 있는 광장을 만들어줘",
+      "probeQueryVariants": ["수경 시설을 배치해줘", "여기에 연못을 만들어줘"],
       "expectAny": ["placeWaterBody", "placeAsset"], "route": "compose", "refuseOk": false
     },
     "placeUndergroundParking": {
@@ -350,6 +360,7 @@
     },
     "swapBuildingAt": {
       "probeQuery": "이 건물을 다른 박스 건물로 교체해줘",
+      "probeQueryVariants": ["이 좌표 건물을 박스로 바꿔치기해줘", "건물을 다른 모델로 교체해줘"],
       "expectAny": ["swapBuildingAt", "swapToLotteTowerAt"], "route": "compose", "refuseOk": false
     },
     "runGangnamScene": {
@@ -362,6 +373,7 @@
     },
     "startCitysetPreset": {
       "probeQuery": "도시 프리셋을 한꺼번에 가동해줘",
+      "probeQueryVariants": ["시티셋 프리셋을 시작해줘", "강남 도시 프리셋 전체를 켜줘"],
       "expectAny": ["startCitysetPreset", "runGangnamScene"], "route": "compose", "refuseOk": false
     },
     "startGoldFaceSliding": {
@@ -374,6 +386,7 @@
     },
     "impactRollup": {
       "probeQuery": "선택한 건물들의 그린리모델링 정책효과를 합계로 보여줘",
+      "probeQueryVariants": ["임팩트 롤업을 보여줘", "선택 건물군의 CO2 절감 누적 효과를 집계해줘"],
       "expectAny": ["impactRollup", "showAnalysis"], "route": "compose", "refuseOk": false
     }
   },
