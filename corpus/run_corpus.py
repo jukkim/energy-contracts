@@ -875,6 +875,24 @@ def build_ledger(corpus, cells: list[dict], services: dict, ctx, baseline: dict 
     # 무효 판정(§1.3)은 **이번에 실제로 돈 셀**로만 계산한다 — 이월된 옛 UNKNOWN 이 스윕을 무효로
     #   만들면 영원히 회복 못 한다.
     unknown = sum(1 for c in cells if _ledger_status(c) == "UNKNOWN")
+    # ⚠ 전체 비율만 보면 **큰 suite 가 작은 suite 의 실패를 희석**한다. 2026-08-01 실측:
+    #   combo 5003셀 덕에 전체 UNKNOWN 0.8% 였지만 opcode 는 50/68(74%) = 사실상 미측정인데
+    #   원장은 통과로 기록됐다. suite 별로도 본다.
+    by_suite: dict[str, list[int]] = {}
+    for c in cells:
+        b = by_suite.setdefault(c["suite"], [0, 0])
+        b[1] += 1
+        if _ledger_status(c) == "UNKNOWN":
+            b[0] += 1
+    unmeasured = {k: round(v[0] / v[1], 3) for k, v in by_suite.items()
+                  if v[1] >= 5 and v[0] / v[1] > 0.30}
+    # 미측정 suite 의 셀은 시연 후보에서 제외한다 — 판정되지 않은 것을 "안전"이라 부를 수 없다.
+    for r in out_cells:
+        if r["suite"] in unmeasured:
+            r["unmeasuredSuite"] = True
+    for g in greenlist:
+        if g.get("suite") in unmeasured:
+            g["demoSafe"] = False
     return {
         "schemaVersion": "1.0",
         "generatedAt": now,
@@ -886,6 +904,8 @@ def build_ledger(corpus, cells: list[dict], services: dict, ctx, baseline: dict 
         "summary": {**summary, "total": total, "fresh": fresh_count, "carriedOver": carried,
                     "unknownRatio": round(unknown / fresh_count, 4) if fresh_count else 0.0},
         "byReason": by_reason,
+        # 이 suite 들은 UNKNOWN 이 30% 를 넘어 **측정된 것으로 취급하면 안 된다**.
+        "unmeasuredSuites": unmeasured,
         "greenList": greenlist,
         "demoList": [g for g in greenlist if g.get("demoSafe")],   # 시연 대본 후보(router 실증·신선)
         "regressions": regressions,
@@ -906,6 +926,10 @@ def print_ledger_summary(ledger: dict) -> None:
     demo = len(ledger.get("demoList", []))
     print(f"  질의 목록: greenList {len(ledger['greenList'])}건 중 "
           f"**시연 대본 후보 {demo}건**(router 실증·신선)")
+    if ledger.get("unmeasuredSuites"):
+        print("  ⚠️  사실상 미측정 suite(UNKNOWN>30%): "
+              + ", ".join(f"{k} {v:.0%}" for k, v in ledger["unmeasuredSuites"].items())
+              + "  ← 전체 비율에 희석돼 통과로 보이지만 이 suite 는 판정된 게 아니다")
     if ledger["regressions"]:
         nc = sum(1 for r in ledger["regressions"] if r.get("confirmed"))
         print(f"  ❌ 능력 회귀 {len(ledger['regressions'])}건(확정 {nc}) — 잃어버린 능력:")
