@@ -32,48 +32,56 @@
     // A-class (studio 인라인 8) — 가장 높은 회귀 위험, 전수 필수
     "mountMetricChoropleth": {
       "probeQuery": "강남구 건물별 에너지 소비량을 지도로 색칠해서 보여줘",
+      "probeQueryVariants": ["강남구 건물 에너지 사용량을 색으로 칠해줘", "자치구 건물별 소비량 지도"],
       "expectAny": ["mountMetricChoropleth", "mountSeoulChoropleth", "selectBuildings"],
       "refuseOk": true,   // "지도로" = gateway refuse 하드룰 → compose 경로 정상
       "note": "다지표 제네릭 choropleth"
     },
     "mountSeoulChoropleth": {
       "probeQuery": "서울 25개 구 건물 노후도 분포를 지도로 보여줘",
+      "probeQueryVariants": ["서울 자치구별 노후도를 지도로", "서울 25개 구 건물 나이 분포 보여줘"],
       "expectAny": ["mountSeoulChoropleth", "mountMetricChoropleth"],
       "refuseOk": true,
       "note": "서울 25구 노후도 고도 사다리 Tier ②"
     },
     "mountNationalChoropleth": {
       "probeQuery": "전국 시도별 건물 밀도를 지도로 보여줘",
+      "probeQueryVariants": ["전국 시도별 건물 분포 지도", "우리나라 전체를 지도로 보여줘"],
       "expectAny": ["mountNationalChoropleth", "mountMetricChoropleth"],
       "refuseOk": true,
       "note": "전국 시도별 밀도 고도 사다리 Tier ①"
     },
     "mountMetricTimeline": {
       "probeQuery": "강남구 최근 몇 년간 전기 소비 변화를 연도별로 지도에 재생해줘",
+      "probeQueryVariants": ["연도별 변화를 지도에서 재생해줘", "시간에 따른 전기 소비 변화를 보여줘"],
       "expectAny": ["mountMetricTimeline", "mountMetricChoropleth"],
       "refuseOk": true,
       "note": "다년 시계열 temporal choropleth"
     },
     "selectBuildings": {
       "probeQuery": "서울 CO2 배출 상위 50개 동을 강조해줘",
+      "probeQueryVariants": ["CO2 많이 내는 건물 상위 50개 골라줘", "배출 상위 건물만 선택해줘"],
       "expectAny": ["selectBuildings", "mountMetricChoropleth"],
       "refuseOk": false,
       "note": "WHERE 조건 → PNU 집합 활성 선택"
     },
     "cameraFlyToAnchor": {
       "probeQuery": "강남 전체를 조감한 뒤 삼성동 빌딩군으로 날아가줘",
+      "probeQueryVariants": ["삼성동으로 카메라를 옮겨줘", "강남 쪽으로 시점을 이동해줘"],
       "expectAny": ["cameraFlyToAnchor"],
       "refuseOk": false,
       "note": "앵커 기반 카메라 비행(좌표 freeze 차단)"
     },
     "showAiOutput": {
       "probeQuery": "이 건물에 AI 모델이 낸 에너지 진단 결과를 보여줘",
+      "probeQueryVariants": ["이 건물 AI 진단 결과 보여줘", "모델이 낸 분석 결과를 화면에 띄워줘"],
       "expectAny": ["showAiOutput", "ems_identify", "ems_diagnose", "building_ai"],
       "refuseOk": false,
       "note": "활성 선택/단일 PNU 에 AI 백엔드 출력 표출"
     },
     "showAnalysis": {
       "probeQuery": "이 건물 에너지 절감 전략을 8단계로 분석해줘",
+      "probeQueryVariants": ["이 건물 절감 방안을 단계별로 분석해줘", "에너지 개선 전략을 검토해줘"],
       "expectAny": ["showAnalysis", "ems_identify", "ems_recommend"],
       "refuseOk": false,
       "note": "what-if/분석 엔진 결과 표출(분석 과정 모드)"
@@ -84,6 +92,7 @@
     //   제어 명령은 관제실(인증 앱)만 실행 → capability-route 에서 refuse/escalate = 정답(refuseOk:true).
     "dispatchDR": {
       "probeQuery": "선택한 건물군에 수요반응 디스패치를 지금 실행해줘",
+      "probeQueryVariants": ["수요반응을 지금 실행해", "선택 건물군에 DR 을 발령해줘"],
       "expectAny": ["dispatchDR"],
       "refuseOk": true,
       "escalate": true,
@@ -91,6 +100,7 @@
     },
     "proposeDR": {
       "probeQuery": "이 건물군에 수요반응 참여를 권고하고 승인받는 절차를 만들어줘",
+      "probeQueryVariants": ["수요반응 참여를 제안하고 승인받아줘", "DR 권고안을 만들어줘"],
       "expectAny": ["proposeDR"],
       "refuseOk": true,
       "escalate": true,
@@ -98,6 +108,7 @@
     },
     "verifyDR": {
       "probeQuery": "방금 수요반응 실행 결과를 재감시(M&V)해서 검증해줘",
+      "probeQueryVariants": ["수요반응 실행 결과를 검증해줘", "DR 성과를 재감시해줘"],
       "expectAny": ["verifyDR"],
       "refuseOk": true,
       "escalate": true,
@@ -105,6 +116,7 @@
     },
     "controlEdgeHvac": {
       "probeQuery": "강남 A빌딩 냉방 설정온도를 26도로 지금 제어해줘",
+      "probeQueryVariants": ["3층 냉방 온도를 26도로 맞춰", "공조기 설정온도를 바꿔줘"],
       "expectAny": ["controlEdgeHvac"],
       "refuseOk": true,
       "escalate": true,
@@ -112,6 +124,7 @@
     },
     "controlEdgeLighting": {
       "probeQuery": "이 건물 조명을 50% 밝기로 지금 켜줘",
+      "probeQueryVariants": ["조명을 절반 밝기로 낮춰", "전등을 켜줘"],
       "expectAny": ["controlEdgeLighting"],
       "refuseOk": true,
       "escalate": true,
@@ -119,6 +132,7 @@
     },
     "applyEdgeStrategy": {
       "probeQuery": "이 건물에 야간 냉방차단 전략(M03)을 지금 바로 적용해줘",
+      "probeQueryVariants": ["야간 냉방차단 전략을 지금 적용해", "EMS 전략 M03 을 실행해줘"],
       "expectAny": ["applyEdgeStrategy"],
       "refuseOk": true,
       "escalate": true,
@@ -126,6 +140,7 @@
     },
     "configureVen": {
       "probeQuery": "이 건물 VEN을 제어형(dispatch)으로 구성 변경해줘",
+      "probeQueryVariants": ["VEN 을 제어형으로 바꿔줘", "이 건물 VEN 설정을 변경해줘"],
       "expectAny": ["configureVen"],
       "refuseOk": true,
       "escalate": true,
@@ -133,6 +148,7 @@
     },
     "getVenStatus": {
       "probeQuery": "이 건물 VEN의 현재 전력·실내온도 상태를 조회해줘",
+      "probeQueryVariants": ["VEN 현재 상태 알려줘", "이 건물 실시간 전력·온도 조회"],
       "expectAny": ["getVenStatus"],
       "refuseOk": true,
       "escalate": true,
@@ -140,6 +156,7 @@
     },
     "gbDispatchEvent": {
       "probeQuery": "ESG 그룹 건물들에 수요반응 이벤트를 지금 즉시 발령해줘",
+      "probeQueryVariants": ["ESG 그룹에 DR 이벤트를 발령해", "지금 즉시 수요반응 이벤트 실행"],
       "expectAny": ["gbDispatchEvent"],
       "refuseOk": true,
       "escalate": true,
@@ -147,6 +164,7 @@
     },
     "gbDispatchSchedule": {
       "probeQuery": "다음 주 피크시간대 감축 스케줄을 잡아서 디스패치해줘",
+      "probeQueryVariants": ["다음 주 피크 감축 일정을 잡아줘", "감축 스케줄을 디스패치해줘"],
       "expectAny": ["gbDispatchSchedule"],
       "refuseOk": true,
       "escalate": true,
@@ -154,6 +172,7 @@
     },
     "gbListVens": {
       "probeQuery": "등록된 제어형 EdgeAgent(VEN) 목록을 보여줘",
+      "probeQueryVariants": ["등록된 VEN 목록 보여줘", "제어 가능한 EdgeAgent 를 나열해줘"],
       "expectAny": ["gbListVens"],
       "refuseOk": true,
       "escalate": true,
@@ -171,27 +190,33 @@
     //   ⚠ 여기 추가한 op 은 gen_corpus 의 B-op 커버리지 분자에 들어간다(명시 probeQuery = 커버).
     "placeRoofSolar": {
       "probeQuery": "이 건물 옥상에 태양광 패널을 올려서 보여줘",
+      "probeQueryVariants": ["옥상에 태양광 발전 설비를 설치해줘", "지붕에 솔라 패널 깔아줘"],
       "expectAny": ["placeRoofSolar"], "route": "compose", "refuseOk": false,
       "note": "옥상 태양광 — 시연 1순위(재생에너지 자립)"
     },
     "placeRoofGreen": {
       "probeQuery": "옥상을 녹화해서 어떻게 보이는지 시연해줘",
+      "probeQueryVariants": ["옥상 정원을 만들어줘", "지붕을 녹지로 덮어줘"],
       "expectAny": ["placeRoofGreen"], "route": "compose", "refuseOk": false
     },
     "placeRoofHvac": {
       "probeQuery": "옥상에 실외기를 배치해서 보여줘",
+      "probeQueryVariants": ["옥상에 냉방 실외기를 올려줘", "지붕에 공조 설비를 배치해줘"],
       "expectAny": ["placeRoofHvac"], "route": "compose", "refuseOk": false
     },
     "placeRoofHelipad": {
       "probeQuery": "옥상에 헬리패드를 설치한 모습을 보여줘",
+      "probeQueryVariants": ["옥상에 헬기 착륙장을 만들어줘", "지붕에 헬리포트를 놓아줘"],
       "expectAny": ["placeRoofHelipad"], "route": "compose", "refuseOk": false
     },
     "placeRoofDronePad": {
       "probeQuery": "옥상에 드론 패드를 놓아줘",
+      "probeQueryVariants": ["옥상에 드론 이착륙장을 설치해줘", "지붕에 드론 스테이션 배치"],
       "expectAny": ["placeRoofDronePad"], "route": "compose", "refuseOk": false
     },
     "placeRoofThermalImager": {
       "probeQuery": "옥상에 열화상 센서를 설치해줘",
+      "probeQueryVariants": ["옥상에 열화상 카메라를 달아줘", "지붕에 적외선 센서를 설치해줘"],
       "expectAny": ["placeRoofThermalImager"], "route": "compose", "refuseOk": false
     },
     // ⚠ driveRouteByIntent = 제공자(네이버/티맵/OSRM) 선택을 대신하는 **의도 기반 디스패처**.
@@ -202,11 +227,13 @@
     //   → 폐기 op 은 gen_corpus 가 summary 로 자동 면제하고, 주행 축은 권장 op 하나로 대표한다.
     "driveRouteByIntent": {
       "probeQuery": "강남역에서 삼성역까지 차량이 달리는 모습을 보여줘",
+      "probeQueryVariants": ["강남역에서 코엑스까지 자동차로 이동해줘", "이 두 지점 사이를 주행 시연해줘"],
       "expectAny": ["driveRouteByIntent"], "route": "compose", "refuseOk": false,
       "note": "주행 대표(엔진 auto 선택) — 레거시 raw 5종을 대체하는 권장 경로"
     },
     "flyRoute": {
       "probeQuery": "이 경로를 따라 하늘에서 날아가며 보여줘",
+      "probeQueryVariants": ["이 경로 위를 비행하며 보여줘", "항로를 따라 공중에서 훑어줘"],
       "expectAny": ["flyRoute", "startGoldFlyoverDemo"], "route": "compose", "refuseOk": false
     },
     "orbitAnchor": {
@@ -216,10 +243,12 @@
     },
     "startGoldFlyoverDemo": {
       "probeQuery": "도심을 저공 비행하듯 훑어줘",
+      "probeQueryVariants": ["도심 상공을 낮게 비행해줘", "금빛 플라이오버 연출을 시작해줘"],
       "expectAny": ["startGoldFlyoverDemo", "flyRoute"], "route": "compose", "refuseOk": false
     },
     "paintFacadeNightLit": {
       "probeQuery": "이 건물 외벽을 야간 조명이 켜진 모습으로 칠해줘",
+      "probeQueryVariants": ["이 건물에 밤 조명을 켠 것처럼 보여줘", "야간 점등 외피로 칠해줘"],
       "expectAny": ["paintFacadeNightLit", "paintFacadeAt"], "route": "compose", "refuseOk": false
     },
     "paintFacadeAt": {
@@ -239,6 +268,7 @@
     },
     "mountLadderDemo": {
       "probeQuery": "전국에서 강남구까지 단계적으로 확대하는 고도 사다리를 보여줘",
+      "probeQueryVariants": ["전국에서 자치구까지 단계적으로 줌인해줘", "고도 사다리 시연을 보여줘"],
       "expectAny": ["mountLadderDemo"], "route": "compose", "refuseOk": false,
       "note": "고도 사다리 — 발표 시연 핵심"
     },
@@ -250,6 +280,7 @@
     },
     "mountBftDropdown": {
       "probeQuery": "도로 접면 등급 필터를 화면에 띄워줘",
+      "probeQueryVariants": ["광고 가능면 등급 필터를 띄워줘", "BFT 드롭다운을 화면에 올려줘"],
       "expectAny": ["mountBftDropdown"], "route": "compose", "refuseOk": false
     },
     // ── B-class 잔여 32 (2026-08-01, Phase E 후속) ────────────────────────
@@ -258,6 +289,7 @@
     //   문장은 사용자가 실제로 칠 법한 말로 쓴다. op 이름을 읽은 문장은 R층을 측정하지 못한다.
     "createFacadeAd": {
       "probeQuery": "이 건물 외벽에 광고판을 붙여줘",
+      "probeQueryVariants": ["외벽에 옥외 광고를 걸어줘", "건물 벽면에 광고 배너를 달아줘"],
       "expectAny": ["createFacadeAd"], "route": "compose", "refuseOk": false
     },
     "createFacadeCamera": {
@@ -267,42 +299,52 @@
     },
     "createFacadeDrSignal": {
       "probeQuery": "외벽에 수요반응 신호등을 달아줘",
+      "probeQueryVariants": ["외벽에 수요반응 상태등을 표시해줘", "건물에 DR 신호등을 붙여줘"],
       "expectAny": ["createFacadeDrSignal"], "route": "compose", "refuseOk": false
     },
     "createFacadeEvacuationArrow": {
       "probeQuery": "외벽에 대피 방향 화살표를 표시해줘",
+      "probeQueryVariants": ["외벽에 대피 유도 표시를 붙여줘", "건물에 피난 방향 화살표 표시"],
       "expectAny": ["createFacadeEvacuationArrow"], "route": "compose", "refuseOk": false
     },
     "createFacadeIotSensor": {
       "probeQuery": "건물 외벽에 IoT 센서를 부착해줘",
+      "probeQueryVariants": ["외벽에 센서를 부착해줘", "건물 벽에 IoT 계측기를 달아줘"],
       "expectAny": ["createFacadeIotSensor"], "route": "compose", "refuseOk": false
     },
     "createFacadeLedText": {
       "probeQuery": "외벽에 흐르는 LED 글자를 띄워줘",
+      "probeQueryVariants": ["외벽에 전광판 글자를 띄워줘", "건물에 LED 문구를 흘려줘"],
       "expectAny": ["createFacadeLedText"], "route": "compose", "refuseOk": false
     },
     "createFacadeQrCode": {
       "probeQuery": "건물 외벽에 QR 코드를 붙여줘",
+      "probeQueryVariants": ["외벽에 QR 을 표시해줘", "건물 벽면에 큐알코드를 붙여줘"],
       "expectAny": ["createFacadeQrCode"], "route": "compose", "refuseOk": false
     },
     "createFacadeWindowGrid": {
       "probeQuery": "창문 점등 비율을 격자로 외벽에 표시해줘",
+      "probeQueryVariants": ["창문별 점등 상태를 격자로 보여줘", "외벽 창문 그리드를 표시해줘"],
       "expectAny": ["createFacadeWindowGrid"], "route": "compose", "refuseOk": false
     },
     "createEntranceSign": {
       "probeQuery": "건물 입구에 간판을 세워줘",
+      "probeQueryVariants": ["입구에 안내 간판을 달아줘", "건물 현관에 사인을 세워줘"],
       "expectAny": ["createEntranceSign", "signOnSelected"], "route": "compose", "refuseOk": false
     },
     "createVideoPanel": {
       "probeQuery": "건물 벽면에 영상 패널을 하나 붙여줘",
+      "probeQueryVariants": ["벽면에 영상 화면을 달아줘", "건물에 비디오 패널을 설치해줘"],
       "expectAny": ["createVideoPanel"], "route": "compose", "refuseOk": false
     },
     "mediaPlay": {
       "probeQuery": "띄워둔 미디어 영상을 재생해줘",
+      "probeQueryVariants": ["영상 재생 시작해줘", "미디어를 틀어줘"],
       "expectAny": ["mediaPlay"], "route": "compose", "refuseOk": false
     },
     "mediaStop": {
       "probeQuery": "재생 중인 미디어를 멈춰줘",
+      "probeQueryVariants": ["영상 정지해줘", "미디어 재생을 중단해줘"],
       "expectAny": ["mediaStop"], "route": "compose", "refuseOk": false
     },
     "projectMediaFacadeFake": {
@@ -312,6 +354,7 @@
     },
     "routePlay": {
       "probeQuery": "경로를 따라가며 연출 시퀀스를 재생해줘",
+      "probeQueryVariants": ["경로 연출 시퀀스를 재생해줘", "정해둔 경로 쇼를 시작해줘"],
       "expectAny": ["routePlay", "flyRoute"], "route": "compose", "refuseOk": false
     },
     "applyCompositeShader": {
@@ -321,18 +364,22 @@
     },
     "paintCompositeNightAndAura": {
       "probeQuery": "야간 조명이랑 에너지 오라를 같이 입혀줘",
+      "probeQueryVariants": ["야간 조명과 에너지 오라를 겹쳐서 보여줘", "두 효과를 합성해 입혀줘"],
       "expectAny": ["paintCompositeNightAndAura", "applyCompositeShader"], "route": "compose", "refuseOk": false
     },
     "paintLotteFacade": {
       "probeQuery": "롯데타워 유리 느낌으로 외벽을 칠해줘",
+      "probeQueryVariants": ["이 건물을 유리 외피로 바꿔줘", "롯데 글라스 프리셋을 적용해줘"],
       "expectAny": ["paintLotteFacade", "paintFacadeAt"], "route": "compose", "refuseOk": false
     },
     "paintLotteFacadeOnScreenCenter": {
       "probeQuery": "화면 가운데 건물을 유리 외피로 칠해줘",
+      "probeQueryVariants": ["지금 화면 중앙 건물에 유리 프리셋 적용", "가운데 보이는 건물을 유리로 칠해줘"],
       "expectAny": ["paintLotteFacadeOnScreenCenter", "paintLotteFacade", "paintFacadeAt"], "route": "compose", "refuseOk": false
     },
     "paintRoofFireZone": {
       "probeQuery": "옥상 화재 위험 구역을 표시해줘",
+      "probeQueryVariants": ["옥상 화재 위험 구역을 빨갛게 칠해줘", "지붕 화재 위험도를 표시해줘"],
       "expectAny": ["paintRoofFireZone"], "route": "compose", "refuseOk": false
     },
     "placeAsset": {
@@ -342,6 +389,7 @@
     },
     "placeSmartLamp": {
       "probeQuery": "스마트 가로등을 세워줘",
+      "probeQueryVariants": ["길가에 스마트 가로등을 설치해줘", "가로등을 배치해줘"],
       "expectAny": ["placeSmartLamp", "placeAsset"], "route": "compose", "refuseOk": false
     },
     "placeWaterBody": {
@@ -351,14 +399,17 @@
     },
     "placeUndergroundParking": {
       "probeQuery": "지하주차장을 배치해줘",
+      "probeQueryVariants": ["지하 주차 공간을 만들어줘", "여기에 지하주차장을 넣어줘"],
       "expectAny": ["placeUndergroundParking"], "route": "compose", "refuseOk": false
     },
     "placeLotteTowerAt": {
       "probeQuery": "이 빈 땅에 롯데타워를 세워줘",
+      "probeQueryVariants": ["이 자리에 롯데타워를 배치해줘", "빈 땅에 초고층 타워를 세워줘"],
       "expectAny": ["placeLotteTowerAt", "swapToLotteTowerAt"], "route": "compose", "refuseOk": false
     },
     "swapToLotteTowerAt": {
       "probeQuery": "이 건물을 롯데타워로 바꿔줘",
+      "probeQueryVariants": ["이 건물을 초고층 타워로 교체해줘", "여기 건물을 롯데타워로 바꿔치기"],
       "expectAny": ["swapToLotteTowerAt", "placeLotteTowerAt"], "route": "compose", "refuseOk": false
     },
     "swapBuildingAt": {
@@ -368,10 +419,12 @@
     },
     "runGangnamScene": {
       "probeQuery": "강남 데모 장면을 재생해줘",
+      "probeQueryVariants": ["강남 시연 장면을 틀어줘", "강남 데모를 처음부터 재생"],
       "expectAny": ["runGangnamScene", "startGangnamCamera"], "route": "compose", "refuseOk": false
     },
     "startGangnamCamera": {
       "probeQuery": "강남 데모 카메라를 시작해줘",
+      "probeQueryVariants": ["강남 카메라 연출을 켜줘", "강남 시점 카메라를 시작"],
       "expectAny": ["startGangnamCamera", "runGangnamScene"], "route": "compose", "refuseOk": false
     },
     "startCitysetPreset": {
@@ -381,10 +434,12 @@
     },
     "startGoldFaceSliding": {
       "probeQuery": "금색 면이 미끄러지는 연출을 시작해줘",
+      "probeQueryVariants": ["금색 면이 흐르는 연출 켜줘", "골드 페이스 슬라이딩 시작"],
       "expectAny": ["startGoldFaceSliding"], "route": "compose", "refuseOk": false
     },
     "demoMetroFaceTier": {
       "probeQuery": "광역시 도로 접면 등급 시연을 보여줘",
+      "probeQueryVariants": ["광역시 접면 등급 데모를 보여줘", "6대 광역시 도로 접면 시연"],
       "expectAny": ["demoMetroFaceTier", "mountBftDropdown"], "route": "compose", "refuseOk": false
     },
     "impactRollup": {
@@ -399,30 +454,37 @@
   "capabilityProbes": {
     "apply_policy_lever": {
       "probeQuery": "외기냉방(찬 바깥 공기로 냉방)을 적용하면 서울 절감액을 분석해줘",
+      "probeQueryVariants": ["외기냉방을 적용하면 얼마나 절약되나", "이 정책을 쓰면 절감액이 얼마야"],
       "expectAny": ["apply_policy_lever", "policy_evaluate"], "refuseOk": false
     },
     "counterfactual": {
       "probeQuery": "냉방 설정온도를 24도에서 26도로 올리면 절감이 얼마나 달라지나 히트맵으로 보여줘",
+      "probeQueryVariants": ["설정온도를 2도 올리면 결과가 어떻게 달라져", "온도를 바꿨을 때 절감 차이를 비교해줘"],
       "expectAny": ["counterfactual", "policy_evaluate"], "refuseOk": false
     },
     "recommend_retrofit": {
       "probeQuery": "이 건물에 가장 효과적인 개선 대책을 추천해줘",
+      "probeQueryVariants": ["이 건물에 뭘 고치면 좋을지 추천해줘", "개선 공사 우선순위를 알려줘"],
       "expectAny": ["ems_recommend", "apply_policy_lever"], "refuseOk": false
     },
     "identify_ems": {
       "probeQuery": "이 건물의 에너지 낭비 지점을 식별해줘",
+      "probeQueryVariants": ["이 건물이 어떤 운전 전략을 쓰고 있어?", "현재 EMS 운영 방식을 식별해줘"],
       "expectAny": ["ems_identify", "ems_diagnose"], "refuseOk": false
     },
     "forecast_24h": {
       "probeQuery": "이 건물의 향후 24시간 전력 수요를 예측해줘",
+      "probeQueryVariants": ["내일 하루 전력 수요를 예측해줘", "24시간 부하 예상치를 보여줘"],
       "expectAny": ["forecast_24h", "load_predict"], "refuseOk": false
     },
     "diagnose_anomaly": {
       "probeQuery": "이 건물 전력 사용에서 이상 징후를 진단해줘",
+      "probeQueryVariants": ["이 건물 이상 징후를 찾아줘", "평소와 다른 소비 패턴이 있는지 진단"],
       "expectAny": ["diagnose_anomaly", "anomaly", "ems_diagnose"], "refuseOk": false
     },
     "mpc_optimize": {
       "probeQuery": "이 건물 냉난방을 모델예측제어로 최적 운전 스케줄을 짜줘",
+      "probeQueryVariants": ["최적 운전 스케줄을 짜줘", "다음 24시간 제어 계획을 최적화해줘"],
       "expectAny": ["mpc_optimize", "mpc", "ems_optimize"], "refuseOk": false
     }
   },
@@ -463,41 +525,41 @@
   //   taxonomy 정본 = studio docs/STUDIO_LAB_QUERY_TAXONOMY.md.
   //   route: cap=gateway /v1/capability-route · compose=studio /api/compose · ops_status=studio GET
   "queryClasses": [
-    { "id": "C1", "query": "강남구 건물별 에너지 소비량을 지도로 보여줘", "route": "cap", "expectAny": ["mountMetricChoropleth","mountSeoulChoropleth","selectBuildings"], "refuseOk": true },
-    { "id": "C2", "query": "서울 CO2 배출 상위 50개 동을 강조해줘", "route": "cap", "expectAny": ["selectBuildings","mountMetricChoropleth"], "refuseOk": false },
-    { "id": "C3", "query": "외기냉방 적용 시 서울 절감액을 분석해줘", "route": "cap", "expectAny": ["apply_policy_lever","policy_evaluate"], "refuseOk": false },
-    { "id": "C4", "query": "1980년 이전 지어진 업무용 건물만 보여줘", "route": "cap", "expectAny": ["selectBuildings","mountMetricChoropleth"], "refuseOk": false },
-    { "id": "C5", "query": "롯데호텔 서울의 에너지 소비를 보여줘", "route": "cap", "expectAny": ["ems_identify","ems_diagnose","forecast_24h","building_ai"], "refuseOk": false },
-    { "id": "C6", "query": "강남구 전기와 가스 소비를 나란히 비교해줘", "route": "cap", "expectAny": ["mountMetricChoropleth","selectBuildings"], "refuseOk": false },
-    { "id": "C7", "query": "2050년 온난화 시 이 건물 냉방 부하 변화를 보여줘", "route": "cap", "expectAny": ["climate_scenario","counterfactual"], "refuseOk": false },
-    { "id": "C8", "query": "태양광 설치 10년 투자 회수 분석해줘", "route": "cap", "expectAny": ["apply_policy_lever","policy_evaluate"], "refuseOk": false },
-    { "id": "C9", "query": "ZEB 의무화 정책의 탄소 절감 효과를 분석해줘", "route": "cap", "expectAny": ["policy_evaluate","apply_policy_lever"], "refuseOk": false },
-    { "id": "C10", "query": "마포구 에너지 등급 분포를 보여줘", "route": "cap", "expectAny": ["mountMetricChoropleth","mountSeoulChoropleth"], "refuseOk": false },
-    { "id": "C11", "query": "서울과 부산 평균 EUI를 비교해줘", "route": "cap", "expectAny": ["mountMetricChoropleth","selectBuildings"], "refuseOk": false },
-    { "id": "C12", "query": "setpoint 변화에 따른 절감 dose-response 히트맵 보여줘", "route": "cap", "expectAny": ["counterfactual"], "refuseOk": false },
+    { "id": "C1", "query": "강남구 건물별 에너지 소비량을 지도로 보여줘", "queryVariants": ["강남구 건물 에너지 사용량 지도", "자치구별 소비량을 색으로 보여줘"], "route": "cap", "expectAny": ["mountMetricChoropleth","mountSeoulChoropleth","selectBuildings"], "refuseOk": true },
+    { "id": "C2", "query": "서울 CO2 배출 상위 50개 동을 강조해줘", "queryVariants": ["배출 많은 동네 상위 50곳 표시", "CO2 상위 지역을 강조해줘"], "route": "cap", "expectAny": ["selectBuildings","mountMetricChoropleth"], "refuseOk": false },
+    { "id": "C3", "query": "외기냉방 적용 시 서울 절감액을 분석해줘", "queryVariants": ["외기냉방 쓰면 서울 절감액이 얼마", "찬 바깥공기 냉방의 효과를 계산해줘"], "route": "cap", "expectAny": ["apply_policy_lever","policy_evaluate"], "refuseOk": false },
+    { "id": "C4", "query": "1980년 이전 지어진 업무용 건물만 보여줘", "queryVariants": ["오래된 업무용 건물만 골라줘", "1980년 이전 사무실 건물 표시"], "route": "cap", "expectAny": ["selectBuildings","mountMetricChoropleth"], "refuseOk": false },
+    { "id": "C5", "query": "롯데호텔 서울의 에너지 소비를 보여줘", "queryVariants": ["롯데호텔 에너지 사용량 알려줘", "그 호텔 전기를 얼마나 쓰나"], "route": "cap", "expectAny": ["ems_identify","ems_diagnose","forecast_24h","building_ai"], "refuseOk": false },
+    { "id": "C6", "query": "강남구 전기와 가스 소비를 나란히 비교해줘", "queryVariants": ["전기랑 가스를 같이 비교해줘", "두 에너지원을 나란히 보여줘"], "route": "cap", "expectAny": ["mountMetricChoropleth","selectBuildings"], "refuseOk": false },
+    { "id": "C7", "query": "2050년 온난화 시 이 건물 냉방 부하 변화를 보여줘", "queryVariants": ["2050년에 냉방이 얼마나 늘까", "미래 기후에서 부하 변화를 보여줘"], "route": "cap", "expectAny": ["climate_scenario","counterfactual"], "refuseOk": false },
+    { "id": "C8", "query": "태양광 설치 10년 투자 회수 분석해줘", "queryVariants": ["태양광 넣으면 몇 년에 회수돼", "PV 투자 회수기간 계산"], "route": "cap", "expectAny": ["apply_policy_lever","policy_evaluate"], "refuseOk": false },
+    { "id": "C9", "query": "ZEB 의무화 정책의 탄소 절감 효과를 분석해줘", "queryVariants": ["ZEB 의무화하면 탄소가 얼마나 줄어", "제로에너지건축 정책 효과 분석"], "route": "cap", "expectAny": ["policy_evaluate","apply_policy_lever"], "refuseOk": false },
+    { "id": "C10", "query": "마포구 에너지 등급 분포를 보여줘", "queryVariants": ["마포구 에너지등급 분포 보여줘", "그 지역 효율등급을 지도로"], "route": "cap", "expectAny": ["mountMetricChoropleth","mountSeoulChoropleth"], "refuseOk": false },
+    { "id": "C11", "query": "서울과 부산 평균 EUI를 비교해줘", "queryVariants": ["서울이랑 부산 EUI 비교", "두 도시 에너지원단위를 견줘봐"], "route": "cap", "expectAny": ["mountMetricChoropleth","selectBuildings"], "refuseOk": false },
+    { "id": "C12", "query": "setpoint 변화에 따른 절감 dose-response 히트맵 보여줘", "queryVariants": ["설정온도별 절감 히트맵", "온도 바꿀 때마다 절감이 어떻게 변하나"], "route": "cap", "expectAny": ["counterfactual"], "refuseOk": false },
 
-    { "id": "S1", "query": "전국 노후도 지도에서 강남구로 확대해줘", "route": "cap", "expectAny": ["mountMetricChoropleth","cameraFlyToAnchor"], "refuseOk": true },
-    { "id": "S2", "query": "이 건물 에너지 절감 전략을 8단계로 분석해줘", "route": "cap", "expectAny": ["ems_identify","ems_recommend","ems_diagnose"], "refuseOk": false },
-    { "id": "S3", "query": "이 분석 결과를 동료에게 공유할 링크 만들어줘", "route": "cap", "expectAny": [], "refuseOk": true },
-    { "id": "S4", "query": "현재 AI 모델 상태와 데이터 출처를 보여줘", "route": "ops_status", "expectAny": [], "refuseOk": false },
-    { "id": "S5", "query": "강남구 분석 지도와 8단계 의사결정을 동시에 보여줘", "route": "cap", "expectAny": ["mountMetricChoropleth","cameraFlyToAnchor"], "refuseOk": false },
-    { "id": "S6", "query": "조치별 한계저감비용을 계단막대로 시각화해줘", "route": "cap", "expectAny": ["apply_policy_lever","policy_evaluate"], "refuseOk": false },
+    { "id": "S1", "query": "전국 노후도 지도에서 강남구로 확대해줘", "queryVariants": ["전국 보여주고 강남으로 확대", "전국에서 자치구로 줌인해줘"], "route": "cap", "expectAny": ["mountMetricChoropleth","cameraFlyToAnchor"], "refuseOk": true },
+    { "id": "S2", "query": "이 건물 에너지 절감 전략을 8단계로 분석해줘", "queryVariants": ["강남에서 삼성역까지 이동", "이 구간을 따라가며 보여줘"], "route": "cap", "expectAny": ["ems_identify","ems_recommend","ems_diagnose"], "refuseOk": false },
+    { "id": "S3", "query": "이 분석 결과를 동료에게 공유할 링크 만들어줘", "queryVariants": ["옥상에 태양광 올려서 보여줘", "지붕에 PV 를 설치한 모습"], "route": "cap", "expectAny": [], "refuseOk": true },
+    { "id": "S4", "query": "현재 AI 모델 상태와 데이터 출처를 보여줘", "queryVariants": ["건물 외벽을 칠해줘", "파사드 색을 바꿔서 보여줘"], "route": "ops_status", "expectAny": [], "refuseOk": false },
+    { "id": "S5", "query": "강남구 분석 지도와 8단계 의사결정을 동시에 보여줘", "queryVariants": ["카메라를 이 건물로 옮겨줘", "여기로 시점 이동"], "route": "cap", "expectAny": ["mountMetricChoropleth","cameraFlyToAnchor"], "refuseOk": false },
+    { "id": "S6", "query": "조치별 한계저감비용을 계단막대로 시각화해줘", "queryVariants": ["3D 시연을 재생해줘", "저장된 장면을 틀어줘"], "route": "cap", "expectAny": ["apply_policy_lever","policy_evaluate"], "refuseOk": false },
 
-    { "id": "L1", "query": "광화문에서 롯데타워까지 차량으로 주행 시연해줘", "route": "compose", "expectAny": ["driveRouteByIntent"], "refuseOk": false },
-    { "id": "L2", "query": "이 건물 옥상에 태양광 패널을 배치하고 발전량 시뮬레이션해줘", "route": "compose", "expectAny": ["placeRoofSolar"], "refuseOk": false },
-    { "id": "L3", "query": "건물 외벽에 수직 녹화를 시뮬레이션해줘", "route": "compose", "expectAny": [], "refuseOk": true },
-    { "id": "L4", "query": "방금 그린 지도에서 CO2 대신 전기 소비로 바꿔줘", "route": "compose", "expectAny": ["mountMetricChoropleth"], "refuseOk": true },
-    { "id": "L5", "query": "강남 전체를 조감한 뒤 삼성동 빌딩군으로 날아가줘", "route": "compose", "expectAny": ["cameraFlyToAnchor"], "refuseOk": false },
-    { "id": "L6", "query": "강남 CO2 상위 10건물을 순서대로 투어해줘", "route": "compose", "expectAny": ["tourSelected","selectBuildings","cameraFlyToAnchor"], "refuseOk": false }
+    { "id": "L1", "query": "광화문에서 롯데타워까지 차량으로 주행 시연해줘", "queryVariants": ["이 건물 진단해줘", "여기 상태를 봐줘"], "route": "compose", "expectAny": ["driveRouteByIntent"], "refuseOk": false },
+    { "id": "L2", "query": "이 건물 옥상에 태양광 패널을 배치하고 발전량 시뮬레이션해줘", "queryVariants": ["내일 수요 예측", "24시간 부하 전망"], "route": "compose", "expectAny": ["placeRoofSolar"], "refuseOk": false },
+    { "id": "L3", "query": "건물 외벽에 수직 녹화를 시뮬레이션해줘", "queryVariants": ["이상한 소비가 있나", "이상 징후 탐지"], "route": "compose", "expectAny": [], "refuseOk": true },
+    { "id": "L4", "query": "방금 그린 지도에서 CO2 대신 전기 소비로 바꿔줘", "queryVariants": ["뭘 고치면 좋을까", "개선안 추천해줘"], "route": "compose", "expectAny": ["mountMetricChoropleth"], "refuseOk": true },
+    { "id": "L5", "query": "강남 전체를 조감한 뒤 삼성동 빌딩군으로 날아가줘", "queryVariants": ["최적 운전 계획 짜줘", "제어 스케줄 최적화"], "route": "compose", "expectAny": ["cameraFlyToAnchor"], "refuseOk": false },
+    { "id": "L6", "query": "강남 CO2 상위 10건물을 순서대로 투어해줘", "queryVariants": ["운영 상태 알려줘", "지금 무엇이 살아있나"], "route": "compose", "expectAny": ["tourSelected","selectBuildings","cameraFlyToAnchor"], "refuseOk": false }
   ],
 
   // ── refuse/off-domain 대표(사냥꾼 Class B 회귀 감시) ─────────────────────────
   "refuseProbes": [
     { "id": "R-IAQ",   "query": "이 건물 실내공기질 이산화탄소 농도를 진단해줘", "why": "IAQ 미학습 → refuse 게이트" },
     { "id": "R-EQ",    "query": "이 건물의 지진 내진 성능을 평가해줘", "why": "지진/내진 미학습" },
-    { "id": "R-THERM", "query": "이 건물 열교와 기밀성을 blower door 로 계산해줘", "why": "열교/기밀 미학습" },
-    { "id": "R-FLOOD", "query": "이 지역 침수 홍수 위험을 최적화해줘", "why": "침수/홍수 미학습" },
+    { "id": "R-THERM", "query": "이 건물 열교와 기밀성을 blower door 로 계산해줘", "queryVariants": ["외벽 열교 부위를 찾아줘", "기밀 성능을 측정해줘"], "why": "열교/기밀 미학습" },
+    { "id": "R-FLOOD", "query": "이 지역 침수 홍수 위험을 최적화해줘", "queryVariants": ["침수 위험을 낮추는 방법을 알려줘", "홍수 대비 최적안을 만들어줘"], "why": "침수/홍수 미학습" },
     { "id": "R-ESS",   "query": "배터리 SOC 기반으로 ESS 충방전을 디스패치 최적화해줘", "why": "ESS SOC 미학습" },
-    { "id": "R-WEATHER", "query": "오늘 날씨 알려줘", "why": "완전 비도메인" }
+    { "id": "R-WEATHER", "query": "오늘 날씨 알려줘", "queryVariants": ["내일 비 와?", "이번 주 기온 알려줘"], "why": "완전 비도메인" }
   ]
 }
