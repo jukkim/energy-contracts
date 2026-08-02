@@ -4,6 +4,32 @@
 
 ---
 
+## v0.3.35 — 2026-08-03
+
+### `edge_registration` v1.4 — 설비 인벤토리 (요약 + 선택 전수)
+
+건물 그룹 관제가 "이 건물에 무엇이 몇 대 있나" 를 물으면 답이 없었다. 설비 대장은
+엣지 로컬(`DeviceCatalog`)에만 있고 원격으로 나올 길이 없었다.
+
+- **`equipment_summary`** — 설비 종류 → 대수. `EquipmentKind` 키만 허용(수동 미러
+  금지). 그룹 관제가 알아야 할 하한이 여기까지다
+- **`equipment[]`** — 드릴다운용 요약 엔트리(선택). `device_id`·`kind`·`subtype`·
+  `label`·`floor`·`zone`·`point_id`
+
+⚠ **`driver_address` 는 싣지 않는다.** BACnet 인스턴스·Modbus 레지스터는 현장
+바인딩 상세이고, 원격이 사본을 들고 있으면 현장이 배선을 바꿔도 **원격 사본만 낡은
+채 남는다**(DECISION-POINT-ADDRESSING 의 축 분리: BACnet=바인딩 / CPA=식별).
+
+⚠ 전수를 필수로 하지 않은 이유: 건물당 수백 개까지 가고 retained 등록 페이로드가
+그만큼 커진다. **요약은 항상, 전수는 필요할 때.**
+
+⚠ 캐스케이드 **0** (`_usage=runtime-validate`).
+
+소비: MGCC 가 **엣지 로컬 대장과 자체 저작을 공존**시킨다(사용자 결정) —
+`edge_local > mgcc` 우선순위로 합치되 충돌은 덮지 않고 지목한다.
+
+---
+
 ## v0.3.34 — 2026-08-03
 
 ### `equipment_taxonomy` v1.2 — 설비 종류 7 신설 + 하위형·시뮬근거·용도축
