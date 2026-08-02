@@ -9,8 +9,8 @@
     "bems-console",
     "building-energy-3d"
   ],
-  "version": "1.1.0",
-  "updated": "2026-08-01",
+  "version": "1.2.0",
+  "updated": "2026-08-03",
   "$comment": "설계 원칙: (1) EquipmentKind = 물리 설비 종류(실 드라이버 바인딩 축). edge 8종 ∪ console 세분(ahu/vav/pump/pv/meter) 을 한 개념=한 이름으로 통합, light→lighting 통일. (2) DeviceAction = edge value_spec._SPEC 의 물리 동작 verb 를 authoritative 로 채택(driver.apply_device_action 1:1). console OutputKind(setpoint/onoff/dim/door/notify/m_code/dr_dispatch)는 상위 채널 추상 = 별도 축; 그 중 설비 지향 subset(setpoint→set_temp, onoff→on/off, dim→dim)만 capability_matrix 로 검증. (3) value_specs 는 edge value_spec._SPEC 범위를 정확히 보존(무 behavior 변경). meter=read-only(동작 없음). (4) capability_matrix 분해: {on,off,stop,emergency_off,emergency_on} = 모든 제어가능(비 meter) 종류 공통 '보편 제어 프리미티브'(비상정지=범용 안전동작). value 를 갖는 동작만 종류별(set_temp=냉난방류, dim=lighting, set_speed=공기이송류, discharge=ess) — 이 축에서만 (kind,action) 거부(예: lighting 에 set_temp 금지).",
   "type": "object",
   "required": [
@@ -34,9 +34,16 @@
         "pv",
         "plug",
         "meter",
+        "radiant",
+        "vrf",
+        "district_heat",
+        "dhw",
+        "refrigeration",
+        "cooling_tower",
+        "erv",
         "other"
       ],
-      "description": "설비 종류. hvac=통합 공조(존 온도) · ahu=공기조화기 · vav=가변풍량 · chiller=냉동기 · boiler=보일러(난방) · fan=팬(환기) · pump=펌프 · lighting=조명(구 console 'light') · ess=에너지저장 · pv=태양광 · plug=플러그부하 · meter=계량기(read-only) · other=기타."
+      "description": "설비 종류. hvac=통합 공조(존 온도) · ahu=공기조화기 · vav=가변풍량 · chiller=냉동기 · boiler=보일러(난방) · fan=팬(환기) · pump=펌프 · lighting=조명(구 console 'light') · ess=에너지저장 · pv=태양광 · plug=플러그부하 · meter=계량기(read-only) · other=기타.\n\n**v1.2 확장(2026-08-03)** — E+ IDF 42본 전수 파싱 근거로 7종 신설. 추가 기준은 이름이 아니라 **표준 점 집합이 달라지거나 제어 의미가 달라질 때**만이다: radiant=온돌·복사난방(공급수온 제어 + 지연응답 → 설정온도 즉시 반영 가정이 깨진다) · vrf=VRF/EHP 실외기(실외기 1:실내기 N 계층의 계량·제어 단위. 실내기는 hvac+subtype) · district_heat=지역난방 인수(생산이 아니라 **구매** — 회계축이 다르다) · dhw=급탕(별도 용도 + 레지오넬라 온도 하한) · refrigeration=냉장·냉동(**식품안전 제약으로 DR 제외 대상** — hvac 로 뭉치면 잘못 감축한다) · cooling_tower=냉각탑(접근온도·팬 단수) · erv=전열교환기(EMS M08 의 지목 대상). 출현 근거: radiant 8 · vrf 9 · district_heat 6 · dhw 21(최다) · refrigeration 17 · cooling_tower 3 · erv 6 본."
     },
     "DeviceAction": {
       "type": "string",
@@ -131,6 +138,38 @@
           "type": "string"
         }
       }
+    },
+    "EnergySource": {
+      "type": "string",
+      "enum": [
+        "electricity",
+        "fuel",
+        "heat",
+        "renewable"
+      ],
+      "description": "에너지원. 한국 BEMS 제도가 요구하는 **에너지원 × 용도 교차 계량**의 한 축이다(구 「건축물의 에너지절약설계기준」 별표 12 #3 — 생산·저장·사용 에너지를 전기/연료/열로). ⚠ 이 축은 Brick·Haystack·IFC **어디에도 없다** — 국제 표준의 결함이 아니라 관할권 요구다."
+    },
+    "EndUse": {
+      "type": "string",
+      "enum": [
+        "cooling",
+        "heating",
+        "dhw",
+        "lighting",
+        "ventilation",
+        "other"
+      ],
+      "description": "용도. 한국 제도의 **5대 용도**(냉방·난방·급탕·조명·환기) + other. ⚠ 「동력」은 5대 용도에 **없다**(초판 오류 정정). 펌프·냉장·플러그는 other 다. 신재생은 용도가 아니라 **에너지원/생산 축**이다."
+    },
+    "SimulationBacked": {
+      "type": "string",
+      "enum": [
+        "full",
+        "meter_only",
+        "unreported",
+        "none"
+      ],
+      "description": "이 설비의 성과를 **시뮬로 대조할 수 있나**. full=설비 단위 시뮬 근거 있음 · meter_only=용도별 계량으로만(설비 단위 절감을 말하지 않는다) · **unreported=모델은 도는데 출력이 회수되지 않음** · none=시뮬 근거 없음.\n⚠ `unreported` 를 `none` 과 나눈 이유: 둘 다 '지금 못 쓴다' 지만 **해야 할 일이 완전히 다르다**. none(ESS)은 모델을 새로 만들어야 하고, unreported(PV)는 출력 미터 2줄을 추가해 재실행하면 된다. 같은 칸에 넣으면 저렴한 복구가 비싼 신규 개발 뒤에 줄을 선다.\n⚠ 캠페인마다 값이 다르므로 **캠페인별로** 적는다 — 하나의 스칼라로 뭉개면 한국 건물 화면에 미국 근거가 붙는다."
     }
   },
   "properties": {
@@ -139,7 +178,7 @@
       "description": "EquipmentKind → 지원 DeviceAction 목록. 이 표에 없는 (kind, action) 조합은 저작/실행 단계에서 거부(예: lighting 에 set_temp 금지). meter=[](read-only).",
       "additionalProperties": false,
       "patternProperties": {
-        "^(hvac|ahu|vav|chiller|boiler|fan|pump|lighting|ess|pv|plug|meter|other)$": {
+        "^(hvac|ahu|vav|chiller|boiler|fan|pump|lighting|ess|pv|plug|meter|radiant|vrf|district_heat|dhw|refrigeration|cooling_tower|erv|other)$": {
           "type": "array",
           "items": {
             "$ref": "#/$defs/DeviceAction"
@@ -165,6 +204,43 @@
         "type": "array",
         "items": {
           "$ref": "#/$defs/EquipmentPoint"
+        }
+      }
+    },
+    "subtypes": {
+      "type": "object",
+      "description": "설비 종류 → **권장 하위형** 목록. 종류를 늘리지 않고 실체를 남기는 축이다.\n⚠ `subtype` 은 **표시·분류용이고 제어 계약이 아니다**. 그래서 값집합을 열어 두되 권장 목록을 여기 실어 소비단이 같은 말을 쓰게 한다 — 안 그러면 현장마다 '벽걸이'·'PTAC'·'패키지' 가 따로 논다.",
+      "additionalProperties": {
+        "type": "array",
+        "items": {
+          "type": "string"
+        },
+        "uniqueItems": true
+      }
+    },
+    "simulation_backed": {
+      "type": "object",
+      "description": "설비 종류 → 캠페인별 시뮬 근거 표기. 화면·리포트에서 '시뮬 대비 절감' 을 말할 수 있는 범위를 **계약이 정한다**.",
+      "additionalProperties": {
+        "type": "object",
+        "additionalProperties": {
+          "$ref": "#/$defs/SimulationBacked"
+        }
+      }
+    },
+    "energy_end_use": {
+      "type": "object",
+      "description": "설비 종류 → (에너지원, 용도). 한국 BEMS 제도의 교차 계량 축이며 국제 표준엔 없다. ⚠ boiler 가 급탕을 겸하면 **분리 계량이 필수**다 — 난방과 급탕은 제도상 다른 용도다.",
+      "additionalProperties": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "energy_source": {
+            "$ref": "#/$defs/EnergySource"
+          },
+          "end_use": {
+            "$ref": "#/$defs/EndUse"
+          }
         }
       }
     }
@@ -266,6 +342,38 @@
         "stop",
         "emergency_off",
         "emergency_on"
+      ],
+      "radiant": [
+        "on",
+        "off",
+        "set_temp"
+      ],
+      "vrf": [
+        "on",
+        "off",
+        "set_temp"
+      ],
+      "district_heat": [
+        "on",
+        "off",
+        "set_temp"
+      ],
+      "dhw": [
+        "on",
+        "off",
+        "set_temp"
+      ],
+      "refrigeration": [],
+      "cooling_tower": [
+        "on",
+        "off",
+        "set_speed",
+        "set_temp"
+      ],
+      "erv": [
+        "on",
+        "off",
+        "set_speed"
       ]
     },
     "value_specs": {
@@ -678,6 +786,256 @@
           "brick": "brick:Electrical_Power_Sensor",
           "haystack": "elec power sensor"
         }
+      ],
+      "radiant": [
+        {
+          "mnemonic": "SAT",
+          "role": "sensor",
+          "required": true,
+          "unit": "°C",
+          "brick": "brick:Supply_Water_Temperature_Sensor",
+          "haystack": "supply water temp sensor",
+          "$comment": "온돌 **공급수온**. 계통은 kind 가 말한다(SAT=공급, 매체는 radiant 이므로 물)."
+        },
+        {
+          "mnemonic": "RAT",
+          "role": "sensor",
+          "required": false,
+          "unit": "°C",
+          "brick": "brick:Return_Water_Temperature_Sensor",
+          "haystack": "return water temp sensor"
+        },
+        {
+          "mnemonic": "ZT",
+          "role": "sensor",
+          "required": true,
+          "unit": "°C",
+          "brick": "brick:Zone_Air_Temperature_Sensor",
+          "haystack": "zone air temp sensor"
+        },
+        {
+          "mnemonic": "SP",
+          "role": "sp",
+          "required": true,
+          "unit": "°C",
+          "brick": "brick:Zone_Air_Temperature_Setpoint"
+        },
+        {
+          "mnemonic": "VLV",
+          "role": "cmd",
+          "required": true,
+          "unit": "%",
+          "brick": "brick:Valve_Command",
+          "$comment": "⚠ 응답이 느리다 — 설정온도 즉시 반영을 가정하는 전략은 이 설비에서 무동작이다."
+        }
+      ],
+      "vrf": [
+        {
+          "mnemonic": "KW",
+          "role": "sensor",
+          "required": true,
+          "unit": "kW",
+          "brick": "brick:Electrical_Power_Sensor"
+        },
+        {
+          "mnemonic": "OAT",
+          "role": "sensor",
+          "required": false,
+          "unit": "°C",
+          "brick": "brick:Outside_Air_Temperature_Sensor"
+        },
+        {
+          "mnemonic": "SP",
+          "role": "sp",
+          "required": false,
+          "unit": "°C"
+        },
+        {
+          "mnemonic": "MODE",
+          "role": "sp",
+          "required": false,
+          "haystack": "hvacMode",
+          "$comment": "냉방/난방/송풍 — 실외기 단위 운전 모드."
+        },
+        {
+          "mnemonic": "RUN",
+          "role": "cmd",
+          "required": false,
+          "brick": "brick:On_Off_Command"
+        }
+      ],
+      "district_heat": [
+        {
+          "mnemonic": "SAT",
+          "role": "sensor",
+          "required": true,
+          "unit": "°C",
+          "haystack": "supply water temp sensor",
+          "$comment": "지역난방 **인수** 공급온도. 생산이 아니라 구매다."
+        },
+        {
+          "mnemonic": "RAT",
+          "role": "sensor",
+          "required": false,
+          "unit": "°C"
+        },
+        {
+          "mnemonic": "FLOW",
+          "role": "sensor",
+          "required": false,
+          "unit": "m³/h",
+          "brick": "brick:Water_Flow_Sensor"
+        },
+        {
+          "mnemonic": "KWH",
+          "role": "sensor",
+          "required": true,
+          "unit": "kWh",
+          "brick": "brick:Usage_Sensor",
+          "$comment": "열량계 적산. **회계축이 다르다** — 1차에너지 환산계수 0.728."
+        },
+        {
+          "mnemonic": "VLV",
+          "role": "cmd",
+          "required": false,
+          "unit": "%",
+          "brick": "brick:Valve_Command"
+        }
+      ],
+      "dhw": [
+        {
+          "mnemonic": "SAT",
+          "role": "sensor",
+          "required": true,
+          "unit": "°C",
+          "brick": "brick:Hot_Water_Supply_Temperature_Sensor",
+          "haystack": "hot water temp sensor"
+        },
+        {
+          "mnemonic": "SP",
+          "role": "sp",
+          "required": true,
+          "unit": "°C",
+          "$comment": "⚠ **위생 하한이 있다**(레지오넬라). 절감 목적으로 이 값을 내리는 전략은 하한을 넘을 수 없다 — 다른 설비의 설정온도와 같은 규칙을 적용하면 안 된다."
+        },
+        {
+          "mnemonic": "RUN",
+          "role": "cmd",
+          "required": false,
+          "brick": "brick:On_Off_Command"
+        },
+        {
+          "mnemonic": "KW",
+          "role": "sensor",
+          "required": false,
+          "unit": "kW"
+        }
+      ],
+      "refrigeration": [
+        {
+          "mnemonic": "CASE_T",
+          "role": "sensor",
+          "required": true,
+          "unit": "°C",
+          "brick": "brick:Temperature_Sensor",
+          "$comment": "쇼케이스·저장고 온도. ⚠ **식품안전 제약** — 이 값이 상한을 넘으면 폐기 손실이다."
+        },
+        {
+          "mnemonic": "SP",
+          "role": "sp",
+          "required": true,
+          "unit": "°C"
+        },
+        {
+          "mnemonic": "DEFROST",
+          "role": "cmd",
+          "required": false,
+          "$comment": "제상. 원격 실행은 현장 판단 우선."
+        },
+        {
+          "mnemonic": "KW",
+          "role": "sensor",
+          "required": false,
+          "unit": "kW"
+        }
+      ],
+      "cooling_tower": [
+        {
+          "mnemonic": "SAT",
+          "role": "sensor",
+          "required": true,
+          "unit": "°C",
+          "brick": "brick:Leaving_Water_Temperature_Sensor",
+          "haystack": "leaving water temp sensor",
+          "$comment": "냉각수 공급(출구) 온도."
+        },
+        {
+          "mnemonic": "RAT",
+          "role": "sensor",
+          "required": false,
+          "unit": "°C",
+          "brick": "brick:Entering_Water_Temperature_Sensor"
+        },
+        {
+          "mnemonic": "FAN",
+          "role": "cmd",
+          "required": true,
+          "unit": "%",
+          "brick": "brick:Fan_Speed_Command",
+          "haystack": "fan speed cmd",
+          "ifc": "IfcCoolingTower"
+        },
+        {
+          "mnemonic": "SP",
+          "role": "sp",
+          "required": false,
+          "unit": "°C",
+          "$comment": "접근온도(approach) 목표."
+        },
+        {
+          "mnemonic": "KW",
+          "role": "sensor",
+          "required": false,
+          "unit": "kW"
+        }
+      ],
+      "erv": [
+        {
+          "mnemonic": "SAT",
+          "role": "sensor",
+          "required": true,
+          "unit": "°C",
+          "brick": "brick:Supply_Air_Temperature_Sensor"
+        },
+        {
+          "mnemonic": "OAT",
+          "role": "sensor",
+          "required": false,
+          "unit": "°C",
+          "brick": "brick:Outside_Air_Temperature_Sensor"
+        },
+        {
+          "mnemonic": "EAT",
+          "role": "sensor",
+          "required": false,
+          "unit": "°C",
+          "brick": "brick:Exhaust_Air_Temperature_Sensor",
+          "haystack": "exhaust air temp sensor"
+        },
+        {
+          "mnemonic": "WHEEL",
+          "role": "cmd",
+          "required": true,
+          "unit": "%",
+          "haystack": "heatWheel cmd",
+          "ifc": "IfcAirToAirHeatRecovery",
+          "$comment": "⚠ Haystack 은 전열교환을 **설비가 아니라 점**으로 표현한다. 설비로 정확한 것은 IFC 뿐이라 ifc 필드를 함께 둔다."
+        },
+        {
+          "mnemonic": "RUN",
+          "role": "cmd",
+          "required": false
+        }
       ]
     },
     "point_sets_sources": {
@@ -685,6 +1043,207 @@
       "brick": "Brick Schema v1.x point classes. https://brickschema.org/",
       "ashrae_g36": "ASHRAE Guideline 36-2024 High-Performance Sequences of Operation for HVAC Systems — AHU Controls Points Lists. 규범 참조(본문 비공개, 목록을 복제하지 않았다).",
       "$comment": "니모닉 어휘 자체는 bems-console lib/point-address.ts MNEMONICS 정본을 따른다. 표준은 '어떤 점이 있어야 하나'를 근거로 대고, 이름은 기존 어휘를 쓴다 — 표준 이름을 그대로 들여오면 CPA {point} 세그먼트와 어휘가 갈린다."
+    },
+    "subtypes": {
+      "hvac": [
+        "ptac",
+        "baseboard",
+        "fcu",
+        "vrf_indoor",
+        "unit_heater",
+        "split"
+      ],
+      "chiller": [
+        "electric_eir",
+        "reformulated_eir",
+        "absorption"
+      ],
+      "boiler": [
+        "gas",
+        "electric",
+        "oil",
+        "condensing"
+      ],
+      "ahu": [
+        "vav",
+        "cav",
+        "unitary",
+        "wshp",
+        "doas"
+      ],
+      "radiant": [
+        "floor",
+        "panel",
+        "ceiling"
+      ],
+      "vrf": [
+        "heat_pump",
+        "heat_recovery"
+      ],
+      "dhw": [
+        "storage",
+        "instantaneous",
+        "heat_pump"
+      ],
+      "refrigeration": [
+        "compressor_rack",
+        "condensing_unit",
+        "walk_in"
+      ],
+      "cooling_tower": [
+        "variable_speed",
+        "single_speed",
+        "two_speed"
+      ],
+      "erv": [
+        "wheel",
+        "plate",
+        "heat_pipe"
+      ]
+    },
+    "simulation_backed": {
+      "chiller": {
+        "KR": "full",
+        "GLOBAL": "full"
+      },
+      "boiler": {
+        "KR": "full",
+        "GLOBAL": "full"
+      },
+      "fan": {
+        "KR": "full",
+        "GLOBAL": "full"
+      },
+      "pump": {
+        "KR": "full",
+        "GLOBAL": "full"
+      },
+      "ahu": {
+        "KR": "full",
+        "GLOBAL": "full"
+      },
+      "vav": {
+        "KR": "full",
+        "GLOBAL": "full"
+      },
+      "radiant": {
+        "KR": "full",
+        "GLOBAL": "none"
+      },
+      "vrf": {
+        "KR": "full",
+        "GLOBAL": "full"
+      },
+      "district_heat": {
+        "KR": "full",
+        "GLOBAL": "none"
+      },
+      "dhw": {
+        "KR": "full",
+        "GLOBAL": "full"
+      },
+      "refrigeration": {
+        "KR": "full",
+        "GLOBAL": "full"
+      },
+      "cooling_tower": {
+        "KR": "full",
+        "GLOBAL": "full"
+      },
+      "erv": {
+        "KR": "full",
+        "GLOBAL": "full"
+      },
+      "lighting": {
+        "KR": "meter_only",
+        "GLOBAL": "meter_only"
+      },
+      "plug": {
+        "KR": "meter_only",
+        "GLOBAL": "meter_only"
+      },
+      "pv": {
+        "KR": "none",
+        "GLOBAL": "unreported"
+      },
+      "ess": {
+        "KR": "none",
+        "GLOBAL": "none"
+      }
+    },
+    "energy_end_use": {
+      "chiller": {
+        "energy_source": "electricity",
+        "end_use": "cooling"
+      },
+      "cooling_tower": {
+        "energy_source": "electricity",
+        "end_use": "cooling"
+      },
+      "vrf": {
+        "energy_source": "electricity",
+        "end_use": "cooling"
+      },
+      "boiler": {
+        "energy_source": "fuel",
+        "end_use": "heating"
+      },
+      "radiant": {
+        "energy_source": "heat",
+        "end_use": "heating"
+      },
+      "district_heat": {
+        "energy_source": "heat",
+        "end_use": "heating"
+      },
+      "dhw": {
+        "energy_source": "fuel",
+        "end_use": "dhw"
+      },
+      "lighting": {
+        "energy_source": "electricity",
+        "end_use": "lighting"
+      },
+      "fan": {
+        "energy_source": "electricity",
+        "end_use": "ventilation"
+      },
+      "erv": {
+        "energy_source": "electricity",
+        "end_use": "ventilation"
+      },
+      "ahu": {
+        "energy_source": "electricity",
+        "end_use": "ventilation"
+      },
+      "vav": {
+        "energy_source": "electricity",
+        "end_use": "ventilation"
+      },
+      "hvac": {
+        "energy_source": "electricity",
+        "end_use": "other"
+      },
+      "pump": {
+        "energy_source": "electricity",
+        "end_use": "other"
+      },
+      "refrigeration": {
+        "energy_source": "electricity",
+        "end_use": "other"
+      },
+      "plug": {
+        "energy_source": "electricity",
+        "end_use": "other"
+      },
+      "pv": {
+        "energy_source": "renewable",
+        "end_use": "other"
+      },
+      "ess": {
+        "energy_source": "electricity",
+        "end_use": "other"
+      }
     }
   }
 }
