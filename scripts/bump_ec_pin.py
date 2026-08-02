@@ -43,8 +43,12 @@ PROJECTS = WORKSPACE_ROOT / "projects"
 #: **lockstep 검사를 통째로 빠져나갔다**. 실제로 mgcc 만 v0.3.31, 나머지 4개는
 #: v0.3.29 인 상태가 게이트에 안 걸린 채로 있었다(실측). 핀을 선언하는 repo 는
 #: 여기 있어야 한다 — 없으면 조용히 갈라진다.
+#: ⚠ **building-energy-sejong 추가 (2026-08-02)** — 생성 상수 소비자인데 핀이
+#: CI YAML 안에만 있어 이 목록 밖이었다. 그 결과 M00~M20 에 멈추고 **배출계수
+#: 0.4594 구값**으로 CO₂ 를 계산해 왔다(정본 0.4173). 핀을 pyproject 로 옮기고
+#: 여기 등재해야 게이트가 이 repo 를 본다 — mgcc(#78) 와 같은 종류의 누락이다.
 CONSUMERS = ("edge-agent", "gridbridge", "building-energy-3d", "ingestion-worker",
-             "mgcc")
+             "mgcc", "building-energy-sejong")
 _PIN_RE = re.compile(r"(energy-contracts.*?@)(v[0-9][\w.\-]*)")
 # ssot-drift.yml 의 EC checkout step — `repository: jukkim/energy-contracts` 뒤따르는
 # `ref: vX.Y.Z`(주석 유무 무관). 다른 repo checkout 의 ref 는 건드리지 않는다.
