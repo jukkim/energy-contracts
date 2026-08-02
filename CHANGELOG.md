@@ -4,6 +4,40 @@
 
 ---
 
+## v0.3.34 — 2026-08-03
+
+### `equipment_taxonomy` v1.2 — 설비 종류 7 신설 + 하위형·시뮬근거·용도축
+
+E+ IDF 42본 전수 파싱 근거. 추가 기준은 이름이 아니라 **표준 점 집합이 달라지거나
+제어 의미가 달라질 때**만이다.
+
+- **`EquipmentKind` 13 → 20** — `radiant`(온돌 8본, 공급수온 제어 + 지연응답) ·
+  `vrf`(9) · `district_heat`(6, 생산이 아니라 **구매**) · `dhw`(21 최다, 레지오넬라
+  하한) · `refrigeration`(17, **식품안전 제약으로 DR 제외 대상**) ·
+  `cooling_tower`(3) · `erv`(6, EMS M08 대상)
+- **`point_sets` 12종 44점 → 19종 77점.** ⚠ 새 니모닉은 4개뿐(`CASE_T`·`DEFROST`·
+  `EAT`·`WHEEL`) — 계통(공기/물)은 `kind` 가 말한다. 기존 chiller·boiler 가 이미 물
+  계통에 SAT/RAT 을 쓰므로 SWT/RWT 를 새로 만들면 같은 개념이 두 이름을 갖는다.
+  표준 앵커에 **`ifc` 추가**(전열교환기는 IFC 만 정확 — Haystack 은 점으로 표현)
+- **`capability_matrix.refrigeration = []`** 은 의도다(원격 감축 대상 아님)
+- **`subtypes`** — 종류를 늘리지 않고 실체를 남기는 축(표시·분류용, 제어 계약 아님)
+- **`simulation_backed`** — 캠페인별(`{KR, GLOBAL}`) 4값. `unreported` 를 `none` 과
+  나눈 게 핵심: none(ESS)은 모델 신설, unreported(PV)는 출력 2줄 추가 후 재실행이라
+  **비용이 한 자릿수 다르다**. `pv` = KR:none / GLOBAL:unreported
+- **`energy_end_use`** — 에너지원 × 5대 용도 교차축. Brick·Haystack·IFC 어디에도
+  없다(국제 표준의 결함이 아니라 관할권 요구). ⚠ 「동력」은 5대 용도에 없다(정정)
+
+### `provision` v1.5 — `selector.equipment_kind` 미러 동기화
+
+guarded mirror 가드(`test_mirrored_vocabularies_match_their_source`)가 잡았다.
+안 고쳤으면 점 설정 selector 로 `radiant`·`dhw` 를 지목하는 순간 **거부되면서
+이유는 어디에도 안 나왔을** 것이다.
+
+⚠ **캐스케이드 8 repo.** 델타는 순수 추가 — `EQUIPMENT_KINDS` +7 ·
+`EQUIPMENT_CAPABILITIES` +7 · `SOURCE_HASH`. 기존 값 무변경.
+
+---
+
 ## v0.3.33 — 2026-08-02
 
 ### `capability_tier` 신설 + `affiliations` 축 3종 — 능력이 부족한 건물을 담는 어휘
