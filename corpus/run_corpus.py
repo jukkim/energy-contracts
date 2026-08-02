@@ -963,6 +963,12 @@ def build_ledger(corpus, cells: list[dict], services: dict, ctx, baseline: dict 
         "summary": {**summary, "total": total, "fresh": fresh_count, "carriedOver": carried, "droppedStaleRegions": dropped_regions,
                     "unknownRatio": round(unknown / fresh_count, 4) if fresh_count else 0.0},
         "byReason": by_reason,
+        # ⚠ byReason 은 **전 셀**(PASS 포함) 집계다. 스윕이 무효가 됐을 때 읽는 사람이
+        #   알고 싶은 건 "UNKNOWN 이 왜 났나" 인데 저기엔 ESCALATE_BY_DESIGN(=정상 PASS)
+        #   같은 게 섞여 있어, 서비스가 멀쩡한데도 "다운" 으로 읽히는 오진을 만들었다.
+        #   (2026-08-02: 5090 EXAONE·게이트웨이가 200 으로 살아 있는데 훅이 '서비스 다운'
+        #    이라 보고했다 — 실제 원인은 429 RATE_LIMIT 이었다.)
+        "byReasonUnknown": _count_reasons(cells, only_unknown=True),
         # 이 suite 들은 UNKNOWN 이 30% 를 넘어 **측정된 것으로 취급하면 안 된다**.
         "unmeasuredSuites": unmeasured,
         "greenList": greenlist,
@@ -973,6 +979,22 @@ def build_ledger(corpus, cells: list[dict], services: dict, ctx, baseline: dict 
     }
 
 
+def _count_reasons(cells: list, *, only_unknown: bool = False) -> dict:
+    """사유 집계. only_unknown=True 면 **UNKNOWN 셀만** 센다.
+
+    스윕 무효(UNKNOWN 과다) 시 진단의 핵심은 `SERVICE_DOWN`(정말 죽음) 과
+    `RATE_LIMIT`(살아서 429 로 거절 = 우리 부하) 을 가르는 것이다. 둘을 뭉치면
+    멀쩡한 서비스를 재기동하러 가게 된다.
+    """
+    out: dict[str, int] = {}
+    for c in cells:
+        if only_unknown and _ledger_status(c) != "UNKNOWN":
+            continue
+        r = c.get("reason")
+        if r:
+            out[r] = out.get(r, 0) + 1
+    return out
+
 def print_ledger_summary(ledger: dict) -> None:
     s = ledger["summary"]
     print("\n" + "=" * 74)
@@ -981,7 +1003,15 @@ def print_ledger_summary(ledger: dict) -> None:
           f"  (셀 {s['total']} = 이번 {s.get('fresh', s['total'])} + 이월 {s.get('carriedOver', 0)})")
     if ledger["byReason"]:
         top = sorted(ledger["byReason"].items(), key=lambda kv: -kv[1])[:6]
-        print("  사유: " + ", ".join(f"{k}={v}" for k, v in top))
+        print("  사유(전 셀): " + ", ".join(f"{k}={v}" for k, v in top))
+    unk = ledger.get("byReasonUnknown") or {}
+    if unk:
+        # 무효 판정의 근거는 이 줄이다 — SERVICE_DOWN 인지 RATE_LIMIT 인지가 조치를 가른다.
+        top_u = sorted(unk.items(), key=lambda kv: -kv[1])[:6]
+        print("  ❔ UNKNOWN 사유: " + ", ".join(f"{k}={v}" for k, v in top_u))
+        if not unk.get("SERVICE_DOWN") and unk.get("RATE_LIMIT"):
+            print("     → 서비스는 살아 있다(429 = 쓰로틀·과부하). 재기동이 아니라 "
+                  "간격을 두고 재실행한다.")
     demo = len(ledger.get("demoList", []))
     print(f"  질의 목록: greenList {len(ledger['greenList'])}건 중 "
           f"**시연 대본 후보 {demo}건**(router 실증·신선)")

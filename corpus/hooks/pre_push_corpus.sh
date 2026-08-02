@@ -112,7 +112,12 @@ case "$RC" in
   2)
     # 라이브 판정 불가 — 그래도 **정적(D층)은 반드시** 통과시킨다.
     #   게이트가 강할수록(라이브 매핑) 서비스 하나에 통째로 무력화되던 역설을 막는다.
-    echo "⚠️  [corpus] 라이브 판정 불가(서비스 다운·UNKNOWN 과다) — 정적 검사로 대체합니다." >&2
+    # ⚠ 예전엔 이 줄이 무조건 "서비스 다운" 이라고 단정했다. 2026-08-02 에 게이트웨이·
+    #   5090 EXAONE 이 200 으로 멀쩡한데도 그렇게 보고해 사용자를 재기동 점검으로 보냈다.
+    #   실제 원인은 429(RATE_LIMIT) 였다. 원인은 아래 UNKNOWN 사유 줄이 말한다.
+    echo "⚠️  [corpus] 라이브 판정 불가(UNKNOWN 과다) — 정적 검사로 대체합니다." >&2
+    echo "    원인은 아래 '❔ UNKNOWN 사유' 를 볼 것 — SERVICE_DOWN(정말 죽음)과" >&2
+    echo "    RATE_LIMIT(살아서 429 = 우리 부하)은 조치가 다르다." >&2
     echo "$OUT" | tail -8 >&2
     if python "$RUNNER" --suite static >/dev/null 2>&1; then
       _journal "degraded-static-pass" "$NFILES"; exit 0
