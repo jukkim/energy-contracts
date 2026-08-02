@@ -1,0 +1,230 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "energy-contracts/capability_tier.json",
+  "title": "Building Capability Tier SSOT",
+  "description": "건물 그룹 EMS 에서 멤버 건물의 **능력**을 표기하는 3 직교 축 — 관측(C0~C4) · 제어(A0~A4) · 기준선 출처. 그룹사 30동 중 BEMS 가 있는 건 몇 동뿐이고 나머지는 월 청구서밖에 없다. 능력이 낮은 건물을 그룹에서 빼면 '건물 그룹 EMS' 가 아니라 'BEMS 있는 건물만 EMS' 가 되므로, **빼지 않고 등급으로 포함하되 능력 밖의 명령은 보내지 않는다**. 세 축은 독립이다 — C4/A0(계측 완비인데 제어 불가한 임차 건물)도 C1/A1(청구서만 있는데 사람이 끄는 건물)도 실재하므로, 하나의 스칼라 등급으로 뭉개면 둘 중 하나를 반드시 틀리게 표시한다.",
+  "_usage": "runtime-validate",
+  "_consumers": [
+    "mgcc"
+  ],
+  "version": "1.0",
+  "updated": "2026-08-02",
+  "$comment": "mgcc/docs/DESIGN-BUILDING-GROUP-ONBOARDING.md §5.5 산출물. ⚠ 새 어휘를 만들지 않는다 — 등급 판정 증거(evidence)는 이미 있는 계약(telemetry·edge_registration·venue·provision_ack·dispatch_ack)을 가리킨다. codegen 대상 아님(_usage=runtime-validate): 소비자가 MGCC 하나이고 값이 아니라 판정 규칙이라, 생성 상수로 굳히면 8 repo 재생성 캐스케이드만 늘고 얻는 게 없다.",
+
+  "$defs": {
+    "ObservationTier": {
+      "type": "string",
+      "enum": ["C0", "C1", "C2", "C3", "C4"],
+      "description": "관측 능력 — 이 건물에서 **무엇이 들어오나**. C0 미계측 · C1 청구서(월) · C2 총량(15분) · C3 용도별 · C4 존·설비"
+    },
+    "ControlTier": {
+      "type": "string",
+      "enum": ["A0", "A1", "A2", "A3", "A4"],
+      "description": "제어 능력 — 이 건물에 **무엇을 쓸 수 있나**. A0 읽기전용 · A1 수동·권고 · A2 운영모드 · A3 점 설정 · A4 발령"
+    },
+    "BaselineSource": {
+      "type": "string",
+      "enum": ["observed", "simulated", "none"],
+      "description": "기준선 출처. observed=관측 표본 · simulated=E+ 원형 시뮬(신축) · none=없음. ⚠ observed 와 simulated 는 단위는 같지만 **의미가 다르다** — 그룹 집계에서 합산하면 절감량이 근거 없는 수가 된다. 출처별로 나눠 보고한다."
+    },
+    "EvidenceStatus": {
+      "type": "string",
+      "enum": ["observable", "no_contract_channel", "declared_only"],
+      "description": "이 등급을 **관측으로 판정할 수 있는가**. observable=계약에 채널이 있어 판정 가능 · no_contract_channel=계약에 채널 자체가 없어 관측 불가(신고값만 가능) · declared_only=본질적으로 사람이 정하는 값"
+    },
+    "TierAssessment": {
+      "type": "object",
+      "description": "멤버 건물 하나의 능력 판정 결과. **declared 와 observed 를 둘 다 보관**한다 — 사람이 적은 등급은 낡고, 관측은 안 낡는다. 불일치는 숨기지 않고 지목한다.",
+      "properties": {
+        "declared_observation": { "$ref": "#/$defs/ObservationTier" },
+        "declared_control": { "$ref": "#/$defs/ControlTier" },
+        "observed_observation": { "$ref": "#/$defs/ObservationTier" },
+        "observed_control": { "$ref": "#/$defs/ControlTier" },
+        "target_observation": { "$ref": "#/$defs/ObservationTier" },
+        "target_control": { "$ref": "#/$defs/ControlTier" },
+        "baseline_source": { "$ref": "#/$defs/BaselineSource" },
+        "stale": {
+          "type": "boolean",
+          "description": "관측이 최근에 끊겼다. ⚠ **강등이 아니다** — '지금 안 온다'와 '원래 없다'를 같은 색으로 칠하면 설비 투자 판단이 틀어진다. stale 인 동안 observed_* 는 마지막 판정을 유지한다."
+        },
+        "mismatch": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "declared 와 observed 가 다른 축의 이름. 예: ['observation'] — 신고는 C3 인데 관측은 C2"
+        }
+      },
+      "additionalProperties": true
+    }
+  },
+
+  "observation_tiers": [
+    {
+      "id": "C0",
+      "label_ko": "미계측",
+      "description": "아무 값도 오지 않는다. 시공 중 · 미개통 · 계량기 자체가 없음.",
+      "evidence": {
+        "status": "observable",
+        "rule": "이 ven_id 로 도착한 telemetry 가 없다",
+        "contract_refs": []
+      },
+      "enables": ["그룹 목록에 동 수로 포함", "값 자리는 '미계측' 으로 표기"],
+      "excluded_from": ["감축 배분 분모", "kW 집계", "시뮬 대조"]
+    },
+    {
+      "id": "C1",
+      "label_ko": "청구서(월)",
+      "description": "월 단위 총량(전기·가스)만 있다. 청구서만 있는 지점·창고·임차층.",
+      "evidence": {
+        "status": "declared_only",
+        "rule": "telemetry 채널이 없고 월 총량이 외부 반입(수기·검침 API)으로 들어온다. ⚠ 반입 경로는 telemetry 계약 밖이라 도착만으로 판정할 수 없다",
+        "contract_refs": []
+      },
+      "enables": ["월 CO₂ 회계", "월 요금 회계"],
+      "excluded_from": ["감축 배분 분모", "실시간 kW", "피크 관리"]
+    },
+    {
+      "id": "C2",
+      "label_ko": "총량 계량(15분 이하)",
+      "description": "건물 총 전력이 15분 이하 주기로 온다. AMI·원격검침만 있는 건물.",
+      "evidence": {
+        "status": "observable",
+        "rule": "telemetry.power_kw 가 도착하고 도착 간격이 max_interval_sec 이하",
+        "contract_refs": ["telemetry.json#/properties/power_kw", "telemetry.json#/properties/data_source"]
+      },
+      "max_interval_sec": 900,
+      "enables": ["그룹 kW 합산", "피크 관리 참여", "관측 기준선(baseline)", "감축 배분 참여"],
+      "$comment": "900초 = 한국 BEMS 데이터 규격(KS F 1800-2) 수집주기 15분 이하 요건과 같은 값. 배분 참여의 하한이 여기인 이유는 이보다 성긴 값으로는 발령 창 안의 감축을 검증할 수 없기 때문이다."
+    },
+    {
+      "id": "C3",
+      "label_ko": "용도별 계량",
+      "description": "냉방·난방·급탕·조명·환기 5대 용도가 분리 계량된다. 한국 BEMS 제도가 요구하는 하한.",
+      "evidence": {
+        "status": "no_contract_channel",
+        "rule": "⚠ **판정 불가** — telemetry v1.4 에 용도별 분해 채널이 없다(top-level 은 power_kw 총량 하나). 따라서 observed 로는 이 등급에 도달할 수 없고 declared 로만 표기된다. telemetry 에 energy_source × end_use 교차 축이 생기면 observable 로 승격한다",
+        "contract_refs": []
+      },
+      "enables": ["용도별 절감 보고", "규제 보고(에너지원×용도)"],
+      "$comment": "국제 표준(Brick·Haystack·IFC)에도 에너지원×용도 교차 계량 축이 없다. 이건 국제 표준의 결함이 아니라 관할권(한국) 요구다 — mgcc DESIGN §3.3.3."
+    },
+    {
+      "id": "C4",
+      "label_ko": "존·설비",
+      "description": "존 온도·설정온도·재실·CO₂ 와 설비 단위 값까지 온다. 시뮬 대조(19채널 Tier A) 가능선.",
+      "evidence": {
+        "status": "observable",
+        "rule": "telemetry.zones[] 가 1개 이상 도착하고 zone 별 indoor_temp_c·hvac_setpoint_c 를 포함",
+        "contract_refs": ["telemetry.json#/properties/zones", "telemetry.json#/$defs"]
+      },
+      "max_interval_sec": 900,
+      "enables": ["존/설비 드릴다운", "시뮬 대조", "쾌적대 판정"]
+    }
+  ],
+
+  "control_tiers": [
+    {
+      "id": "A0",
+      "label_ko": "읽기 전용",
+      "description": "제어 경로가 없다. 임차층 · 남의 BAS · 관리주체가 다른 동.",
+      "evidence": {
+        "status": "observable",
+        "rule": "venue/edge_registration 의 kind=telemetry (관측형, read-only)",
+        "contract_refs": ["venue.json#/properties/kind", "edge_registration.json#/properties/kind"]
+      },
+      "accepts": [],
+      "$comment": "kind=telemetry 는 이미 계약에 있던 A0 다 — 새로 만든 개념이 아니라 안 쓰이던 것이다."
+    },
+    {
+      "id": "A1",
+      "label_ko": "수동·권고",
+      "description": "기계가 아니라 **사람이 이행**한다. 화면·알림으로 요청하고 이행 여부는 계량으로 검증한다. 수요자원 거래시장의 수동 감축과 같은 구조.",
+      "evidence": {
+        "status": "declared_only",
+        "rule": "제어 채널이 없으나 운영 협약으로 사람이 이행하기로 한 건물. 자동 ack 이 없으므로 관측으로 판정할 수 없다",
+        "contract_refs": []
+      },
+      "accepts": ["알림(발령 통지)"],
+      "$comment": "이행 결과를 자동 ack 과 같은 상태로 뭉치면 '설비가 응답했다'는 거짓이 된다 — 별도 상태로 파생한다."
+    },
+    {
+      "id": "A2",
+      "label_ko": "운영모드",
+      "description": "건물 운영 목적(objective)을 원격으로 하달할 수 있다.",
+      "evidence": {
+        "status": "observable",
+        "rule": "microgrid/provision 하달에 provision_ack.status=applied 회신 이력이 있다",
+        "contract_refs": ["provision.json#/$defs/OperatingConfig", "provision_ack.json"]
+      },
+      "accepts": ["config.operating.objective"],
+      "$comment": "⚠ ack 만으로는 부족하다 — 엣지가 applied 로 회신하고도 실제 제어에 도달하지 못한 결함이 있었다(edge-agent PR #96 이전). ack 은 도달의 필요조건이지 충분조건이 아니다."
+    },
+    {
+      "id": "A3",
+      "label_ko": "점 설정",
+      "description": "설정온도·조명·스케줄을 점(point) 단위로 건물마다 다르게 줄 수 있다.",
+      "evidence": {
+        "status": "observable",
+        "rule": "point_settings 하달에 항목별 결과(point_results)가 회신된다",
+        "contract_refs": ["provision.json#/$defs/OperatingConfig/properties/point_settings", "provision_ack.json"]
+      },
+      "accepts": ["config.operating.point_settings[]"]
+    },
+    {
+      "id": "A4",
+      "label_ko": "발령",
+      "description": "DR 발령(4 modality)을 받아 즉시 actuation 한다.",
+      "evidence": {
+        "status": "observable",
+        "rule": "microgrid/dispatch 발령에 dispatch_ack 회신 이력이 있다",
+        "contract_refs": ["dr_dispatch_event.json#/$defs/DispatchCommand", "dispatch_ack.json"]
+      },
+      "accepts": ["target_kw", "peak_limit_kw", "setpoint_command", "operating_mode"]
+    }
+  ],
+
+  "inclusion_rules": [
+    {
+      "id": "R1",
+      "rule": "배제하지 않고 등급으로 포함한다",
+      "why": "빼 버리면 그룹사가 자기 자산 30동 중 8동을 화면에서 잃는다. C0 도 멤버이고 동 수로는 분모에 들어간다."
+    },
+    {
+      "id": "R2",
+      "rule": "능력 밖 명령은 발행하지 않는다",
+      "why": "A0/A1 에 발령을 보내면 ack 이 영원히 오지 않아 원장이 영구 pending 이 된다. 대상에서 거르되 **제외된 동을 이름과 사유로 지목**한다 — 조용히 빼면 '그룹 전체에 걸었다'는 착각이 남는다."
+    },
+    {
+      "id": "R3",
+      "rule": "분모를 오염시키지 않는다",
+      "why": "C0/C1 은 15분 기준선을 만들 수 없다. 감축 배분 분모에 넣으면 그룹 감축량이 허구가 된다. 배분 참여는 C2 이상."
+    },
+    {
+      "id": "R4",
+      "rule": "집계는 등급별로 나눠 보고한다",
+      "why": "'그룹 544.6 kW' 가 아니라 '실측 C2+ 20동 480.2 kW · 추정 C1 8동 64.4 kW · 미계측 C0 2동'."
+    },
+    {
+      "id": "R5",
+      "rule": "등급은 선언이 아니라 사실이다 — 관측으로 판정한다",
+      "why": "사람이 적은 등급은 낡는다. declared 와 observed 를 둘 다 보관하고 불일치를 지목한다. 단 통신 두절은 강등이 아니라 stale 이다."
+    },
+    {
+      "id": "R6",
+      "rule": "승격 경로를 제시한다",
+      "why": "등급은 낙인이 아니라 투자 우선순위다. '이 동은 AMI 를 달면 C1→C2 가 되고 피크 관리에 참여할 수 있다' 까지 말한다."
+    },
+    {
+      "id": "R7",
+      "rule": "목표 등급(target)은 사람이 정한다 — 자동으로 낮추지 않는다",
+      "why": "관문 판정은 target 상대다(도달=정상). 자동으로 목표를 낮춰 주면 '설비를 못 붙였는데 목표가 알아서 내려가' 미비가 영원히 안 보인다."
+    }
+  ],
+
+  "participation_floor": {
+    "reduction_allocation": "C2",
+    "peak_management": "C2",
+    "dispatch": "A2",
+    "carbon_accounting": "C1",
+    "$comment": "그룹 기능별 최소 등급. 이 표가 '능력 밖 명령 미발행'(R2)과 '분모 오염 금지'(R3)의 판정 기준이다."
+  }
+}

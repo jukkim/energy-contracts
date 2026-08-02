@@ -30,6 +30,7 @@ components:
     BuildingEnvelope:         {$ref: 'building_envelope.json'}
     BuildingUsageMap:         {$ref: 'building_usage_map.json'}
     BundleManifest:           {$ref: 'bundle_manifest.json'}
+    CapabilityTier:           {$ref: 'capability_tier.json'}
     Common:                   {$ref: 'common.json'}
     ComputerProfile:          {$ref: 'computer_profile.json'}
     ControlCommand:           {$ref: 'control_command.json'}
