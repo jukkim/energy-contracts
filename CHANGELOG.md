@@ -4,6 +4,34 @@
 
 ---
 
+## v0.3.33 — 2026-08-02
+
+### `capability_tier` 신설 + `affiliations` 축 3종 — 능력이 부족한 건물을 담는 어휘
+
+건물 그룹 EMS 에서 **BEMS 없이 월 청구서만 있는 건물**(지점·창고·임차층)을 어떻게
+다룰지가 계약에 없었다. 소비자가 등급 문자열을 코드에 박으면 수동 미러가 되므로 EC 선행.
+
+- **`capability_tier.json` v1.0** — 관측 `C0~C4` · 제어 `A0~A4` · `BaselineSource` 3값.
+  세 축은 **직교**한다(C4/A0 임차 건물 · C1/A1 수동 건물 둘 다 실재) — 스칼라 하나로
+  뭉개면 반드시 하나를 틀린다. 판정 증거는 **기존 계약만** 가리킨다(`telemetry.power_kw`·
+  `zones[]` · `venue.kind` · `provision_ack` · `dispatch_ack`) — 새 어휘를 만들지 않았다.
+  `kind=telemetry` 는 이미 있던 A0 였다.
+  ⭐ **관측 불가를 관측 불가로 표기**: `C3`(용도별)은 telemetry v1.4 에 분해 채널이
+  없어 `evidence.status=no_contract_channel` — declared 로만 가능하고 observed 로는
+  도달할 수 없다고 계약이 스스로 밝힌다.
+  `inclusion_rules` 7 + `participation_floor`(배분 C2 · 발령 A2 · 회계 C1).
+- **`edge_registration` v1.2 → v1.3** — `affiliations[].type += dr_resource ·
+  legal_entity · building`. 그룹 단위가 제도 축마다 다르다 — ZEB·BEMS설치확인은 동 1개,
+  목표관리제는 법인/사업장, **수요자원 거래시장은 다수 수용가 묶음이 등록·정산 단위**다.
+  배타성(microgrid/legal_entity/building 각 1개)과 저작 주체를 명시.
+
+⚠ **캐스케이드 0** — 두 스키마 모두 `_usage=runtime-validate` 라 `load_schemas()` 대상이
+아니다(`--all --check` = drift 0). 소비자 재생성·pin lockstep 불요. 비싼
+`equipment_taxonomy` v1.2 는 의도적으로 분리했다 — 섞으면 값싼 잠금해제가 8-repo
+lockstep 뒤에 줄을 선다.
+
+---
+
 ## v0.3.32 — 2026-08-02
 
 ### codegen: `building-energy-sejong` 등록 + 아카이브 러너 인벤토리 정리
