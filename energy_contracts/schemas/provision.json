@@ -8,7 +8,7 @@
     "edge-agent",
     "mgcc"
   ],
-  "version": "1.4",
+  "version": "1.5",
   "type": "object",
   "required": [
     "provisioning_id",
@@ -444,6 +444,13 @@
                 "pv",
                 "plug",
                 "meter",
+                "radiant",
+                "vrf",
+                "district_heat",
+                "dhw",
+                "refrigeration",
+                "cooling_tower",
+                "erv",
                 "other"
               ],
               "description": "⚠ **guarded mirror**: 값집합 SSOT 는 `equipment_taxonomy.json#/$defs/EquipmentKind` 다. 교차 파일 $ref 는 일반 검증기가 못 푼다(실측 — Unresolvable) 라 여기 복제하되, EC `tests/test_point_setting_mirror.py` 가 원본과 같은지 매 실행 확인한다.\n설비 종류."
