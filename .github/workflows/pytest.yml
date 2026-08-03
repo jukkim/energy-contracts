@@ -52,7 +52,10 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: "3.11"
-          cache: pip
+          # ⚠ cache: pip 제거 — self-hosted 러너에서는 순손해다(2026-08-03 실측).
+          #   러너 컨테이너가 상주해 /root/.cache/pip 가 이미 남으므로 설치는 1초인데,
+          #   actions/cache 가 그 덩어리를 GitHub 캐시로 매번 왕복시킨다.
+          #   be-id 실측: Backend 잡 785s → 32s (setup-python 744s → 0s).
 
       - name: Install (dev extras)
         run: |
