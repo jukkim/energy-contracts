@@ -4,6 +4,29 @@
 
 ---
 
+## v0.3.37 — 2026-08-03
+
+### `simulation_channels` 신설 + `telemetry` v1.6 (설정온도 냉/난 분리)
+
+시뮬 대조 19채널의 정본이 캠페인 `data_contract.py` 에만 있어, 소비단(MGCC)이
+커버리지를 판정하려면 **손으로 베껴야 했다**(수동 미러).
+
+- **`simulation_channels`** — Tier A 15 + Tier B 4. 핵심은 목록이 아니라
+  **telemetry 대응 매핑**이다. `gap` 채널은 소비단이 "아직 안 온 것" 이 아니라
+  **올 수 없는 것**으로 다뤄야 한다. `substitutable_externally` 로 외부 조달
+  (기상청 ASOS)을 건물 결측과 가른다 — 안 가르면 외기계를 안 단 멀쩡한 건물이
+  전부 대조 불가가 된다.
+- **`telemetry` v1.6** — 채널 계약을 만들자 병목이 **딱 둘**로 드러났다
+  (`hourly_setpoint_cool`·`_heat`). `hvac_setpoint_c` 가 하나뿐이라 냉/난을 가를 수
+  없었다 — **계약의 공백이지 건물 탓이 아니다**. `hvac_setpoint_cool_c`/`_heat_c`
+  신설(선택 필드, 기존 필드 유지).
+
+⚠ 결과: **Tier A 15채널이 전부 확보 가능**해졌다(용도별 5 = v1.5 `end_use_meters`,
+설정온도 2 = v1.6, 외기 3 = ASOS 대체). 남은 gap 3 은 전부 Tier B(결측 허용).
+⚠ 캐스케이드 **0**.
+
+---
+
 ## v0.3.36 — 2026-08-03
 
 ### `telemetry` v1.5 `end_use_meters[]` + `capability_tier` v1.1 (C3 관측 승격)
