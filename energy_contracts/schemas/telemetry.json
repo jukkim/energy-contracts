@@ -8,7 +8,7 @@
     "edge-agent",
     "gridbridge"
   ],
-  "version": "1.4",
+  "version": "1.5",
   "$defs": {
     "CanonicalPointAddress": {
       "type": "string",
@@ -42,6 +42,68 @@
         "derived"
       ],
       "description": "점이 실제로 무엇에 묶여 있는가. bacnet/modbus/opcua/mqtt=현장 프로토콜 · internal=엣지 내부 상태 · derived=다른 점에서 계산.\n주소 체계(CPA)와 **바인딩은 다른 축**이다 — CPA 는 '무엇인가'(식별), 바인딩은 '어디에 연결됐나'(경로). 같은 점이 프로토콜을 바꿔도 CPA 는 유지된다 (mgcc docs/DECISION-POINT-ADDRESSING.md)."
+    },
+    "EnergySource": {
+      "type": "string",
+      "enum": [
+        "electricity",
+        "fuel",
+        "heat",
+        "renewable"
+      ],
+      "description": "equipment_taxonomy#/$defs/EnergySource 와 **같은 값집합**이다. 설비를 분류할 때와 계량을 보고할 때 다르게 부르면 소비단마다 뜻이 갈린다."
+    },
+    "EndUse": {
+      "type": "string",
+      "enum": [
+        "cooling",
+        "heating",
+        "dhw",
+        "lighting",
+        "ventilation",
+        "other"
+      ],
+      "description": "equipment_taxonomy#/$defs/EndUse 와 같은 값집합(5대 용도 + other)."
+    },
+    "EndUseMeter": {
+      "type": "object",
+      "description": "에너지원 × 용도 교차 계량 한 칸. **구간 소비량**(period_kwh)이지 순시 전력이 아니다 — 둘을 한 필드에 담으면 적산과 순시가 섞인다.",
+      "required": [
+        "energy_source",
+        "end_use",
+        "period_kwh"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "energy_source": {
+          "$ref": "#/$defs/EnergySource"
+        },
+        "end_use": {
+          "$ref": "#/$defs/EndUse"
+        },
+        "period_kwh": {
+          "type": "number",
+          "minimum": 0,
+          "description": "이 보고 구간의 소비량. 열(지역난방)도 kWh 로 환산해 담는다."
+        },
+        "period_start": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "period_end": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "point_id": {
+          "$ref": "#/$defs/CanonicalPointAddress",
+          "description": "이 계량을 만든 관제점(있으면). 어느 계량기에서 나왔는지 되짚는 축."
+        },
+        "estimated": {
+          "type": "boolean",
+          "default": false,
+          "description": "⚠ 실계량이 아니라 **배분·추정**으로 만든 값이면 true. false 로 두면 추정치가 검침값으로 읽힌다 — 제도 보고에 그대로 쓰면 안 된다."
+        }
+      }
     }
   },
   "type": "object",
@@ -175,7 +237,14 @@
     "data_source_detail": {
       "type": "string",
       "description": "출처 정밀 표기(엣지 backend). virtual|replay|energyplus|real_bas. replay 는 실측이지만 **연도 시프트 재생**이라 measured 와 구분이 필요할 때 사용."
+    },
+    "end_use_meters": {
+      "type": "array",
+      "description": "에너지원 × 용도 **교차 계량**(선택). **왜 필요한가**: 한국 BEMS 제도는 생산·저장·사용 에너지를 **에너지원별(전기/연료/열) × 5대 용도(냉방·난방·급탕·조명·환기)** 로 요구한다(구 「건축물의 에너지절약설계기준」 별표 12 #3, ZEB 인증 필수항목 #3). 그런데 이 축은 Brick·Haystack·IFC **어디에도 없고** telemetry v1.4 에도 없어, 지금까지 건물에서 올라오는 건 `power_kw` **총량 하나**뿐이었다.\n그 결과 ① 제도 보고를 telemetry 로 만들 수 없고 ② 시뮬 19채널(용도별 냉방·난방·팬·조명·콘센트)과 **대조할 채널이 원리적으로 존재하지 않으며** ③ 건물 능력 등급 `C3`(용도별 계량)이 **관측으로 도달 불가**로 선언돼 있었다(capability_tier: `no_contract_channel`).\n⚠ **선택 필드다.** 대부분의 건물엔 용도별 분전반이 없다 — 없는 것을 필수로 만들면 멀쩡한 엣지가 계약 위반이 된다. 있으면 보내고, 없으면 없는 것이다.\n⚠ 총량(`power_kw`)과 **다른 축**이다. 합이 총량과 맞아야 한다는 제약을 두지 않는다 — 계량 경계가 달라 실제로 안 맞는 게 정상이고, 억지로 맞추면 배분값을 실계량처럼 보고하게 된다(`estimated` 로 구분한다).",
+      "items": {
+        "$ref": "#/$defs/EndUseMeter"
+      }
     }
   },
-  "updated": "2026-08-01"
+  "updated": "2026-08-03"
 }

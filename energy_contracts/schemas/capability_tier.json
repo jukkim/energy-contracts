@@ -7,56 +7,90 @@
   "_consumers": [
     "mgcc"
   ],
-  "version": "1.0",
-  "updated": "2026-08-02",
+  "version": "1.1",
+  "updated": "2026-08-03",
   "$comment": "mgcc/docs/DESIGN-BUILDING-GROUP-ONBOARDING.md §5.5 산출물. ⚠ 새 어휘를 만들지 않는다 — 등급 판정 증거(evidence)는 이미 있는 계약(telemetry·edge_registration·venue·provision_ack·dispatch_ack)을 가리킨다. codegen 대상 아님(_usage=runtime-validate): 소비자가 MGCC 하나이고 값이 아니라 판정 규칙이라, 생성 상수로 굳히면 8 repo 재생성 캐스케이드만 늘고 얻는 게 없다.",
-
   "$defs": {
     "ObservationTier": {
       "type": "string",
-      "enum": ["C0", "C1", "C2", "C3", "C4"],
+      "enum": [
+        "C0",
+        "C1",
+        "C2",
+        "C3",
+        "C4"
+      ],
       "description": "관측 능력 — 이 건물에서 **무엇이 들어오나**. C0 미계측 · C1 청구서(월) · C2 총량(15분) · C3 용도별 · C4 존·설비"
     },
     "ControlTier": {
       "type": "string",
-      "enum": ["A0", "A1", "A2", "A3", "A4"],
+      "enum": [
+        "A0",
+        "A1",
+        "A2",
+        "A3",
+        "A4"
+      ],
       "description": "제어 능력 — 이 건물에 **무엇을 쓸 수 있나**. A0 읽기전용 · A1 수동·권고 · A2 운영모드 · A3 점 설정 · A4 발령"
     },
     "BaselineSource": {
       "type": "string",
-      "enum": ["observed", "simulated", "none"],
+      "enum": [
+        "observed",
+        "simulated",
+        "none"
+      ],
       "description": "기준선 출처. observed=관측 표본 · simulated=E+ 원형 시뮬(신축) · none=없음. ⚠ observed 와 simulated 는 단위는 같지만 **의미가 다르다** — 그룹 집계에서 합산하면 절감량이 근거 없는 수가 된다. 출처별로 나눠 보고한다."
     },
     "EvidenceStatus": {
       "type": "string",
-      "enum": ["observable", "no_contract_channel", "declared_only"],
+      "enum": [
+        "observable",
+        "no_contract_channel",
+        "declared_only"
+      ],
       "description": "이 등급을 **관측으로 판정할 수 있는가**. observable=계약에 채널이 있어 판정 가능 · no_contract_channel=계약에 채널 자체가 없어 관측 불가(신고값만 가능) · declared_only=본질적으로 사람이 정하는 값"
     },
     "TierAssessment": {
       "type": "object",
       "description": "멤버 건물 하나의 능력 판정 결과. **declared 와 observed 를 둘 다 보관**한다 — 사람이 적은 등급은 낡고, 관측은 안 낡는다. 불일치는 숨기지 않고 지목한다.",
       "properties": {
-        "declared_observation": { "$ref": "#/$defs/ObservationTier" },
-        "declared_control": { "$ref": "#/$defs/ControlTier" },
-        "observed_observation": { "$ref": "#/$defs/ObservationTier" },
-        "observed_control": { "$ref": "#/$defs/ControlTier" },
-        "target_observation": { "$ref": "#/$defs/ObservationTier" },
-        "target_control": { "$ref": "#/$defs/ControlTier" },
-        "baseline_source": { "$ref": "#/$defs/BaselineSource" },
+        "declared_observation": {
+          "$ref": "#/$defs/ObservationTier"
+        },
+        "declared_control": {
+          "$ref": "#/$defs/ControlTier"
+        },
+        "observed_observation": {
+          "$ref": "#/$defs/ObservationTier"
+        },
+        "observed_control": {
+          "$ref": "#/$defs/ControlTier"
+        },
+        "target_observation": {
+          "$ref": "#/$defs/ObservationTier"
+        },
+        "target_control": {
+          "$ref": "#/$defs/ControlTier"
+        },
+        "baseline_source": {
+          "$ref": "#/$defs/BaselineSource"
+        },
         "stale": {
           "type": "boolean",
           "description": "관측이 최근에 끊겼다. ⚠ **강등이 아니다** — '지금 안 온다'와 '원래 없다'를 같은 색으로 칠하면 설비 투자 판단이 틀어진다. stale 인 동안 observed_* 는 마지막 판정을 유지한다."
         },
         "mismatch": {
           "type": "array",
-          "items": { "type": "string" },
+          "items": {
+            "type": "string"
+          },
           "description": "declared 와 observed 가 다른 축의 이름. 예: ['observation'] — 신고는 C3 인데 관측은 C2"
         }
       },
       "additionalProperties": true
     }
   },
-
   "observation_tiers": [
     {
       "id": "C0",
@@ -67,8 +101,15 @@
         "rule": "이 ven_id 로 도착한 telemetry 가 없다",
         "contract_refs": []
       },
-      "enables": ["그룹 목록에 동 수로 포함", "값 자리는 '미계측' 으로 표기"],
-      "excluded_from": ["감축 배분 분모", "kW 집계", "시뮬 대조"]
+      "enables": [
+        "그룹 목록에 동 수로 포함",
+        "값 자리는 '미계측' 으로 표기"
+      ],
+      "excluded_from": [
+        "감축 배분 분모",
+        "kW 집계",
+        "시뮬 대조"
+      ]
     },
     {
       "id": "C1",
@@ -79,8 +120,15 @@
         "rule": "telemetry 채널이 없고 월 총량이 외부 반입(수기·검침 API)으로 들어온다. ⚠ 반입 경로는 telemetry 계약 밖이라 도착만으로 판정할 수 없다",
         "contract_refs": []
       },
-      "enables": ["월 CO₂ 회계", "월 요금 회계"],
-      "excluded_from": ["감축 배분 분모", "실시간 kW", "피크 관리"]
+      "enables": [
+        "월 CO₂ 회계",
+        "월 요금 회계"
+      ],
+      "excluded_from": [
+        "감축 배분 분모",
+        "실시간 kW",
+        "피크 관리"
+      ]
     },
     {
       "id": "C2",
@@ -89,10 +137,18 @@
       "evidence": {
         "status": "observable",
         "rule": "telemetry.power_kw 가 도착하고 도착 간격이 max_interval_sec 이하",
-        "contract_refs": ["telemetry.json#/properties/power_kw", "telemetry.json#/properties/data_source"]
+        "contract_refs": [
+          "telemetry.json#/properties/power_kw",
+          "telemetry.json#/properties/data_source"
+        ]
       },
       "max_interval_sec": 900,
-      "enables": ["그룹 kW 합산", "피크 관리 참여", "관측 기준선(baseline)", "감축 배분 참여"],
+      "enables": [
+        "그룹 kW 합산",
+        "피크 관리 참여",
+        "관측 기준선(baseline)",
+        "감축 배분 참여"
+      ],
       "$comment": "900초 = 한국 BEMS 데이터 규격(KS F 1800-2) 수집주기 15분 이하 요건과 같은 값. 배분 참여의 하한이 여기인 이유는 이보다 성긴 값으로는 발령 창 안의 감축을 검증할 수 없기 때문이다."
     },
     {
@@ -100,12 +156,18 @@
       "label_ko": "용도별 계량",
       "description": "냉방·난방·급탕·조명·환기 5대 용도가 분리 계량된다. 한국 BEMS 제도가 요구하는 하한.",
       "evidence": {
-        "status": "no_contract_channel",
-        "rule": "⚠ **판정 불가** — telemetry v1.4 에 용도별 분해 채널이 없다(top-level 은 power_kw 총량 하나). 따라서 observed 로는 이 등급에 도달할 수 없고 declared 로만 표기된다. telemetry 에 energy_source × end_use 교차 축이 생기면 observable 로 승격한다",
-        "contract_refs": []
+        "status": "observable",
+        "rule": "telemetry.end_use_meters[] 가 도착하고 에너지원 × 용도 교차 칸이 채워졌다. ⚠ `estimated: true` 인 칸은 **실계량이 아니라 배분·추정**이므로 C3 근거로 세지 않는다 — 추정치를 검침값으로 읽으면 제도 보고가 거짓이 된다.",
+        "contract_refs": [
+          "telemetry.json#/properties/end_use_meters",
+          "telemetry.json#/$defs/EndUseMeter"
+        ]
       },
-      "enables": ["용도별 절감 보고", "규제 보고(에너지원×용도)"],
-      "$comment": "국제 표준(Brick·Haystack·IFC)에도 에너지원×용도 교차 계량 축이 없다. 이건 국제 표준의 결함이 아니라 관할권(한국) 요구다 — mgcc DESIGN §3.3.3."
+      "enables": [
+        "용도별 절감 보고",
+        "규제 보고(에너지원×용도)"
+      ],
+      "$comment": "국제 표준(Brick·Haystack·IFC)에도 에너지원×용도 교차 계량 축이 없다. 이건 국제 표준의 결함이 아니라 관할권(한국) 요구다 — mgcc DESIGN §3.3.3. | 2026-08-03: telemetry v1.5 가 `end_use_meters[]` 를 신설해 **관측 가능**으로 승격했다. 그 전까지는 계약에 분해 채널 자체가 없어 declared 로만 가능했다(no_contract_channel) — 이 등급이 '관측 불가'였던 건 건물 탓이 아니라 **계약의 공백**이었다."
     },
     {
       "id": "C4",
@@ -114,13 +176,19 @@
       "evidence": {
         "status": "observable",
         "rule": "telemetry.zones[] 가 1개 이상 도착하고 zone 별 indoor_temp_c·hvac_setpoint_c 를 포함",
-        "contract_refs": ["telemetry.json#/properties/zones", "telemetry.json#/$defs"]
+        "contract_refs": [
+          "telemetry.json#/properties/zones",
+          "telemetry.json#/$defs"
+        ]
       },
       "max_interval_sec": 900,
-      "enables": ["존/설비 드릴다운", "시뮬 대조", "쾌적대 판정"]
+      "enables": [
+        "존/설비 드릴다운",
+        "시뮬 대조",
+        "쾌적대 판정"
+      ]
     }
   ],
-
   "control_tiers": [
     {
       "id": "A0",
@@ -129,7 +197,10 @@
       "evidence": {
         "status": "observable",
         "rule": "venue/edge_registration 의 kind=telemetry (관측형, read-only)",
-        "contract_refs": ["venue.json#/properties/kind", "edge_registration.json#/properties/kind"]
+        "contract_refs": [
+          "venue.json#/properties/kind",
+          "edge_registration.json#/properties/kind"
+        ]
       },
       "accepts": [],
       "$comment": "kind=telemetry 는 이미 계약에 있던 A0 다 — 새로 만든 개념이 아니라 안 쓰이던 것이다."
@@ -143,7 +214,9 @@
         "rule": "제어 채널이 없으나 운영 협약으로 사람이 이행하기로 한 건물. 자동 ack 이 없으므로 관측으로 판정할 수 없다",
         "contract_refs": []
       },
-      "accepts": ["알림(발령 통지)"],
+      "accepts": [
+        "알림(발령 통지)"
+      ],
       "$comment": "이행 결과를 자동 ack 과 같은 상태로 뭉치면 '설비가 응답했다'는 거짓이 된다 — 별도 상태로 파생한다."
     },
     {
@@ -153,9 +226,14 @@
       "evidence": {
         "status": "observable",
         "rule": "microgrid/provision 하달에 provision_ack.status=applied 회신 이력이 있다",
-        "contract_refs": ["provision.json#/$defs/OperatingConfig", "provision_ack.json"]
+        "contract_refs": [
+          "provision.json#/$defs/OperatingConfig",
+          "provision_ack.json"
+        ]
       },
-      "accepts": ["config.operating.objective"],
+      "accepts": [
+        "config.operating.objective"
+      ],
       "$comment": "⚠ ack 만으로는 부족하다 — 엣지가 applied 로 회신하고도 실제 제어에 도달하지 못한 결함이 있었다(edge-agent PR #96 이전). ack 은 도달의 필요조건이지 충분조건이 아니다."
     },
     {
@@ -165,9 +243,14 @@
       "evidence": {
         "status": "observable",
         "rule": "point_settings 하달에 항목별 결과(point_results)가 회신된다",
-        "contract_refs": ["provision.json#/$defs/OperatingConfig/properties/point_settings", "provision_ack.json"]
+        "contract_refs": [
+          "provision.json#/$defs/OperatingConfig/properties/point_settings",
+          "provision_ack.json"
+        ]
       },
-      "accepts": ["config.operating.point_settings[]"]
+      "accepts": [
+        "config.operating.point_settings[]"
+      ]
     },
     {
       "id": "A4",
@@ -176,12 +259,19 @@
       "evidence": {
         "status": "observable",
         "rule": "microgrid/dispatch 발령에 dispatch_ack 회신 이력이 있다",
-        "contract_refs": ["dr_dispatch_event.json#/$defs/DispatchCommand", "dispatch_ack.json"]
+        "contract_refs": [
+          "dr_dispatch_event.json#/$defs/DispatchCommand",
+          "dispatch_ack.json"
+        ]
       },
-      "accepts": ["target_kw", "peak_limit_kw", "setpoint_command", "operating_mode"]
+      "accepts": [
+        "target_kw",
+        "peak_limit_kw",
+        "setpoint_command",
+        "operating_mode"
+      ]
     }
   ],
-
   "inclusion_rules": [
     {
       "id": "R1",
@@ -219,7 +309,6 @@
       "why": "관문 판정은 target 상대다(도달=정상). 자동으로 목표를 낮춰 주면 '설비를 못 붙였는데 목표가 알아서 내려가' 미비가 영원히 안 보인다."
     }
   ],
-
   "participation_floor": {
     "reduction_allocation": "C2",
     "peak_management": "C2",
