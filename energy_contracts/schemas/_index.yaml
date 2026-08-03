@@ -80,6 +80,7 @@ components:
     RqAiIntent:               {$ref: 'rq_ai_intent.json'}
     RunModes:                 {$ref: 'run_modes.json'}
     SecurityPolicy:           {$ref: 'security_policy.json'}
+    SimulationChannels:       {$ref: 'simulation_channels.json'}
     SimulationScenarios:      {$ref: 'simulation_scenarios.json'}
     TariffContract:           {$ref: 'tariff_contract.json'}
     Telemetry:                {$ref: 'telemetry.json'}

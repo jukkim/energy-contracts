@@ -1,0 +1,281 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "energy-contracts/simulation_channels.json",
+  "title": "Simulation Channel Contract (시뮬 대조 채널 SSOT)",
+  "description": "실건물 계측을 **시뮬레이션과 대조**하기 위한 채널 계약. 학습·검증 파이프라인이 실제로 쓰는 19채널(Tier A 15 + Tier B 4, 각 `(8760,)`)이며 정본은 캠페인 `ems_transformer/cloud/data_contract.py` 였다 — 소비단(MGCC)이 커버리지를 판정하려면 손으로 베껴야 했으므로(수동 미러) EC 로 승격한다.\n⚠ **Tier A 는 결측 불허**다. 하나라도 못 받으면 그 건물은 '일부만 맞춰 봤다' 가 아니라 **대조 불가**로 표시한다.\n⚠ `telemetry_sources` 가 빈 채널은 **telemetry 계약에 대응물이 없다**(gap=true). 이걸 밝히지 않으면 소비단이 '언젠가 오겠지' 로 기다리게 된다 — 오지 않는다.",
+  "_usage": "runtime-validate",
+  "_consumers": [
+    "mgcc",
+    "8sim-shared"
+  ],
+  "version": "1.0",
+  "updated": "2026-08-03",
+  "$comment": "정본 = 8.simulation/ems_transformer/cloud/data_contract.py (TIER_A/TIER_B_NPY_FILES). 값을 바꾸려면 **여기를 먼저** 고치고 캠페인이 따라온다. ⚠ 2026-08-03 실측: telemetry v1.5 (`end_use_meters[]`) 신설로 용도별 5채널이 대응물을 얻었지만, **설정온도 냉/난 분리**는 telemetry **v1.6** 이 `hvac_setpoint_cool_c`/`_heat_c` 를 신설해 해소했다. 남은 gap 은 외기 3종뿐이고 그건 기상청 ASOS 로 대체 가능하다. ⚠ 외기 3종(외기온·외기습도·일사)은 telemetry 대응물이 없지만 **기상청 ASOS 로 대체 가능**하다(substitutable_externally). 건물 책임과 외부 조달을 가르지 않으면 멀쩡한 건물이 대조 불가로 집계된다.",
+  "$defs": {
+    "Tier": {
+      "type": "string",
+      "enum": [
+        "A",
+        "B"
+      ],
+      "description": "A = 결측 불허(하나라도 없으면 대조 불가) / B = 결측 허용(비해당 건물은 전체 NaN 가능)"
+    },
+    "Channel": {
+      "type": "object",
+      "required": [
+        "name",
+        "tier",
+        "unit"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "name": {
+          "type": "string",
+          "pattern": "^hourly_[a-z_]+$"
+        },
+        "tier": {
+          "$ref": "#/$defs/Tier"
+        },
+        "unit": {
+          "type": "string"
+        },
+        "description": {
+          "type": "string"
+        },
+        "physical_source": {
+          "type": "string",
+          "description": "실건물에서 이 값을 만드는 물건(발주 사양서에 그대로 쓰는 문구)"
+        },
+        "telemetry_sources": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "이 채널을 채울 수 있는 telemetry 경로. **비어 있으면 대응물이 없다**"
+        },
+        "gap": {
+          "type": "boolean",
+          "description": "true = telemetry 계약에 대응물이 없다. 소비단은 이 채널을 '아직 안 온 것' 이 아니라 **올 수 없는 것**으로 다뤄야 한다"
+        },
+        "substitutable_externally": {
+          "type": "boolean",
+          "description": "true = 건물에서 안 와도 **외부 소스로 채울 수 있다**(기상청 ASOS 등). ⚠ 이 구분이 없으면 판정이 과하게 비관적이 된다 — 외기온을 '건물이 못 보낸다' 는 이유로 대조 불가로 세면, 실제로는 채울 수 있는 건물까지 전부 불가가 된다."
+        }
+      }
+    }
+  },
+  "type": "object",
+  "required": [
+    "channels"
+  ],
+  "properties": {
+    "expected_hours": {
+      "type": "array",
+      "items": {
+        "type": "integer"
+      },
+      "description": "평년 8760 / 윤년 8784"
+    },
+    "channels": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/Channel"
+      }
+    }
+  },
+  "default": {
+    "expected_hours": [
+      8760,
+      8784
+    ],
+    "channels": [
+      {
+        "name": "hourly_electricity",
+        "tier": "A",
+        "unit": "kWh/h",
+        "description": "건물 총 전력",
+        "physical_source": "수전점 전력량계",
+        "telemetry_sources": [
+          "telemetry.power_kw"
+        ]
+      },
+      {
+        "name": "hourly_cooling",
+        "tier": "A",
+        "unit": "kWh/h",
+        "description": "냉방 계통",
+        "physical_source": "냉방 분전반 CT",
+        "telemetry_sources": [
+          "telemetry.end_use_meters[electricity×cooling]"
+        ]
+      },
+      {
+        "name": "hourly_heating",
+        "tier": "A",
+        "unit": "kWh/h",
+        "description": "난방(전기)",
+        "physical_source": "난방 계통 전기",
+        "telemetry_sources": [
+          "telemetry.end_use_meters[electricity×heating]"
+        ]
+      },
+      {
+        "name": "hourly_gas",
+        "tier": "A",
+        "unit": "kWh/h",
+        "description": "가스",
+        "physical_source": "가스 계량기(펄스)",
+        "telemetry_sources": [
+          "telemetry.end_use_meters[fuel×*]"
+        ]
+      },
+      {
+        "name": "hourly_fans",
+        "tier": "A",
+        "unit": "kWh/h",
+        "description": "팬",
+        "physical_source": "동력반 팬 회로",
+        "telemetry_sources": [
+          "telemetry.end_use_meters[electricity×ventilation]"
+        ]
+      },
+      {
+        "name": "hourly_equipment",
+        "tier": "A",
+        "unit": "kWh/h",
+        "description": "콘센트 부하",
+        "physical_source": "콘센트 분전반",
+        "telemetry_sources": [
+          "telemetry.end_use_meters[electricity×other]"
+        ]
+      },
+      {
+        "name": "hourly_lights",
+        "tier": "A",
+        "unit": "kWh/h",
+        "description": "조명",
+        "physical_source": "조명 분전반",
+        "telemetry_sources": [
+          "telemetry.end_use_meters[electricity×lighting]"
+        ]
+      },
+      {
+        "name": "hourly_zone_temp",
+        "tier": "A",
+        "unit": "°C",
+        "description": "존 온도",
+        "physical_source": "BAS 존 온도",
+        "telemetry_sources": [
+          "telemetry.zones[].indoor_temp_c"
+        ]
+      },
+      {
+        "name": "hourly_indoor_humidity",
+        "tier": "A",
+        "unit": "%",
+        "description": "존 습도",
+        "physical_source": "존 습도",
+        "telemetry_sources": [
+          "telemetry.zones[].humidity_pct"
+        ]
+      },
+      {
+        "name": "hourly_setpoint_cool",
+        "tier": "A",
+        "unit": "°C",
+        "description": "냉방 설정온도",
+        "physical_source": "존 냉방 설정",
+        "telemetry_sources": [
+          "telemetry.hvac_setpoint_cool_c (또는 zones[].)"
+        ]
+      },
+      {
+        "name": "hourly_setpoint_heat",
+        "tier": "A",
+        "unit": "°C",
+        "description": "난방 설정온도",
+        "physical_source": "존 난방 설정",
+        "telemetry_sources": [
+          "telemetry.hvac_setpoint_heat_c (또는 zones[].)"
+        ]
+      },
+      {
+        "name": "hourly_peak_demand",
+        "tier": "A",
+        "unit": "kW",
+        "description": "최대수요전력",
+        "physical_source": "최대수요전력계",
+        "telemetry_sources": [
+          "telemetry.power_kw"
+        ]
+      },
+      {
+        "name": "hourly_outdoor_temp",
+        "tier": "A",
+        "unit": "°C",
+        "description": "외기온",
+        "physical_source": "옥외 기상 또는 기상청 ASOS",
+        "telemetry_sources": [],
+        "gap": true,
+        "substitutable_externally": true
+      },
+      {
+        "name": "hourly_outdoor_humidity",
+        "tier": "A",
+        "unit": "%",
+        "description": "외기 습도",
+        "physical_source": "옥외 기상 또는 ASOS",
+        "telemetry_sources": [],
+        "gap": true,
+        "substitutable_externally": true
+      },
+      {
+        "name": "hourly_solar",
+        "tier": "A",
+        "unit": "W/m²",
+        "description": "일사",
+        "physical_source": "일사계 또는 ASOS",
+        "telemetry_sources": [],
+        "gap": true,
+        "substitutable_externally": true
+      },
+      {
+        "name": "hourly_chiller_cop",
+        "tier": "B",
+        "unit": "W/W",
+        "description": "칠러 COP",
+        "physical_source": "냉동기 제어반",
+        "telemetry_sources": [],
+        "gap": true
+      },
+      {
+        "name": "hourly_outdoor_air_volume",
+        "tier": "B",
+        "unit": "m³/s",
+        "description": "외기 풍량",
+        "physical_source": "AHU 외기 풍량",
+        "telemetry_sources": [],
+        "gap": true
+      },
+      {
+        "name": "hourly_zone_co2",
+        "tier": "B",
+        "unit": "ppm",
+        "description": "존 CO₂",
+        "physical_source": "존 CO₂",
+        "telemetry_sources": [
+          "telemetry.zones[].co2_ppm"
+        ]
+      },
+      {
+        "name": "hourly_pump_energy",
+        "tier": "B",
+        "unit": "kWh/h",
+        "description": "펌프 전력",
+        "physical_source": "펌프 전력",
+        "telemetry_sources": [],
+        "gap": true
+      }
+    ]
+  }
+}
