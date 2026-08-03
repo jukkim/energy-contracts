@@ -10,7 +10,7 @@
   ],
   "version": "1.0",
   "updated": "2026-08-03",
-  "$comment": "정본 = 8.simulation/ems_transformer/cloud/data_contract.py (TIER_A/TIER_B_NPY_FILES). 값을 바꾸려면 **여기를 먼저** 고치고 캠페인이 따라온다. ⚠ 2026-08-03 실측: telemetry v1.5 (`end_use_meters[]`) 신설로 용도별 5채널이 대응물을 얻었지만, **설정온도 냉/난 분리**와 **외기 3종**은 여전히 telemetry 에 없다 — telemetry 의 `hvac_setpoint_c` 는 **하나뿐**이라 냉방/난방 설정을 가를 수 없다. ⚠ 외기 3종(외기온·외기습도·일사)은 telemetry 대응물이 없지만 **기상청 ASOS 로 대체 가능**하다(substitutable_externally). 건물 책임과 외부 조달을 가르지 않으면 멀쩡한 건물이 대조 불가로 집계된다.",
+  "$comment": "정본 = 8.simulation/ems_transformer/cloud/data_contract.py (TIER_A/TIER_B_NPY_FILES). 값을 바꾸려면 **여기를 먼저** 고치고 캠페인이 따라온다. ⚠ 2026-08-03 실측: telemetry v1.5 (`end_use_meters[]`) 신설로 용도별 5채널이 대응물을 얻었지만, **설정온도 냉/난 분리**는 telemetry **v1.6** 이 `hvac_setpoint_cool_c`/`_heat_c` 를 신설해 해소했다. 남은 gap 은 외기 3종뿐이고 그건 기상청 ASOS 로 대체 가능하다. ⚠ 외기 3종(외기온·외기습도·일사)은 telemetry 대응물이 없지만 **기상청 ASOS 로 대체 가능**하다(substitutable_externally). 건물 책임과 외부 조달을 가르지 않으면 멀쩡한 건물이 대조 불가로 집계된다.",
   "$defs": {
     "Tier": {
       "type": "string",
@@ -185,8 +185,9 @@
         "unit": "°C",
         "description": "냉방 설정온도",
         "physical_source": "존 냉방 설정",
-        "telemetry_sources": [],
-        "gap": true
+        "telemetry_sources": [
+          "telemetry.hvac_setpoint_cool_c (또는 zones[].)"
+        ]
       },
       {
         "name": "hourly_setpoint_heat",
@@ -194,8 +195,9 @@
         "unit": "°C",
         "description": "난방 설정온도",
         "physical_source": "존 난방 설정",
-        "telemetry_sources": [],
-        "gap": true
+        "telemetry_sources": [
+          "telemetry.hvac_setpoint_heat_c (또는 zones[].)"
+        ]
       },
       {
         "name": "hourly_peak_demand",

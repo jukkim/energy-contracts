@@ -8,7 +8,7 @@
     "edge-agent",
     "gridbridge"
   ],
-  "version": "1.5",
+  "version": "1.6",
   "$defs": {
     "CanonicalPointAddress": {
       "type": "string",
@@ -167,6 +167,14 @@
           "binding_mode": {
             "$ref": "#/$defs/PointBindingMode",
             "description": "(optional) 바인딩 방식. 미제공 시 미상."
+          },
+          "hvac_setpoint_cool_c": {
+            "type": "number",
+            "description": "냉방 설정온도(°C). 냉방/난방 **분리** 설정온도. ⚠ 기존 `hvac_setpoint_c` 는 **하나뿐**이라 둘을 가를 수 없었고, 그 탓에 시뮬 대조 19채널의 Tier A 두 칸(`hourly_setpoint_cool`·`hourly_setpoint_heat`)이 **원리적으로 채워질 수 없었다** — 계약의 공백이지 건물 탓이 아니었다(simulation_channels.json).\n⚠ 선택 필드다. 하나만 쓰는 설비도 많다 — 필수로 만들면 멀쩡한 엣지가 계약 위반이 된다. 기존 `hvac_setpoint_c` 는 **그대로 둔다**(하위호환)."
+          },
+          "hvac_setpoint_heat_c": {
+            "type": "number",
+            "description": "난방 설정온도(°C). 냉방/난방 **분리** 설정온도. ⚠ 기존 `hvac_setpoint_c` 는 **하나뿐**이라 둘을 가를 수 없었고, 그 탓에 시뮬 대조 19채널의 Tier A 두 칸(`hourly_setpoint_cool`·`hourly_setpoint_heat`)이 **원리적으로 채워질 수 없었다** — 계약의 공백이지 건물 탓이 아니었다(simulation_channels.json).\n⚠ 선택 필드다. 하나만 쓰는 설비도 많다 — 필수로 만들면 멀쩡한 엣지가 계약 위반이 된다. 기존 `hvac_setpoint_c` 는 **그대로 둔다**(하위호환)."
           }
         }
       }
@@ -244,6 +252,14 @@
       "items": {
         "$ref": "#/$defs/EndUseMeter"
       }
+    },
+    "hvac_setpoint_cool_c": {
+      "type": "number",
+      "description": "냉방 설정온도(°C). 냉방/난방 **분리** 설정온도. ⚠ 기존 `hvac_setpoint_c` 는 **하나뿐**이라 둘을 가를 수 없었고, 그 탓에 시뮬 대조 19채널의 Tier A 두 칸(`hourly_setpoint_cool`·`hourly_setpoint_heat`)이 **원리적으로 채워질 수 없었다** — 계약의 공백이지 건물 탓이 아니었다(simulation_channels.json).\n⚠ 선택 필드다. 하나만 쓰는 설비도 많다 — 필수로 만들면 멀쩡한 엣지가 계약 위반이 된다. 기존 `hvac_setpoint_c` 는 **그대로 둔다**(하위호환)."
+    },
+    "hvac_setpoint_heat_c": {
+      "type": "number",
+      "description": "난방 설정온도(°C). 냉방/난방 **분리** 설정온도. ⚠ 기존 `hvac_setpoint_c` 는 **하나뿐**이라 둘을 가를 수 없었고, 그 탓에 시뮬 대조 19채널의 Tier A 두 칸(`hourly_setpoint_cool`·`hourly_setpoint_heat`)이 **원리적으로 채워질 수 없었다** — 계약의 공백이지 건물 탓이 아니었다(simulation_channels.json).\n⚠ 선택 필드다. 하나만 쓰는 설비도 많다 — 필수로 만들면 멀쩡한 엣지가 계약 위반이 된다. 기존 `hvac_setpoint_c` 는 **그대로 둔다**(하위호환)."
     }
   },
   "updated": "2026-08-03"
