@@ -13,7 +13,7 @@
     "mgcc"
   ],
   "version": "1.3",
-  "updated": "2026-07-31",
+  "updated": "2026-08-07",
   "$defs": {
     "TopicEntry": {
       "type": "object",
@@ -244,7 +244,8 @@
         "retained": false,
         "publisher": "edge-agent",
         "subscriber": "gridbridge,mgcc",
-        "$comment": "(+mgcc 구독 2026-07-31: 멤버 생존 판정 — 텔레메트리 도착이 아니라 하트비트로)"
+        "$comment": "(+mgcc 구독 2026-07-31: 멤버 생존 판정 — 텔레메트리 도착이 아니라 하트비트로) · payload_schema 연결 2026-08-07: 이 채널이 **경로로만** 식별돼, EC 가 이름을 바꾸면 소비단이 못 따라갔다(MGCC `topics.path_identified()` 가 지목).",
+        "payload_schema": "energy-contracts/edge_status.json"
       },
       {
         "pattern": "fleet/provision/{ven_id}",

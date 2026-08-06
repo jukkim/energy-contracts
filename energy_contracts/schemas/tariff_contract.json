@@ -8,7 +8,7 @@
     "edge-agent",
     "building-energy-3d"
   ],
-  "version": "1.0",
+  "version": "1.1",
   "$defs": {
     "TariffClass": {
       "type": "string",
@@ -79,7 +79,17 @@
       "type": "string",
       "format": "date",
       "description": "요금 적용 개시일(KEPCO 약관 개정 추적)."
+    },
+    "region_code": {
+      "type": "string",
+      "pattern": "^[A-Z]{2}$",
+      "description": "이 요금이 적용되는 지역(ISO 3166-1 alpha-2, 선택). **`emission_factors.co2_kgco2eq_per_kwh` 의 지역 키와 같은 축**이다 — 배출과 요금이 다른 지역 축을 쓰면 한 화면의 두 숫자가 서로 다른 나라 기준이 된다.\n⚠ 별도 `RegionCode` 정본이 EC 에 없어 `$ref` 를 걸지 않았다(있는 척하면 그게 더 나쁘다). 정본이 생기면 이 필드가 먼저 그걸 참조한다.\n⚠ 지역이 그룹과 다르면 소비단은 계약을 **적용하지 않고 그 사실을 밝힌다** — 조용히 KR 로 계산하지 않는다(비-KR 그룹이 한국 요금표로 계산되던 자리)."
+    },
+    "timezone": {
+      "type": "string",
+      "description": "TOU 시간대를 가르는 기준 시간대(IANA, 예: `Asia/Seoul`·`Asia/Jakarta`). 없으면 소비단이 지역에서 유추하되 **유추했다는 사실**을 표시한다. ⚠ 이게 없어서 비-KR 건물의 최대부하/경부하가 **KST 로 갈렸다** — 시간대가 틀리면 단가가 통째로 어긋난다."
     }
   },
-  "additionalProperties": false
+  "additionalProperties": false,
+  "updated": "2026-08-07"
 }

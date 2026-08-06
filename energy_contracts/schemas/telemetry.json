@@ -6,9 +6,10 @@
   "_usage": "runtime-validate",
   "_consumers": [
     "edge-agent",
-    "gridbridge"
+    "gridbridge",
+    "mgcc"
   ],
-  "version": "1.6",
+  "version": "1.7",
   "$defs": {
     "CanonicalPointAddress": {
       "type": "string",
@@ -102,6 +103,42 @@
           "type": "boolean",
           "default": false,
           "description": "⚠ 실계량이 아니라 **배분·추정**으로 만든 값이면 true. false 로 두면 추정치가 검침값으로 읽힌다 — 제도 보고에 그대로 쓰면 안 된다."
+        },
+        "energy_carrier": {
+          "$ref": "#/$defs/EnergyCarrier",
+          "description": "이 계량의 **운반체**(선택). `energy_source` 가 `fuel`·`heat` 일 때 CO₂ 를 내려면 필요하다 — 없으면 소비단은 배출을 **모른다**고 보고한다(0 이 아니다). `electricity` 는 카테고리와 운반체가 같아 생략해도 된다."
+        }
+      }
+    },
+    "EnergyCarrier": {
+      "type": "string",
+      "enum": [
+        "electricity",
+        "gas",
+        "district_heat",
+        "oil",
+        "lpg",
+        "biomass"
+      ],
+      "description": "배출계수를 붙일 수 있는 **에너지 운반체**. `EnergySource`(electricity/fuel/heat/renewable)는 설비 분류용 **카테고리**라 `fuel`·`heat` 에는 계수를 붙일 수 없다 — `emission_factors` 의 키는 운반체(electricity/gas/district_heat)이고 두 축의 교집합이 **전기 하나뿐**이었다. 그래서 연료·열을 보고하는 건물의 CO₂ 는 원리적으로 계산 불가였다(소비단은 `unresolved_carriers` 로 이름만 남겼다).\n⚠ 카테고리를 운반체로 **자동 변환하지 않는다**: `fuel` 이 도시가스인지 등유인지 기계적으로 정할 수 없다. 건물이 아는 것을 그대로 보내게 한다.\n⚠ `emission_factors.co2_kgco2eq_per_kwh[region]` 의 키는 **이 enum 의 부분집합**이어야 한다(`tests/` 가 대조한다). 지역마다 없는 운반체는 그냥 없는 것이고, 소비단은 계수 없음을 0 이 아니라 **미상**으로 다룬다."
+    },
+    "ApeState": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "자율 페르소나 에이전트(APE)가 **지금 돌리는 것**. MGCC 의 '상시 운영 평면'(§4.5 ①)이 이 값 위에 서 있는데 계약에 없었다 — 엣지가 이름을 바꾸면 전 멤버가 `unknown` 이 되고, 그건 규율상 정당한 표시라 **통신 장애와 배선 파손이 화면에서 구분되지 않는다**.",
+      "properties": {
+        "persona": {
+          "$ref": "ems_strategies.json#/$defs/ObjectiveType",
+          "description": "지금 적용 중인 운영 목적. **정책(중앙이 건 것)이 아니라 실제**다 — 둘의 차이가 관제 대상이다(수신 실패·구버전·로컬 오버라이드·`enforce=false`)."
+        },
+        "strategy": {
+          "type": "string",
+          "pattern": "^M[0-9]{2}$",
+          "description": "지금 돌리는 EMS 전략 M-code. 원형×전략 표(`hvac_ems_matrix`)와 대조하면 **걸려 있지만 아무 일도 안 하는** 조합이 드러난다."
+        },
+        "enforced": {
+          "type": "boolean",
+          "description": "중앙 지시를 강제 적용 중인가. `false` 면 페르소나는 참고값이고 엣지가 자기 판단으로 돈다 — 정책과 실제가 달라도 위반이 아니다."
         }
       }
     }
@@ -260,7 +297,11 @@
     "hvac_setpoint_heat_c": {
       "type": "number",
       "description": "난방 설정온도(°C). 냉방/난방 **분리** 설정온도. ⚠ 기존 `hvac_setpoint_c` 는 **하나뿐**이라 둘을 가를 수 없었고, 그 탓에 시뮬 대조 19채널의 Tier A 두 칸(`hourly_setpoint_cool`·`hourly_setpoint_heat`)이 **원리적으로 채워질 수 없었다** — 계약의 공백이지 건물 탓이 아니었다(simulation_channels.json).\n⚠ 선택 필드다. 하나만 쓰는 설비도 많다 — 필수로 만들면 멀쩡한 엣지가 계약 위반이 된다. 기존 `hvac_setpoint_c` 는 **그대로 둔다**(하위호환)."
+    },
+    "ape": {
+      "$ref": "#/$defs/ApeState",
+      "description": "APE 운영 상태(선택). 기존 top-level `active_strategy` 는 **그대로 둔다**(하위호환) — 새 필드를 필수로 만들면 멀쩡한 엣지가 계약 위반이 된다."
     }
   },
-  "updated": "2026-08-03"
+  "updated": "2026-08-07"
 }
