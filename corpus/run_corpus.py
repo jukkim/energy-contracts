@@ -431,9 +431,16 @@ def _combo_full_from_matrix(ctx):
         #   원장 상태는 RED(제안 금지)로 남긴다. 총계 FAIL 은 '깨진 것'만 세야 하기 때문.
         display = "WARN" if led == "RED" else st
         label = cell.get("region_label") or cell["region"]
+        # 커버리지 비율만 적으면 "98.6%" 가 실측 98.6% 로 읽힌다. 그 안에 추정이 얼마나
+        #   섞였는지는 evidence 에만 있어 사람이 note 만 보고 오독할 수 있다.
+        #   → 추정이 절반을 넘으면 **note 에 실측 비중을 함께 적는다**(2026-08-06:
+        #     서울 동단위 안분 tier3 적재로 17셀이 GREEN 이 됐는데 실측은 19% 였다).
+        _wv = cell.get("with_value") or 0
+        _ms = cell.get("measured") or 0
+        _share = f" · 실측 {round(_ms / _wv * 100)}%" if _wv and _ms * 2 < _wv else ""
         rows.append(C(f"{cell['region']}/{cell['metric']}", display,
-                      f"{cell['status']} n={cell.get('with_value')} "
-                      f"({round((cell.get('coverage_ratio') or 0) * 100, 1)}%)",
+                      f"{cell['status']} n={_wv} "
+                      f"({round((cell.get('coverage_ratio') or 0) * 100, 1)}%){_share}",
                       query=f"{label} {disp.get(cell['metric'], cell['metric'])} 지도로 보여줘",
                       axis={"region": cell["region"], "metric": cell["metric"],
                             "regionLabel": cell.get("region_label"),
