@@ -678,11 +678,21 @@ def suite_spatial(corpus, ctx):
         for cap, ok in (cell.get("capabilities") or {}).items():
             evidence = {"tdmapRows": cell.get("tdmapRows"), "anchors": cell.get("anchors"),
                         "okMetrics": cell.get("okMetrics"), "buildings": cell.get("buildings")}
+            # 3D 채색 불가는 **고칠 수 있는 것과 원천이 없는 것**이 갈린다(2026-08-06 실측).
+            #   VWorld 3D 는 도시·지구 단위 타일셋 205개뿐이라 그 밖은 아무리 걸어도 안 나온다.
+            #   한 사유로 뭉치면 백로그가 영원히 안 줄어드는 항목을 계속 다시 판다.
+            why = "NO_SPATIAL_ASSET"
+            if cap == "drape3d" and not ok:
+                why = {"UNCOVERED": "VWORLD_3D_UNCOVERED",
+                       "EDGE_CLIP_ONLY": "VWORLD_3D_UNCOVERED",
+                       "NOT_HARVESTED": "TDMAP_NOT_HARVESTED",
+                       }.get(cell.get("drape3dReason"), "NO_SPATIAL_ASSET")
+                evidence["drape3dReason"] = cell.get("drape3dReason")
             rows.append(C(f"{rg}/{cap}", "PASS" if ok else "WARN",
                           f"{SPATIAL_LABEL.get(cap, cap)} {'가능' if ok else '불가'}"
                           f" (타일 {cell.get('tdmapRows')}·앵커 {cell.get('anchors')})",
                           axis={"region": rg, "regionLabel": label, "spatial": cap},
-                          reason=None if ok else "NO_SPATIAL_ASSET",
+                          reason=None if ok else why,
                           evidence=evidence, layer="E"))
             if not ok:
                 rows[-1]["_ledger"] = "RED"     # 그 지역에서 그 유형 질의는 제안하면 안 된다
