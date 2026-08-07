@@ -128,3 +128,40 @@ def test_consumers_list_matches_who_actually_subscribes():
     """구독하는 repo 는 `_consumers` 에 있어야 한다 — 계약이 그 사실을 알아야 갱신이 간다."""
     assert "mgcc" in _s("telemetry")["_consumers"]
     assert "mgcc" in _s("edge_status")["_consumers"]
+
+
+def test_fuel_carriers_have_a_price_axis():
+    """연료·열에도 **요금을 실을 자리**가 있다 (MGCC C1 월 청구 대조, 2026-08-07).
+
+    전에는 `tou_energy_krw_per_kwh`(전기 전용)뿐이라, 가스 사용량이 도착해도
+    금액을 낼 방법이 없었다 — MGCC 는 "EC 에 가스 요금 축이 없다" 는 사유로
+    **거절**하고 있었다(지어내지 않은 건 옳지만, 계약이 막고 있던 것이다).
+
+    ⚠ 운반체 키는 **`EnergyCarrier` 에서 파생**한다. 손으로 적으면 EC 가 운반체를
+    늘릴 때 이 축만 뒤처진다(값이 아니라 **출처**가 갈라지는 결함).
+    """
+    t = _s("tariff_contract")
+    carriers = [c for c in _s("telemetry")["$defs"]["EnergyCarrier"]["enum"]
+                if c != "electricity"]
+    for field in ("fuel_energy_krw_per_kwh", "fuel_base_charge_krw_per_month"):
+        assert field in t["properties"], f"{field} 자리가 없다"
+        keys = set(t["properties"][field]["properties"])
+        assert keys == set(carriers), (
+            f"{field} 의 운반체가 EnergyCarrier 와 갈라졌다: "
+            f"없음={set(carriers) - keys} 남음={keys - set(carriers)}")
+        assert t["properties"][field]["additionalProperties"] is False
+
+
+def test_electricity_is_not_in_the_fuel_axis():
+    """전기는 **TOU 축**에 있다 — 두 자리에 두면 어느 쪽이 참인지 모른다."""
+    t = _s("tariff_contract")["properties"]
+    assert "electricity" not in t["fuel_energy_krw_per_kwh"]["properties"]
+    assert "off_peak" in t["tou_energy_krw_per_kwh"]["properties"]
+
+
+def test_mgcc_is_listed_as_a_tariff_consumer():
+    """MGCC 가 요금 계약을 가장 많이 쓰는데 `_consumers` 에 없었다.
+
+    계약이 소비자를 모르면 스키마가 바뀔 때 갱신이 그 repo 로 가지 않는다.
+    """
+    assert "mgcc" in _s("tariff_contract")["_consumers"]
