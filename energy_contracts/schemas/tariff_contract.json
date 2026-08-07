@@ -2,13 +2,14 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "energy-contracts/tariff_contract.json",
   "title": "Tariff Contract",
-  "description": "전력 요금 계약 (R18 Item 4). KEPCO 고압 요금제 — 계약전력·기본요금·TOU(시간대별 에너지요금). APE 비용최적(edge-agent) + a23_tariff(be-3d) 가 소비. canonical 값(요금단가·계약종별)은 생성본 import — 손편집 금지. 콘솔(bems-console)은 contract_id 참조만 저장(값 중복 금지).",
+  "description": "에너지 요금 계약 (R18 Item 4). 전기 = KEPCO 고압 요금제(계약전력·기본요금·TOU). **연료·열 운반체**(도시가스·지역난방 등)는 `fuel_*` 축으로 실는다 — TOU 가 없고 월 단위로 청구되기 때문이다. APE 비용최적(edge-agent) + a23_tariff(be-3d) + MGCC 월 청구 대조가 소비. canonical 값(요금단가·계약종별)은 생성본 import — 손편집 금지. 콘솔(bems-console)은 contract_id 참조만 저장.",
   "_usage": "reference-only",
   "_consumers": [
     "edge-agent",
-    "building-energy-3d"
+    "building-energy-3d",
+    "mgcc"
   ],
-  "version": "1.1",
+  "version": "1.2",
   "$defs": {
     "TariffClass": {
       "type": "string",
@@ -88,6 +89,60 @@
     "timezone": {
       "type": "string",
       "description": "TOU 시간대를 가르는 기준 시간대(IANA, 예: `Asia/Seoul`·`Asia/Jakarta`). 없으면 소비단이 지역에서 유추하되 **유추했다는 사실**을 표시한다. ⚠ 이게 없어서 비-KR 건물의 최대부하/경부하가 **KST 로 갈렸다** — 시간대가 틀리면 단가가 통째로 어긋난다."
+    },
+    "fuel_energy_krw_per_kwh": {
+      "type": "object",
+      "description": "연료·열 운반체의 에너지요금(**원/kWh**). 도시가스는 원/MJ·원/m³ 로 고시되므로 **계약 저작자가 열량 기준으로 환산해** 넣는다 — 소비단이 환산 계수를 지어내지 않게 하려는 것이다. ⚠ 용도별(주택용/일반용)·계절별·구간(누진) 세분은 이 축에 없다: 하나의 대표 단가다. 정밀 청구 재현이 목적이면 이 값으로 하지 말 것.",
+      "properties": {
+        "gas": {
+          "type": "number",
+          "minimum": 0
+        },
+        "district_heat": {
+          "type": "number",
+          "minimum": 0
+        },
+        "oil": {
+          "type": "number",
+          "minimum": 0
+        },
+        "lpg": {
+          "type": "number",
+          "minimum": 0
+        },
+        "biomass": {
+          "type": "number",
+          "minimum": 0
+        }
+      },
+      "additionalProperties": false
+    },
+    "fuel_base_charge_krw_per_month": {
+      "type": "object",
+      "description": "연료·열 운반체의 **월 정액 기본요금**(원/월). 도시가스는 계량기 구경·용도별 기본요금이 실재하므로, 빼면 월 청구 합계가 **구조적으로 과소**가 된다. 모르면 넣지 않는다 — 소비단이 `null` 과 `0` 을 가른다.",
+      "properties": {
+        "gas": {
+          "type": "number",
+          "minimum": 0
+        },
+        "district_heat": {
+          "type": "number",
+          "minimum": 0
+        },
+        "oil": {
+          "type": "number",
+          "minimum": 0
+        },
+        "lpg": {
+          "type": "number",
+          "minimum": 0
+        },
+        "biomass": {
+          "type": "number",
+          "minimum": 0
+        }
+      },
+      "additionalProperties": false
     }
   },
   "additionalProperties": false,
