@@ -263,7 +263,7 @@
       "name": "edge.strategyApply",
       "ns": "edge",
       "consumerClass": "C",
-      "summary": "EMS 전략 직접 적용 — GridBridge MQTT fleet/{ven_id}/control, strategy M00~M22 중 1개 즉시 "
+      "summary": "EMS 전략 직접 적용 — GridBridge MQTT fleet/{ven_id}/control. **엣지가 구동 가능한 전략만** 즉시 실행 "
     },
     {
       "api": "configureVen",
