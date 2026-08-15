@@ -95,10 +95,12 @@ SKIP_PARTS = {
 
 SCAN_EXT = {".py", ".ts", ".tsx", ".js", ".jsx", ".json", ".md", ".yaml", ".yml"}
 
-CODE = r"M(?:0\d|1\d|2[0-2])"
+#: ⚠ 예전엔 대문자 반각만 봤다 → `m07`·`Ｍ０７`·`M 07` 이 있는 파일이 통째로 빠졌다.
+CODE = r"[MＭ]\s?(?:0\d|1\d|2[0-2])"
 
 #: 선언형 — "이 코드의 이름은 이것" 이라고 못박은 형태
-DECLARED = re.compile(r"[\"']?(" + CODE + r")[\"']?\s*[:=]\s*[\"']([^\"'\n]{2,40})[\"']")
+#: ⚠ 상한이 40 이라 **44 자 라벨은 남의 낱말 검사조차 안 돌았다**(사냥꾼 실증).
+DECLARED = re.compile(r"[\"']?(" + CODE + r")[\"']?\s*[:=]\s*[\"']([^\"'\n]{2,120})[\"']")
 
 #: 산문형 — 문장 안에 곁들인 형태
 PROSE = re.compile(r"\b(" + CODE + r")\b\s*(?:\(|:\s|=\s|\s—\s|\s-\s)"
@@ -192,6 +194,9 @@ def iter_files(repo: Path):
 
 #: 다른 코드 체계로의 **대응표**(예: `"M00": "E0"`). 이름이 아니라 매핑이다.
 #  `build_rvk_metadata.py` 의 `M_TO_E` 가 그렇다 — 원 시뮬 실험 코드와의 대응.
+#: ⚠ `PMV05`·`PMV07`·`PV1` 을 면제하던 구멍이 있었다 — 하필 M04↔M05 를 가르는 유일한
+#   표기라 그 혼동을 구조적으로 못 봤다(사냥꾼 실증). **의미 있는 접두는 이름으로 본다.**
+_MEANINGFUL_PREFIX = re.compile(r"^(?:pmv|pv|ess|dr|dcv|erv|cop)", re.I)
 CODE_ALIAS = re.compile(r"^(?:[A-Za-z]{1,3}\d{1,3}|\d{1,3})$")
 
 
@@ -199,7 +204,8 @@ def _skip(label: str) -> bool:
     low = label.strip().lower()
     if not low or low in {"true", "false", "null", "none"}:
         return True
-    if CODE_ALIAS.fullmatch(label.strip()):
+    s = label.strip()
+    if CODE_ALIAS.fullmatch(s) and not _MEANINGFUL_PREFIX.match(s):
         return True                 # 코드 대응표지 이름이 아니다
     if ENUMERATION.search(label):
         return True
@@ -238,14 +244,59 @@ def check_foreign(code: str, label: str) -> str | None:
 DESCRIPTION_LEN = 16
 
 
+#: **계열 안에서 서로를 가르는 낱말.** `통합`·`pmv`·`dr`·`셋백` 같은 공용 낱말만으로는
+#  M11~M15·M19 가 서로 구별되지 않는다 — 사냥꾼 실증: **30 가지 상호 치환이 30/30 통과**.
+#  그래서 계열 구성원마다 **자기만의 표식**을 요구한다.
+EXCLUSIVE = {
+    "M11": {"must_not": ["pmv", "프리미엄", "premium"]},
+    "M12": {"must_not": ["0.7", "07", "완전", "풀", "full", "프리미엄", "premium"]},
+    "M13": {"must_not": ["0.5", "05", "완전", "풀", "full", "프리미엄", "premium"]},
+    "M14": {"must_not": ["프리미엄", "premium", "pmv0.5", "pmv 0.5", "pmv0.7", "pmv 0.7"]},
+    "M15": {"must_not": ["완전", "full", "통합 ems", "통합ems", "combined_ems"]},
+    "M19": {"must_not": ["긴급", "curtail", "셋백", "setback", "통합 ems", "통합ems", "combined_ems"]},
+    "M04": {"must_not": ["0.7", "pmv 0.7", "pmv0.7"]},
+    "M05": {"must_not": ["0.5", "pmv 0.5", "pmv0.5"]},
+    # ⚠ M00 정본이 "고정 설정온도 + 야간 Setback" 이라 **셋백은 M00 자신의 낱말**이다.
+    #   그걸 배타로 넣었더니 정본 그대로 쓴 곳을 잡았다.
+    "M00": {"must_not": ["dr", "긴급", "curtail"]},
+    "M16": {"must_not": ["고정 설정온도", "baseline"]},
+    "M10": {"must_not": ["긴급", "curtail", "통합", "셋백"]},
+    "M20": {"must_not": ["통합 최적화", "통합최적화"]},
+    "M07": {"must_not": ["폐열회수", "전열교환", "열회수", "erv"]},
+    "M02": {"must_not": ["pmv", "보상"]},
+}
+
+
+def check_exclusive(code: str, label: str) -> str | None:
+    """계열 안에서 **남의 표식**을 달고 있는가."""
+    low = label.strip().lower()
+    for bad in EXCLUSIVE.get(code, {}).get("must_not", []):
+        if bad in low:
+            return f"'{bad}' 는 {code} 의 표식이 아니다 — 같은 계열의 다른 전략이다"
+    return None
+
+
 def check_declared(code: str, label: str, st: dict) -> str | None:
     """선언형은 **정본 낱말이 하나라도 있어야** 한다(짧은 이름표일 때만)."""
     if _skip(label):
+        return None
+    # ⚠ **긴 설명문은 이름표가 아니다.** 남의 낱말이 섞여도 자연스럽다 —
+    #   `M02("바깥 공기가 시원할 때 … 환기 팬을 돌리는 데 드는 전기가 …")` 는 M02 의
+    #   정확한 설명이고, `M04("쾌적기준(PMV 0.5) 안에서 … 완화")` 도 맞는 설명이다.
+    #   여기에 이름표 규칙을 들이대면 **멀쩡한 문장을 고치게 된다**.
+    if len(label.strip()) > DESCRIPTION_LEN * 2:
         return None
     fk = check_foreign(code, label)
     if fk:
         return fk
     if len(label.strip()) > DESCRIPTION_LEN:
+        # ⚠ 설명문에는 배타 규칙을 적용하지 않는다. `M11("스케줄 최적화+외기냉방+칠러
+        #   대수제어 3종")` 은 **정확한 설명**인데 '최적화' 로 잡혔고, `M02("…환기 팬을
+        #   돌리는 데 드는 전기가…")` 도 맞는 설명인데 '환기' 로 잡혔다. 설명은 자유롭다.
+        return None
+    ex = check_exclusive(code, label)
+    if ex:
+        return ex
         return None                 # 설명문 — 남의 낱말만 봤고 통과했다
     low = label.strip().lower()
     if any(k in low for k in SEMANTIC_KEYS.get(code, [])):
@@ -283,6 +334,11 @@ def scan(repo: Path, st: dict) -> list[tuple[str, int, str, str, str]]:
                 code, label = m.group(1), m.group(2)
                 if (code, label) in seen:
                     continue
+                # ⚠ 긴 산문 서술에 남의 낱말이 섞이는 건 자연스럽다 —
+                #   `M02(… 환기 팬을 돌리는 데 드는 전기가 …)` 는 정확한 설명이다.
+                #   이름표가 아니라 문장이므로 판정 대상이 아니다.
+                if len(label.strip()) > DESCRIPTION_LEN * 2:
+                    continue
                 why = check_foreign(code, label)
                 if why:
                     out.append((str(p.relative_to(repo)), i, code, label.strip(), why))
@@ -315,9 +371,10 @@ def main(argv=None) -> int:
             print(f"  ✅ {label}")
             continue
         print(f"  ⛔ {label} — {len(hits)}건")
-        for rel, ln, code, lab, why in hits[:a.limit]:
+        lim = len(hits) if a.limit == 0 else a.limit   # 0 = 전부 (감추지 않는다)
+        for rel, ln, code, lab, why in hits[:lim]:
             print(f"       {rel}:{ln}  {code}({lab})  ← {why}")
-        if len(hits) > a.limit:
+        if len(hits) > lim:
             print(f"       … 외 {len(hits) - a.limit}건")
         total += len(hits)
 
