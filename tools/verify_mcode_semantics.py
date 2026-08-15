@@ -167,9 +167,18 @@ def canon() -> dict:
     return json.loads(CANON_PATH.read_text(encoding="utf-8"))["default"]["strategies"]
 
 
+#: 이름으로 알 수 있는 **산출물 파일**. 디렉터리로 못 거른 것들.
+#  모델이 생성한 답변이 들어 있어, 손으로 고치면 **평가 기록 변조**다.
+#  라벨이 틀렸으면 고칠 곳은 파일이 아니라 **그라운딩/코퍼스**다.
+ARTIFACT_STEMS = ("scorecard", "eval_result", "run_", "report_", "_snapshot",
+                  "predictions", "answers", "qa_live")
+
+
 def iter_files(repo: Path):
     for p in repo.rglob("*"):
         if p.suffix.lower() not in SCAN_EXT or not p.is_file():
+            continue
+        if p.suffix.lower() == ".json" and any(s in p.stem.lower() for s in ARTIFACT_STEMS):
             continue
         if SKIP_PARTS & {x.lower() for x in p.relative_to(repo).parts}:
             continue
