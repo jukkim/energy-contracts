@@ -82,6 +82,9 @@ SKIP_PARTS = {
     ".git", "node_modules", "__pycache__", "build", "dist", ".next",
     ".venv", "venv", "archive", "_archive", "scratch", "site-packages",
     ".mypy_cache", ".pytest_cache",
+    # 시험 자신이 **일부러 심은 오매핑 표본**을 들고 있다(뮤테이션 대조군).
+    # 그걸 위반으로 세면 게이트가 자기 시험을 못 갖는다.
+    "tests", "test",
     # 산출물 — 고치면 결과 변조다
     "outputs", "output", "results", "evidence", "captures_raw",
     "logs", "checkpoints", "fixtures", "__snapshots__",
