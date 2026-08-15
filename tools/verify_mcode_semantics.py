@@ -182,24 +182,47 @@ def _skip(label: str) -> bool:
     return bool(re.fullmatch(r"[\d\s.,%_\-/]+", low))
 
 
+#: 남의 낱말이 **더 긴 단어 안에** 우연히 들어간 경우. 한글은 낱말 경계가 없어
+#  부분 문자열 매칭이 오탐을 만든다 — 실제로 "전열교환기" 의 "교환기" 를 '환기' 로
+#  잡았다. 이런 걸 위반으로 세면 멀쩡한 설명을 고치게 된다.
+FALSE_HOSTS = {
+    "환기": ["교환기", "교환器", "열교환"],
+    "예냉": ["예열·예냉", "예냉·예열", "예열/예냉", "예냉/예열"],
+    "ess": ["process", "assess", "less", "press", "necess"],
+    "pv": ["pvc"],
+}
+
+
 def check_foreign(code: str, label: str) -> str | None:
     """남의 전략 낱말이 붙었는가 — 오매핑의 확실한 신호."""
     if _skip(label):
         return None
     low = label.strip().lower()
     for word, owners in FOREIGN.items():
-        if word in low and code not in owners:
-            return f"'{word}' 는 {'/'.join(sorted(owners))} 의 의미다"
+        if word not in low or code in owners:
+            continue
+        # 더 긴 단어 안에 우연히 들어간 것이면 넘어간다
+        if any(h in low for h in FALSE_HOSTS.get(word, [])):
+            continue
+        return f"'{word}' 는 {'/'.join(sorted(owners))} 의 의미다"
     return None
 
 
+#: 이 길이를 넘으면 **이름표가 아니라 설명문**으로 본다. 설명은 표현이 자유로우므로
+#  정본 낱말을 요구하지 않는다 — `M09: "피크 전에 미리 냉방해 부하를 분산"` 은
+#  정확한 설명인데 '프리쿨링' 이 없다고 잡으면 멀쩡한 문장을 고치게 된다.
+DESCRIPTION_LEN = 16
+
+
 def check_declared(code: str, label: str, st: dict) -> str | None:
-    """선언형은 **정본 낱말이 하나라도 있어야** 한다."""
+    """선언형은 **정본 낱말이 하나라도 있어야** 한다(짧은 이름표일 때만)."""
     if _skip(label):
         return None
     fk = check_foreign(code, label)
     if fk:
         return fk
+    if len(label.strip()) > DESCRIPTION_LEN:
+        return None                 # 설명문 — 남의 낱말만 봤고 통과했다
     low = label.strip().lower()
     if any(k in low for k in SEMANTIC_KEYS.get(code, [])):
         return None
