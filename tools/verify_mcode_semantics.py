@@ -77,6 +77,12 @@ REPOS = [
     "8.simulation/ems_transformer",
     "8.simulation/reverse",
     "공모전/2026-04-24_AI챔피언_전국민AI경진대회",
+    # ⚠ 아래 셋은 **등록만 안 돼 있었다.** 게이트가 못 본 게 아니라 안 봤다.
+    #   `reverse-ems` 는 `8.simulation/reverse` 의 통째 stale 사본이라(junction 아님)
+    #   여기서 표를 재생성하면 **고친 라벨이 되돌아온다**(사냥꾼 F4).
+    "projects/reverse-ems",
+    "8.simulation/ems_simulation",
+    "8.simulation/sim_campaign_2026",
 ]
 
 SKIP_PARTS = {
@@ -93,7 +99,14 @@ SKIP_PARTS = {
     "adr",
 }
 
-SCAN_EXT = {".py", ".ts", ".tsx", ".js", ".jsx", ".json", ".md", ".yaml", ".yml"}
+#: ⚠ `.txt`·`.tex`·`.html` 이 빠져 있어 **시스템 프롬프트·논문 본문·제어 화면**을 통째로
+#  못 봤다(사냥꾼 2026-08-15 F3/F8). 라벨은 확장자를 가리지 않는다.
+#  `.jsonl` 은 **크기 상한과 함께** 본다 — 학습 코퍼스가 수십 MB 라 전량 정규식은 못 건다.
+SCAN_EXT = {".py", ".ts", ".tsx", ".js", ".jsx", ".json", ".md", ".yaml", ".yml",
+            ".txt", ".tex", ".html", ".jsonl"}
+
+#: `.jsonl` 만 적용하는 상한(바이트). 넘으면 건너뛰되 **조용히 넘기지 않는다**(§iter_files).
+JSONL_MAX_BYTES = 8 * 1024 * 1024
 
 #: ⚠ 예전엔 대문자 반각만 봤다 → `m07`·`Ｍ０７`·`M 07` 이 있는 파일이 통째로 빠졌다.
 CODE = r"[MＭ]\s?(?:0\d|1\d|2[0-2])"
@@ -101,6 +114,18 @@ CODE = r"[MＭ]\s?(?:0\d|1\d|2[0-2])"
 #: 선언형 — "이 코드의 이름은 이것" 이라고 못박은 형태
 #: ⚠ 상한이 40 이라 **44 자 라벨은 남의 낱말 검사조차 안 돌았다**(사냥꾼 실증).
 DECLARED = re.compile(r"[\"']?(" + CODE + r")[\"']?\s*[:=]\s*[\"']([^\"'\n]{2,120})[\"']")
+
+#: 배열값 선언 — `"M09": ["야간 조명 차단해줘", …]`
+#: ⚠ `DECLARED` 는 `[:=]` 뒤에 **바로** 따옴표를 요구해서 `[` 가 끼면 불발했다.
+#   그 사각지대에 LoRA 학습쌍 생성기(`STRATEGY_NL`)가 통째로 들어 있었다 — 23 종 중
+#   22 종이 틀렸는데 게이트는 초록이었다(사냥꾼 F1).
+ARRAY_DECLARED = re.compile(
+    r"[\"']?(" + CODE + r")[\"']?\s*:\s*\[\s*[\"']([^\"'\n]{2,120})[\"']")
+
+#: 파이프 표 — `| M07 | NightCycle | 야간 순환 |`  ·  LaTeX — `M07 & NightCycle &`
+#: ⚠ 구분자가 `|`/`&` 라 `DECLARED`·`PROSE` 둘 다 미매치였다. 논문 표·특허 초안
+#   26 곳이 이 구멍에 있었다(사냥꾼 F3).
+TABLE = re.compile(r"[|&]\s*(" + CODE + r")\s*[|&]\s*([^|&\n]{2,120}?)\s*[|&]")
 
 #: 산문형 — 문장 안에 곁들인 형태
 PROSE = re.compile(r"\b(" + CODE + r")\b\s*(?:\(|:\s|=\s|\s—\s|\s-\s)"
@@ -122,29 +147,29 @@ HISTORICAL = re.compile(
 #     위반으로 잡아, 멀쩡한 문구를 고치게 된다.
 SEMANTIC_KEYS = {
     "M00": ["baseline", "기준", "무전략", "고정 설정온도", "setback", "셋백"],
-    "M01": ["scheduleopt", "최적 기동", "최적기동", "optimalstart", "기동·정지",
+    "M01": ["scheduleopt", "기동", "최적 기동", "최적기동", "optimalstart", "기동·정지",
             "기동정지", "스케줄", "schedule", "schedopt", "가동 스케줄", "운전 스케줄", "시간 최적"],
     "M02": ["economizer", "이코노마이저", "외기", "무료냉방", "외기냉방", "엔탈피"],
-    "M03": ["staging", "stg", "대수 제어", "대수제어", "냉동기", "보일러", "칠러", "chiller"],
-    "M04": ["pmv_strict", "pmv", "설정온도", "설정 온도", "온도 조정", "쾌적"],
-    "M05": ["pmv_relaxed", "pmv", "설정온도", "설정 온도", "온도 조정", "완화", "쾌적"],
-    "M06": ["nightcycle", "야간 순환", "야간순환", "야간 사이클", "야간운전", "간헐운전", "간헐 운전"],
-    "M07": ["dcv", "수요제어환기", "수요제어 환기", "co2", "환기"],
-    "M08": ["heatrecovery", "전열교환", "erv", "폐열", "열회수", "회수"],
-    "M09": ["precooling", "preheating", "프리쿨", "프리히팅", "프리히트", "예냉", "예열",
+    "M03": ["staging", "stg", "대수", "대수 제어", "대수제어", "냉동기", "보일러", "칠러", "chiller"],
+    "M04": ["pmv_strict", "pmv", "설정온도", "설정 온도", "온도 조정", "쾌적", "엄격", "strict"],
+    "M05": ["pmv_relaxed", "pmv", "설정온도", "설정 온도", "온도 조정", "완화", "쾌적", "relaxed"],
+    "M06": ["nightcycle", "야간", "야간 순환", "야간순환", "야간 사이클", "야간운전", "간헐운전", "간헐 운전"],
+    "M07": ["dcv", "수요제어", "수요제어환기", "수요제어 환기", "co2", "환기"],
+    "M08": ["heatrecovery", "전열", "전열교환", "erv", "폐열", "열회수"],
+    "M09": ["precooling", "pre-cooling", "pre cooling", "preheating", "선행냉방", "선행 냉방", "프리쿨", "프리히팅", "프리히트", "예냉", "예열",
             "미리 냉방", "선제 냉방", "사전 냉방", "선제냉방", "사전냉방"],
     "M10": ["demandresponse", "수요반응", "부하 제한", "부하제한", "피크 전력",
             "피크전력", "dr", "수요 반응"],
     "M11": ["combined_ems", "통합", "복합", "결합", "combined"],
-    "M12": ["combined_pmv05", "통합", "복합", "결합", "combined", "pmv", "엄격쾌적", "엄격 쾌적"],
-    "M13": ["combined_pmv07", "통합", "복합", "결합", "combined", "pmv", "완화쾌적", "완화 쾌적"],
-    "M14": ["combined_full", "통합", "복합", "결합", "combined", "풀", "full", "전부하"],
+    "M12": ["combined_pmv05", "통합", "복합", "결합", "combined", "pmv", "엄격", "엄격쾌적", "엄격 쾌적"],
+    "M13": ["combined_pmv07", "통합", "복합", "결합", "combined", "pmv", "완화", "완화쾌적", "완화 쾌적"],
+    "M14": ["combined_full", "통합", "복합", "결합", "combined", "완전", "풀", "full", "전부하"],
     "M15": ["combined_premium", "통합", "복합", "결합", "combined", "프리미엄", "premium"],
-    "M16": ["dr_nightsetback", "야간 셋백", "야간셋백", "셋백", "setback"],
+    "M16": ["dr_nightsetback", "dr", "야간 셋백", "야간셋백", "셋백", "setback"],
     "M17": ["lightingcontrol", "조명", "디밍", "lighting"],
     "M18": ["esspeakshaving", "ess", "피크셰이빙", "피크 셰이빙", "peak shaving"],
-    "M19": ["dr_integrated", "dr 통합", "통합 최적화", "통합최적화", "통합"],
-    "M20": ["dr_emergencycurtail", "긴급 감축", "긴급감축", "긴급", "curtail"],
+    "M19": ["dr_integrated", "dr", "dr 통합", "통합 최적화", "통합최적화", "통합"],
+    "M20": ["dr_emergencycurtail", "dr", "긴급 감축", "긴급감축", "긴급", "curtail"],
     "M21": ["thermalstorage", "빙축열", "수축열", "열저장", "축열"],
     "M22": ["pv_selfconsumption", "태양광", "자가소비", "pv", "발전"],
 }
@@ -165,7 +190,86 @@ FOREIGN = {
     "대수 제어": {"M03", "M11", "M12", "M13", "M14", "M15"},
     "빙축열": {"M21"},
     "태양광": {"M22"},
+    # ⚠ 영문 전략명이 통째로 빠져 있었다 — 논문·특허·LaTeX 는 **영문으로 쓴다**.
+    #   `| M07 | NightCycle |` 26 곳이 이 누락 때문에 초록이었다(사냥꾼 F3).
+    "nightcycle": {"M06", "M14", "M15"},
+    "night cycle": {"M06", "M14", "M15"},
+    "night-cycle": {"M06", "M14", "M15"},
+    "economizer": {"M02", "M11", "M12", "M13", "M14", "M15", "M19", "M20"},
+    "lighting": {"M17", "M19", "M20"},
+    "precooling": {"M09", "M20"},
+    "pre-cooling": {"M09", "M20"},
+    "staging": {"M03", "M11", "M12", "M13", "M14", "M15"},
+    "optimalstart": {"M01", "M11", "M12", "M13", "M14", "M15"},
+    "optimal start": {"M01", "M11", "M12", "M13", "M14", "M15"},
+    "heatrecovery": {"M08", "M14", "M15"},
+    "heat recovery": {"M08", "M14", "M15"},
+    "thermalstorage": {"M21"},
+    "peak shaving": {"M18", "M19", "M20"},
+    "피크셰이빙": {"M18", "M19", "M20"},
+    # ⚠ 산문형을 **남의 낱말로만** 판정하려면 그 사전이 실제 오매핑을 덮어야 한다.
+    #   2026-08-15 원 4 건 중 `M07(냉방설정온도조정)`·`M03(야간냉방차단)` 두 건이
+    #   여기 없어서 통과했다 — 남의 어휘가 안 섞였던 게 아니라 **사전이 얕았다**.
+    "설정온도": {"M00", "M04", "M05", "M12", "M13", "M14", "M15", "M16", "M19"},
+    "설정 온도": {"M00", "M04", "M05", "M12", "M13", "M14", "M15", "M16", "M19"},
+    "야간": {"M00", "M06", "M14", "M15", "M16"},
+    "방전": {"M18", "M19", "M20", "M22"},
+    "충전": {"M18", "M19", "M20", "M22"},
+    "축열": {"M21"},
+    "디밍": {"M17", "M19", "M20"},
 }
+
+
+#: **전략 어휘 사전** — "여기가 이름을 말하는 자리인가" 를 가르는 관문.
+#
+#  산문형 괄호는 **부연이 기본값**이다: `M15(16개)` · `M09(prob 0.9992)` ·
+#  `M08(n=5)` · `M20(slow-path 제외)` · `M00(제어 없음)`. 이걸 이름표로 보고 "정본
+#  낱말이 없다" 고 잡으면 **10,798 건**이 나온다(실측). 그중 진짜는 한 줌이다 —
+#  목록이 길면 사람이 안 보고, 안 보면 안 고친다.
+#
+#  그래서 **라벨이 어떤 전략의 어휘를 담고 있을 때만** 이름표로 본다.
+#  `M07(냉방설정온도조정)` 은 '설정온도' 가 있으니 이름을 말하는 자리다 → 판정한다.
+#  `M07(**92.7%**)` 은 어떤 전략 어휘도 없으니 부연이다 → 넘어간다.
+_VOCAB_EXTRA = [
+    "냉방", "난방", "야간", "조명", "환기", "설정온도", "설정 온도", "기동", "정지",
+    "대수", "축열", "태양광", "예냉", "예열", "셋백", "디밍", "피크", "충전", "방전",
+    "차단", "쾌적", "외기", "열회수", "수요반응", "수요 반응", "감축", "스테이징",
+]
+
+
+def _names_vocab() -> set[str]:
+    v = {w.lower() for ws in SEMANTIC_KEYS.values() for w in ws}
+    v |= {w.lower() for w in FOREIGN}
+    v |= {w.lower() for w in _VOCAB_EXTRA}
+    return v
+
+
+VOCAB = _names_vocab()
+
+
+def is_name_slot(label: str) -> bool:
+    """이 라벨이 **전략 이름을 말하는 자리**인가 (부연 괄호가 아니라)."""
+    low = label.strip().lower()
+    return any(w in low for w in VOCAB)
+
+
+#: **학습 코퍼스**는 코드가 아니라 데이터다. 라벨이 틀렸으면 손으로 고칠 게 아니라
+#  **재증류**한다 — 과거 생성물을 손편집하면 그건 수정이 아니라 데이터 변조다.
+#  그래서 따로 세고 따로 보고한다. **감추지는 않는다**(안 본 게 아니라 다르게 다룬다).
+#
+#  ⚠ 단 **라이브 학습 입력은 예외**다. 지금 학습에 들어가는 코퍼스가 오염되면 그건
+#    모델의 행동에 닿으므로 코드와 같은 등급으로 실패시킨다.
+DATA_CORPUS_HINTS = ("debate_dataset", "lora2_", "/data/training/", "\\data\\training\\",
+                     "inference_w5", "eval_v2.0", "corpus", "/datasets/", "cot_")
+LIVE_CORPUS_HINTS = ("lora2_corpus_v4_1_refined",)
+
+
+def is_data_corpus(rel: str) -> bool:
+    low = rel.replace("/", "\\").lower()
+    if any(h.replace("/", "\\") in low for h in LIVE_CORPUS_HINTS):
+        return False                      # 라이브 = 코드 등급
+    return low.endswith(".jsonl") and any(
+        h.replace("/", "\\") in low for h in DATA_CORPUS_HINTS)
 
 
 def canon() -> dict:
@@ -179,12 +283,23 @@ ARTIFACT_STEMS = ("scorecard", "eval_result", "run_", "report_", "_snapshot",
                   "predictions", "answers", "qa_live")
 
 
+#: `.jsonl` 크기 상한에 걸려 **안 본** 파일. 조용히 넘기면 그게 다음 사각지대가 된다.
+SKIPPED_TOO_BIG: list[str] = []
+
+
 def iter_files(repo: Path):
     for p in repo.rglob("*"):
         if p.suffix.lower() not in SCAN_EXT or not p.is_file():
             continue
         if p.suffix.lower() == ".json" and any(s in p.stem.lower() for s in ARTIFACT_STEMS):
             continue
+        if p.suffix.lower() == ".jsonl":
+            try:
+                if p.stat().st_size > JSONL_MAX_BYTES:
+                    SKIPPED_TOO_BIG.append(str(p))
+                    continue
+            except OSError:
+                continue
         if SKIP_PARTS & {x.lower() for x in p.relative_to(repo).parts}:
             continue
         if p.resolve() == HERE:
@@ -209,7 +324,14 @@ def _skip(label: str) -> bool:
         return True                 # 코드 대응표지 이름이 아니다
     if ENUMERATION.search(label):
         return True
-    return bool(re.fullmatch(r"[\d\s.,%_\-/]+", low))
+    if re.fullmatch(r"[\d\s.,%_\-/±]+", low):
+        return True
+    # `SCHEDULE(20)` · `DR_DISPATCH(10)` · `BASELINE(0)` — 액션 열거지 이름표가 아니다
+    if re.fullmatch(r"[a-z_]+\(\d+\)", low):
+        return True
+    # 영문 **산문**은 이름표가 아니다 — `M13(M06 now has full _EUI_TABLE data)` 는
+    # 코드 주석 문장이지 M13 의 이름이 아니다. 영단어 3 개 이상 + 한글 없음이면 문장.
+    return s.isascii() and len(s.split()) >= 3
 
 
 #: 남의 낱말이 **더 긴 단어 안에** 우연히 들어간 경우. 한글은 낱말 경계가 없어
@@ -249,13 +371,13 @@ DESCRIPTION_LEN = 16
 #  그래서 계열 구성원마다 **자기만의 표식**을 요구한다.
 EXCLUSIVE = {
     "M11": {"must_not": ["pmv", "프리미엄", "premium"]},
-    "M12": {"must_not": ["0.7", "07", "완전", "풀", "full", "프리미엄", "premium"]},
-    "M13": {"must_not": ["0.5", "05", "완전", "풀", "full", "프리미엄", "premium"]},
+    "M12": {"must_not": ["pmv 0.7", "pmv0.7", "완전", "풀", "full", "프리미엄", "premium"]},
+    "M13": {"must_not": ["pmv 0.5", "pmv0.5", "완전", "풀", "full", "프리미엄", "premium"]},
     "M14": {"must_not": ["프리미엄", "premium", "pmv0.5", "pmv 0.5", "pmv0.7", "pmv 0.7"]},
     "M15": {"must_not": ["완전", "full", "통합 ems", "통합ems", "combined_ems"]},
-    "M19": {"must_not": ["긴급", "curtail", "셋백", "setback", "통합 ems", "통합ems", "combined_ems"]},
-    "M04": {"must_not": ["0.7", "pmv 0.7", "pmv0.7"]},
-    "M05": {"must_not": ["0.5", "pmv 0.5", "pmv0.5"]},
+    "M19": {"must_not": ["긴급", "curtail", "통합 ems", "통합ems", "combined_ems"]},
+    "M04": {"must_not": ["pmv 0.7", "pmv0.7"]},
+    "M05": {"must_not": ["pmv 0.5", "pmv0.5"]},
     # ⚠ M00 정본이 "고정 설정온도 + 야간 Setback" 이라 **셋백은 M00 자신의 낱말**이다.
     #   그걸 배타로 넣었더니 정본 그대로 쓴 곳을 잡았다.
     "M00": {"must_not": ["dr", "긴급", "curtail"]},
@@ -267,9 +389,26 @@ EXCLUSIVE = {
 }
 
 
+#: `M11+M05` 처럼 **구성 레그를 코드로 적은 참조**. 배타 판정 전에 지운다 —
+#  안 그러면 정본 그대로인 `M13(통합+PMV0.7 (M11+M05))` 이 "'05' 는 M13 의 표식이
+#  아니다" 로 걸린다(실측). 규칙이 정본을 위반이라 부르면 그 규칙이 틀린 것이다.
+_CODE_REF = re.compile(CODE, re.I)
+
+
+#: 부정 표기 — `M02(외기냉방 (≠ PMV))` 는 "PMV 가 **아니다**" 라는 뜻이다.
+#  이걸 "남의 표식을 달았다" 로 읽으면 정확한 구분 설명을 위반이라 부른다.
+_NEGATION = re.compile(r"[≠≒!]=?|아님|아니|not\s|except|제외|vs\.?\s")
+
+
 def check_exclusive(code: str, label: str) -> str | None:
     """계열 안에서 **남의 표식**을 달고 있는가."""
-    low = label.strip().lower()
+    if _NEGATION.search(label):
+        return None
+    # ⚠ 여기에 `_skip` 이 없어서 산문형 경로가 **영문 주석 문장까지** 판정했다
+    #   (`M13(M06 now has full _EUI_TABLE data)`). 배타 규칙은 이름표에만 건다.
+    if _skip(label):
+        return None
+    low = _CODE_REF.sub(" ", label.strip().lower())
     for bad in EXCLUSIVE.get(code, {}).get("must_not", []):
         if bad in low:
             return f"'{bad}' 는 {code} 의 표식이 아니다 — 같은 계열의 다른 전략이다"
@@ -297,7 +436,6 @@ def check_declared(code: str, label: str, st: dict) -> str | None:
     ex = check_exclusive(code, label)
     if ex:
         return ex
-        return None                 # 설명문 — 남의 낱말만 봤고 통과했다
     low = label.strip().lower()
     if any(k in low for k in SEMANTIC_KEYS.get(code, [])):
         return None
@@ -324,12 +462,27 @@ def scan(repo: Path, st: dict) -> list[tuple[str, int, str, str, str]]:
             if HISTORICAL.search(line):
                 continue
             seen = set()
-            for m in DECLARED.finditer(line):
-                code, label = m.group(1), m.group(2)
-                seen.add((code, label))
-                why = check_declared(code, label, st)
-                if why:
-                    out.append((str(p.relative_to(repo)), i, code, label.strip(), why))
+            # 선언형 3 형태를 **같은 규칙으로** 본다. 예전엔 `DECLARED` 하나만 봐서
+            # `"M09": [ … ]`(배열값)·`| M07 | NightCycle |`(표) 가 통째로 빠졌다.
+            for rx in (DECLARED, ARRAY_DECLARED, TABLE):
+                for m in rx.finditer(line):
+                    code, label = m.group(1), m.group(2)
+                    if (code, label) in seen:
+                        continue
+                    seen.add((code, label))
+                    # 표는 **코드 옆 셀이 이름이라는 보장이 없다.** edge-agent 의
+                    # 페르소나 표는 `| … | M20 | 저탄소·PV 잉여 충전 |` 처럼 DR 열
+                    # 다음이 설명 열이다 — 그걸 이름표로 읽으면 멀쩡한 표를 고치게 된다.
+                    # 그래서 표에는 산문과 같은 규칙(남의 낱말)만 건다.
+                    # `| M07 | NightCycle |` 은 그것으로 충분히 잡힌다.
+                    if rx is TABLE:
+                        if not is_name_slot(label):
+                            continue
+                        why = check_foreign(code, label) or check_exclusive(code, label)
+                    else:
+                        why = check_declared(code, label, st)
+                    if why:
+                        out.append((str(p.relative_to(repo)), i, code, label.strip(), why))
             for m in PROSE.finditer(line):
                 code, label = m.group(1), m.group(2)
                 if (code, label) in seen:
@@ -339,7 +492,20 @@ def scan(repo: Path, st: dict) -> list[tuple[str, int, str, str, str]]:
                 #   이름표가 아니라 문장이므로 판정 대상이 아니다.
                 if len(label.strip()) > DESCRIPTION_LEN * 2:
                     continue
-                why = check_foreign(code, label)
+                # ⚠ 예전엔 산문형에 **남의 낱말 검사만** 돌렸다. 그래서 남의 어휘가
+                #   섞이지 않은 **그냥 틀린 이름**(`strategy=M07(냉방설정온도조정)`)이
+                #   조용히 통과했다 — 2026-08-15 원 4 건 중 2 건이 이 구멍에 남아 있었다.
+                #
+                # ⚠ 그런데 여기에 **"정본 낱말이 없으면 위반"** 규칙까지 얹었더니
+                #   **10,798 건**이 나왔다(실측). `M20(DR)`·`M09(SCHEDULE(20))`·
+                #   `M15(운영 스케줄 최적화)` 같은 **부연**이 전부 걸렸다.
+                #   산문 괄호는 이름을 **못박는 자리가 아니다** — 그러니 산문에는
+                #   계획서 §5.3 그대로 **남의 낱말 규칙만** 적용한다.
+                #   `strategy=M07(냉방설정온도조정)` 은 '설정온도'(=M04/M05 의 낱말)로
+                #   잡힌다 — 그래서 FOREIGN 을 보강했지, 규칙을 넓힌 게 아니다.
+                if not is_name_slot(label):
+                    continue
+                why = check_foreign(code, label) or check_exclusive(code, label)
                 if why:
                     out.append((str(p.relative_to(repo)), i, code, label.strip(), why))
     return out
@@ -359,18 +525,26 @@ def main(argv=None) -> int:
     print("=" * 74)
 
     repos = [Path(a.repo)] if a.repo else [WORKSPACE / r for r in REPOS]
-    total = scanned = 0
+    total = scanned = corpus_total = 0
+    corpus_files: set[str] = set()
     for repo in repos:
         if not repo.is_dir():
             print(f"  ⏭ 없음: {repo}")
             continue
         scanned += 1
-        hits = scan(repo, st)
+        all_hits = scan(repo, st)
+        corpus = [h for h in all_hits if is_data_corpus(h[0])]
+        hits = [h for h in all_hits if not is_data_corpus(h[0])]
+        corpus_total += len(corpus)
         label = repo.name or str(repo)
+        if corpus:
+            corpus_files.update(h[0] for h in corpus)
         if not hits:
-            print(f"  ✅ {label}")
+            print(f"  ✅ {label}" + (f"   (학습 코퍼스 {len(corpus)}건 — 재증류 대상)"
+                                     if corpus else ""))
             continue
-        print(f"  ⛔ {label} — {len(hits)}건")
+        print(f"  ⛔ {label} — {len(hits)}건"
+              + (f"   (+ 학습 코퍼스 {len(corpus)}건)" if corpus else ""))
         lim = len(hits) if a.limit == 0 else a.limit   # 0 = 전부 (감추지 않는다)
         for rel, ln, code, lab, why in hits[:lim]:
             print(f"       {rel}:{ln}  {code}({lab})  ← {why}")
@@ -379,6 +553,21 @@ def main(argv=None) -> int:
         total += len(hits)
 
     print("-" * 74)
+    if corpus_total:
+        print(f"ℹ️  학습 코퍼스 {corpus_total}건 / 파일 {len(corpus_files)}개 — **재증류 대상**이다.")
+        print("   과거 생성물을 손편집하면 수정이 아니라 데이터 변조다. 고칠 곳은 생성기다.")
+        print("   라이브 학습 입력의 정합은 agentleague/scripts/validate_corpus_mcode_ssot.py 가 잰다.")
+    # ⚠ **안 본 것을 말한다.** 상한에 걸려 건너뛴 파일을 조용히 넘기면 그게 다음
+    #   사각지대가 된다 — 이번 라운드가 통째로 그 교훈이었다.
+    if SKIPPED_TOO_BIG:
+        print(f"⚠ 크기 상한({JSONL_MAX_BYTES // 1024 // 1024}MB) 초과로 **안 본** "
+              f".jsonl {len(SKIPPED_TOO_BIG)}개:")
+        for s in SKIPPED_TOO_BIG[:5]:
+            print(f"     {s}")
+        if len(SKIPPED_TOO_BIG) > 5:
+            print(f"     … 외 {len(SKIPPED_TOO_BIG) - 5}개")
+        print("   → 학습 코퍼스는 라벨 게이트가 아니라 **생성기**에서 막는다"
+              " (lab/scripts/verify_strategy_nl_ssot.py).")
     if scanned == 0:
         print("⛔ 검사한 저장소가 0 개다 — 경로가 어긋났다(가드가 공허하다).")
         return 1
