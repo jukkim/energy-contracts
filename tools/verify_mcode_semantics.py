@@ -80,6 +80,9 @@ REPOS = [
     # ⚠ 아래 셋은 **등록만 안 돼 있었다.** 게이트가 못 본 게 아니라 안 봤다.
     #   `reverse-ems` 는 `8.simulation/reverse` 의 통째 stale 사본이라(junction 아님)
     #   여기서 표를 재생성하면 **고친 라벨이 되돌아온다**(사냥꾼 F4).
+    #   ⚠ 단 이 저장소는 GitHub 에서 **archived(동결)** 다 — push 가 403 으로 막힌다.
+    #     그건 고장이 아니라 의도다. 로컬 정정만 두고 원격은 건드리지 않는다.
+    #     (2026-08-15 확인: isArchived=true, pushedAt 2026-07-26)
     "projects/reverse-ems",
     "8.simulation/ems_simulation",
     "8.simulation/sim_campaign_2026",
@@ -108,8 +111,13 @@ SCAN_EXT = {".py", ".ts", ".tsx", ".js", ".jsx", ".json", ".md", ".yaml", ".yml"
 #: `.jsonl` 만 적용하는 상한(바이트). 넘으면 건너뛰되 **조용히 넘기지 않는다**(§iter_files).
 JSONL_MAX_BYTES = 8 * 1024 * 1024
 
-#: ⚠ 예전엔 대문자 반각만 봤다 → `m07`·`Ｍ０７`·`M 07` 이 있는 파일이 통째로 빠졌다.
-CODE = r"[MＭ]\s?(?:0\d|1\d|2[0-2])"
+#: ⚠ 예전 주석은 "`m07` 도 본다" 고 적혀 있었지만 **문자군에 소문자가 없었다**.
+#   심기 시험에서 적발해 열어 봤더니 — **소문자는 다른 네임스페이스였다.**
+#   `m07`·`m12` 는 폐기된 시뮬 m-코드(m→E→M 2단 매핑)라 그 체계 안에서는 맞다
+#   (`m12→E5(DCV)`·`m07→E1(NightCycle)`). M-정본 잣대로 재면 멀쩡한 기록이 위반이 된다.
+#   → **대문자(+전각)만 본다.** 주석이 고쳤다고 말해도 코드가 안 고쳤으면 안 고친 것이고,
+#     반대로 코드를 열었는데 오탐이 나오면 그건 열지 말아야 할 문이었다.
+CODE = r"[MＭ]\s?(?:[0０][0-9０-９]|[1１][0-9０-９]|[2２][0-2０-２])"
 
 #: 선언형 — "이 코드의 이름은 이것" 이라고 못박은 형태
 #: ⚠ 상한이 40 이라 **44 자 라벨은 남의 낱말 검사조차 안 돌았다**(사냥꾼 실증).
@@ -125,7 +133,11 @@ ARRAY_DECLARED = re.compile(
 #: 파이프 표 — `| M07 | NightCycle | 야간 순환 |`  ·  LaTeX — `M07 & NightCycle &`
 #: ⚠ 구분자가 `|`/`&` 라 `DECLARED`·`PROSE` 둘 다 미매치였다. 논문 표·특허 초안
 #   26 곳이 이 구멍에 있었다(사냥꾼 F3).
-TABLE = re.compile(r"[|&]\s*(" + CODE + r")\s*[|&]\s*([^|&\n]{2,120}?)\s*[|&]")
+#: ⚠ 앞 구분자를 **필수**로 두면 LaTeX **첫 열**을 통째로 놓친다 — `M07 & DCV & 0.855 \\`
+#   는 코드 앞에 `&` 가 없다. 논문 표가 정확히 그 형태라, 심기 시험 6 건 중 이것만
+#   미검출이었다(2026-08-15). 줄머리·여백 뒤도 허용한다.
+TABLE = re.compile(r"(?:^|[|&])\s*(" + CODE + r")\s*[|&]\s*([^|&\n]{2,120}?)\s*(?:[|&]|$)",
+                   re.M)
 
 #: 산문형 — 문장 안에 곁들인 형태
 PROSE = re.compile(r"\b(" + CODE + r")\b\s*(?:\(|:\s|=\s|\s—\s|\s-\s)"
@@ -272,6 +284,25 @@ def is_data_corpus(rel: str) -> bool:
         h.replace("/", "\\") in low for h in DATA_CORPUS_HINTS)
 
 
+#: **미해결 충돌 경로.** `reverse` 논문·특허는 7 번째 비트를 NightCycle 로 서술하는데
+#  정본은 M07=DCV 다. 학습 매니페스트에 **E5 가 아예 없어**(E0·E1·E3·E4·E6~E13만)
+#  `E5→M07` 매핑이 죽은 것으로 보이지만, 실측 전에는 어느 쪽도 단정할 수 없다.
+#  라벨만 정본에 맞추면 논문의 물리 서술·외부 검증 해석이 통째로 어긋난다
+#  (실제로 한 번 그렇게 만들었다가 되돌렸다).
+#  → **위반으로 세지 않되 감추지도 않는다.** 매 실행마다 이 문서로 안내한다.
+PAPER_CONFLICT_PATHS = ("reverse/paper", "paper/latex", "paper/tables",
+                        "paper/manuscript", "patent_draft", "_patent_v2",
+                        "mcode_bit7_identity_conflict", "session_summary_20260511")
+PAPER_CONFLICT_DOC = "8.simulation/reverse/docs/MCODE_BIT7_IDENTITY_CONFLICT_2026-08-15.md"
+
+
+def is_paper_conflict(rel: str) -> bool:
+    # ⚠ 역슬래시 리터럴로 비교했더니 `"paper	ables"` 의 `	` 가 **탭**이 돼
+    #   영영 안 맞았다. 경로 구분자는 **정규화하고 슬래시로만** 비교한다.
+    low = rel.replace("\\", "/").lower()
+    return any(h in low for h in PAPER_CONFLICT_PATHS)
+
+
 def canon() -> dict:
     return json.loads(CANON_PATH.read_text(encoding="utf-8"))["default"]["strategies"]
 
@@ -292,6 +323,12 @@ def iter_files(repo: Path):
         if p.suffix.lower() not in SCAN_EXT or not p.is_file():
             continue
         if p.suffix.lower() == ".json" and any(s in p.stem.lower() for s in ARTIFACT_STEMS):
+            continue
+        # ⚠ `scratch_` 접두 = **파생 작업 파일**이다. 디렉터리 `scratch/` 는 이미 걸렀는데
+        #   접두만 붙은 파일은 안 걸러져, 폐기된 초안의 추출 텍스트가 영구히 잡혔다.
+        #   (2026-08-15: `본선/임시본/scratch_extract_v12.txt` — **최종 제출본은 깨끗함을
+        #    hwpx 원본에서 직접 확인**했다. 걸린 건 superseded 초안의 파생물이다.)
+        if p.stem.lower().startswith("scratch_"):
             continue
         if p.suffix.lower() == ".jsonl":
             try:
@@ -447,17 +484,32 @@ def check_declared(code: str, label: str, st: dict) -> str | None:
             f"어느 낱말도 안 맞는다")
 
 
+def _rel(p: Path, repo: Path) -> str:
+    try:
+        return str(p.relative_to(repo))
+    except ValueError:
+        return str(p)
+
+
 def scan(repo: Path, st: dict) -> list[tuple[str, int, str, str, str]]:
     out: list[tuple[str, int, str, str, str]] = []
     for p in iter_files(repo):
+        out += scan_file(p, repo, st)
+    return out
+
+
+def scan_file(p: Path, repo: Path, st: dict) -> list[tuple[str, int, str, str, str]]:
+    """파일 하나만 훑는다 — `--files`(pre-commit) 와 `scan()` 이 **같은 규칙**을 쓰도록."""
+    out: list[tuple[str, int, str, str, str]] = []
+    if True:
         try:
             text = p.read_text(encoding="utf-8", errors="replace")
         except OSError:
-            continue
+            return out
         # ⚠ 빠른 걸러내기. 부분 문자열("M0")로 쓰면 SSOT pre-commit 이 이를
         #   "구 전략 코드 M0~M8 단독" 으로 잡는다(정당한 차단이다) → 정규식으로.
         if not re.search(CODE, text):
-            continue
+            return out
         for i, line in enumerate(text.splitlines(), 1):
             if HISTORICAL.search(line):
                 continue
@@ -482,7 +534,7 @@ def scan(repo: Path, st: dict) -> list[tuple[str, int, str, str, str]]:
                     else:
                         why = check_declared(code, label, st)
                     if why:
-                        out.append((str(p.relative_to(repo)), i, code, label.strip(), why))
+                        out.append((_rel(p, repo), i, code, label.strip(), why))
             for m in PROSE.finditer(line):
                 code, label = m.group(1), m.group(2)
                 if (code, label) in seen:
@@ -507,7 +559,7 @@ def scan(repo: Path, st: dict) -> list[tuple[str, int, str, str, str]]:
                     continue
                 why = check_foreign(code, label) or check_exclusive(code, label)
                 if why:
-                    out.append((str(p.relative_to(repo)), i, code, label.strip(), why))
+                    out.append((_rel(p, repo), i, code, label.strip(), why))
     return out
 
 
@@ -516,6 +568,10 @@ def main(argv=None) -> int:
     ap.add_argument("--repo", help="한 저장소만 검사(경로)")
     ap.add_argument("--strict", action="store_true", help="위반 시 exit 1")
     ap.add_argument("--limit", type=int, default=20, help="저장소당 표시 건수")
+    # ⚠ **pre-commit 은 저장소를 통째로 훑으면 안 된다.** `.jsonl` 을 보게 한 뒤
+    #   `8.simulation` 전량 스캔이 10 분을 넘겨 커밋을 막았다 — 가드가 느리면
+    #   사람이 `--no-verify` 로 우회하고, 그러면 가드가 없는 것과 같다.
+    ap.add_argument("--files", nargs="*", help="이 파일들만 검사(훅용). 저장소 스캔 생략")
     a = ap.parse_args(argv)
 
     st = canon()
@@ -524,8 +580,41 @@ def main(argv=None) -> int:
     print("  ⚠ ems_simulation/config/ems_strategies.yaml 은 폐기 세대(m0~m8). 정본 아님.")
     print("=" * 74)
 
+    if a.files:
+        base = Path(a.repo) if a.repo else Path.cwd()
+        hits = []
+        for f in a.files:
+            fp = Path(f)
+            if not fp.is_absolute():
+                fp = base / f
+            if not fp.is_file() or fp.suffix.lower() not in SCAN_EXT:
+                continue
+            if fp.resolve() == HERE or fp.stem.lower().startswith("scratch_"):
+                continue
+            if SKIP_PARTS & {x.lower() for x in fp.parts}:
+                continue
+            hits += scan_file(fp, base, st)
+        # ⚠ 훅과 전체 스캔이 **다른 규칙**을 쓰면 안 된다. 여기에 논문 보류 규칙을
+        #   안 걸어서, 전체 스캔은 0 건인데 커밋만 막히는 일이 실제로 났다.
+        paper_hits = [h for h in hits if not is_data_corpus(h[0]) and is_paper_conflict(h[0])]
+        code_hits = [h for h in hits
+                     if not is_data_corpus(h[0]) and not is_paper_conflict(h[0])]
+        for rel, ln, c, lab, why in code_hits:
+            print(f"  ⛔ {rel}:{ln}  {c}({lab})  ← {why}")
+        if paper_hits:
+            print(f"  ⚠ reverse 논문/특허 {len(paper_hits)}건 — 7번째 비트 정체 미해결로 보류.")
+            print(f"     실측 절차 = {PAPER_CONFLICT_DOC}")
+        n_corpus = len(hits) - len(code_hits) - len(paper_hits)
+        if n_corpus:
+            print(f"  ℹ️  학습 코퍼스 {n_corpus}건 — 재증류 대상(생성기에서 막는다)")
+        if code_hits:
+            print(f"⛔ 오매핑 {len(code_hits)}건")
+            return 1
+        print(f"✅ 파일 {len(a.files)}개 — 오매핑 없음")
+        return 0
+
     repos = [Path(a.repo)] if a.repo else [WORKSPACE / r for r in REPOS]
-    total = scanned = corpus_total = 0
+    total = scanned = corpus_total = paper_total = 0
     corpus_files: set[str] = set()
     for repo in repos:
         if not repo.is_dir():
@@ -534,7 +623,9 @@ def main(argv=None) -> int:
         scanned += 1
         all_hits = scan(repo, st)
         corpus = [h for h in all_hits if is_data_corpus(h[0])]
-        hits = [h for h in all_hits if not is_data_corpus(h[0])]
+        paper = [h for h in all_hits if not is_data_corpus(h[0]) and is_paper_conflict(h[0])]
+        paper_total += len(paper)
+        hits = [h for h in all_hits if not is_data_corpus(h[0]) and not is_paper_conflict(h[0])]
         corpus_total += len(corpus)
         label = repo.name or str(repo)
         if corpus:
@@ -553,6 +644,9 @@ def main(argv=None) -> int:
         total += len(hits)
 
     print("-" * 74)
+    if paper_total:
+        print(f"⚠ reverse 논문/특허 {paper_total}건 — **7번째 비트 정체 미해결**로 보류 중.")
+        print(f"   위반이 아니라 **미결 사안**이다. 실측 절차 = {PAPER_CONFLICT_DOC}")
     if corpus_total:
         print(f"ℹ️  학습 코퍼스 {corpus_total}건 / 파일 {len(corpus_files)}개 — **재증류 대상**이다.")
         print("   과거 생성물을 손편집하면 수정이 아니라 데이터 변조다. 고칠 곳은 생성기다.")
