@@ -631,8 +631,8 @@ def main(argv=None) -> int:
         for rel, ln, c, lab, why in code_hits:
             print(f"  ⛔ {rel}:{ln}  {c}({lab})  ← {why}")
         if paper_hits:
-            print(f"  ⚠ reverse 논문/특허 {len(paper_hits)}건 — 7번째 비트 정체 미해결로 보류.")
-            print(f"     실측 절차 = {PAPER_CONFLICT_DOC}")
+            print(f"  ℹ️  reverse vintage 표기 {len(paper_hits)}건 — 위반 아님(실측 확정).")
+            print(f"     근거 = {PAPER_CONFLICT_DOC}")
         n_corpus = len(hits) - len(code_hits) - len(paper_hits)
         if n_corpus:
             print(f"  ℹ️  학습 코퍼스 {n_corpus}건 — 재증류 대상(생성기에서 막는다)")
@@ -678,8 +678,10 @@ def main(argv=None) -> int:
 
     print("-" * 74)
     if paper_total:
-        print(f"⚠ reverse 논문/특허 {paper_total}건 — **7번째 비트 정체 미해결**로 보류 중.")
-        print(f"   위반이 아니라 **미결 사안**이다. 실측 절차 = {PAPER_CONFLICT_DOC}")
+        print(f"ℹ️  reverse 계열 vintage 표기 {paper_total}건 — **위반이 아니다.**")
+        print("   7번째 비트 = E1(NightCycle) 로 실측 확정됐다. 그 저장소의 M07=NightCycle ·")
+        print("   M06=DCV 는 2026-05-13 이전 매핑의 **정확한 이름**이다(정본 잣대는 범주 오류).")
+        print(f"   근거·이름 통일 순서 = {PAPER_CONFLICT_DOC}")
     if corpus_total:
         print(f"ℹ️  학습 코퍼스 {corpus_total}건 / 파일 {len(corpus_files)}개 — **재증류 대상**이다.")
         print("   과거 생성물을 손편집하면 수정이 아니라 데이터 변조다. 고칠 곳은 생성기다.")
