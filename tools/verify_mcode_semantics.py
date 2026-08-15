@@ -72,6 +72,7 @@ REPOS = [
     "projects/mgcc",
     "projects/ui_services",
     "projects/bems-console",
+    "projects/edge-agent",
     "projects/energy-contracts",
     "8.simulation/ems_transformer",
     "8.simulation/reverse",
@@ -119,22 +120,23 @@ HISTORICAL = re.compile(
 SEMANTIC_KEYS = {
     "M00": ["baseline", "기준", "무전략", "고정 설정온도", "setback", "셋백"],
     "M01": ["scheduleopt", "최적 기동", "최적기동", "optimalstart", "기동·정지",
-            "기동정지", "스케줄", "schedule", "가동 스케줄", "운전 스케줄", "시간 최적"],
+            "기동정지", "스케줄", "schedule", "schedopt", "가동 스케줄", "운전 스케줄", "시간 최적"],
     "M02": ["economizer", "이코노마이저", "외기", "무료냉방", "외기냉방", "엔탈피"],
-    "M03": ["staging", "대수 제어", "대수제어", "냉동기", "보일러", "칠러", "chiller"],
+    "M03": ["staging", "stg", "대수 제어", "대수제어", "냉동기", "보일러", "칠러", "chiller"],
     "M04": ["pmv_strict", "pmv", "설정온도", "설정 온도", "온도 조정", "쾌적"],
     "M05": ["pmv_relaxed", "pmv", "설정온도", "설정 온도", "온도 조정", "완화", "쾌적"],
-    "M06": ["nightcycle", "야간 순환", "야간순환", "야간 사이클", "야간운전"],
+    "M06": ["nightcycle", "야간 순환", "야간순환", "야간 사이클", "야간운전", "간헐운전", "간헐 운전"],
     "M07": ["dcv", "수요제어환기", "수요제어 환기", "co2", "환기"],
     "M08": ["heatrecovery", "전열교환", "erv", "폐열", "열회수", "회수"],
-    "M09": ["precooling", "preheating", "프리쿨링", "프리히팅", "예냉", "예열", "미리 냉방"],
+    "M09": ["precooling", "preheating", "프리쿨", "프리히팅", "프리히트", "예냉", "예열",
+            "미리 냉방", "선제 냉방", "사전 냉방", "선제냉방", "사전냉방"],
     "M10": ["demandresponse", "수요반응", "부하 제한", "부하제한", "피크 전력",
             "피크전력", "dr", "수요 반응"],
-    "M11": ["combined_ems", "통합", "복합", "combined"],
-    "M12": ["combined_pmv05", "통합", "복합", "combined", "pmv"],
-    "M13": ["combined_pmv07", "통합", "복합", "combined", "pmv"],
-    "M14": ["combined_full", "통합", "복합", "combined", "풀", "full"],
-    "M15": ["combined_premium", "통합", "복합", "combined", "프리미엄", "premium"],
+    "M11": ["combined_ems", "통합", "복합", "결합", "combined"],
+    "M12": ["combined_pmv05", "통합", "복합", "결합", "combined", "pmv", "엄격쾌적", "엄격 쾌적"],
+    "M13": ["combined_pmv07", "통합", "복합", "결합", "combined", "pmv", "완화쾌적", "완화 쾌적"],
+    "M14": ["combined_full", "통합", "복합", "결합", "combined", "풀", "full", "전부하"],
+    "M15": ["combined_premium", "통합", "복합", "결합", "combined", "프리미엄", "premium"],
     "M16": ["dr_nightsetback", "야간 셋백", "야간셋백", "셋백", "setback"],
     "M17": ["lightingcontrol", "조명", "디밍", "lighting"],
     "M18": ["esspeakshaving", "ess", "피크셰이빙", "피크 셰이빙", "peak shaving"],
@@ -187,10 +189,17 @@ def iter_files(repo: Path):
         yield p
 
 
+#: 다른 코드 체계로의 **대응표**(예: `"M00": "E0"`). 이름이 아니라 매핑이다.
+#  `build_rvk_metadata.py` 의 `M_TO_E` 가 그렇다 — 원 시뮬 실험 코드와의 대응.
+CODE_ALIAS = re.compile(r"^(?:[A-Za-z]{1,3}\d{1,3}|\d{1,3})$")
+
+
 def _skip(label: str) -> bool:
     low = label.strip().lower()
     if not low or low in {"true", "false", "null", "none"}:
         return True
+    if CODE_ALIAS.fullmatch(label.strip()):
+        return True                 # 코드 대응표지 이름이 아니다
     if ENUMERATION.search(label):
         return True
     return bool(re.fullmatch(r"[\d\s.,%_\-/]+", low))
@@ -200,7 +209,7 @@ def _skip(label: str) -> bool:
 #  부분 문자열 매칭이 오탐을 만든다 — 실제로 "전열교환기" 의 "교환기" 를 '환기' 로
 #  잡았다. 이런 걸 위반으로 세면 멀쩡한 설명을 고치게 된다.
 FALSE_HOSTS = {
-    "환기": ["교환기", "교환器", "열교환"],
+    "환기": ["교환기", "교환器", "열교환", "폐열회수", "열회수", "전열교환"],
     "예냉": ["예열·예냉", "예냉·예열", "예열/예냉", "예냉/예열"],
     "ess": ["process", "assess", "less", "press", "necess"],
     "pv": ["pvc"],
