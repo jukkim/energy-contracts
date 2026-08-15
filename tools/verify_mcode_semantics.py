@@ -113,30 +113,35 @@ HISTORICAL = re.compile(
 
 #: 정본 이름의 **핵심 낱말**. 표기는 저장소마다 달라도 되지만(예 "DCV" vs
 #  "CO2 수요제어환기"), 선언형은 이 중 하나는 있어야 한다.
+#  ⚠ 실제 저장소에서 쓰는 표현을 **전수로 훑어 보강**했다(2026-08-15). 정본 문구만
+#     넣어 두면 "칠러 대수제어"·"스케줄 최적화" 처럼 **의미는 맞는데 표현만 다른** 것을
+#     위반으로 잡아, 멀쩡한 문구를 고치게 된다.
 SEMANTIC_KEYS = {
-    "M00": ["baseline", "기준", "고정 설정온도", "setback", "셋백"],
-    "M01": ["scheduleopt", "최적 기동", "최적기동", "optimalstart", "기동·정지", "기동정지"],
-    "M02": ["economizer", "이코노마이저", "외기", "무료냉방", "외기냉방"],
-    "M03": ["staging", "대수 제어", "대수제어", "냉동기", "보일러"],
-    "M04": ["pmv_strict", "pmv ±0.5", "pmv±0.5", "pmv 0.5", "pmv0.5"],
-    "M05": ["pmv_relaxed", "pmv ±0.7", "pmv±0.7", "pmv 0.7", "pmv0.7"],
-    "M06": ["nightcycle", "야간 순환", "야간순환"],
-    "M07": ["dcv", "수요제어환기", "co2", "환기"],
-    "M08": ["heatrecovery", "전열교환", "erv", "폐열", "열회수"],
-    "M09": ["precooling", "preheating", "프리쿨링", "프리히팅", "예냉", "예열"],
-    "M10": ["demandresponse", "수요반응", "부하 제한", "부하제한", "피크 전력", "피크전력"],
-    "M11": ["combined_ems", "통합 ems", "통합ems"],
-    "M12": ["combined_pmv05", "통합+pmv0.5", "pmv0.5", "pmv 0.5"],
-    "M13": ["combined_pmv07", "통합+pmv0.7", "pmv0.7", "pmv 0.7"],
-    "M14": ["combined_full", "통합 완전", "통합완전"],
-    "M15": ["combined_premium", "통합 프리미엄", "통합프리미엄"],
-    "M16": ["dr_nightsetback", "야간 셋백", "야간셋백", "셋백"],
-    "M17": ["lightingcontrol", "조명"],
-    "M18": ["esspeakshaving", "ess", "피크셰이빙"],
-    "M19": ["dr_integrated", "dr 통합", "통합 최적화", "통합최적화"],
-    "M20": ["dr_emergencycurtail", "긴급 감축", "긴급감축"],
-    "M21": ["thermalstorage", "빙축열", "수축열", "열저장"],
-    "M22": ["pv_selfconsumption", "태양광", "자가소비", "pv"],
+    "M00": ["baseline", "기준", "무전략", "고정 설정온도", "setback", "셋백"],
+    "M01": ["scheduleopt", "최적 기동", "최적기동", "optimalstart", "기동·정지",
+            "기동정지", "스케줄", "schedule", "가동 스케줄", "운전 스케줄", "시간 최적"],
+    "M02": ["economizer", "이코노마이저", "외기", "무료냉방", "외기냉방", "엔탈피"],
+    "M03": ["staging", "대수 제어", "대수제어", "냉동기", "보일러", "칠러", "chiller"],
+    "M04": ["pmv_strict", "pmv", "설정온도", "설정 온도", "온도 조정", "쾌적"],
+    "M05": ["pmv_relaxed", "pmv", "설정온도", "설정 온도", "온도 조정", "완화", "쾌적"],
+    "M06": ["nightcycle", "야간 순환", "야간순환", "야간 사이클", "야간운전"],
+    "M07": ["dcv", "수요제어환기", "수요제어 환기", "co2", "환기"],
+    "M08": ["heatrecovery", "전열교환", "erv", "폐열", "열회수", "회수"],
+    "M09": ["precooling", "preheating", "프리쿨링", "프리히팅", "예냉", "예열", "미리 냉방"],
+    "M10": ["demandresponse", "수요반응", "부하 제한", "부하제한", "피크 전력",
+            "피크전력", "dr", "수요 반응"],
+    "M11": ["combined_ems", "통합", "복합", "combined"],
+    "M12": ["combined_pmv05", "통합", "복합", "combined", "pmv"],
+    "M13": ["combined_pmv07", "통합", "복합", "combined", "pmv"],
+    "M14": ["combined_full", "통합", "복합", "combined", "풀", "full"],
+    "M15": ["combined_premium", "통합", "복합", "combined", "프리미엄", "premium"],
+    "M16": ["dr_nightsetback", "야간 셋백", "야간셋백", "셋백", "setback"],
+    "M17": ["lightingcontrol", "조명", "디밍", "lighting"],
+    "M18": ["esspeakshaving", "ess", "피크셰이빙", "피크 셰이빙", "peak shaving"],
+    "M19": ["dr_integrated", "dr 통합", "통합 최적화", "통합최적화", "통합"],
+    "M20": ["dr_emergencycurtail", "긴급 감축", "긴급감축", "긴급", "curtail"],
+    "M21": ["thermalstorage", "빙축열", "수축열", "열저장", "축열"],
+    "M22": ["pv_selfconsumption", "태양광", "자가소비", "pv", "발전"],
 }
 
 #: 붙으면 **다른 전략의 낱말**임이 분명한 것 — 산문형 적발용
