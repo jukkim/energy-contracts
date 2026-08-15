@@ -311,8 +311,15 @@ VINTAGE_PAIRS = {
 }
 
 
-def is_vintage_pair(repo_name: str, code: str, label: str) -> bool:
-    if repo_name.lower() not in VINTAGE_REPOS:
+def is_vintage_pair(scope: str, code: str, label: str) -> bool:
+    """`scope` = 저장소 이름 **또는** 파일 경로. 어느 쪽이든 `reverse` 계열인지 본다.
+
+    ⚠ 저장소 이름만 보면 `--repo 8.simulation --files reverse/...` 처럼
+      **상위 저장소에서 하위 경로를 지목**할 때 범위를 놓친다(훅이 자기 문서를
+      위반이라 막았다). 경로의 **디렉터리 성분**으로도 판정한다.
+    """
+    parts = {x.lower() for x in scope.replace(chr(92), "/").split("/") if x}
+    if not (parts & set(VINTAGE_REPOS)):
         return False
     words = VINTAGE_PAIRS.get(code)
     if not words:
@@ -621,9 +628,11 @@ def main(argv=None) -> int:
             hits += scan_file(fp, base, st)
         # ⚠ 훅과 전체 스캔이 **다른 규칙**을 쓰면 안 된다. 여기에 논문 보류 규칙을
         #   안 걸어서, 전체 스캔은 0 건인데 커밋만 막히는 일이 실제로 났다.
-        rname = base.name or ""
+        # ⚠ `--repo .` 이면 `Path('.').name` 이 **빈 문자열**이라 vintage 면제가 통째로
+        #   안 걸렸다(훅이 자기 문서를 위반이라 막았다). 경로를 **해석해서** 이름을 낸다.
+        rname = base.resolve().name
         def _vin(h):
-            return is_vintage_pair(rname, h[2], h[3])
+            return is_vintage_pair(f"{rname}/{h[0]}", h[2], h[3])
         paper_hits = [h for h in hits
                       if not is_data_corpus(h[0]) and (is_paper_conflict(h[0]) or _vin(h))]
         code_hits = [h for h in hits if not is_data_corpus(h[0])
@@ -654,7 +663,7 @@ def main(argv=None) -> int:
         all_hits = scan(repo, st)
         corpus = [h for h in all_hits if is_data_corpus(h[0])]
         def _vintage(h):
-            return is_vintage_pair(label, h[2], h[3])
+            return is_vintage_pair(f"{label}/{h[0]}", h[2], h[3])
         paper = [h for h in all_hits
                  if not is_data_corpus(h[0]) and (is_paper_conflict(h[0]) or _vintage(h))]
         paper_total += len(paper)
