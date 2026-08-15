@@ -73,3 +73,22 @@ jobs:
           else
             echo "Sibling project repos not present in this CI checkout — skip"
           fi
+
+      # ⚠ M-code 의미 게이트 — 2026-06-22 통일이 2026-08-15 에 또 깨졌다.
+      #   근인은 **회귀 가드를 소비자 저장소 한 곳(agentleague)에만** 넣은 것이다.
+      #   가드가 한 곳에만 있으면 형제는 다시 어긋난다 → 정본 저장소에서 돌린다.
+      - name: M-code 의미 게이트 (자기 저장소)
+        run: python tools/verify_mcode_semantics.py --repo . --strict
+
+      - name: M-code 게이트 자체 시험 (공허하지 않은가)
+        run: python -m pytest tests/test_mcode_semantics_gate.py -q
+
+      # 형제 저장소가 체크아웃돼 있으면 전 범위도 본다. 없으면 건너뛰되
+      # **건너뜀을 성공으로 집계하지 않는다** — 그 착시로 게이트가 비어 있던 전례가 있다.
+      - name: M-code 의미 게이트 (전 범위, 형제 있을 때만)
+        run: |
+          if [ -d ../building-energy-3d ] || [ -d ../../8.simulation ]; then
+            python tools/verify_mcode_semantics.py --strict
+          else
+            echo "::notice::형제 저장소 없음 — 전 범위 게이트 SKIP(성공 아님)"
+          fi
