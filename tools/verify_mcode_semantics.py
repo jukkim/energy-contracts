@@ -296,11 +296,36 @@ PAPER_CONFLICT_PATHS = ("reverse/paper", "paper/latex", "paper/tables",
 PAPER_CONFLICT_DOC = "8.simulation/reverse/docs/MCODE_BIT7_IDENTITY_CONFLICT_2026-08-15.md"
 
 
+#: **확정된 vintage 예외.** `reverse` 계열에서 `M07 = NightCycle` 은 오매핑이 아니라
+#  **2026-05-13 이전 매핑의 정확한 이름**이다(실측 확정 — 논문의 7비트 조합
+#  `{M00..M05, M07}`(M06 부재)은 `E1→M07` 시절에만 재현되고, 현재 매핑으로 20k 캐시를
+#  재구성하면 M07 표본이 0 이다. 표본 0 인 비트가 F1 0.855 를 낼 수 없다).
+#
+#  ⚠ 경로가 아니라 **이 짝 하나만** 면제한다. 경로로 막으면 그 안의 **다른** 오매핑까지
+#    같이 눈감게 된다 — 이번 세션이 통째로 그 교훈이다.
+VINTAGE_REPOS = ("reverse", "reverse-ems")
+#  vintage 는 **두 코드가 맞물린 짝**이다 — 그 시절엔 M06↔DCV, M07↔NightCycle 이었다.
+VINTAGE_PAIRS = {
+    "M07": ("nightcycle", "night cycle", "night-cycle", "야간 순환", "야간순환"),
+    "M06": ("dcv", "수요제어환기", "수요제어 환기", "co2 농도"),
+}
+
+
+def is_vintage_pair(repo_name: str, code: str, label: str) -> bool:
+    if repo_name.lower() not in VINTAGE_REPOS:
+        return False
+    words = VINTAGE_PAIRS.get(code)
+    if not words:
+        return False
+    low = label.lower()
+    return any(w in low for w in words)
+
+
 def is_paper_conflict(rel: str) -> bool:
-    # ⚠ 역슬래시 리터럴로 비교했더니 `"paper	ables"` 의 `	` 가 **탭**이 돼
-    #   영영 안 맞았다. 경로 구분자는 **정규화하고 슬래시로만** 비교한다.
-    low = rel.replace("\\", "/").lower()
-    return any(h in low for h in PAPER_CONFLICT_PATHS)
+    """⛔ **더는 쓰지 않는다.** 경로로 면제했더니 그 안의 **다른** 오매핑까지 가렸다 —
+    `patent_draft_v2.md` 에 `| M03 | Economizer |` 를 심었는데 안 잡혔다(실증).
+    면제는 **사안(vintage 짝)** 으로만 건다. 이 함수는 항상 False 다."""
+    return False
 
 
 def canon() -> dict:
@@ -596,9 +621,13 @@ def main(argv=None) -> int:
             hits += scan_file(fp, base, st)
         # ⚠ 훅과 전체 스캔이 **다른 규칙**을 쓰면 안 된다. 여기에 논문 보류 규칙을
         #   안 걸어서, 전체 스캔은 0 건인데 커밋만 막히는 일이 실제로 났다.
-        paper_hits = [h for h in hits if not is_data_corpus(h[0]) and is_paper_conflict(h[0])]
-        code_hits = [h for h in hits
-                     if not is_data_corpus(h[0]) and not is_paper_conflict(h[0])]
+        rname = base.name or ""
+        def _vin(h):
+            return is_vintage_pair(rname, h[2], h[3])
+        paper_hits = [h for h in hits
+                      if not is_data_corpus(h[0]) and (is_paper_conflict(h[0]) or _vin(h))]
+        code_hits = [h for h in hits if not is_data_corpus(h[0])
+                     and not is_paper_conflict(h[0]) and not _vin(h)]
         for rel, ln, c, lab, why in code_hits:
             print(f"  ⛔ {rel}:{ln}  {c}({lab})  ← {why}")
         if paper_hits:
@@ -621,13 +650,17 @@ def main(argv=None) -> int:
             print(f"  ⏭ 없음: {repo}")
             continue
         scanned += 1
+        label = repo.name or str(repo)
         all_hits = scan(repo, st)
         corpus = [h for h in all_hits if is_data_corpus(h[0])]
-        paper = [h for h in all_hits if not is_data_corpus(h[0]) and is_paper_conflict(h[0])]
+        def _vintage(h):
+            return is_vintage_pair(label, h[2], h[3])
+        paper = [h for h in all_hits
+                 if not is_data_corpus(h[0]) and (is_paper_conflict(h[0]) or _vintage(h))]
         paper_total += len(paper)
-        hits = [h for h in all_hits if not is_data_corpus(h[0]) and not is_paper_conflict(h[0])]
+        hits = [h for h in all_hits if not is_data_corpus(h[0])
+                and not is_paper_conflict(h[0]) and not _vintage(h)]
         corpus_total += len(corpus)
-        label = repo.name or str(repo)
         if corpus:
             corpus_files.update(h[0] for h in corpus)
         if not hits:
