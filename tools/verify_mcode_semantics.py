@@ -109,7 +109,8 @@ ENUMERATION = re.compile(CODE)
 
 #: 과거 표기를 **인용**하는 줄 — 고치면 이력이 거짓이 된다
 HISTORICAL = re.compile(
-    r"구\s*체계|이전\s*체계|폐기|오기|deprecated|legacy|과거|였음|였다|"
+    r"구\s*체계|구\s*의미|이전\s*체계|이전\s*의미|오염|contamination|"
+    r"폐기|오기|deprecated|legacy|과거|였음|였다|"
     r"이전에는|바뀌기\s*전|→\s*" + CODE)
 
 #: 정본 이름의 **핵심 낱말**. 표기는 저장소마다 달라도 되지만(예 "DCV" vs
