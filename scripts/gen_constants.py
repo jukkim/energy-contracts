@@ -229,6 +229,10 @@ PROJECT_TARGETS: dict[str, dict] = {
 def load_schemas() -> dict:
     """필요한 SSOT 스키마들을 로드해 단일 dict로 반환."""
     ems = json.loads((SCHEMAS_DIR / "ems_strategies.json").read_text(encoding="utf-8"))
+    # 2026-08-16: **엣지가 실제로 구동할 수 있는 전략.** 정본(23종)의 부분집합이라
+    #   화면 enum·엣지 검증이 여기서 파생된다(격차 14종 → 0종).
+    _cap_fp = SCHEMAS_DIR / "edge_strategy_capability.json"
+    edge_cap = json.loads(_cap_fp.read_text(encoding="utf-8")) if _cap_fp.exists() else {}
     ports = json.loads((SCHEMAS_DIR / "port_allocation.json").read_text(encoding="utf-8"))
     common = json.loads((SCHEMAS_DIR / "common.json").read_text(encoding="utf-8"))
     # Phase C 신규
@@ -277,7 +281,8 @@ def load_schemas() -> dict:
     emissions = _load("emission_factors.json")
     # 설비 taxonomy SSOT — 수용가 마스터 데이터 모델의 설비 축(kind·action·capability).
     equipment = _load("equipment_taxonomy.json")
-    return {"ems": ems, "ports": ports, "common": common,
+    return {"edge_cap": edge_cap,
+        "ems": ems, "ports": ports, "common": common,
             "agents": agents, "intents": intents,
             "modes": modes, "dataclass": dataclass, "tests": tests,
             "models": models, "auth": auth, "errors": errors,

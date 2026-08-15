@@ -1,0 +1,68 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://energy-contracts/schemas/edge_strategy_capability.json",
+  "title": "Edge Strategy Capability",
+  "description": "엣지가 **실제로 구동할 수 있는** EMS 전략. 정본(ems_strategies.json M00~M22 23종)의 부분집합이다. ⚠ 이 파일은 '무엇을 부를 수 있는가'가 아니라 '무엇을 할 수 있는가'를 선언한다 — 둘이 달라도 되지만 **다르다는 사실이 어디에도 안 적혀 있으면 안 된다**. 2026-08-16 인수검사에서 화면은 23종을 내주고 엣지는 9종만 받는 격차 14종이 실측됐고, 거부 메시지는 'M00~M20 이어야 함'이라 실제 이유를 거짓으로 말하고 있었다.",
+  "_usage": "hybrid",
+  "_provenance": "2026-08-16 실측. edge-agent/src/api/server.py 의 하드코딩 집합을 그대로 옮긴 것이지 새로 정한 값이 아니다. 늘리려면 엣지에 그 전략의 실제 구동 경로를 먼저 구현해야 한다.",
+  "_consumers": [
+    "projects/edge-agent/src/api/server.py (_VALID_STRATEGIES)",
+    "projects/building-energy-3d-lab/scripts/gen_ops.py (edge op strategy enum)",
+    "projects/energy-contracts/tools/verify_strategy_dispatchability.py (격차 감시)"
+  ],
+  "type": "object",
+  "required": [
+    "version",
+    "dispatchable",
+    "not_dispatchable"
+  ],
+  "properties": {
+    "version": {
+      "type": "string"
+    },
+    "dispatchable": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "pattern": "^M(0\\d|1\\d|2[0-2])$"
+      },
+      "description": "엣지가 지금 구동 가능한 전략. 화면은 이 집합만 실행 가능한 것으로 내줘야 한다."
+    },
+    "not_dispatchable": {
+      "type": "object",
+      "description": "정본에는 있으나 엣지가 못 하는 전략 → 사유. **비워 두지 말 것** — 비면 '왜 못 하는지'가 사라진다.",
+      "additionalProperties": {
+        "type": "string"
+      }
+    }
+  },
+  "version": "1.0.0",
+  "dispatchable": [
+    "M00",
+    "M02",
+    "M04",
+    "M09",
+    "M16",
+    "M17",
+    "M18",
+    "M19",
+    "M20"
+  ],
+  "not_dispatchable": {
+    "M01": "스케줄 최적화 — 엣지 드라이버에 기동·정지 스케줄 재작성 경로 없음",
+    "M03": "냉동기·보일러 대수 제어 — 플랜트 시퀀서 연동 미구현",
+    "M05": "PMV ±0.7 — 엣지는 PMV 엄격(M04)만 구동",
+    "M06": "야간 순환 — 엣지 스케줄러에 순환 운전 모드 없음",
+    "M07": "CO2 수요제어환기 — CO2 센서 포인트·외기댐퍼 제어 경로 미구현",
+    "M08": "전열교환기(ERV) — 엣지에 ERV 제어 포인트 없음",
+    "M10": "피크 전력 수요반응 — DR 계열은 M16·M19·M20 으로 구동",
+    "M11": "통합 EMS — 결합 전략(M01+M02+M03), 구성 레그 중 M01·M03 미지원",
+    "M12": "통합+PMV0.5 — M11 미지원",
+    "M13": "통합+PMV0.7 — M11·M05 미지원",
+    "M14": "통합 완전 — M06·M07 미지원",
+    "M15": "통합 프리미엄 — M14 미지원",
+    "M21": "빙축열/수축열 — 축열조 자산·제어 포인트 없음",
+    "M22": "태양광 자가소비 — PV 인버터 연동 없음"
+  },
+  "_usage_detail": "codegen: lab/gen_ops.py 가 edge op enum 을 만든다 · runtime: edge-agent 가 _VALID_STRATEGIES 를 파생한다 · 감시: tools/verify_strategy_dispatchability.py"
+}

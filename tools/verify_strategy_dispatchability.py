@@ -53,13 +53,13 @@ EDGE_SERVER = WORKSPACE / "projects" / "edge-agent" / "src" / "api" / "server.py
 OP_REGISTRY = (WORKSPACE / "projects" / "building-energy-3d-lab" /
                "src" / "_shared" / "op_registry.json")
 
-#: **현재 승인된 격차** — 화면은 내주지만 엣지가 못 하는 코드.
-#  ⚠ 이 목록은 *정당화*가 아니라 *기록*이다. 줄어들어야 하고, 늘면 실패한다.
-#  (2026-08-16 실측. 근거 = 공모전 docs/MCODE_ACCEPTANCE_HANDOVER_2026-08-16.md §5)
-KNOWN_GAP = {
-    "M01", "M03", "M05", "M06", "M07", "M08", "M10",
-    "M11", "M12", "M13", "M14", "M15", "M21", "M22",
-}
+CAPABILITY = EC_ROOT / "energy_contracts" / "schemas" / "edge_strategy_capability.json"
+
+
+def declared() -> tuple[set[str], dict[str, str]]:
+    """**선언된** 실행 가능 집합과 못 하는 사유. 단일 출처."""
+    d = json.loads(CAPABILITY.read_text(encoding="utf-8"))
+    return set(d["dispatchable"]), dict(d["not_dispatchable"])
 
 
 def canon_codes() -> set[str]:
@@ -67,14 +67,23 @@ def canon_codes() -> set[str]:
 
 
 def edge_codes() -> set[str]:
-    """`_VALID_STRATEGIES` 를 **실행 없이** 읽는다(import 부작용 차단)."""
-    tree = ast.parse(EDGE_SERVER.read_text(encoding="utf-8"))
-    for node in ast.walk(tree):
-        if isinstance(node, ast.Assign):
-            for t in node.targets:
-                if isinstance(t, ast.Name) and t.id == "_VALID_STRATEGIES":
-                    return set(ast.literal_eval(node.value))
-    raise LookupError(f"{EDGE_SERVER.name} 에서 `_VALID_STRATEGIES` 를 못 찾았다")
+    """엣지가 **실제로 쓰는** 집합.
+
+    ⚠ 예전엔 소스에서 리터럴을 `ast.literal_eval` 로 긁었다. 값이 계약 파일에서
+      파생되도록 바뀌자(`_VALID_STRATEGIES = _load_dispatchable()`) 그 방식은
+      **터졌다** — 다행히 조용히 통과하지 않고 예외를 냈다.
+      정적 파싱은 "지금 무엇이 쓰이는지" 를 못 본다. **실행해서 읽는다.**
+    """
+    src = EDGE_SERVER.parents[1]
+    if str(src) not in sys.path:
+        sys.path.insert(0, str(src))
+    import importlib
+
+    mod = importlib.import_module("api.server")
+    got = set(getattr(mod, "_VALID_STRATEGIES", ()))
+    if not got:
+        raise LookupError("edge `_VALID_STRATEGIES` 가 비었다")
+    return got
 
 
 def ui_codes() -> set[str]:
@@ -107,28 +116,33 @@ def main(argv=None) -> int:
         print("\n⛔ 어느 한쪽을 0 종으로 읽었다 — 파싱이 어긋났다(가드가 공허하다).")
         return 1
 
+    decl, reasons = declared()
     gap = sorted(ui - edge)
-    unknown = sorted(set(gap) - KNOWN_GAP)
-    closed = sorted(KNOWN_GAP - set(gap))
+    undeclared = sorted((canon - decl) - set(reasons))
     stray = sorted(edge - canon)
+    drift_edge = sorted(edge ^ decl)
+    drift_ui = sorted(ui - decl)
 
-    print(f"\n  격차(화면에 있으나 엣지가 거부)  {len(gap)}종")
-    print(f"     {' '.join(gap) if gap else '없음'}")
+    print("")
+    print(f"  선언(계약)      {len(decl)}종 실행 가능 · {len(reasons)}종 사유 기재")
+    print(f"  UI ↔ edge 격차   {len(gap)}종  {' '.join(gap) if gap else '**없음**'}")
+    if drift_edge:
+        print(f"  ⛔ edge 가 선언과 다르다: {' '.join(drift_edge)}")
+    if drift_ui:
+        print(f"  ⛔ UI 가 선언에 없는 걸 내준다: {' '.join(drift_ui)}")
+    if undeclared:
+        print(f"  ⛔ 정본에 있는데 **선언도 사유도 없는** 코드: {' '.join(undeclared)}")
     if stray:
-        print(f"  ⛔ 엣지가 **정본에 없는 코드**를 받는다: {' '.join(stray)}")
-    if closed:
-        print(f"  ✅ 좁혀진 격차: {' '.join(closed)} — KNOWN_GAP 에서 빼라(그래야 되돌아가지 않는다)")
+        print(f"  ⛔ edge 가 정본 밖 코드를 받는다: {' '.join(stray)}")
 
     print("-" * 74)
-    bad = bool(unknown) or bool(stray) or bool(closed)
-    if unknown:
-        print(f"⛔ **새 격차 {len(unknown)}종**: {' '.join(unknown)}")
-        print("   화면이 내주기 시작했는데 엣지가 못 하는 전략이 늘었다.")
+    bad = bool(gap) or bool(drift_edge) or bool(drift_ui) or bool(undeclared) or bool(stray)
     if not bad:
-        print(f"✅ 격차 {len(gap)}종 — 기록된 그대로다(늘지 않음).")
-        print("   ⚠ 이건 **격차가 없다는 뜻이 아니다.** 해소 계획은")
-        print("     공모전 docs/MCODE_ACCEPTANCE_HANDOVER_2026-08-16.md §5.")
+        print(f"✅ 화면이 내주는 전략 = 엣지가 할 수 있는 전략 ({len(decl)}종). 격차 0.")
+        print(f"   못 하는 {len(reasons)}종은 **사유와 함께** 계약에 적혀 있다 —")
+        print("   화면에서 아예 내주지 않으므로 '눌러도 아무 일 없는 버튼'이 없다.")
         return 0
+    print("⛔ 화면과 엣지가 어긋난다. 단일 출처 = edge_strategy_capability.json")
     return 1 if a.strict else 0
 
 
