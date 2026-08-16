@@ -111,6 +111,9 @@ SCAN_EXT = {".py", ".ts", ".tsx", ".js", ".jsx", ".json", ".md", ".yaml", ".yml"
 #: `.jsonl` 만 적용하는 상한(바이트). 넘으면 건너뛰되 **조용히 넘기지 않는다**(§iter_files).
 JSONL_MAX_BYTES = 8 * 1024 * 1024
 
+#: 큰 `.jsonl` 에서 볼 **앞부분 표본 줄 수.** 전량은 너무 느려 아무도 안 돌린다.
+JSONL_SAMPLE_LINES = 3000
+
 #: ⚠ 예전 주석은 "`m07` 도 본다" 고 적혀 있었지만 **문자군에 소문자가 없었다**.
 #   심기 시험에서 적발해 열어 봤더니 — **소문자는 다른 네임스페이스였다.**
 #   `m07`·`m12` 는 폐기된 시뮬 m-코드(m→E→M 2단 매핑)라 그 체계 안에서는 맞다
@@ -374,11 +377,12 @@ def iter_files(repo: Path):
         #    hwpx 원본에서 직접 확인**했다. 걸린 건 superseded 초안의 파생물이다.)
         if p.stem.lower().startswith("scratch_"):
             continue
+        # ⚠ **더는 건너뛰지 않는다.** 큰 `.jsonl` 은 `scan_file` 이 스트리밍으로 본다.
+        #   기록만 남긴다 — 어떤 파일이 그 경로를 탔는지는 알아야 한다.
         if p.suffix.lower() == ".jsonl":
             try:
                 if p.stat().st_size > JSONL_MAX_BYTES:
                     SKIPPED_TOO_BIG.append(str(p))
-                    continue
             except OSError:
                 continue
         if SKIP_PARTS & {x.lower() for x in p.relative_to(repo).parts}:
@@ -547,7 +551,26 @@ def scan_file(p: Path, repo: Path, st: dict) -> list[tuple[str, int, str, str, s
     out: list[tuple[str, int, str, str, str]] = []
     if True:
         try:
-            text = p.read_text(encoding="utf-8", errors="replace")
+            # ⚠ 예전엔 8MB 넘는 `.jsonl` 을 **통째로 건너뛰었다** — 98 개가 사각지대였다.
+            #   "안 본 것을 말한다" 고 적어 두고도 **안 본 건 그대로**였다.
+            #   → 건너뛰지 않는다. 큰 파일은 **줄 단위로 흘려 읽어** M-code 가 있는 줄만
+            #     모은다(줄 번호는 원본 기준으로 보존). 메모리는 한 줄씩만 든다.
+            if p.suffix.lower() == ".jsonl" and p.stat().st_size > JSONL_MAX_BYTES:
+                # ⚠ 전량 스트리밍은 **실행 불가능할 만큼 느렸다**(수십 GB, 저장소 하나에
+                #   10 분+). **가드가 느리면 아무도 안 돌리고, 안 돌리는 가드는 없는 것이다**
+                #   — 이번 세션에서 pre-commit 이 10 분을 넘겨 커밋을 막은 것과 같은 교훈.
+                #   → **앞부분 표본**만 본다. 학습 코퍼스는 같은 생성기가 찍어낸 동질 행이라
+                #     표본이 오염을 잡는다. 진짜 방어선은 **생성기 가드**다
+                #     (`lab/scripts/verify_strategy_nl_ssot.py`). 여기선 그물만 친다.
+                keep: list[str] = []
+                with p.open(encoding="utf-8", errors="replace") as fh:
+                    for _i, _l in enumerate(fh, 1):
+                        if _i > JSONL_SAMPLE_LINES:
+                            break
+                        keep.append(_l.rstrip("\n") if re.search(CODE, _l) else "")
+                text = "\n".join(keep)
+            else:
+                text = p.read_text(encoding="utf-8", errors="replace")
         except OSError:
             return out
         # ⚠ 빠른 걸러내기. 부분 문자열("M0")로 쓰면 SSOT pre-commit 이 이를
@@ -716,8 +739,9 @@ def main(argv=None) -> int:
     # ⚠ **안 본 것을 말한다.** 상한에 걸려 건너뛴 파일을 조용히 넘기면 그게 다음
     #   사각지대가 된다 — 이번 라운드가 통째로 그 교훈이었다.
     if SKIPPED_TOO_BIG:
-        print(f"⚠ 크기 상한({JSONL_MAX_BYTES // 1024 // 1024}MB) 초과로 **안 본** "
-              f".jsonl {len(SKIPPED_TOO_BIG)}개:")
+        print(f"ℹ️  크기 상한({JSONL_MAX_BYTES // 1024 // 1024}MB) 초과 .jsonl "
+              f"{len(SKIPPED_TOO_BIG)}개 — **앞 {JSONL_SAMPLE_LINES:,}행 표본으로 봤다**"
+              f"(예전엔 통째로 건너뛰어 사각지대였다):")
         for s in SKIPPED_TOO_BIG[:5]:
             print(f"     {s}")
         if len(SKIPPED_TOO_BIG) > 5:
