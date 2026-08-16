@@ -721,37 +721,61 @@ def _clean_git_env() -> dict:
     return {k: v for k, v in os.environ.items() if not k.startswith("GIT_")}
 
 
-def _git_show_at_tag(tag: str, path: str) -> str | None:
-    """`git show {tag}:{path}` blob 반환. 태그가 로컬에 없으면(`git show` 실패) 해당
-    태그만 1회 targeted fetch 후 재시도(self-heal). 정상 경로(태그 존재)엔 네트워크 0.
-    오프라인이거나 태그 자체가 부재하면 None → 호출부 soft-skip.
+def _git_show_at_tag(tag: str, path: str) -> tuple[str | None, str]:
+    """`git show {tag}:{path}` blob 과 **실패 사유**를 함께 돌려준다.
 
     배경(2026-06-18): consumer 미러 커밋 시 ① 로컬 energy-contracts 에 pin 태그 부재 →
       매번 수동 `fetch --tags` + `--no-verify` 강제(self-heal 로 해소), ② 더 근본은 git 훅이
       export 한 GIT_DIR 누수가 `-C` 를 무력화 → 엉뚱한 repo 조회 실패(_clean_git_env 로 해소).
-      두 경로 모두 GIT_* 벗긴 env 로 호출."""
+      두 경로 모두 GIT_* 벗긴 env 로 호출.
+
+    ⚠ 2026-08-17 (동결 게이트 B3): **stderr 를 버려서 원인을 잃고 있었다.**
+      격리환경(복원된 작업본·다른 사용자 소유)에서 git 은 `dubious ownership` 으로 거절하는데,
+      옛 코드는 그 사유를 `DEVNULL` 로 버리고 "태그가 로컬에 없나 보다" 로 넘어가
+      **30 초 fetch 를 태운 뒤** "오프라인이거나 원격에 태그 부재" 라고 답했다.
+      셋 다 틀린 답이다 — 원격도 태그도 멀쩡했고 막은 건 소유권이었다.
+      실측 재현: `GIT_TEST_ASSUME_DIFFERENT_OWNER=1 git show v0.3.40:…` → fatal: detected
+      dubious ownership.
+
+      → ① 읽기 전용 조회에 한해 `-c safe.directory` 를 **그 호출에만** 준다(전역 설정 안 건드림).
+        ② fetch 는 사유가 정말 "unknown revision" 일 때만 한다.
+        ③ 실패하면 **무엇이 막았는지** 문자열로 돌려준다. 사유를 안 돌려주면 다음 사람이
+          또 원격을 의심한다."""
     ref = f"{tag}:{path}"
     env = _clean_git_env()
+    # 격리환경 대비: 이 호출에 한해 대상 repo 를 신뢰한다(전역 --add 아님).
+    base = ["git", "-c", f"safe.directory={CONTRACTS_ROOT}", "-C", str(CONTRACTS_ROOT)]
 
-    def _show() -> str | None:
+    def _show() -> tuple[str | None, str]:
         try:
-            return subprocess.check_output(
-                ["git", "-C", str(CONTRACTS_ROOT), "show", ref],
-                text=True, encoding="utf-8", stderr=subprocess.DEVNULL, env=env)
-        except Exception:
-            return None
+            p = subprocess.run(base + ["show", ref], capture_output=True, text=True,
+                               encoding="utf-8", errors="replace", env=env, timeout=30)
+        except Exception as exc:                       # git 자체가 없는 환경
+            return None, f"git 실행 불가: {exc}"
+        if p.returncode == 0:
+            return p.stdout, ""
+        return None, (p.stderr or "").strip().splitlines()[0] if p.stderr else "사유 없음"
 
-    blob = _show()
+    blob, err = _show()
     if blob is not None:
-        return blob
-    # 태그 로컬 부재 가능 → 해당 태그만 targeted fetch(빠름) 후 1회 재시도.
+        return blob, ""
+
+    # 사유가 "태그를 모르겠다" 일 때만 네트워크를 쓴다. 소유권·손상은 fetch 로 안 낫는다.
+    # ⚠ 문구는 git 실물에서 확인한 것만 쓴다. 처음에 "not a valid object name" 으로 적었다가
+    #   git 이 실제로는 `fatal: invalid object name 'v…'` 을 뱉어 **self-heal fetch 가 통째로
+    #   죽는** 것을 실측에서 잡았다 — 안 도는 자가치유는 있으나 마나다.
+    if not any(s in err for s in ("unknown revision", "invalid object name")):
+        return None, err
+
     try:
-        subprocess.run(
-            ["git", "-C", str(CONTRACTS_ROOT), "fetch", "--quiet", "origin", "tag", tag],
-            check=True, timeout=30, env=env,
-            stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
-    except Exception:
-        return None  # 오프라인/원격 없음 → soft-skip
+        p = subprocess.run(base + ["fetch", "--quiet", "origin", "tag", tag],
+                           capture_output=True, text=True, encoding="utf-8",
+                           errors="replace", timeout=30, env=env)
+    except subprocess.TimeoutExpired:
+        return None, f"태그 {tag} fetch 30초 초과 — 격리·오프라인 환경"
+    if p.returncode != 0:
+        head = (p.stderr or "").strip().splitlines()
+        return None, f"태그 {tag} fetch 실패: {head[0] if head else '사유 없음'}"
     return _show()
 
 
@@ -796,11 +820,12 @@ def check_ec_pin_lockstep() -> list[str]:
         pin = next(iter(distinct_pins))
         enum: set[str] | None = None
         # 태그 미존재 시 self-heal(targeted fetch). 오프라인·태그 부재면 None → soft-skip.
-        blob = _git_show_at_tag(pin, "energy_contracts/schemas/control_command.json")
+        blob, why = _git_show_at_tag(pin, "energy_contracts/schemas/control_command.json")
         if blob is None:
             violations.append(
-                f"pin 태그 {pin} control_command.json 조회 실패(오프라인이거나 원격에 태그 부재) — "
-                f"온라인에서 `git -C projects/energy-contracts fetch --tags origin` 후 재시도 (커버리지 검증 skip)")
+                f"pin 태그 {pin} control_command.json 조회 실패 — **{why}** "
+                f"(커버리지 검증 skip). 원격·태그 문제면 "
+                f"`git -C projects/energy-contracts fetch --tags origin` 후 재시도")
         else:
             try:
                 enum = set(json.loads(blob).get("properties", {})
