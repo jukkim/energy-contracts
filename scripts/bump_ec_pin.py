@@ -88,16 +88,34 @@ def current_wf_refs() -> dict[str, list[str]]:
     return refs
 
 
+def _read_keep_newlines(p: Path) -> str:
+    """줄끝을 **번역하지 않고** 읽는다.
+
+    ⚠ `read_text()` 는 CRLF 를 LF 로 바꿔 들여온다. 거기에 LF 고정 쓰기를 짝지으면
+      CRLF 파일이 통째로 LF 가 된다 — 내용은 한 글자도 안 바뀌었는데 git 은 전 줄이
+      바뀐 것으로 본다(2026-08-16 롤백 예행 중 실측: pin 왕복 후 `pyproject.toml`·
+      `ssot-drift.yml` 이 '변경' 으로 남았다). 기준선 manifest 는 그걸
+      **작업트리 오염**으로 읽는다 — 없는 오염을 만든다.
+    """
+    with p.open("r", encoding="utf-8", newline="") as fh:
+        return fh.read()
+
+
+def _write_keep_newlines(p: Path, s: str) -> None:
+    with p.open("w", encoding="utf-8", newline="") as fh:
+        fh.write(s)
+
+
 def bump_pins(target: str) -> list[str]:
     changed: list[str] = []
     for repo in CONSUMERS:
         pp = _pyproject(repo)
         if not pp.exists():
             continue
-        txt = pp.read_text(encoding="utf-8")
+        txt = _read_keep_newlines(pp)
         new = _PIN_RE.sub(lambda m: m.group(1) + target, txt)
         if new != txt:
-            pp.write_text(new, encoding="utf-8", newline="\n")
+            _write_keep_newlines(pp, new)
             changed.append(repo)
     return changed
 
@@ -109,10 +127,10 @@ def bump_wf_refs(target: str) -> list[str]:
         wf = _workflow(repo)
         if not wf.exists():
             continue
-        txt = wf.read_text(encoding="utf-8")
+        txt = _read_keep_newlines(wf)
         new = _WF_REF_RE.sub(lambda m: m.group(1) + target, txt)
         if new != txt:
-            wf.write_text(new, encoding="utf-8", newline="\n")
+            _write_keep_newlines(wf, new)
             changed.append(repo)
     return changed
 
@@ -146,7 +164,19 @@ def main() -> int:
             print(f"\n[bump_ec_pin] ✗ ssot-drift ref 가 pin 과 skew: ref={distinct_refs} vs pin={distinct}")
             print("  → CI 가 옛 스키마로 --check 를 돌려 DRIFT 오탐한다. bump 로 동반 갱신할 것.")
             return 1
-        print("\n[bump_ec_pin] ✓ pin lockstep OK (ssot-drift ref 포함)")
+        # ⚠ 여기까지는 **핀끼리** 같은지만 봤다. 그게 사각이었다 —
+        #   2026-08-16 실측: 전 소비자 pin=v0.3.39 로 일치해 이 검사가 ✓ 를 냈는데,
+        #   커밋된 생성상수는 master(스키마 33 종) 해시였고 v0.3.39 엔 그 스키마가
+        #   없다. CI 가 pin 대로 checkout 하면 전 소비자 DRIFT.
+        #   **핀이 서로 같은 것과 핀이 옳은 것은 다른 질문이다.**
+        import sys as _sys
+        _sys.path.insert(0, str(Path(__file__).resolve().parent))
+        from _pin_hash_check import check as _pin_hash_ok
+
+        if _pin_hash_ok(CONTRACTS_ROOT, PROJECTS, CONSUMERS,
+                        next(iter(distinct)) if len(distinct) == 1 else None):
+            return 1
+        print("\n[bump_ec_pin] ✓ pin lockstep OK (ssot-drift ref + 태그↔해시 재현)")
         return 0
 
     if not args.target:
