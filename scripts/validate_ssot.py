@@ -74,8 +74,8 @@ def scan_legacy_strategies(paths: list[Path]) -> list[tuple[Path, int, str]]:
             files = [p for p in root.rglob("*") if p.is_file()
                      and p.suffix in STRATEGY_SCAN_EXTS]
         for fp in files:
-            s = str(fp).replace("\\", "/")
-            if any(pat in s for pat in STRATEGY_EXEMPT_PATTERNS):
+            # 절대경로가 아니라 **루트 기준 상대경로**로 판정한다(`_exempt_key` 참조).
+            if any(pat in _exempt_key(fp, root) for pat in STRATEGY_EXEMPT_PATTERNS):
                 continue
             # 라이브러리/빌드 산출물 스킵
             if any(part in fp.parts for part in
@@ -181,6 +181,28 @@ def consumer_scan_roots() -> list[Path]:
     return [p for p in roots if p.exists()]
 
 
+def _exempt_key(fp: Path, root: Path) -> str:
+    """면제 판정에 쓸 경로 — **스캔 루트 기준 상대경로**.
+
+    ⚠ 예전엔 절대경로 문자열로 판정했다. 두 가지가 깨졌다:
+
+    1. **검사가 실행 위치에 따라 달라졌다.** pytest 임시폴더가 `/scratch/` 아래로
+       잡히면 단위시험 fixture 가 면제되어, 같은 HEAD 인데 235 통과 2 실패가 됐다
+       (`test_catches_active_stale_value` 등). 기준선 시험이 *어디서 돌렸는가* 에
+       좌우되면 그건 기준선이 아니다.
+    2. **진짜 코드가 숨을 수 있었다.** 경로 어딘가에 `scratch` 가 들어가기만 하면
+       (사용자 폴더명 등) 실제 소스도 검사에서 빠진다.
+
+    `/scratch/` 같은 면제는 *"저장소 안의 scratch 폴더"* 를 뜻하지 *"경로 아무 데나
+    scratch 라는 글자"* 를 뜻하지 않는다. 그래서 루트 기준 상대경로로 판정한다.
+    """
+    try:
+        rel = fp.relative_to(root)
+    except ValueError:
+        rel = fp
+    return "/" + str(rel).replace("\\", "/")
+
+
 def scan_stale_canonical_values(paths: list[Path]) -> list[tuple[Path, int, str]]:
     compiled = [(_stale_value_re(v), v, cur, desc)
                 for v, cur, desc in STALE_CANONICAL_VALUES]
@@ -192,8 +214,7 @@ def scan_stale_canonical_values(paths: list[Path]) -> list[tuple[Path, int, str]
             files = [p for p in root.rglob("*") if p.is_file()
                      and p.suffix in CANONICAL_SCAN_EXTS]
         for fp in files:
-            s = str(fp).replace("\\", "/")
-            if any(pat in s for pat in CANONICAL_EXEMPT_PATTERNS):
+            if any(pat in _exempt_key(fp, root) for pat in CANONICAL_EXEMPT_PATTERNS):
                 continue
             if any(part in fp.parts for part in
                    ("node_modules", "dist", ".git", ".venv", "venv", "env",
