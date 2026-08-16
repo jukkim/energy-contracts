@@ -4,6 +4,32 @@
 
 ---
 
+## v0.3.40 — 2026-08-16
+
+### `edge_strategy_capability` 신설 — 부를 수 있는 것과 **할 수 있는 것**을 가른다
+
+화면은 전략 23 종을 전부 내주는데 엣지가 받는 건 9 종이었다. 격차 14 종이
+**어디에도 적혀 있지 않았고**, 거부 메시지는 `"M00~M20 이어야 함"` 이라 실제 이유를
+거짓으로 말했다(M01 은 그 범위 안인데도 거부된다). 제어 계통에서 이건 라벨 오류보다
+위험하다 — **누를 수 있는 버튼이 아무 일도 안 하는 것**이다.
+
+- **`edge_strategy_capability`** — `dispatchable` 9 종 + `not_dispatchable` 14 종
+  (**사유 필수**). 정본(`ems_strategies`)의 부분집합임을 명시한다. 추가(additive)라
+  기존 소비자를 깨지 않는다.
+- 소비: `edge-agent`(`_VALID_STRATEGIES` 파생) · `gen_ops.py`(UI enum 파생) ·
+  `tools/verify_strategy_dispatchability.py`(격차 감시).
+- 스키마 33 종이 되며 `SOURCE_HASH` 가 `02246e19d4efcab2` → `e612a519bde61458` 로
+  바뀐다. **소비자 전원 regen + pin bump 가 함께 가야 한다**(이 릴리스의 이유).
+
+### 구값 스윕 범위를 소비 저장소에서 파생
+
+스윕 대상이 6 개로 박혀 있었는데 생성 상수를 쓰는 저장소는 8 개였다 —
+`building-energy-sejong`·`ingestion-worker`·`8sim-shared` 는 **감시 밖**이었다.
+(실제 잔재는 0 건. 손해가 아니라 공백이었다.) 이제
+`gen_constants.PROJECT_TARGETS` 에서 파생하고, 두 목록이 갈라지면 시험이 실패한다.
+
+---
+
 ## v0.3.37 — 2026-08-03
 
 ### `simulation_channels` 신설 + `telemetry` v1.6 (설정온도 냉/난 분리)
