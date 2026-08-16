@@ -159,3 +159,41 @@ def test_provision_objective_mirrors_the_strategy_ssot():
     assert mirror == ssot, (
         f"objective 값집합이 갈라졌다 — SSOT {ssot} ↔ provision {mirror}. "
         "ems_strategies.json 이 원본이다.")
+
+
+def test_sweep_covers_every_codegen_consumer():
+    """구값 스윕이 **생성 상수를 소비하는 저장소를 전부** 보는가.
+
+    2026-08-16 실측: 스윕 대상이 6 개로 박혀 있었는데 소비 저장소는 8 개였다.
+    `building-energy-sejong`·`ingestion-worker`·`8sim-shared` 는 EC 가 만든 상수를
+    쓰면서 구값 검사는 한 번도 안 받았다(그때 실제 잔재는 0 건 — 손해가 아니라
+    **감시 공백**이었다).
+
+    소비처를 늘리면서 스윕을 안 늘리면 그 저장소가 조용히 사각이 된다.
+    이 시험은 두 목록이 갈라지는 순간 실패한다.
+    """
+    import importlib.util
+    from pathlib import Path
+
+    here = Path(__file__).resolve().parents[1] / "scripts"
+
+    def _load(name, fn):
+        spec = importlib.util.spec_from_file_location(name, here / fn)
+        mod = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(mod)
+        return mod
+
+    val, gen = _load("_v", "validate_ssot.py"), _load("_g", "gen_constants.py")
+
+    swept = {p.resolve() for p in val.consumer_scan_roots()}
+    missing = []
+    for proj, cfg in gen.PROJECT_TARGETS.items():
+        rel = cfg.get("python") or cfg.get("ts")
+        if not rel:
+            continue
+        root = val.WORKSPACE_ROOT.joinpath(*Path(rel).parts[:2])
+        if root.exists() and root.resolve() not in swept:
+            missing.append(f"{proj} ({root})")
+
+    assert not missing, (
+        "생성 상수를 소비하는데 구값 스윕 대상이 아닌 저장소: " + ", ".join(missing))

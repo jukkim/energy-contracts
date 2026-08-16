@@ -148,6 +148,39 @@ def _stale_value_re(value: str) -> re.Pattern:
     return re.compile(r"(?<![\d.])" + re.escape(value) + r"(?![\d])")
 
 
+def consumer_scan_roots() -> list[Path]:
+    """구값·구전략 스윕 대상 = **생성 상수를 소비하는 저장소 전부** + EC 자신.
+
+    `gen_constants.PROJECT_TARGETS` 의 산출 경로에서 저장소 루트를 역산한다.
+    (`projects/x/src/_generated_constants.py` → `projects/x`,
+     `8.simulation/_shared/...` → `8.simulation/_shared`.)
+
+    ⚠ 소비처를 늘리면서 스윕을 안 늘리면 그 저장소는 **감시 밖**이 된다 —
+      실제로 3 개가 그 상태였다. 사람이 두 목록을 맞추게 두지 않는다.
+    """
+    import importlib.util
+
+    spec = importlib.util.spec_from_file_location(
+        "_gc", Path(__file__).resolve().parent / "gen_constants.py")
+    gc = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(gc)                      # type: ignore[union-attr]
+
+    roots: list[Path] = []
+    for cfg in gc.PROJECT_TARGETS.values():
+        rel = cfg.get("python") or cfg.get("ts")
+        if not rel:
+            continue
+        parts = Path(rel).parts
+        # projects/<repo>/…  ·  8.simulation/<dir>/…  둘 다 앞 2 단계가 저장소 루트다.
+        root = WORKSPACE_ROOT.joinpath(*parts[:2])
+        if root not in roots:
+            roots.append(root)
+    ec = WORKSPACE_ROOT / "projects" / "energy-contracts"
+    if ec not in roots:
+        roots.append(ec)
+    return [p for p in roots if p.exists()]
+
+
 def scan_stale_canonical_values(paths: list[Path]) -> list[tuple[Path, int, str]]:
     compiled = [(_stale_value_re(v), v, cur, desc)
                 for v, cur, desc in STALE_CANONICAL_VALUES]
@@ -872,13 +905,18 @@ def main() -> int:
             print("[SSOT] 변경 파일 없음, 통과")
             return 0
     else:
-        # 기본 검사 대상
-        paths = [
-            WORKSPACE_ROOT / "projects" / p for p in
-            ("edge-agent", "gridbridge", "building-energy-3d",
-             "agentleague", "eduarena", "energy-contracts")
-        ]
-        paths = [p for p in paths if p.exists()]
+        # 기본 검사 대상 — **손으로 적지 않는다.**
+        #
+        # ⚠ 2026-08-16 실측: 여기 6 개가 박혀 있었는데 생성 상수를 **소비하는** 저장소는
+        #   8 개였다. `building-energy-sejong`·`ingestion-worker`·`8sim-shared` 셋은
+        #   EC 가 만든 상수를 쓰면서 **구값 검사는 한 번도 안 받고 있었다.**
+        #   (그때 실제 잔재는 0 건이었다 — 즉 지금 손해가 아니라 **감시 공백**이다.)
+        #
+        #   게이트의 범위를 사람이 관리하면 소비처가 늘 때마다 조용히 새 사각이 생긴다.
+        #   → `gen_constants.PROJECT_TARGETS` 에서 파생한다. 새 소비처를 등록하는 순간
+        #     검사 대상이 된다. 회귀 가드 = `tests/test_canonical_value_gate.py`
+        #     `test_sweep_covers_every_codegen_consumer`.
+        paths = consumer_scan_roots()
 
     failed = False
     total_violations = 0
