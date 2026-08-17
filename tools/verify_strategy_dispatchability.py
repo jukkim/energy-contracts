@@ -55,6 +55,31 @@ OP_REGISTRY = (WORKSPACE / "projects" / "building-energy-3d-lab" /
 
 CAPABILITY = EC_ROOT / "energy_contracts" / "schemas" / "edge_strategy_capability.json"
 
+#: 제품·발표가 읽는 M-code 상태 문서. 여기 적힌 숫자가 계약과 어긋나면 **밖에서 들킨다**.
+#  2026-08-17: 이 문서에는 명칭 통일만 적혀 있고 "실제로 몇 종이 실행되는가" 가 없었다.
+#  그래서 "M-code 통일 완료" 를 읽은 사람이 23 종을 다 발령할 수 있다고 이해할 수 있었다.
+STATUS_DOC = (WORKSPACE / "공모전" / "2026-04-24_AI챔피언_전국민AI경진대회" /
+              "docs" / "MCODE_UNIFICATION_PLAN_2026-08-15.md")
+STATUS_BLOCK_RE = re.compile(
+    r"MCODE-DISPATCH-STATUS v1\s*\n"
+    r"\s*canonical\s+(\d+)\s+([^\n]*)\n"
+    r"\s*dispatchable\s+(\d+)\s+([^\n]*)\n"
+    r"\s*blocked\s+(\d+)\s+([^\n]*)")
+
+
+def doc_status() -> dict | None:
+    """상태 문서의 기계 판독 블록. 없으면 None(호출부가 실패로 처리)."""
+    if not STATUS_DOC.exists():
+        return None
+    m = STATUS_BLOCK_RE.search(STATUS_DOC.read_text(encoding="utf-8", errors="replace"))
+    if not m:
+        return None
+    return {
+        "canonical_n": int(m.group(1)), "canonical": set(m.group(2).split()),
+        "dispatchable_n": int(m.group(3)), "dispatchable": set(m.group(4).split()),
+        "blocked_n": int(m.group(5)), "blocked": set(m.group(6).split()),
+    }
+
 
 def declared() -> tuple[set[str], dict[str, str]]:
     """**선언된** 실행 가능 집합과 못 하는 사유. 단일 출처."""
@@ -100,6 +125,8 @@ def ui_codes() -> set[str]:
 def main(argv=None) -> int:
     ap = argparse.ArgumentParser(description="전략 실행 가능성 격차 가드")
     ap.add_argument("--strict", action="store_true", help="격차 확대 시 exit 1")
+    ap.add_argument("--check-docs", action="store_true",
+                    help="상태 문서의 숫자·목록이 계약과 같은지도 본다")
     a = ap.parse_args(argv)
 
     canon, edge, ui = canon_codes(), edge_codes(), ui_codes()
@@ -135,13 +162,46 @@ def main(argv=None) -> int:
     if stray:
         print(f"  ⛔ edge 가 정본 밖 코드를 받는다: {' '.join(stray)}")
 
+    doc_bad: list[str] = []
+    if a.check_docs:
+        d = doc_status()
+        if d is None:
+            doc_bad.append(f"상태 문서에서 MCODE-DISPATCH-STATUS 블록을 못 읽었다 "
+                           f"({STATUS_DOC.name}) — 문서가 상태를 안 적고 있다")
+        else:
+            blocked = set(reasons)
+            checks = [
+                ("canonical 목록", d["canonical"], canon),
+                ("dispatchable 목록", d["dispatchable"], decl),
+                ("blocked 목록", d["blocked"], blocked),
+            ]
+            for label, got, want in checks:
+                if got != want:
+                    doc_bad.append(f"{label} 불일치 — 문서에만 {sorted(got - want)} · "
+                                   f"계약에만 {sorted(want - got)}")
+            counts = [("canonical", d["canonical_n"], len(canon)),
+                      ("dispatchable", d["dispatchable_n"], len(decl)),
+                      ("blocked", d["blocked_n"], len(blocked))]
+            for label, got_n, want_n in counts:
+                if got_n != want_n:
+                    doc_bad.append(f"{label} 개수 불일치 — 문서 {got_n} · 계약 {want_n}")
+        print("")
+        print(f"  상태 문서 대조   {'⛔ ' + str(len(doc_bad)) + '건 어긋남' if doc_bad else '✅ 계약과 일치'}")
+        for m in doc_bad:
+            print(f"    · {m}")
+
     print("-" * 74)
-    bad = bool(gap) or bool(drift_edge) or bool(drift_ui) or bool(undeclared) or bool(stray)
+    bad = (bool(gap) or bool(drift_edge) or bool(drift_ui) or bool(undeclared)
+           or bool(stray) or bool(doc_bad))
     if not bad:
         print(f"✅ 화면이 내주는 전략 = 엣지가 할 수 있는 전략 ({len(decl)}종). 격차 0.")
         print(f"   못 하는 {len(reasons)}종은 **사유와 함께** 계약에 적혀 있다 —")
         print("   화면에서 아예 내주지 않으므로 '눌러도 아무 일 없는 버튼'이 없다.")
         return 0
+    if doc_bad and not (gap or drift_edge or drift_ui or undeclared or stray):
+        print("⛔ 코드는 맞는데 **문서가 다른 숫자를 말한다.** 문서를 계약에 맞출 것 —")
+        print(f"   {STATUS_DOC.relative_to(WORKSPACE)} §2.5")
+        return 1 if a.strict else 0
     print("⛔ 화면과 엣지가 어긋난다. 단일 출처 = edge_strategy_capability.json")
     return 1 if a.strict else 0
 

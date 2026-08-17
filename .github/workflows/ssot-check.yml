@@ -83,6 +83,19 @@ jobs:
       - name: M-code 게이트 자체 시험 (공허하지 않은가)
         run: python -m pytest tests/test_mcode_semantics_gate.py -q
 
+      # ⚠ 실행 가능성 게이트 — 2026-08-16 에 만들었는데 **어디에도 연결하지 않았다.**
+      #   손으로 돌려야만 도는 도구는 다음 사람이 안 돌린다(사냥꾼 5-Stage ③ 누락).
+      #   화면이 23 종을 내주고 엣지가 9 종만 받던 사고가 바로 그 자리에서 났다.
+      #   `--check-docs` 는 상태 문서의 숫자까지 계약과 대조한다 — 코드가 맞아도
+      #   문서가 "23 종 실행" 이라 말하면 밖에서 들킨다.
+      - name: 전략 실행 가능성 게이트 (UI ↔ edge ↔ 문서)
+        run: |
+          if [ -d ../edge-agent ] && [ -d ../building-energy-3d-lab ]; then
+            python tools/verify_strategy_dispatchability.py --strict --check-docs
+          else
+            echo "::notice::형제 저장소 없음 — 실행 가능성 게이트 SKIP(성공 아님)"
+          fi
+
       # 형제 저장소가 체크아웃돼 있으면 전 범위도 본다. 없으면 건너뛰되
       # **건너뜀을 성공으로 집계하지 않는다** — 그 착시로 게이트가 비어 있던 전례가 있다.
       - name: M-code 의미 게이트 (전 범위, 형제 있을 때만)
