@@ -125,6 +125,40 @@ def ui_codes() -> set[str]:
     return best
 
 
+def check_capability_tiers() -> list[str]:
+    """**단계가 뭉개지지 않았는가** (2026-08-17 외부 재감사 지적 수용).
+
+    `dispatchable: 23` 을 전역 사실로 읽으면 현장(BACnet·Modbus 기본 맵 10 종)보다
+    넓어진다. 계약이 단계를 갈라 적고, 그 구분이 **살아 있는지** 여기서 지킨다.
+
+    ⚠ 특히 `READBACK_VERIFIED`·`MV_VERIFIED` 가 0 이 아닌 값으로 바뀌면 그건
+      **새 기능이 생겼다**는 뜻이므로 증거를 요구해야 한다 — 숫자만 올리는 것을 막는다.
+    """
+    try:
+        d = json.loads(CAPABILITY.read_text(encoding="utf-8"))
+    except Exception as e:                                # noqa: BLE001
+        return [f"capability 계약을 못 읽었다: {e}"]
+
+    tiers = d.get("capability_tiers")
+    if not tiers:
+        return ["`capability_tiers` 가 없다 — 'dispatchable 23' 이 전역 사실로 읽힌다"]
+
+    v: list[str] = []
+    for k in ("CANONICAL", "REFERENCE_DISPATCHABLE", "SITE_DISPATCHABLE",
+              "READBACK_VERIFIED", "MV_VERIFIED"):
+        if k not in tiers:
+            v.append(f"capability_tiers 에 `{k}` 단계가 없다")
+    if not d.get("dispatchable_semantics"):
+        v.append("`dispatchable_semantics` 가 없다 — 최상위 목록의 뜻을 계약이 말하지 않는다")
+    # 아직 없는 단계가 **조용히 켜지는 것**을 막는다.
+    for k in ("READBACK_VERIFIED", "MV_VERIFIED"):
+        c = (tiers.get(k) or {}).get("count")
+        if isinstance(c, int) and c > 0:
+            v.append(f"`{k}` 가 {c} 로 켜졌다 — 그 단계의 증거(되읽기·M&V 필드)를 "
+                     f"먼저 제시해야 한다")
+    return v
+
+
 def main(argv=None) -> int:
     ap = argparse.ArgumentParser(description="전략 실행 가능성 격차 가드")
     ap.add_argument("--strict", action="store_true", help="격차 확대 시 exit 1")
@@ -165,6 +199,12 @@ def main(argv=None) -> int:
     if stray:
         print(f"  ⛔ edge 가 정본 밖 코드를 받는다: {' '.join(stray)}")
 
+    tier_bad = check_capability_tiers()
+    print()
+    print(f"  단계 구분      {'✅ CANONICAL/REFERENCE/SITE/READBACK/MV 5단계 선언' if not tier_bad else '⛔ ' + str(len(tier_bad)) + '건'}")
+    for m in tier_bad:
+        print(f"    · {m}")
+
     doc_bad: list[str] = []
     if a.check_docs:
         d = doc_status()
@@ -195,7 +235,7 @@ def main(argv=None) -> int:
 
     print("-" * 74)
     bad = (bool(gap) or bool(drift_edge) or bool(drift_ui) or bool(undeclared)
-           or bool(stray) or bool(doc_bad))
+           or bool(stray) or bool(doc_bad) or bool(tier_bad))
     if not bad:
         print(f"✅ 화면이 내주는 전략 = 엣지가 할 수 있는 전략 ({len(decl)}종). 격차 0.")
         print(f"   못 하는 {len(reasons)}종은 **사유와 함께** 계약에 적혀 있다 —")

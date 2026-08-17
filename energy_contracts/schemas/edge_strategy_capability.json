@@ -89,5 +89,38 @@
     "bacnet_default_map": 10,
     "modbus_default_map": 10,
     "_note": "BACnet·Modbus 기본 맵은 3점이라 10종이다. 현장이 확장점을 매핑하면 23종이 된다 — 기본값에 임의 주소를 넣으면 엉뚱한 설비에 write 하게 되므로 주소는 현장이 정한다(EXTENDED_POINT_TEMPLATE / EXTENDED_REG_TEMPLATE)."
-  }
+  },
+  "dispatchable_semantics": "⚠ 이 목록은 **기준 구성(reference backend = virtual)** 에서 구동 가능한 전략이다. **'모든 현장에서 실행 가능' 이 아니다.** 현장 백엔드(BACnet·Modbus)는 그 현장에 매핑된 제어점만큼만 구동하며, 기본 점 지도로는 10 종이다. UI 는 이 목록을 **관리 화면의 선택지**로 쓰되, 특정 현장에서 되는지는 그 엣지의 `supported_strategies()`(드라이버 점 지도 파생)에 물어야 한다. 매핑 안 된 점을 요구하면 엣지가 `unsupported_points` 에 이름을 실어 failed 로 답한다.",
+  "capability_tiers": {
+    "CANONICAL": {
+      "count": 23,
+      "meaning": "ems_strategies.json 이 정의한 전 전략"
+    },
+    "REFERENCE_DISPATCHABLE": {
+      "count": 23,
+      "backends": [
+        "virtual",
+        "energyplus_stub"
+      ],
+      "meaning": "기준 구성에서 실제로 구동·검증됨"
+    },
+    "SITE_DISPATCHABLE": {
+      "count": "현장 점 지도에 따름 (기본 맵 10)",
+      "backends": [
+        "bacnet",
+        "modbus",
+        "energyplus_coupled"
+      ],
+      "meaning": "그 현장에 매핑된 제어점으로 결정 — 엣지가 파생"
+    },
+    "READBACK_VERIFIED": {
+      "count": 0,
+      "meaning": "발령 후 되읽기로 반영을 확인한 단계. **아직 없다**"
+    },
+    "MV_VERIFIED": {
+      "count": 0,
+      "meaning": "M&V 로 성과가 확정된 단계. **아직 없다**(B7 가드가 지킨다)"
+    }
+  },
+  "_tier_note": "2026-08-17 외부 재감사 지적 수용: 'dispatchable 23' 을 전역 사실로 읽으면 현장 capability 보다 넓어진다. 단계를 갈라 적어 그 오해를 막는다. READBACK/MV 단계가 0 인 것은 **아직 그 기능이 없다**는 뜻이고, 없다는 사실을 0 으로 적는 것이 '통과' 와 다르다."
 }
