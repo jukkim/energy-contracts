@@ -2,9 +2,9 @@
   "$schema": "http://json-schema.org/draft-07/schema#",
   "$id": "https://energy-contracts/schemas/edge_strategy_capability.json",
   "title": "Edge Strategy Capability",
-  "description": "엣지가 **실제로 구동할 수 있는** EMS 전략. 정본(ems_strategies.json M00~M22 23종)의 부분집합이다. ⚠ 이 파일은 '무엇을 부를 수 있는가'가 아니라 '무엇을 할 수 있는가'를 선언한다 — 둘이 달라도 되지만 **다르다는 사실이 어디에도 안 적혀 있으면 안 된다**. 2026-08-16 인수검사에서 화면은 23종을 내주고 엣지는 9종만 받는 격차 14종이 실측됐고, 거부 메시지는 'M00~M20 이어야 함'이라 실제 이유를 거짓으로 말하고 있었다.",
+  "description": "엣지가 **실제로 구동할 수 있는** EMS 전략. 정본(ems_strategies.json M00~M22 23종)의 부분집합이다. ⚠ 이 파일은 '무엇을 부를 수 있는가'가 아니라 '무엇을 할 수 있는가'를 선언한다. 2026-08-16 인수검사에서 화면은 23종을 내주고 엣지는 9종만 받는 격차 14종이 실측됐고, 거부 메시지는 'M00~M20 이어야 함'이라 실제 이유를 거짓으로 말하고 있었다. **2026-08-17: 14종을 실제로 구현했다.** 전략이 3개 점(HVAC·조명·ESS)만 쓸 수 있어 '냉동기'·'외기댐퍼'·'전열교환기'를 말할 어휘가 없던 것이 근본 원인이었다. 제어점을 10개로 넓혀 전 전략이 자기 축을 갖는다. 그래서 이 목록은 이제 **고정 집합이 아니라 기준 구성(reference)** 이다 — 실제 지원 여부는 드라이버의 점 지도에서 파생된다.",
   "_usage": "hybrid",
-  "_provenance": "2026-08-16 실측. edge-agent/src/api/server.py 의 하드코딩 집합을 그대로 옮긴 것이지 새로 정한 값이 아니다. 늘리려면 엣지에 그 전략의 실제 구동 경로를 먼저 구현해야 한다.",
+  "_provenance": "2026-08-16 초판은 edge-agent 하드코딩 집합을 옮긴 것. 2026-08-17 개정은 src/strategies.py 의 23종 프리셋과 각 드라이버 writable_points() 에서 파생한 실측값이다. virtual·EnergyPlus(stub) = 23종. BACnet·Modbus = 현장 점 지도에 달렸다(기본 맵은 3점이라 10종).",
   "_consumers": [
     "projects/edge-agent/src/api/server.py (_VALID_STRATEGIES)",
     "projects/building-energy-3d-lab/scripts/gen_ops.py (edge op strategy enum)",
@@ -30,39 +30,64 @@
     },
     "not_dispatchable": {
       "type": "object",
-      "description": "정본에는 있으나 엣지가 못 하는 전략 → 사유. **비워 두지 말 것** — 비면 '왜 못 하는지'가 사라진다.",
+      "description": "정본에는 있으나 이 구성에서 못 하는 전략 → 사유. **비워 두지 말 것** — 비면 '왜 못 하는지'가 사라진다. 2026-08-17 기준 구성(virtual)에서는 전부 구동하므로 비어 있다.",
       "additionalProperties": {
         "type": "string"
       }
     }
   },
-  "version": "1.0.0",
+  "version": "2.0.0",
   "dispatchable": [
     "M00",
+    "M01",
     "M02",
+    "M03",
     "M04",
+    "M05",
+    "M06",
+    "M07",
+    "M08",
     "M09",
+    "M10",
+    "M11",
+    "M12",
+    "M13",
+    "M14",
+    "M15",
     "M16",
     "M17",
     "M18",
     "M19",
-    "M20"
+    "M20",
+    "M21",
+    "M22"
   ],
-  "not_dispatchable": {
-    "M01": "스케줄 최적화 — 엣지 드라이버에 기동·정지 스케줄 재작성 경로 없음",
-    "M03": "냉동기·보일러 대수 제어 — 플랜트 시퀀서 연동 미구현",
-    "M05": "PMV ±0.7 — 엣지는 PMV 엄격(M04)만 구동",
-    "M06": "야간 순환 — 엣지 스케줄러에 순환 운전 모드 없음",
-    "M07": "CO2 수요제어환기 — CO2 센서 포인트·외기댐퍼 제어 경로 미구현",
-    "M08": "전열교환기(ERV) — 엣지에 ERV 제어 포인트 없음",
-    "M10": "피크 전력 수요반응 — DR 계열은 M16·M19·M20 으로 구동",
-    "M11": "통합 EMS — 결합 전략(M01+M02+M03), 구성 레그 중 M01·M03 미지원",
-    "M12": "통합+PMV0.5 — M11 미지원",
-    "M13": "통합+PMV0.7 — M11·M05 미지원",
-    "M14": "통합 완전 — M06·M07 미지원",
-    "M15": "통합 프리미엄 — M14 미지원",
-    "M21": "빙축열/수축열 — 축열조 자산·제어 포인트 없음",
-    "M22": "태양광 자가소비 — PV 인버터 연동 없음"
+  "not_dispatchable": {},
+  "_usage_detail": "codegen: lab/gen_ops.py 가 edge op enum 을 만든다 · runtime: edge-agent 가 _VALID_STRATEGIES 를 파생한다 · 감시: tools/verify_strategy_dispatchability.py",
+  "reference_backend": "virtual",
+  "derivation": "전략이 요구하는 제어점 ⊆ 드라이버가 쓸 수 있는 점 → 구동 가능. src/strategies.py supported_for(). 손으로 관리하는 목록 둘이 어긋난 것이 2026-08-16 사고의 근인이라 목록을 파생으로 바꿨다.",
+  "control_points": {
+    "legacy": [
+      "hvac_setpoint",
+      "lighting_pct",
+      "ess_discharge"
+    ],
+    "extended": [
+      "oa_damper_pct",
+      "erv_enable",
+      "night_cycle_enable",
+      "chiller_stage_pct",
+      "schedule_shift_min",
+      "thermal_storage_kw",
+      "pv_curtail_pct"
+    ],
+    "_note": "확장점을 매핑하지 않은 현장은 그 점을 요구하는 전략이 지원 목록에서 자동으로 빠진다. 그래도 호출되면 unsupported_points 에 이름이 실려 failed 로 답한다 — 반만 수행하고 성공이라 하지 않는다."
   },
-  "_usage_detail": "codegen: lab/gen_ops.py 가 edge op enum 을 만든다 · runtime: edge-agent 가 _VALID_STRATEGIES 를 파생한다 · 감시: tools/verify_strategy_dispatchability.py"
+  "backend_support": {
+    "virtual": 23,
+    "energyplus_stub": 23,
+    "bacnet_default_map": 10,
+    "modbus_default_map": 10,
+    "_note": "BACnet·Modbus 기본 맵은 3점이라 10종이다. 현장이 확장점을 매핑하면 23종이 된다 — 기본값에 임의 주소를 넣으면 엉뚱한 설비에 write 하게 되므로 주소는 현장이 정한다(EXTENDED_POINT_TEMPLATE / EXTENDED_REG_TEMPLATE)."
+  }
 }

@@ -60,11 +60,14 @@ CAPABILITY = EC_ROOT / "energy_contracts" / "schemas" / "edge_strategy_capabilit
 #  그래서 "M-code 통일 완료" 를 읽은 사람이 23 종을 다 발령할 수 있다고 이해할 수 있었다.
 STATUS_DOC = (WORKSPACE / "공모전" / "2026-04-24_AI챔피언_전국민AI경진대회" /
               "docs" / "MCODE_UNIFICATION_PLAN_2026-08-15.md")
+#: ⚠ `\s+` 는 개행도 먹는다. blocked 목록이 **빈** 판에서 다음 줄(```)을 삼켜
+#   "문서에만 ['```']" 이라는 엉뚱한 불일치를 냈다(2026-08-17 실측).
+#   줄 안에서만 움직이도록 `[ \t]` 로 고정한다.
 STATUS_BLOCK_RE = re.compile(
-    r"MCODE-DISPATCH-STATUS v1\s*\n"
-    r"\s*canonical\s+(\d+)\s+([^\n]*)\n"
-    r"\s*dispatchable\s+(\d+)\s+([^\n]*)\n"
-    r"\s*blocked\s+(\d+)\s+([^\n]*)")
+    r"MCODE-DISPATCH-STATUS v1[ \t]*\n"
+    r"[ \t]*canonical[ \t]+(\d+)[ \t]+([^\n]*)\n"
+    r"[ \t]*dispatchable[ \t]+(\d+)[ \t]+([^\n]*)\n"
+    r"[ \t]*blocked[ \t]+(\d+)[ \t]*([^\n]*)")
 
 
 def doc_status() -> dict | None:
