@@ -52,8 +52,16 @@ CONSUMERS = ("edge-agent", "gridbridge", "building-energy-3d", "ingestion-worker
 _PIN_RE = re.compile(r"(energy-contracts.*?@)(v[0-9][\w.\-]*)")
 # ssot-drift.yml 의 EC checkout step — `repository: jukkim/energy-contracts` 뒤따르는
 # `ref: vX.Y.Z`(주석 유무 무관). 다른 repo checkout 의 ref 는 건드리지 않는다.
+# WARN **CRLF 를 못 보면 조용히 아무것도 안 한다.** `_read_keep_newlines` 는 줄끝을
+#   일부러 보존하는데(파일을 통째로 재작성하지 않으려고), 이 정규식은 LF 만 봤다.
+#   그래서 CRLF 로 체크아웃된 저장소에서는 매치가 안 되고, 도구는 "이미 동일"
+#   이라고 답한다 — 고장도 아니고 경고도 없는 **무동작**이다.
+#   실측(2026-08-20): edge-agent 만 CRLF 라 ref 가 v0.3.40 에 남았고, lockstep
+#   검사가 그제서야 skew 를 잡았다. LF 인 저장소 둘은 멀쩡히 바뀌어 더 안 보였다.
 _WF_REF_RE = re.compile(
-    r"(repository:\s*jukkim/energy-contracts\b(?:[^\n]*\n(?!\s*ref:)[^\n]*)*?\n\s*ref:\s*)(v[0-9][\w.\-]*)"
+    r"(repository:[^\S\r\n]*jukkim/energy-contracts\b"
+    r"(?:[^\r\n]*\r?\n(?![^\S\r\n]*ref:)[^\r\n]*)*?"
+    r"\r?\n[^\S\r\n]*ref:[^\S\r\n]*)(v[0-9][\w.\-]*)"
 )
 
 
