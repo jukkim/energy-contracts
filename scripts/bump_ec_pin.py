@@ -151,7 +151,12 @@ def main() -> int:
     print("[bump_ec_pin] 현재 pin / ssot-drift ref:")
     for r, p in pins.items():
         refs = wf_refs.get(r) or ["(ref 없음)"]
-        print(f"  {r:22} pin={p:12} ref={','.join(refs)}")
+        # ⚠ **핀이 없는 소비자가 있다.** 그대로 `{p:12}` 로 찍으면 None 포맷에서
+        #   TypeError 로 죽는다 — 그러면 이 도구를 부르는 **롤백 게이트(B10)가
+        #   통째로 실패**한다. 실제로 그렇게 죽어 있었고, B10 이 오래
+        #   `UNMEASURED`(다른 세션 오염) 였던 탓에 아무도 못 봤다.
+        #   핀이 없는 것은 고장이 아니라 **사실**이다 — 그렇게 적는다.
+        print(f"  {r:22} pin={(p or '(핀 없음)'):12} ref={','.join(refs)}")
 
     if args.check:
         distinct = {p for p in pins.values() if p}
