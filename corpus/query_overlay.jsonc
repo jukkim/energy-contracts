@@ -539,18 +539,18 @@
     { "id": "C12", "query": "setpoint 변화에 따른 절감 dose-response 히트맵 보여줘", "queryVariants": ["설정온도별 절감 히트맵", "온도 바꿀 때마다 절감이 어떻게 변하나"], "route": "cap", "expectAny": ["counterfactual"], "refuseOk": false },
 
     { "id": "S1", "query": "전국 노후도 지도에서 강남구로 확대해줘", "queryVariants": ["전국 보여주고 강남으로 확대", "전국에서 자치구로 줌인해줘"], "route": "cap", "expectAny": ["mountMetricChoropleth","cameraFlyToAnchor"], "refuseOk": true },
-    { "id": "S2", "query": "이 건물 에너지 절감 전략을 8단계로 분석해줘", "queryVariants": ["강남에서 삼성역까지 이동", "이 구간을 따라가며 보여줘"], "route": "cap", "expectAny": ["ems_identify","ems_recommend","ems_diagnose"], "refuseOk": false },
-    { "id": "S3", "query": "이 분석 결과를 동료에게 공유할 링크 만들어줘", "queryVariants": ["옥상에 태양광 올려서 보여줘", "지붕에 PV 를 설치한 모습"], "route": "cap", "expectAny": [], "refuseOk": true },
-    { "id": "S4", "query": "현재 AI 모델 상태와 데이터 출처를 보여줘", "queryVariants": ["건물 외벽을 칠해줘", "파사드 색을 바꿔서 보여줘"], "route": "ops_status", "expectAny": [], "refuseOk": false },
-    { "id": "S5", "query": "강남구 분석 지도와 8단계 의사결정을 동시에 보여줘", "queryVariants": ["카메라를 이 건물로 옮겨줘", "여기로 시점 이동"], "route": "cap", "expectAny": ["mountMetricChoropleth","cameraFlyToAnchor"], "refuseOk": false },
-    { "id": "S6", "query": "조치별 한계저감비용을 계단막대로 시각화해줘", "queryVariants": ["3D 시연을 재생해줘", "저장된 장면을 틀어줘"], "route": "cap", "expectAny": ["apply_policy_lever","policy_evaluate"], "refuseOk": false },
+    { "id": "S2", "query": "이 건물 에너지 절감 전략을 8단계로 분석해줘", "queryVariants": [], "route": "cap", "expectAny": ["ems_identify","ems_recommend","ems_diagnose"], "refuseOk": false },
+    { "id": "S3", "query": "이 분석 결과를 동료에게 공유할 링크 만들어줘", "queryVariants": [], "route": "cap", "expectAny": [], "refuseOk": true },
+    { "id": "S4", "query": "현재 AI 모델 상태와 데이터 출처를 보여줘", "queryVariants": [], "route": "ops_status", "expectAny": [], "refuseOk": false },
+    { "id": "S5", "query": "강남구 분석 지도와 8단계 의사결정을 동시에 보여줘", "queryVariants": [], "route": "cap", "expectAny": ["mountMetricChoropleth","cameraFlyToAnchor"], "refuseOk": false },
+    { "id": "S6", "query": "조치별 한계저감비용을 계단막대로 시각화해줘", "queryVariants": [], "route": "cap", "expectAny": ["apply_policy_lever","policy_evaluate"], "refuseOk": false },
 
-    { "id": "L1", "query": "광화문에서 롯데타워까지 차량으로 주행 시연해줘", "queryVariants": ["이 건물 진단해줘", "여기 상태를 봐줘"], "route": "compose", "expectAny": ["driveRouteByIntent"], "refuseOk": false },
-    { "id": "L2", "query": "이 건물 옥상에 태양광 패널을 배치하고 발전량 시뮬레이션해줘", "queryVariants": ["내일 수요 예측", "24시간 부하 전망"], "route": "compose", "expectAny": ["placeRoofSolar"], "refuseOk": false },
-    { "id": "L3", "query": "건물 외벽에 수직 녹화를 시뮬레이션해줘", "queryVariants": ["이상한 소비가 있나", "이상 징후 탐지"], "route": "compose", "expectAny": [], "refuseOk": true },
-    { "id": "L4", "query": "방금 그린 지도에서 CO2 대신 전기 소비로 바꿔줘", "queryVariants": ["뭘 고치면 좋을까", "개선안 추천해줘"], "route": "compose", "expectAny": ["mountMetricChoropleth"], "refuseOk": true },
-    { "id": "L5", "query": "강남 전체를 조감한 뒤 삼성동 빌딩군으로 날아가줘", "queryVariants": ["최적 운전 계획 짜줘", "제어 스케줄 최적화"], "route": "compose", "expectAny": ["cameraFlyToAnchor"], "refuseOk": false },
-    { "id": "L6", "query": "강남 CO2 상위 10건물을 순서대로 투어해줘", "queryVariants": ["운영 상태 알려줘", "지금 무엇이 살아있나"], "route": "compose", "expectAny": ["tourSelected","selectBuildings","cameraFlyToAnchor"], "refuseOk": false }
+    { "id": "L1", "query": "광화문에서 롯데타워까지 차량으로 주행 시연해줘", "queryVariants": [], "route": "compose", "expectAny": ["driveRouteByIntent"], "refuseOk": false },
+    { "id": "L2", "query": "이 건물 옥상에 태양광 패널을 배치하고 발전량 시뮬레이션해줘", "queryVariants": [], "route": "compose", "expectAny": ["placeRoofSolar"], "refuseOk": false },
+    { "id": "L3", "query": "건물 외벽에 수직 녹화를 시뮬레이션해줘", "queryVariants": [], "route": "compose", "expectAny": [], "refuseOk": true },
+    { "id": "L4", "query": "방금 그린 지도에서 CO2 대신 전기 소비로 바꿔줘", "queryVariants": [], "route": "compose", "expectAny": ["mountMetricChoropleth"], "refuseOk": true },
+    { "id": "L5", "query": "강남 전체를 조감한 뒤 삼성동 빌딩군으로 날아가줘", "queryVariants": [], "route": "compose", "expectAny": ["cameraFlyToAnchor"], "refuseOk": false },
+    { "id": "L6", "query": "강남 CO2 상위 10건물을 순서대로 투어해줘", "queryVariants": [], "route": "compose", "expectAny": ["tourSelected","selectBuildings","cameraFlyToAnchor"], "refuseOk": false }
   ],
 
   // ── refuse/off-domain 대표(사냥꾼 Class B 회귀 감시) ─────────────────────────

@@ -2209,10 +2209,7 @@
     {
       "id": "S2",
       "query": "이 건물 에너지 절감 전략을 8단계로 분석해줘",
-      "queryVariants": [
-        "강남에서 삼성역까지 이동",
-        "이 구간을 따라가며 보여줘"
-      ],
+      "queryVariants": [],
       "route": "cap",
       "expectAny": [
         "ems_identify",
@@ -2224,10 +2221,7 @@
     {
       "id": "S3",
       "query": "이 분석 결과를 동료에게 공유할 링크 만들어줘",
-      "queryVariants": [
-        "옥상에 태양광 올려서 보여줘",
-        "지붕에 PV 를 설치한 모습"
-      ],
+      "queryVariants": [],
       "route": "cap",
       "expectAny": [],
       "refuseOk": true
@@ -2235,10 +2229,7 @@
     {
       "id": "S4",
       "query": "현재 AI 모델 상태와 데이터 출처를 보여줘",
-      "queryVariants": [
-        "건물 외벽을 칠해줘",
-        "파사드 색을 바꿔서 보여줘"
-      ],
+      "queryVariants": [],
       "route": "ops_status",
       "expectAny": [],
       "refuseOk": false
@@ -2246,10 +2237,7 @@
     {
       "id": "S5",
       "query": "강남구 분석 지도와 8단계 의사결정을 동시에 보여줘",
-      "queryVariants": [
-        "카메라를 이 건물로 옮겨줘",
-        "여기로 시점 이동"
-      ],
+      "queryVariants": [],
       "route": "cap",
       "expectAny": [
         "mountMetricChoropleth",
@@ -2260,10 +2248,7 @@
     {
       "id": "S6",
       "query": "조치별 한계저감비용을 계단막대로 시각화해줘",
-      "queryVariants": [
-        "3D 시연을 재생해줘",
-        "저장된 장면을 틀어줘"
-      ],
+      "queryVariants": [],
       "route": "cap",
       "expectAny": [
         "apply_policy_lever",
@@ -2274,10 +2259,7 @@
     {
       "id": "L1",
       "query": "광화문에서 롯데타워까지 차량으로 주행 시연해줘",
-      "queryVariants": [
-        "이 건물 진단해줘",
-        "여기 상태를 봐줘"
-      ],
+      "queryVariants": [],
       "route": "compose",
       "expectAny": [
         "driveRouteByIntent"
@@ -2287,10 +2269,7 @@
     {
       "id": "L2",
       "query": "이 건물 옥상에 태양광 패널을 배치하고 발전량 시뮬레이션해줘",
-      "queryVariants": [
-        "내일 수요 예측",
-        "24시간 부하 전망"
-      ],
+      "queryVariants": [],
       "route": "compose",
       "expectAny": [
         "placeRoofSolar"
@@ -2300,10 +2279,7 @@
     {
       "id": "L3",
       "query": "건물 외벽에 수직 녹화를 시뮬레이션해줘",
-      "queryVariants": [
-        "이상한 소비가 있나",
-        "이상 징후 탐지"
-      ],
+      "queryVariants": [],
       "route": "compose",
       "expectAny": [],
       "refuseOk": true
@@ -2311,10 +2287,7 @@
     {
       "id": "L4",
       "query": "방금 그린 지도에서 CO2 대신 전기 소비로 바꿔줘",
-      "queryVariants": [
-        "뭘 고치면 좋을까",
-        "개선안 추천해줘"
-      ],
+      "queryVariants": [],
       "route": "compose",
       "expectAny": [
         "mountMetricChoropleth"
@@ -2324,10 +2297,7 @@
     {
       "id": "L5",
       "query": "강남 전체를 조감한 뒤 삼성동 빌딩군으로 날아가줘",
-      "queryVariants": [
-        "최적 운전 계획 짜줘",
-        "제어 스케줄 최적화"
-      ],
+      "queryVariants": [],
       "route": "compose",
       "expectAny": [
         "cameraFlyToAnchor"
@@ -2337,10 +2307,7 @@
     {
       "id": "L6",
       "query": "강남 CO2 상위 10건물을 순서대로 투어해줘",
-      "queryVariants": [
-        "운영 상태 알려줘",
-        "지금 무엇이 살아있나"
-      ],
+      "queryVariants": [],
       "route": "compose",
       "expectAny": [
         "tourSelected",
