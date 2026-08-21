@@ -190,10 +190,13 @@ def _judge_cap(query, expect, refuse_ok, gw, timeout):
     got = [op.get("api", "") for op in ops]
     ev = {"ops": got, "refuse": refuse}
     if refuse:
-        return (("PASS", "refuse=OK", "ESCALATE_BY_DESIGN", ev) if refuse_ok
+        # WARN **안전한 거절은 실행 성공이 아니다.** 설계상 옳은 동작이지만
+        #   "자연어로 실행됐다" 와 같은 칸에 세면 실행 가능성이 부풀려진다.
+        #   WARN 은 결함이 아니라 *다른 종류의 성공* 이라는 표시다.
+        return (("WARN", "안전 거절(실행 아님)", "ESCALATE_BY_DESIGN", ev) if refuse_ok
                 else ("FAIL", "refuse=True", "NL_UNREACHABLE", ev))
     if not ops:
-        return (("PASS", "ops empty(refuse_ok)", "ESCALATE_BY_DESIGN", ev) if refuse_ok
+        return (("WARN", "빈 ops — 안전 거절(실행 아님)", "ESCALATE_BY_DESIGN", ev) if refuse_ok
                 else ("FAIL", "ops empty", "NL_UNREACHABLE", ev))
     if expect and not any(a in got for a in expect):
         return "WARN", f"got={got} want∈{expect}", "MISROUTED", ev
@@ -224,7 +227,7 @@ def _judge_compose(query, expect, refuse_ok, studio, timeout):
     if not ops:
         if refuse_ok:
             name = cap_req.get("suggested_name") if isinstance(cap_req, dict) else None
-            return "PASS", (f"empty+capability_request={name}" if name else "empty(refuse_ok)"), \
+            return "WARN", (f"안전 거절 — capability_request={name}" if name else "empty(refuse_ok)"), \
                    "ESCALATE_BY_DESIGN", ev
         return "FAIL", f"empty raw={resp.get('response','')[:50]}", "NL_UNREACHABLE", ev
     if expect and not any(a in got for a in expect):
@@ -656,12 +659,22 @@ def suite_scenario(corpus, ctx):
                 sid = str(it.get("id") or "")[:16]
                 title = str(it.get("title") or "")[:40]
                 ops = it.get("ops") or it.get("spec", {}).get("ops") or []
+                # ⚠ **등록과 재생 가능은 다른 말이다.** 예전엔 `id` 만 있으면 PASS 라
+                #   `op 0` 인 시나리오가 무더기로 통과했다 — 그건 "레코드가 있다" 는
+                #   증거이지 "재생된다" 는 증거가 아니다(외부 감사 2026-08-21).
+                #   ops 가 없으면 **REGISTERED** 로 격하한다: 통과도 실패도 아니고
+                #   *등록만 확인됐다* 는 별도 상태다. 뭉치면 등록 수가 재생 수로 읽힌다.
                 has_id = bool(sid)
-                rows.append(C(f"scenario:{sid or '?'}",
-                              "PASS" if has_id else "FAIL",
-                              f"{title} (op {len(ops)})" if has_id else "id 없음(재생 불가)",
+                if not has_id:
+                    st, note, why = "FAIL", "id 없음(재생 불가)", "NO_RENDERER"
+                elif not ops:
+                    st, note, why = ("WARN", f"{title} — **등록만 확인**(op 0, 재생 미검증)",
+                                     "REGISTERED_ONLY")
+                else:
+                    st, note, why = "PASS", f"{title} (op {len(ops)})", None
+                rows.append(C(f"scenario:{sid or '?'}", st, note,
                               axis={"scenarioId": sid, "title": title},
-                              reason=None if has_id else "NO_RENDERER",
+                              reason=why,
                               evidence={"ops": len(ops), "schema": it.get("schema_version")},
                               layer="E"))
             break
