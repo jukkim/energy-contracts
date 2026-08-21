@@ -98,7 +98,7 @@ def _post(url: str, payload: dict, timeout: int) -> dict:
                 return json.loads(r.read().decode("utf-8"))
         except HTTPError as e:                      # 서버가 응답함 = 판정 가능
             if e.code == 429 and attempt < RETRIES - 1:
-                time.sleep(2.0 + attempt)           # 429 는 '지금 말고 나중에' — 유일한 재시도 대상
+                time.sleep(_retry_after(e, attempt))   # 서버가 말한 만큼 쉰다
                 continue
             return {"_http_error": e.code, "_body": e.read().decode("utf-8", "replace")[:160]}
         except (URLError, OSError) as e:
@@ -129,7 +129,7 @@ def _get_json(url: str, timeout: int, retries: int = RETRIES):
                 return r.status, json.loads(r.read().decode("utf-8"))
         except HTTPError as e:
             if e.code == 429 and attempt < retries - 1:
-                time.sleep(2.0 + attempt)           # rate-limit 은 재시도(능력 부재 아님)
+                time.sleep(_retry_after(e, attempt))   # 서버가 말한 만큼 쉰다
                 continue
             try:
                 return e.code, json.loads(e.read().decode("utf-8"))
@@ -285,8 +285,31 @@ def _demo_safe_carry(cell: dict) -> bool:
 
 
 
+def _retry_after(e, attempt: int) -> float:
+    """429 대기 시간 — **서버가 말한 값을 지킨다.**
+
+    ⚠ 예전엔 `2.0 + attempt` 로 우리가 정한 만큼만 쉬었다. 서버가 `Retry-After`
+      로 더 기다리라고 해도 무시하고 다시 두드리니, 재시도가 오히려 rate limit 을
+      더 조였다. **밀어내는 쪽을 안 듣는 재시도는 재시도가 아니라 가중이다.**
+    """
+    try:
+        ra = e.headers.get("Retry-After") if getattr(e, "headers", None) else None
+        if ra:
+            return min(float(ra), 30.0)
+    except Exception:
+        pass
+    return min(2.0 * (2 ** attempt), 30.0)          # 지수 backoff (상한 30초)
+
+
 def _pmap(fn, items, jobs):
-    """순서 보존 병렬 map(하나가 죽어도 나머지는 계속)."""
+    """순서 보존 병렬 map(하나가 죽어도 나머지는 계속).
+
+    ⚠ **compose 경로는 병렬로 두드리면 스윕이 무효가 된다.** 실측(2026-08-21):
+      jobs=4 → UNKNOWN 35(38%) · jobs=2 → 26(7.2%) · **jobs=1 → 0**.
+      429 는 능력 부재가 아니라 '지금 말고' 라서 UNKNOWN 으로 세는데, 그 비율이
+      5% 를 넘으면 스윕 자체가 무효다 — 즉 **우리가 우리 시험을 망가뜨리고 있었다.**
+      compose 를 켜면 병렬도를 1 로 낮춘다. 느린 게 무효보다 낫다.
+    """
     if jobs <= 1:
         return [fn(x) for x in items]
     with ThreadPoolExecutor(max_workers=jobs) as ex:
@@ -1089,7 +1112,12 @@ def main():
 
     ctx = {"gw": args.gateway, "studio": args.studio, "be3d": args.be3d,
            "timeout": args.timeout, "compose": args.compose, "combo_limit": args.combo_limit,
-           "sweep": args.sweep, "jobs": max(1, args.jobs), "render_sample": args.render_sample,
+           # WARN **compose 를 켜면 병렬도를 1 로 낮춘다.** 실측(2026-08-21):
+           #   jobs=4 → UNKNOWN 35(38%) · jobs=2 → 26(7.2%) · jobs=1 → **0**.
+           #   429 는 '능력 부재' 가 아니라 '지금 말고' 라서 UNKNOWN 으로 세는데,
+           #   그 비율이 5% 를 넘으면 스윕이 무효가 된다 — 우리가 우리 시험을
+           #   망가뜨린 것이다. **느린 게 무효보다 낫다.** 사람이 명시로 올릴 수는 있다.
+           "sweep": args.sweep, "jobs": (1 if getattr(args, "compose", False) else max(1, args.jobs)), "render_sample": args.render_sample,
            "compose_timeout": args.compose_timeout}
     c = corpus["counts"]
     print("=" * 74)
