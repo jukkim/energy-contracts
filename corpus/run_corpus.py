@@ -209,7 +209,44 @@ def _judge_cap(query, expect, refuse_ok, gw, timeout):
 _COMPOSE_COOLDOWN_S = 45
 
 
-def _judge_compose(query, expect, refuse_ok, studio, timeout):
+def _check_args(ops, expect_args):
+    """**인자·대상까지** 맞는지 본다 (GPT P0-2).
+
+    op 이름만 보면 *"강남구 건물 10개"* 를 물었을 때 `selectBuildings` 만 나오면
+    통과다 -- 여의도 150개를 골라도, region 을 통째로 바꿔도 초록이다.
+    실행 계획은 **무엇을 하느냐**만이 아니라 **무엇에 하느냐**가 절반이다.
+
+    expect_args = [{"api": "...", "args": {"k": v, ...}}, ...]
+      · 해당 api 를 내는 op 가 있어야 하고
+      · 그 op 의 args 가 지정한 키를 **정확히 그 값으로** 가져야 한다
+      · 지정 안 한 키는 보지 않는다(모델이 view/altM 을 더 내는 것은 자유)
+
+    반환: 어긋난 것들의 설명 목록(빈 목록이면 통과).
+    """
+    bad = []
+    for want in expect_args or []:
+        api = want.get("api")
+        hits = [o for o in ops if (o or {}).get("api") == api]
+        if not hits:
+            bad.append(f"{api} 없음")
+            continue
+        okAny = False
+        for o in hits:
+            a = o.get("args")
+            h = a[0] if isinstance(a, list) and a and isinstance(a[0], dict) else (
+                a if isinstance(a, dict) else {})
+            miss = {k: (h.get(k), v) for k, v in (want.get("args") or {}).items()
+                    if h.get(k) != v}
+            if not miss:
+                okAny = True
+                break
+        if not okAny:
+            got = [(o.get("args") or [{}]) for o in hits][:1]
+            bad.append(f"{api} 인자 불일치 want={want.get('args')} got={got}")
+    return bad
+
+
+def _judge_compose(query, expect, refuse_ok, studio, timeout, expect_args=None):
     resp = _post(f"{studio}/api/compose", {"query": query}, timeout)
     if _unreachable(resp):
         time.sleep(_COMPOSE_COOLDOWN_S)      # 포화 완화 후 1회 재시도(연속 실패 캐스케이드 차단)
@@ -232,6 +269,11 @@ def _judge_compose(query, expect, refuse_ok, studio, timeout):
         return "FAIL", f"empty raw={resp.get('response','')[:50]}", "NL_UNREACHABLE", ev
     if expect and not any(a in got for a in expect):
         return "WARN", f"got={got} want∈{expect}", "MISROUTED", ev
+    # op 이름이 맞아도 **대상이 틀리면 틀린 것이다.**
+    bad = _check_args(ops, expect_args)
+    if bad:
+        ev["arg_mismatch"] = bad
+        return "WARN", "인자·대상 불일치: " + " · ".join(bad)[:120], "ARG_MISMATCH", ev
     return "PASS", f"ops={got}", None, ev
 
 
@@ -368,7 +410,8 @@ def suite_opcode(corpus, ctx):
             for idx, q in enumerate(queries):
                 st, note, reason, ev = _judge_compose(q, p.get("expectAny", []),
                                                       p.get("refuseOk", False), ctx["studio"],
-                                                      ctx.get("compose_timeout", ctx["timeout"]))
+                                                      ctx.get("compose_timeout", ctx["timeout"]),
+                                                      p.get("expectArgs"))
                 if st in ("PASS", "UNKNOWN"):
                     if st == "PASS" and idx > 0:
                         note = f"{note} (변형 {idx+1}번째로 도달 — 1번 문장은 취약)"

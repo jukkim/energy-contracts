@@ -1152,6 +1152,14 @@
       "expectAny": [
         "applyEdgeStrategy"
       ],
+      "expectArgs": [
+        {
+          "api": "applyEdgeStrategy",
+          "args": {
+            "strategy": "M03"
+          }
+        }
+      ],
       "refuseOk": true,
       "escalate": true,
       "note": "edge 실 actuation(EMS 전략 즉시 실행) — escalate"
@@ -1305,6 +1313,15 @@
       ],
       "route": "compose",
       "refuseOk": false,
+      "expectArgs": [
+        {
+          "api": "driveRouteByIntent",
+          "args": {
+            "from": "gangnam_stn",
+            "to": "samseong_stn"
+          }
+        }
+      ],
       "note": "주행 대표(엔진 auto 선택) — 레거시 raw 5종을 대체하는 권장 경로"
     },
     "flyRoute": {

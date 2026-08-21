@@ -134,6 +134,10 @@
       "probeQuery": "이 건물에 야간 냉방차단 전략(M03)을 지금 바로 적용해줘",
       "probeQueryVariants": ["야간 냉방차단 전략을 지금 적용해", "EMS 전략 M03 을 실행해줘"],
       "expectAny": ["applyEdgeStrategy"],
+      // ⚠ **어느 전략인지까지 본다** (GPT P0-2·P0-3). 질의가 M03 을 명시하는데
+      //   다른 코드가 나가면 **다른 대책을 실행**하는 것이다. 실측으로 이 부류가
+      //   있었다: "통합 EMS"(M11) → M03(구성요소) · "ESS 피크셰이빙"(M18) → M19(부모).
+      "expectArgs": [{ "api": "applyEdgeStrategy", "args": { "strategy": "M03" } }],
       "refuseOk": true,
       "escalate": true,
       "note": "edge 실 actuation(EMS 전략 즉시 실행) — escalate"
@@ -229,6 +233,11 @@
       "probeQuery": "강남역에서 삼성역까지 차량이 달리는 모습을 보여줘",
       "probeQueryVariants": ["강남역에서 코엑스까지 자동차로 이동해줘", "이 두 지점 사이를 주행 시연해줘"],
       "expectAny": ["driveRouteByIntent"], "route": "compose", "refuseOk": false,
+      // ⚠ **끝점을 보존해야 한다** (GPT P0-2). op 이름만 맞으면 통과였으므로,
+      //   출발·도착이 바뀌어도 초록이었다 — 그건 다른 길이다.
+      //   `expectArgs` 는 지정한 키만 본다(via·engine 을 더 내는 것은 자유).
+      "expectArgs": [{ "api": "driveRouteByIntent",
+                       "args": { "from": "gangnam_stn", "to": "samseong_stn" } }],
       "note": "주행 대표(엔진 auto 선택) — 레거시 raw 5종을 대체하는 권장 경로"
     },
     "flyRoute": {
