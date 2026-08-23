@@ -1,0 +1,50 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "energy-contracts/model_binding.json",
+  "title": "ModelBinding",
+  "description": "특정 모델 체크포인트를 특정 자원과 용도에 적용할 수 있는지 고정하는 계약. 데이터가 많다는 이유만으로 자동 발급하지 않는다.",
+  "_usage": "reference-only",
+  "_consumers": ["airos-energy-decision", "xbems", "ems-transformer"],
+  "version": "1.0",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["binding_id", "model_id", "model_version", "resource_id", "issued_at", "status", "feature_schema_hash", "checkpoint_hash", "calibration_status", "domain_check", "allowed_uses", "prohibited_uses", "reasons"],
+  "properties": {
+    "binding_id": {"type": "string", "minLength": 1},
+    "model_id": {"type": "string", "minLength": 1},
+    "model_version": {"type": "string", "minLength": 1},
+    "resource_id": {"type": "string", "minLength": 1},
+    "issued_at": {"type": "string", "format": "date-time"},
+    "expires_at": {"type": "string", "format": "date-time"},
+    "status": {"type": "string", "enum": ["issued", "provisional", "rejected", "expired", "revoked"]},
+    "feature_schema_hash": {"type": "string", "pattern": "^(sha256:)?[a-fA-F0-9]{64}$"},
+    "checkpoint_hash": {"type": "string", "pattern": "^(sha256:)?[a-fA-F0-9]{64}$"},
+    "calibration_status": {"type": "string", "enum": ["site_calibrated", "domain_calibrated", "uncalibrated", "not_applicable"]},
+    "calibration_id": {"type": "string"},
+    "domain_check": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["building_type_match", "hvac_type_match", "feature_schema_match", "ood_status"],
+      "properties": {
+        "building_type_match": {"type": "boolean"},
+        "hvac_type_match": {"type": "boolean"},
+        "feature_schema_match": {"type": "boolean"},
+        "ood_status": {"type": "string", "enum": ["in_domain", "warning", "out_of_domain", "not_evaluated"]},
+        "ood_score": {"type": "number", "minimum": 0},
+        "ood_threshold": {"type": "number", "minimum": 0}
+      }
+    },
+    "allowed_uses": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": {"type": "string", "enum": ["screening", "advisory", "shadow_mpc", "approved_bounded_control"]}
+    },
+    "prohibited_uses": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": {"type": "string", "enum": ["physics_verdict", "field_safety", "national_extrapolation", "mv_claim", "unapproved_control"]}
+    },
+    "reasons": {"type": "array", "items": {"type": "string"}},
+    "evidence_refs": {"type": "array", "items": {"type": "string"}}
+  }
+}

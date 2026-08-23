@@ -36,3 +36,9 @@ def test_flexibility_and_annual_efficiency_are_separate_axes() -> None:
     props = schema["properties"]
     assert "annual_savings_kwh" not in props
     assert "persistent_efficiency_ref" in props
+
+
+def test_model_binding_example_is_valid_and_never_grants_physics_verdict() -> None:
+    binding = _validate("model_binding", "model_binding.json")
+    assert "physics_verdict" in binding["prohibited_uses"]
+    assert "physics_verdict" not in binding["allowed_uses"]

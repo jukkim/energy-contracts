@@ -1,0 +1,22 @@
+{
+  "binding_id": "binding-ecmhs-bgj-v004",
+  "model_id": "ecmhs",
+  "model_version": "v004",
+  "resource_id": "bgj",
+  "issued_at": "2026-08-23T13:00:00+09:00",
+  "status": "provisional",
+  "feature_schema_hash": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+  "checkpoint_hash": "sha256:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+  "calibration_status": "site_calibrated",
+  "calibration_id": "bgj-residual-v004",
+  "domain_check": {
+    "building_type_match": true,
+    "hvac_type_match": true,
+    "feature_schema_match": true,
+    "ood_status": "not_evaluated"
+  },
+  "allowed_uses": ["screening", "advisory", "shadow_mpc"],
+  "prohibited_uses": ["physics_verdict", "field_safety", "national_extrapolation", "mv_claim", "unapproved_control"],
+  "reasons": ["OOD score artifact is not yet attached"],
+  "evidence_refs": ["xbems://bgj/model/v004"]
+}
