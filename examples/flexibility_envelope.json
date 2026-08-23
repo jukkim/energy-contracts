@@ -1,0 +1,32 @@
+{
+  "envelope_id": "flex-bgj-20260823-001",
+  "resource_id": "bgj",
+  "building_passport_id": "passport-bgj-20260823",
+  "created_at": "2026-08-23T12:00:00+09:00",
+  "valid_from": "2026-08-24T09:00:00+09:00",
+  "valid_to": "2026-08-24T10:00:00+09:00",
+  "resolution_minutes": 15,
+  "source": "surrogate",
+  "confidence": 0.72,
+  "intervals": [
+    {
+      "start": "2026-08-24T09:00:00+09:00",
+      "baseline_kw": 210.0,
+      "downward_flex_kw": 18.0,
+      "upward_flex_kw": 0.0,
+      "max_duration_minutes": 30,
+      "recovery_minutes": 30,
+      "rebound_energy_kwh": 2.1,
+      "availability": "conditional",
+      "constraint_refs": ["comfort-1"]
+    }
+  ],
+  "constraints": [
+    {"constraint_id": "comfort-1", "category": "comfort", "severity": "hard", "description": "설정된 쾌적 한계를 넘으면 실행하지 않는다."}
+  ],
+  "evidence_refs": [
+    {"evidence_type": "surrogate", "ref": "xbems://bgj/model/v004", "status": "available"},
+    {"evidence_type": "energyplus_cross_check", "ref": "xbems://bgj/run/selected", "status": "pending"}
+  ],
+  "persistent_efficiency_ref": "decision://bgj/annual-efficiency/001"
+}

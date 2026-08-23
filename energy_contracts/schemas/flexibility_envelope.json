@@ -1,0 +1,80 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "energy-contracts/flexibility_envelope.json",
+  "title": "FlexibilityEnvelope",
+  "description": "건물·가정이 Portfolio/MG에 제공하는 시간별 단기 전력 유연성 계약. 연간 상시 효율 절감과 합산하지 않는다.",
+  "_usage": "reference-only",
+  "_consumers": ["airos-energy-decision", "gridbridge", "edge-agent", "building-energy-3d"],
+  "version": "1.0",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["envelope_id", "resource_id", "created_at", "valid_from", "valid_to", "resolution_minutes", "source", "confidence", "intervals", "evidence_refs"],
+  "properties": {
+    "envelope_id": {"type": "string", "minLength": 1},
+    "resource_id": {"type": "string", "minLength": 1},
+    "building_passport_id": {"type": "string"},
+    "created_at": {"type": "string", "format": "date-time"},
+    "valid_from": {"type": "string", "format": "date-time"},
+    "valid_to": {"type": "string", "format": "date-time"},
+    "resolution_minutes": {"type": "integer", "minimum": 1, "maximum": 1440},
+    "source": {
+      "type": "string",
+      "enum": ["archetype", "simulation", "surrogate", "measured_validation", "field_operation"],
+      "description": "산출 근거. source 자체가 현장 적용 또는 M&V 완료를 뜻하지 않는다."
+    },
+    "confidence": {"type": "number", "minimum": 0, "maximum": 1},
+    "intervals": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["start", "baseline_kw", "downward_flex_kw", "upward_flex_kw", "max_duration_minutes", "recovery_minutes", "rebound_energy_kwh", "availability"],
+        "properties": {
+          "start": {"type": "string", "format": "date-time"},
+          "baseline_kw": {"type": "number", "minimum": 0},
+          "downward_flex_kw": {"type": "number", "minimum": 0, "description": "baseline에서 낮출 수 있는 전력 크기. 양수."},
+          "upward_flex_kw": {"type": "number", "minimum": 0, "description": "baseline에서 높일 수 있는 전력 크기. 양수."},
+          "max_duration_minutes": {"type": "integer", "minimum": 0},
+          "recovery_minutes": {"type": "integer", "minimum": 0},
+          "rebound_energy_kwh": {"type": "number", "minimum": 0},
+          "availability": {"type": "string", "enum": ["available", "conditional", "unavailable"]},
+          "constraint_refs": {"type": "array", "items": {"type": "string"}}
+        }
+      }
+    },
+    "constraints": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["constraint_id", "category", "severity", "description"],
+        "properties": {
+          "constraint_id": {"type": "string"},
+          "category": {"type": "string", "enum": ["safety", "comfort", "production", "contract", "equipment", "occupant", "data_quality"]},
+          "severity": {"type": "string", "enum": ["hard", "soft"]},
+          "description": {"type": "string"}
+        }
+      }
+    },
+    "evidence_refs": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["evidence_type", "ref", "status"],
+        "properties": {
+          "evidence_type": {"type": "string", "enum": ["surrogate", "energyplus_cross_check", "replay", "measured_validation", "field_applied", "mv_verified", "synthetic"]},
+          "ref": {"type": "string", "minLength": 1},
+          "status": {"type": "string", "enum": ["available", "pending", "failed", "not_applicable"]},
+          "content_hash": {"type": "string", "pattern": "^(sha256:)?[a-fA-F0-9]{64}$"}
+        }
+      }
+    },
+    "persistent_efficiency_ref": {
+      "type": "string",
+      "description": "연간 상시 효율 결과의 별도 참조. intervals의 단기 유연성과 수치 합산 금지."
+    }
+  }
+}

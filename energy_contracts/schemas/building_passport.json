@@ -1,0 +1,76 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "energy-contracts/building_passport.json",
+  "title": "BuildingPassport",
+  "description": "건물 의사결정 시점에 무엇을 알고 무엇을 모르는지 고정하는 데이터 여권. 건물 모델 자체가 아니라 모델 라우팅·증거표시의 입력 계약이다.",
+  "_usage": "reference-only",
+  "_consumers": ["airos-energy-decision", "building-energy-3d", "xbems"],
+  "version": "1.0",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["passport_id", "building_id", "captured_at", "data_tier", "identity", "availability", "provenance"],
+  "properties": {
+    "passport_id": {"type": "string", "minLength": 1},
+    "building_id": {"type": "string", "minLength": 1},
+    "captured_at": {"type": "string", "format": "date-time"},
+    "data_tier": {
+      "type": "string",
+      "enum": ["basic", "eui_only", "historical_series", "building_and_measured", "realtime_control"],
+      "description": "basic=기본정보, eui_only=EUI/연합계, historical_series=월·일·시간 이력, building_and_measured=건물·설비정보와 실측, realtime_control=최신 telemetry·point map·제어권한."
+    },
+    "identity": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["asset_class"],
+      "properties": {
+        "pnu": {"type": "string", "pattern": "^[0-9]{19}$"},
+        "asset_class": {"type": "string", "enum": ["building", "home", "site", "portfolio_member"]},
+        "use_type": {"type": "string"},
+        "timezone": {"type": "string", "default": "Asia/Seoul"}
+      }
+    },
+    "availability": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["building_metadata", "energy_history", "realtime_telemetry", "control_authority"],
+      "properties": {
+        "building_metadata": {"type": "string", "enum": ["none", "register", "drawing", "field_verified"]},
+        "geometry": {"type": "string", "enum": ["none", "footprint", "floor_zones", "zone_mesh"]},
+        "equipment": {"type": "string", "enum": ["none", "type_only", "inventory", "topology", "point_mapped"]},
+        "energy_history": {"type": "string", "enum": ["none", "annual_total", "monthly", "daily", "hourly", "subhourly"]},
+        "history_start": {"type": "string", "format": "date-time"},
+        "history_end": {"type": "string", "format": "date-time"},
+        "coverage_ratio": {"type": "number", "minimum": 0, "maximum": 1},
+        "realtime_telemetry": {"type": "boolean"},
+        "telemetry_as_of": {"type": "string", "format": "date-time"},
+        "control_authority": {"type": "string", "enum": ["none", "advisory", "shadow", "approval_required", "bounded_auto"]}
+      }
+    },
+    "known_fields": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["field", "source_type", "confidence"],
+        "properties": {
+          "field": {"type": "string"},
+          "source_type": {"type": "string", "enum": ["measured", "document", "register", "derived", "estimated", "archetype"]},
+          "source_ref": {"type": "string"},
+          "confidence": {"type": "number", "minimum": 0, "maximum": 1},
+          "observed_at": {"type": "string", "format": "date-time"}
+        }
+      }
+    },
+    "provenance": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["manifest_ref", "content_hash"],
+      "properties": {
+        "manifest_ref": {"type": "string", "minLength": 1},
+        "content_hash": {"type": "string", "pattern": "^(sha256:)?[a-fA-F0-9]{64}$"},
+        "data_timestamp": {"type": "string", "format": "date-time"},
+        "restrictions": {"type": "array", "items": {"type": "string"}}
+      }
+    }
+  }
+}

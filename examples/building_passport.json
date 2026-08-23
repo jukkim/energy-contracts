@@ -1,0 +1,26 @@
+{
+  "passport_id": "passport-bgj-20260823",
+  "building_id": "bgj",
+  "captured_at": "2026-08-23T12:00:00+09:00",
+  "data_tier": "building_and_measured",
+  "identity": {"asset_class": "building", "use_type": "school", "timezone": "Asia/Seoul"},
+  "availability": {
+    "building_metadata": "drawing",
+    "geometry": "floor_zones",
+    "equipment": "inventory",
+    "energy_history": "hourly",
+    "history_start": "2024-01-01T00:00:00+09:00",
+    "history_end": "2026-01-01T00:00:00+09:00",
+    "coverage_ratio": 0.192,
+    "realtime_telemetry": false,
+    "control_authority": "shadow"
+  },
+  "known_fields": [
+    {"field": "systems.hvac_type", "source_type": "document", "source_ref": "bgj_site.yaml", "confidence": 1.0}
+  ],
+  "provenance": {
+    "manifest_ref": "xbems://bgj/data-freeze-v1",
+    "content_hash": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+    "restrictions": ["not_continuous_annual_data", "not_realtime"]
+  }
+}

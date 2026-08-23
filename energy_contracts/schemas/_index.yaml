@@ -1,15 +1,15 @@
-# SSOT 63 도메인 카탈로그 인덱스 (Redocly·Swagger UI·문서 렌더링용).
+# SSOT 65 도메인 카탈로그 인덱스 (Redocly·Swagger UI·문서 렌더링용).
 # 사냥꾼 라운드 LOW (2026-06-08): 기존엔 58 schema 중 31 만 등재 + title/주석 카운트가
 #   31/26/실제 불일치였다 → schemas/*.json 전수 등재 + 카운트 일치.
 #   재발 방지: validate_ssot.check_index_completeness 가 (entry 수 == .json 파일 수) 가드.
 
 openapi: 3.1.0
 info:
-  title: myjob SSOT Governance — 63 Domain Catalog
+  title: myjob SSOT Governance — 65 Domain Catalog
   version: '1.1.0'
   description: |
     Phase A~L SSOT 거버넌스 카탈로그. JSON Schema 2020-12 기반.
-    schemas/*.json 전수(63종) 등재 — components.schemas 항목 수 == 실 .json 파일 수.
+    schemas/*.json 전수(65종) 등재 — components.schemas 항목 수 == 실 .json 파일 수.
   license:
     name: Proprietary
 
@@ -28,6 +28,7 @@ components:
     AuthScopes:               {$ref: 'auth_scopes.json'}
     BuildingArchetypes:       {$ref: 'building_archetypes.json'}
     BuildingEnvelope:         {$ref: 'building_envelope.json'}
+    BuildingPassport:         {$ref: 'building_passport.json'}
     BuildingUsageMap:         {$ref: 'building_usage_map.json'}
     BundleManifest:           {$ref: 'bundle_manifest.json'}
     CapabilityTier:           {$ref: 'capability_tier.json'}
@@ -56,6 +57,7 @@ components:
     EsgPolicy:                {$ref: 'esg_policy.json'}
     EsgVenueBulkSync:         {$ref: 'esg_venue_bulk_sync.json'}
     ForecastResponse:         {$ref: 'forecast_response.json'}
+    FlexibilityEnvelope:      {$ref: 'flexibility_envelope.json'}
     GatewayRouting:           {$ref: 'gateway_routing.json'}
     HvacEmsMatrix:            {$ref: 'hvac_ems_matrix.json'}
     I18nKeys:                 {$ref: 'i18n_keys.json'}
