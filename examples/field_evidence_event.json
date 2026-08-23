@@ -1,0 +1,16 @@
+{
+  "event_id": "fev_bgj_recommendation_001",
+  "action_id": "act_bgj_sp26_2026",
+  "building_id": "BGJ",
+  "event_type": "recommendation",
+  "occurred_at": "2026-08-23T09:00:00+09:00",
+  "recorded_at": "2026-08-23T09:00:01+09:00",
+  "actor_type": "decision_service",
+  "payload": {
+    "status": "proposed",
+    "setpoint_c": 26.0,
+    "evidence_refs": ["eplus:AIRO_BGJ_SP26_2026_0001"]
+  },
+  "previous_event_hash": null,
+  "event_hash": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+}

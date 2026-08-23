@@ -42,3 +42,10 @@ def test_model_binding_example_is_valid_and_never_grants_physics_verdict() -> No
     binding = _validate("model_binding", "model_binding.json")
     assert "physics_verdict" in binding["prohibited_uses"]
     assert "physics_verdict" not in binding["allowed_uses"]
+
+
+def test_field_evidence_event_example_is_valid_and_append_only_shaped() -> None:
+    event = _validate("field_evidence_event", "field_evidence_event.json")
+    assert event["event_type"] == "recommendation"
+    assert event["previous_event_hash"] is None
+    assert event["event_hash"].startswith("sha256:")

@@ -1,0 +1,38 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "energy-contracts/field_evidence_event.json",
+  "title": "FieldEvidenceEvent",
+  "description": "Append-only evidence event for a building decision from recommendation through field M&V.",
+  "_usage": "runtime-validate",
+  "_consumers": ["airos-energy-decision", "edge-agent", "xbems"],
+  "version": "1.0",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["event_id", "action_id", "building_id", "event_type", "occurred_at", "recorded_at", "actor_type", "payload", "previous_event_hash", "event_hash"],
+  "properties": {
+    "event_id": {"type": "string", "pattern": "^fev_[a-zA-Z0-9_-]+$"},
+    "action_id": {"type": "string", "pattern": "^act_[a-zA-Z0-9_-]+$"},
+    "building_id": {"type": "string", "minLength": 1},
+    "event_type": {"enum": ["recommendation", "approval", "command", "acknowledgement", "observation", "mv_result"]},
+    "occurred_at": {"type": "string", "format": "date-time"},
+    "recorded_at": {"type": "string", "format": "date-time"},
+    "actor_type": {"enum": ["decision_service", "operator", "bems", "edge", "metering", "mv_service"]},
+    "payload": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["status", "evidence_refs"],
+      "properties": {
+        "status": {"enum": ["proposed", "approved", "rejected", "expired", "sent", "queued", "applied", "clamped", "failed", "observed", "verified", "inconclusive"]},
+        "setpoint_c": {"type": "number", "minimum": 10, "maximum": 40},
+        "correlation_id": {"type": "string", "minLength": 1},
+        "baseline_method": {"type": "string", "minLength": 1},
+        "savings_kwh": {"type": "number"},
+        "uncertainty_kwh": {"type": "number", "minimum": 0},
+        "detail": {"type": "string"},
+        "evidence_refs": {"type": "array", "items": {"type": "string", "minLength": 1}, "uniqueItems": true}
+      }
+    },
+    "previous_event_hash": {"type": ["string", "null"], "pattern": "^sha256:[a-f0-9]{64}$"},
+    "event_hash": {"type": "string", "pattern": "^sha256:[a-f0-9]{64}$"}
+  }
+}
