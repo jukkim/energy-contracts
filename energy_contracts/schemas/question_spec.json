@@ -1,0 +1,72 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "energy-contracts/question_spec.json",
+  "title": "QuestionSpec",
+  "description": "자연어 건물 에너지 질문의 구조화 결과. 파서(규칙 기반 또는 LLM)가 채울 수 있는 필드의 전부이며, 데이터 보유 수준·제어 권한 등 주장 등급을 결정하는 필드는 의도적으로 포함하지 않는다. 파서는 질문 의도와 질문에 명시된 개입 조건만 보고하고, 에너지·비용·절감량 같은 수치를 생성하지 않는다. 건물 식별자는 파서 출력이 아니라 소비 측 레지스트리 조회로 확정한다.",
+  "_usage": "runtime-validate",
+  "_consumers": ["airos-energy-decision", "building-energy-3d", "agentleague"],
+  "version": "1.0",
+  "$comment": "airos-energy-decision ADR-004 (자연어 파서 경계). nl_intents.json 은 키워드 게이트 SSOT, rq_ai_intent.json 은 역질문 7요소 폼이며, 본 스키마는 그 사이의 파서 산출 계약이다.",
+  "$defs": {
+    "ForbiddenCapabilityFields": {
+      "$comment": "파서가 절대 채울 수 없어야 하는 필드 목록. 소비 측 테스트가 자신의 파서 스키마와 이 목록의 교집합이 비어 있음을 확인한다. building_metadata, geometry, equipment, history_granularity, has_eui, realtime_telemetry, control_authority, model_binding_id.",
+      "type": "array",
+      "items": {"type": "string"},
+      "default": [
+        "building_metadata",
+        "geometry",
+        "equipment",
+        "history_granularity",
+        "has_eui",
+        "realtime_telemetry",
+        "control_authority",
+        "model_binding_id"
+      ]
+    }
+  },
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["intent", "confidence", "interpreted_as", "conditions"],
+  "properties": {
+    "intent": {
+      "description": "annual_cost=연간 에너지·비용·탄소 절감, setpoint=설정온도 변경 영향, retrofit=외피 대 설비 우선순위, flexibility=단기 kW 조정 여력, evidence=결과의 근거, unclear=판정 불가. unclear 는 추측 대신 되묻기 위한 값이며 기본값 대체를 금지한다.",
+      "enum": ["annual_cost", "setpoint", "retrofit", "flexibility", "evidence", "unclear"]
+    },
+    "confidence": {"type": "number", "minimum": 0, "maximum": 1},
+    "interpreted_as": {
+      "description": "사용자 확인용 한 문장 재진술. unclear 인 경우 null 가능.",
+      "type": ["string", "null"],
+      "minLength": 1
+    },
+    "conditions": {
+      "description": "질문에 명시된 값만 기록한다. 추정·보간·클램프 금지이며, 범위를 벗어난 값은 그럴듯한 값으로 고치지 말고 파싱 실패로 처리한다.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["setpoint_c", "gross_area_m2", "floors"],
+      "properties": {
+        "setpoint_c": {"type": ["number", "null"], "minimum": 10, "maximum": 40},
+        "gross_area_m2": {"type": ["number", "null"], "exclusiveMinimum": 10, "maximum": 10000000},
+        "floors": {"type": ["integer", "null"], "minimum": 1, "maximum": 200}
+      }
+    },
+    "provenance": {
+      "description": "해석 자체의 증거. 계산 단계와 동일하게 감사 가능해야 한다.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["backend", "source"],
+      "properties": {
+        "backend": {"type": "string", "minLength": 1},
+        "source": {"enum": ["deterministic", "deterministic_fallback", "llm"]},
+        "evidence_state": {"const": "llm_interpreted"},
+        "model_id": {"type": "string", "minLength": 1},
+        "model_version": {"type": "string", "minLength": 1},
+        "prompt_hash": {"type": "string", "pattern": "^sha256:[0-9a-f]{64}$"},
+        "output_hash": {"type": "string", "pattern": "^sha256:[0-9a-f]{64}$"},
+        "site_names_redacted": {"type": "boolean"},
+        "input_tokens": {"type": ["integer", "null"], "minimum": 0},
+        "output_tokens": {"type": ["integer", "null"], "minimum": 0},
+        "reasons": {"type": "array", "items": {"type": "string"}}
+      }
+    }
+  }
+}

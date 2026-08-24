@@ -49,3 +49,23 @@ def test_field_evidence_event_example_is_valid_and_append_only_shaped() -> None:
     assert event["event_type"] == "recommendation"
     assert event["previous_event_hash"] is None
     assert event["event_hash"].startswith("sha256:")
+
+
+def test_question_spec_example_is_valid_and_cannot_carry_capability_fields() -> None:
+    """A parser may report intent and stated conditions; never data tier or control."""
+    spec = _validate("question_spec", "question_spec.json")
+    assert spec["intent"] == "setpoint"
+    assert spec["provenance"]["evidence_state"] == "llm_interpreted"
+
+    schema = load_schema("question_spec")
+    forbidden = set(schema["$defs"]["ForbiddenCapabilityFields"]["default"])
+
+    def keys(node):
+        found = set()
+        for name, child in (node.get("properties") or {}).items():
+            found.add(name)
+            if isinstance(child, dict):
+                found |= keys(child)
+        return found
+
+    assert keys(schema).isdisjoint(forbidden)

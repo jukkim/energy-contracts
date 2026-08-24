@@ -1,0 +1,21 @@
+{
+  "intent": "setpoint",
+  "confidence": 0.92,
+  "interpreted_as": "냉방 설정온도를 26도로 올릴 때 전력과 쾌적성에 미치는 영향을 묻는 질문입니다.",
+  "conditions": {
+    "setpoint_c": 26.0,
+    "gross_area_m2": null,
+    "floors": null
+  },
+  "provenance": {
+    "backend": "claude",
+    "source": "llm",
+    "evidence_state": "llm_interpreted",
+    "model_id": "claude-opus-5",
+    "prompt_hash": "sha256:0000000000000000000000000000000000000000000000000000000000000000",
+    "output_hash": "sha256:1111111111111111111111111111111111111111111111111111111111111111",
+    "site_names_redacted": true,
+    "input_tokens": 1156,
+    "output_tokens": 218
+  }
+}
