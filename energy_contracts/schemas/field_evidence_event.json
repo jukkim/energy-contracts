@@ -4,35 +4,145 @@
   "title": "FieldEvidenceEvent",
   "description": "Append-only evidence event for a building decision from recommendation through field M&V.",
   "_usage": "runtime-validate",
-  "_consumers": ["airos-energy-decision", "edge-agent", "xbems"],
-  "version": "1.0",
+  "_consumers": [
+    "airos-energy-decision",
+    "edge-agent",
+    "xbems"
+  ],
+  "version": "1.1",
   "type": "object",
   "additionalProperties": false,
-  "required": ["event_id", "action_id", "building_id", "event_type", "occurred_at", "recorded_at", "actor_type", "payload", "previous_event_hash", "event_hash"],
+  "required": [
+    "action_id",
+    "actor_type",
+    "building_id",
+    "event_hash",
+    "event_id",
+    "event_type",
+    "occurred_at",
+    "payload",
+    "previous_event_hash",
+    "recorded_at",
+    "seq"
+  ],
   "properties": {
-    "event_id": {"type": "string", "pattern": "^fev_[a-zA-Z0-9_-]+$"},
-    "action_id": {"type": "string", "pattern": "^act_[a-zA-Z0-9_-]+$"},
-    "building_id": {"type": "string", "minLength": 1},
-    "event_type": {"enum": ["recommendation", "approval", "command", "acknowledgement", "observation", "mv_result"]},
-    "occurred_at": {"type": "string", "format": "date-time"},
-    "recorded_at": {"type": "string", "format": "date-time"},
-    "actor_type": {"enum": ["decision_service", "operator", "bems", "edge", "metering", "mv_service"]},
+    "event_id": {
+      "type": "string",
+      "pattern": "^fev_[a-zA-Z0-9_-]+$"
+    },
+    "action_id": {
+      "type": "string",
+      "pattern": "^act_[a-zA-Z0-9_-]+$"
+    },
+    "building_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "event_type": {
+      "enum": [
+        "recommendation",
+        "approval",
+        "command",
+        "acknowledgement",
+        "observation",
+        "mv_result"
+      ]
+    },
+    "occurred_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "recorded_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "actor_type": {
+      "enum": [
+        "decision_service",
+        "operator",
+        "bems",
+        "edge",
+        "metering",
+        "mv_service"
+      ]
+    },
     "payload": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["status", "evidence_refs"],
+      "required": [
+        "status",
+        "evidence_refs"
+      ],
       "properties": {
-        "status": {"enum": ["proposed", "approved", "rejected", "expired", "sent", "queued", "applied", "clamped", "failed", "observed", "verified", "inconclusive"]},
-        "setpoint_c": {"type": "number", "minimum": 10, "maximum": 40},
-        "correlation_id": {"type": "string", "minLength": 1},
-        "baseline_method": {"type": "string", "minLength": 1},
-        "savings_kwh": {"type": "number"},
-        "uncertainty_kwh": {"type": "number", "minimum": 0},
-        "detail": {"type": "string"},
-        "evidence_refs": {"type": "array", "items": {"type": "string", "minLength": 1}, "uniqueItems": true}
+        "status": {
+          "enum": [
+            "proposed",
+            "approved",
+            "rejected",
+            "expired",
+            "sent",
+            "queued",
+            "applied",
+            "clamped",
+            "failed",
+            "observed",
+            "verified",
+            "inconclusive"
+          ]
+        },
+        "setpoint_c": {
+          "type": "number",
+          "minimum": 10,
+          "maximum": 40
+        },
+        "correlation_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "baseline_method": {
+          "type": "string",
+          "minLength": 1
+        },
+        "savings_kwh": {
+          "type": "number"
+        },
+        "uncertainty_kwh": {
+          "type": "number",
+          "minimum": 0
+        },
+        "detail": {
+          "type": "string"
+        },
+        "evidence_refs": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          },
+          "uniqueItems": true
+        }
       }
     },
-    "previous_event_hash": {"type": ["string", "null"], "pattern": "^sha256:[a-f0-9]{64}$"},
-    "event_hash": {"type": "string", "pattern": "^sha256:[a-f0-9]{64}$"}
+    "previous_event_hash": {
+      "description": "직전 이벤트 해시. 첫 이벤트는 null.",
+      "oneOf": [
+        {
+          "type": "null"
+        },
+        {
+          "type": "string",
+          "pattern": "^(sha256|hmac-sha256):[a-f0-9]{64}$"
+        }
+      ]
+    },
+    "event_hash": {
+      "type": "string",
+      "pattern": "^(sha256|hmac-sha256):[a-f0-9]{64}$"
+    },
+    "seq": {
+      "type": "integer",
+      "minimum": 0,
+      "description": "자원별 원장 내 0-base 순번. 해시 사슬은 앞으로만 검증하므로 순번과 꼬리 앵커가 있어야 절단을 탐지할 수 있다."
+    }
   }
 }

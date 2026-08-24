@@ -9,8 +9,11 @@
   "payload": {
     "status": "proposed",
     "setpoint_c": 26.0,
-    "evidence_refs": ["eplus:AIRO_BGJ_SP26_2026_0001"]
+    "evidence_refs": [
+      "eplus:AIRO_BGJ_SP26_2026_0001"
+    ]
   },
   "previous_event_hash": null,
-  "event_hash": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+  "event_hash": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+  "seq": 0
 }
