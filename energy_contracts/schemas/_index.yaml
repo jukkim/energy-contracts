@@ -49,6 +49,7 @@ components:
     EmsStrategies:            {$ref: 'ems_strategies.json'}
     EdgeStrategyCapability:   {$ref: 'edge_strategy_capability.json'}
     EnergyConstants:          {$ref: 'energy_constants.json'}
+    EnergyPlusRunManifest:    {$ref: 'energyplus_run_manifest.json'}
     EnergyUnits:              {$ref: 'energy_units.json'}
     EngineeringDiff:          {$ref: 'engineering_diff.json'}
     EquipmentTaxonomy:        {$ref: 'equipment_taxonomy.json'}

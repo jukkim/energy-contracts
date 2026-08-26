@@ -1,0 +1,28 @@
+{
+  "$schema":"https://json-schema.org/draft/2020-12/schema","$id":"energy-contracts/energyplus_run_manifest.json","title":"EnergyPlusRunManifest",
+  "description":"표준 HVAC 가설 하나의 불변 EnergyPlus 설정온도 실행 묶음. 실측·현장 적용·M&V 증거가 아니다.",
+  "_usage":"runtime-validate","_consumers":["airos-energy-decision","ems-transformer","mpc-model"],"version":"1.0",
+  "type":"object","additionalProperties":false,
+  "required":["schema_version","manifest_id","created_at","producer","evidence_state","building_archetype","hvac_hypothesis","weather","period","runs"],
+  "properties":{
+    "schema_version":{"const":"1.0"},"manifest_id":{"type":"string","pattern":"^eplus-grid-[a-z0-9_-]+$"},"created_at":{"type":"string","format":"date-time"},"producer":{"type":"string","minLength":1},"evidence_state":{"const":"energyplus_cross_check"},
+    "building_archetype":{"type":"object","additionalProperties":false,"required":["code","name","source_idf_sha256"],"properties":{"code":{"type":"string","pattern":"^B(0[1-9]|1[0-7])$"},"name":{"type":"string","minLength":1},"source_idf_sha256":{"$ref":"#/$defs/Sha256"}}},
+    "hvac_hypothesis":{"type":"object","additionalProperties":false,"required":["code","label","is_observed"],"properties":{"code":{"type":"string","enum":["H_A","H_B","H_C","H_D","H_E","H_F","H_G"]},"label":{"type":"string","minLength":1},"is_observed":{"const":false}}},
+    "weather":{"type":"object","additionalProperties":false,"required":["city","epw_sha256"],"properties":{"city":{"type":"string","minLength":1},"epw_sha256":{"$ref":"#/$defs/Sha256"}}},
+    "period":{"type":"string","enum":["annual","design_week","custom"]},"runs":{"type":"array","minItems":3,"maxItems":3,"items":{"$ref":"#/$defs/Run"},"allOf":[
+      {"contains":{"type":"object","properties":{"cooling_setpoint_c":{"const":24}},"required":["cooling_setpoint_c"]},"minContains":1,"maxContains":1},
+      {"contains":{"type":"object","properties":{"cooling_setpoint_c":{"const":25}},"required":["cooling_setpoint_c"]},"minContains":1,"maxContains":1},
+      {"contains":{"type":"object","properties":{"cooling_setpoint_c":{"const":26}},"required":["cooling_setpoint_c"]},"minContains":1,"maxContains":1},
+      {"contains":{"type":"object","properties":{"role":{"const":"baseline"}},"required":["role"]},"minContains":1,"maxContains":1}
+    ]}
+  },
+  "$defs":{
+    "Sha256":{"type":"string","pattern":"^sha256:[a-f0-9]{64}$"},
+    "Run":{"type":"object","additionalProperties":false,"required":["run_id","cooling_setpoint_c","role","status","energyplus_version","input_idf_sha256","result_sha256","severe_count","annual_energy_kwh","comfort"],
+      "properties":{"run_id":{"type":"string","minLength":1},"cooling_setpoint_c":{"type":"number","enum":[24,25,26]},"role":{"type":"string","enum":["baseline","counterfactual"]},"status":{"const":"verified"},"energyplus_version":{"type":"string","minLength":1},"input_idf_sha256":{"$ref":"#/$defs/Sha256"},"result_sha256":{"$ref":"#/$defs/Sha256"},"severe_count":{"const":0},
+        "annual_energy_kwh":{"type":"object","additionalProperties":false,"required":["electricity","natural_gas","district_heating","district_cooling","facility_total"],"properties":{"electricity":{"type":"number","minimum":0},"natural_gas":{"type":"number","minimum":0},"district_heating":{"type":"number","minimum":0},"district_cooling":{"type":"number","minimum":0},"facility_total":{"type":"number","minimum":0}}},
+        "comfort":{"type":"object","additionalProperties":false,"required":["method","warm_limit","cold_limit","pmv_warmest","pmv_coldest"],"properties":{"method":{"type":"string","minLength":1},"warm_limit":{"type":"number","minimum":0},"cold_limit":{"type":"number","maximum":0},"pmv_warmest":{"type":"number"},"pmv_coldest":{"type":"number"}}}
+      },"allOf":[{"if":{"properties":{"cooling_setpoint_c":{"const":24}}},"then":{"properties":{"role":{"const":"baseline"}}}},{"if":{"properties":{"cooling_setpoint_c":{"enum":[25,26]}}},"then":{"properties":{"role":{"const":"counterfactual"}}}}]
+    }
+  }
+}
