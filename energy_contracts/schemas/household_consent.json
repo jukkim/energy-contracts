@@ -4,24 +4,40 @@
   "title": "HouseholdConsent",
   "description": "가정 1세대의 **직접부하제어 참여 동의**. 화면(AIRO Home)이 받은 선택과 엣지(edge-agent)가 강제하는 범위가 같은 정의를 읽게 하는 계약. ⚠ 제어 명령 계약(control_command.json)과 **별개 축**이다 — 명령에 동의 범위(델타·횟수)를 실으면 명령마다 동의가 재협상되는 꼴이 되고, 동의는 명령보다 수명이 길다.",
   "_usage": "hybrid",
-  "_consumers": ["edge-agent", "airos-energy-decision"],
-  "version": "1.0",
+  "_consumers": [
+    "edge-agent",
+    "airos-energy-decision"
+  ],
+  "version": "1.1",
   "type": "object",
   "$defs": {
     "ConsentPresetId": {
       "type": "string",
-      "enum": ["light", "standard", "deep"],
+      "enum": [
+        "light",
+        "standard",
+        "deep"
+      ],
       "description": "동의 프리셋 식별자. **정본 3 종**이며 기본 선택은 없다(가구가 고르지 않으면 동의가 아니다). 값·라벨은 아래 `default.presets` 가 정본."
     },
     "ParticipationState": {
       "type": "string",
-      "enum": ["NOT_ENROLLED", "OPTED_IN", "OPTED_OUT", "OFFLINE"],
+      "enum": [
+        "NOT_ENROLLED",
+        "OPTED_IN",
+        "OPTED_OUT",
+        "OFFLINE"
+      ],
       "description": "참여 상태. ⚠ 넷을 뭉치면 거짓이 된다 — 두절(OFFLINE)을 철회(OPTED_OUT)로 세면 동의한 가구를 잃고, 철회를 두절로 세면 **거부한 집에 계속 명령을 보낸다**. NOT_ENROLLED = 한 번도 동의한 적 없음(두절과 다르다)."
     },
     "ConsentEnvelope": {
       "type": "object",
       "description": "가구가 동의한 **범위**. 세 축을 모두 갖는다 — *\"에어컨 1℃ 까지\"* 와 *\"3℃ 까지\"* 는 다른 동의이고, 범위 없는 동의는 동의가 아니다.",
-      "required": ["max_setpoint_delta_c", "max_duration_min", "max_events_per_day"],
+      "required": [
+        "max_setpoint_delta_c",
+        "max_duration_min",
+        "max_events_per_day"
+      ],
       "properties": {
         "max_setpoint_delta_c": {
           "type": "number",
@@ -46,19 +62,34 @@
     "ConsentPreset": {
       "type": "object",
       "description": "화면에 내놓는 선택지 하나. **숫자를 그대로 표시**해야 한다 — 라벨만 보여주면 무엇에 동의했는지 가구가 알 수 없고, 그건 동의가 아니라 위임이다.",
-      "required": ["preset_id", "label_ko", "envelope"],
+      "required": [
+        "preset_id",
+        "label_ko",
+        "envelope"
+      ],
       "properties": {
-        "preset_id": {"$ref": "#/$defs/ConsentPresetId"},
-        "label_ko": {"type": "string", "description": "화면 표시 라벨(한국어)."},
-        "envelope": {"$ref": "#/$defs/ConsentEnvelope"}
+        "preset_id": {
+          "$ref": "#/$defs/ConsentPresetId"
+        },
+        "label_ko": {
+          "type": "string",
+          "description": "화면 표시 라벨(한국어)."
+        },
+        "envelope": {
+          "$ref": "#/$defs/ConsentEnvelope"
+        }
       }
     },
     "ConsentRequest": {
       "type": "object",
       "description": "참여 동의 등록·변경 요청 (PUT). 가구가 고른 프리셋을 보낸다.",
-      "required": ["preset_id"],
+      "required": [
+        "preset_id"
+      ],
       "properties": {
-        "preset_id": {"$ref": "#/$defs/ConsentPresetId"},
+        "preset_id": {
+          "$ref": "#/$defs/ConsentPresetId"
+        },
         "contract_version": {
           "type": "string",
           "description": "요청자가 읽은 이 계약의 버전. 미기재 허용(수신자 버전으로 간주)."
@@ -72,24 +103,56 @@
     "ConsentState": {
       "type": "object",
       "description": "현재 동의 상태 (GET 응답). 화면이 '남은 횟수' 를 스스로 계산하지 않아도 되게 파생값을 함께 준다.",
-      "required": ["household_id", "participation", "day", "events_today"],
+      "required": [
+        "household_id",
+        "participation",
+        "day",
+        "events_today",
+        "remaining_events_today",
+        "contract_version"
+      ],
       "properties": {
-        "household_id": {"type": "string"},
-        "participation": {"$ref": "#/$defs/ParticipationState"},
+        "household_id": {
+          "type": "string"
+        },
+        "participation": {
+          "$ref": "#/$defs/ParticipationState"
+        },
         "preset_id": {
-          "oneOf": [{"$ref": "#/$defs/ConsentPresetId"}, {"type": "null"}],
+          "oneOf": [
+            {
+              "$ref": "#/$defs/ConsentPresetId"
+            },
+            {
+              "type": "null"
+            }
+          ],
           "description": "동의에 쓰인 프리셋. 미동의(NOT_ENROLLED) 시 null."
         },
-        "contract_version": {"type": "string", "description": "이 상태를 강제하는 계약 버전."},
+        "contract_version": {
+          "type": "string",
+          "description": "이 상태를 강제하는 계약 버전."
+        },
         "consent": {
-          "oneOf": [{"$ref": "#/$defs/ConsentEnvelope"}, {"type": "null"}],
+          "oneOf": [
+            {
+              "$ref": "#/$defs/ConsentEnvelope"
+            },
+            {
+              "type": "null"
+            }
+          ],
           "description": "적용 중인 범위. 미동의 시 null."
         },
         "applied_delta_c": {
           "type": "number",
           "description": "지금 걸려 있는 제어(℃). 기준선 계산에 쓰인다."
         },
-        "events_today": {"type": "integer", "minimum": 0, "description": "오늘 쓴 횟수."},
+        "events_today": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "오늘 쓴 횟수."
+        },
         "remaining_events_today": {
           "type": "integer",
           "minimum": 0,
@@ -104,6 +167,11 @@
           "type": "object",
           "additionalProperties": true,
           "description": "상위 재계획 입력(동원 가능 자원). 철회=영구 감소 · 두절=일시 감소로 갈라 센다."
+        },
+        "requires_reconsent": {
+          "type": "boolean",
+          "default": false,
+          "description": "정본 프리셋과 맞지 않는 **구 동의**를 들고 있었다는 표시. 이 상태에서는 참여로 세지 않는다(명령 전건 거부) — 화면은 가구에게 **다시 물어야** 한다. ⚠ 숫자가 정본에 없다는 것은 가구가 지금 표에 없는 범위에 동의했다는 뜻이고, 그 동의를 임의의 프리셋으로 승격하면 동의하지 않은 범위를 적용하게 된다."
         }
       }
     }
@@ -113,7 +181,9 @@
       "type": "array",
       "minItems": 3,
       "maxItems": 3,
-      "items": {"$ref": "#/$defs/ConsentPreset"},
+      "items": {
+        "$ref": "#/$defs/ConsentPreset"
+      },
       "description": "정본 프리셋 3 종. 화면·엣지가 **같은 표**를 읽는다."
     }
   },

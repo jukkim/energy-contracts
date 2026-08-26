@@ -4,6 +4,22 @@
 
 ---
 
+## v0.3.45 — 2026-08-26
+
+### `household_consent` v1.1 — 설명만 필수였던 필드를 **실제로** 필수로
+
+v0.3.44 의 `ConsentState` 는 `remaining_events_today` 와 `contract_version` 을 설명에서
+"준다" 고 해 놓고 `required` 에 넣지 않았다. **엣지가 빠뜨려도 검증을 통과한다** — 계약이
+아니라 희망이었다. 소비자가 붙기 전에 닫는다(v1.0 은 아무도 pin 하지 않았다).
+
+- `ConsentState.required` += `remaining_events_today` · `contract_version`
+- `ConsentState.requires_reconsent` 신설 — 정본 프리셋과 맞지 않는 **구 동의**를 들고
+  있었다는 표시. ⚠ 숫자가 정본에 없다는 건 가구가 지금 표에 없는 범위에 동의했다는
+  뜻이다. 그걸 가까운 프리셋으로 승격하면 **동의하지 않은 범위**를 적용하게 된다 —
+  참여로 세지 않고 화면이 다시 묻게 한다.
+
+---
+
 ## v0.3.44 — 2026-08-26
 
 ### `household_consent` 신설 — 화면이 보여준 숫자와 엣지가 거는 숫자를 한 표에서 읽는다
