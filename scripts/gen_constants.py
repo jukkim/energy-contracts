@@ -90,6 +90,8 @@ PROJECT_TARGETS: dict[str, dict] = {
                 "DISPATCH_SOURCES", "DISPATCH_STATUSES",
                 "EQUIPMENT_CAPABILITIES", "EQUIPMENT_KINDS",
                 "ERROR_CODES", "GRIDBRIDGE_URL_COMPUTER_A",
+                "HOUSEHOLD_CONSENT_PRESETS", "HOUSEHOLD_CONSENT_PRESET_IDS",
+                "HOUSEHOLD_CONSENT_VERSION",
                 "GRIDBRIDGE_URL_DEFAULT", "I18N_KEYS", "INTENT_TYPES",
                 "LEGACY_MAPPING", "LINT_CONFIG", "LOGGING_FORMAT",
                 "MQTT_TOPIC_PATTERNS", "OBJECTIVE_TYPES", "OPENAPI_RESPONSES",
@@ -281,7 +283,11 @@ def load_schemas() -> dict:
     emissions = _load("emission_factors.json")
     # 설비 taxonomy SSOT — 수용가 마스터 데이터 모델의 설비 축(kind·action·capability).
     equipment = _load("equipment_taxonomy.json")
-    return {"edge_cap": edge_cap,
+    # 가정 동의 프리셋 SSOT — 화면이 보여준 숫자와 엣지가 강제하는 숫자를 한 표에서
+    #   읽게 한다. 양쪽이 각자 상수를 들면 "보통" 의 뜻이 갈라지고, 갈라진 뒤에는
+    #   어느 쪽이 진실인지 판정할 근거가 없다.
+    household_consent = _load("household_consent.json")
+    return {"edge_cap": edge_cap, "household_consent": household_consent,
         "ems": ems, "ports": ports, "common": common,
             "agents": agents, "intents": intents,
             "modes": modes, "dataclass": dataclass, "tests": tests,
@@ -417,6 +423,17 @@ def gen_python(schemas: dict) -> str:
         vspec = equip_default.get("value_specs")
         if vspec:
             lines.append(f"DEVICE_ACTION_VALUE_SPEC: dict[str, dict] = {vspec!r}")
+        lines.append("")
+
+    # 가정 동의 프리셋 — 화면 선택지 3 종의 **숫자 정본**.
+    hc = (schemas.get("household_consent") or {})
+    hc_presets = (hc.get("default") or {}).get("presets")
+    if hc_presets:
+        lines.append("# ─ 가정 동의 프리셋 (화면 선택지 ↔ 엣지 강제 범위 단일 표) ────")
+        lines.append(f"HOUSEHOLD_CONSENT_PRESETS: list[dict] = {hc_presets!r}")
+        lines.append("HOUSEHOLD_CONSENT_PRESET_IDS: list[str] = "
+                     f"{[p['preset_id'] for p in hc_presets]!r}")
+        lines.append(f"HOUSEHOLD_CONSENT_VERSION: str = {hc.get('version', '')!r}")
         lines.append("")
 
     # Phase 4 — DR Aggregator enums (esg_policy.json + dr_dispatch_event.json)
