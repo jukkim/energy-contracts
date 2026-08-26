@@ -61,6 +61,7 @@ components:
     FlexibilityEnvelope:      {$ref: 'flexibility_envelope.json'}
     GatewayRouting:           {$ref: 'gateway_routing.json'}
     HvacEmsMatrix:            {$ref: 'hvac_ems_matrix.json'}
+    HouseholdConsent:         {$ref: 'household_consent.json'}
     I18nKeys:                 {$ref: 'i18n_keys.json'}
     LegacyEmsCodeMapping:     {$ref: 'legacy_ems_code_mapping.json'}
     LintFormat:               {$ref: 'lint_format.json'}

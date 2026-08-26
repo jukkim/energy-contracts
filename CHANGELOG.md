@@ -4,6 +4,31 @@
 
 ---
 
+## v0.3.44 — 2026-08-26
+
+### `household_consent` 신설 — 화면이 보여준 숫자와 엣지가 거는 숫자를 한 표에서 읽는다
+
+가정 DR 동의는 세 축(`max_setpoint_delta_c` · `max_duration_min` ·
+`max_events_per_day`)을 갖는데, 화면(AIRO Home)은 목적별 동의만 받고 엣지(edge-agent)만
+숫자를 알고 있었다. 각자 상수를 들면 **"보통" 의 뜻이 갈라지고**, 갈라진 뒤에는 어느
+쪽이 진실인지 판정할 근거가 없다.
+
+- **`household_consent`** — 프리셋 3 종 정본(`light` 1℃·120분·1회 / `standard`
+  2℃·120분·2회 / `deep` 3℃·240분·3회) + `ConsentRequest`(PUT) · `ConsentState`(GET).
+  기본 선택은 **없다** — 가구가 고르지 않으면 동의가 아니다.
+- `ConsentRequest.displayed` — **가구에게 실제로 보여준 숫자**(선택). 보내면 수신자가
+  정본과 대조해 다르면 거부한다. 화면이 "2℃" 라 말하고 엣지가 3℃ 를 거는 드리프트를
+  계약 단계에서 잡는다.
+- `ConsentState.remaining_events_today` — 소비자가 직접 빼서 쓰면 **날짜 롤오버 시점이
+  어긋난다**(엣지는 넘어갔는데 화면은 어제 값으로 뺀다). 파생을 한 곳에서 한다.
+- ⚠ **`control_command` 에는 아무것도 추가하지 않았다.** 명령 계약과 동의 계약은 별개
+  축이다 — 명령에 동의 범위를 실으면 명령마다 동의가 재협상되는 꼴이 되고, 동의는
+  명령보다 수명이 길다.
+- 소비: `edge-agent`(PUT/GET 검증 + 프리셋 파생) · AIRO Home(선택지 표시·제안 제한).
+  codegen: `HOUSEHOLD_CONSENT_PRESETS` · `_PRESET_IDS` · `_VERSION`.
+
+---
+
 ## v0.3.40 — 2026-08-16
 
 ### `edge_strategy_capability` 신설 — 부를 수 있는 것과 **할 수 있는 것**을 가른다
