@@ -12,7 +12,7 @@
     "smartbuilding",
     "eduarena"
   ],
-  "version": "1.0.3",
+  "version": "1.0.4",
   "updated": "2026-08-27",
   "$comment": "Phase 0.2 산출물 (ADR-001 F14 namespace 결정 직후). NEG-2026-05-29-002-final + 6-agent hunter round 통합 결과. ems_transformer가 모든 AI 모델의 단일 진입점이라는 위상 (사용자 2026-05-29 09:37 명시) 을 contract 로 고정. 신규 F# 신설 시 본 파일 + UNIFIED_GATEWAY_DESIGN.md v1.x 동시 갱신 의무.",
   "type": "object",
@@ -230,8 +230,8 @@
       {"id": "F10e", "name": "building_ai occupancy (LightGBM)", "method": "POST", "path": "/v1/ai/occupancy", "backend": {"kind": "http_microservice", "host_port": 8005, "url_env": "BUILDING_AI_URL"}, "status": "operational", "external_facing": true, "tool_registry_name": "building_ai_occupancy"},
       {"id": "F10f", "name": "building_ai equipment RUL (RF)", "method": "POST", "path": "/v1/ai/equipment-rul", "backend": {"kind": "http_microservice", "host_port": 8005, "url_env": "BUILDING_AI_URL"}, "status": "operational", "external_facing": true, "tool_registry_name": "building_ai_equipment_rul"},
       {"id": "F11a", "name": "ECMHS MPC predict", "method": "POST", "path": "/v1/mpc/predict", "backend": {"kind": "http_microservice", "host_port": 8050, "url_env": "ECMHS_URL", "upstream_path": "/predict", "model_id_ref": "ecmhs"}, "status": "operational", "external_facing": true, "tool_registry_name": "mpc_predict"},
-      {"id": "F11b", "name": "ECMHS MPC optimize", "method": "POST", "path": "/v1/mpc/optimize", "backend": {"kind": "http_microservice", "host_port": 8050, "url_env": "ECMHS_URL"}, "status": "training_pending", "external_facing": true, "tool_registry_name": "mpc_optimize"},
-      {"id": "F11c", "name": "ECMHS MPC compare strategies", "method": "POST", "path": "/v1/mpc/compare", "backend": {"kind": "http_microservice", "host_port": 8050, "url_env": "ECMHS_URL"}, "status": "training_pending", "external_facing": true, "tool_registry_name": "mpc_compare_strategies"},
+      {"id": "F11b", "name": "ECMHS MPC optimize", "method": "POST", "path": "/v1/mpc/optimize", "backend": {"kind": "http_microservice", "host_port": 8050, "url_env": "ECMHS_URL", "upstream_path": "/optimize", "model_id_ref": "ecmhs"}, "status": "operational", "external_facing": true, "tool_registry_name": "mpc_optimize"},
+      {"id": "F11c", "name": "ECMHS MPC compare strategies", "method": "POST", "path": "/v1/mpc/compare", "backend": {"kind": "http_microservice", "host_port": 8050, "url_env": "ECMHS_URL", "upstream_path": "/compare-strategies", "model_id_ref": "ecmhs"}, "status": "operational", "external_facing": true, "tool_registry_name": "mpc_compare_strategies"},
       {"id": "F12", "name": "Internal agent proxy (be-3d /api/internal/agents/*)", "backend": {"kind": "proxy", "host_port": 8000, "url_env": "BE3D_URL"}, "paths": [
         {"method": "GET", "path": "/v1/building/profile", "purpose": "a01_diagnosis BuildingContext"},
         {"method": "GET", "path": "/v1/building/forecast", "purpose": "a02_forecast"},

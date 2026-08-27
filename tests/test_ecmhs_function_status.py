@@ -8,5 +8,7 @@ def test_ecmhs_prediction_is_operational_without_promoting_optimization():
     }
 
     assert functions["F11a"]["status"] == "operational"
-    assert functions["F11b"]["status"] == "training_pending"
-    assert functions["F11c"]["status"] == "training_pending"
+    assert functions["F11b"]["status"] == "operational"
+    assert functions["F11c"]["status"] == "operational"
+    assert functions["F11b"]["backend"]["upstream_path"] == "/optimize"
+    assert functions["F11c"]["backend"]["upstream_path"] == "/compare-strategies"
