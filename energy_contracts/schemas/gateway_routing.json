@@ -12,7 +12,7 @@
     "smartbuilding",
     "eduarena"
   ],
-  "version": "1.0.4",
+  "version": "1.0.5",
   "updated": "2026-08-27",
   "$comment": "Phase 0.2 산출물 (ADR-001 F14 namespace 결정 직후). NEG-2026-05-29-002-final + 6-agent hunter round 통합 결과. ems_transformer가 모든 AI 모델의 단일 진입점이라는 위상 (사용자 2026-05-29 09:37 명시) 을 contract 로 고정. 신규 F# 신설 시 본 파일 + UNIFIED_GATEWAY_DESIGN.md v1.x 동시 갱신 의무.",
   "type": "object",
@@ -222,7 +222,7 @@
       {"id": "F6", "name": "reverse short diagnosis (168h)", "method": "POST", "path": "/v1/ems/diagnose/short", "backend": {"kind": "http_microservice", "host_port": 8060, "url_env": "REVERSE_URL", "upstream_path": "/v1/short-diagnosis"}, "status": "operational", "external_facing": true, "tool_registry_name": "reverse_short_diagnosis"},
       {"id": "F7", "name": "reverse Module B lookup 838", "method": "POST", "path": "/v1/ems/recommend", "backend": {"kind": "http_microservice", "host_port": 8060, "url_env": "REVERSE_URL", "upstream_path": "/v1/coldstart"}, "status": "operational", "external_facing": true, "tool_registry_name": "reverse_coldstart"},
       {"id": "F8", "name": "reverse identify", "method": "POST", "path": "/v1/ems/identify", "backend": {"kind": "http_microservice", "host_port": 8060, "url_env": "REVERSE_URL", "upstream_path": "/v1/identify"}, "status": "operational", "external_facing": true, "tool_registry_name": "reverse_identify"},
-      {"id": "F9", "name": "KBEP forecast (MVP)", "backend": {"kind": "http_microservice", "host_port": 8020, "url_env": "KBEP_URL", "model_id_ref": "kbep"}, "status": "training_pending", "external_facing": true, "fallback": "mock"},
+      {"id": "F9", "name": "KBEP multi-horizon forecast", "method": "POST", "path": "/v1/kbep/predict", "backend": {"kind": "http_microservice", "host_port": 8020, "url_env": "KBEP_URL", "upstream_path": "/v1/predict", "model_id_ref": "kbep"}, "status": "operational", "external_facing": true, "tool_registry_name": "kbep_forecast"},
       {"id": "F10a", "name": "building_ai energy daily (LightGBM)", "method": "POST", "path": "/v1/ai/energy-daily", "backend": {"kind": "http_microservice", "host_port": 8005, "url_env": "BUILDING_AI_URL"}, "status": "operational", "external_facing": true, "tool_registry_name": "building_ai_energy_daily"},
       {"id": "F10b", "name": "building_ai anomaly (XGB+IF)", "method": "POST", "path": "/v1/ai/anomaly", "backend": {"kind": "http_microservice", "host_port": 8005, "url_env": "BUILDING_AI_URL"}, "status": "operational", "external_facing": true, "tool_registry_name": "building_ai_anomaly"},
       {"id": "F10c", "name": "building_ai EMS optimize (GB)", "method": "POST", "path": "/v1/ai/ems-optimize", "backend": {"kind": "http_microservice", "host_port": 8005, "url_env": "BUILDING_AI_URL"}, "status": "operational", "external_facing": true, "tool_registry_name": "building_ai_ems_optimize"},
