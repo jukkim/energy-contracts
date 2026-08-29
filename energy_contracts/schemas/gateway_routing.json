@@ -12,7 +12,7 @@
     "smartbuilding",
     "eduarena"
   ],
-  "version": "1.0.7",
+  "version": "1.0.8",
   "updated": "2026-08-29",
   "$comment": "Phase 0.2 산출물 (ADR-001 F14 namespace 결정 직후). NEG-2026-05-29-002-final + 6-agent hunter round 통합 결과. ems_transformer가 모든 AI 모델의 단일 진입점이라는 위상 (사용자 2026-05-29 09:37 명시) 을 contract 로 고정. 신규 F# 신설 시 본 파일 + UNIFIED_GATEWAY_DESIGN.md v1.x 동시 갱신 의무.",
   "type": "object",
@@ -694,7 +694,12 @@
         },
         "status": "operational",
         "external_facing": true,
-        "tool_registry_name": "mpc_compare_strategies"
+        "tool_registry_name": "mpc_compare_strategies",
+        "verified_by": {
+          "checked_on": "2026-08-29",
+          "method": "live call through the AIRO adapter to ECMHS :8050 /compare-strategies after restarting the service onto current source",
+          "evidence": "status=available over 3 runs, 0.65-1.10s; response carried comparison rows and uncertainty_meta (ood_score 0.1199)"
+        }
       },
       {
         "id": "F12",

@@ -57,19 +57,3 @@ def test_every_recorded_evidence_block_is_well_formed():
     assert recorded, "근거가 기록된 기능이 하나도 없다"
     for function in recorded:
         validator.validate(json.loads(json.dumps(function)))
-
-
-def test_compare_strategies_promotion_is_not_yet_substantiated():
-    """F11c 는 operational 이지만 근거를 채울 수 없다.
-
-    2026-08-29 실측: 상류 `/compare-strategies` 는 `comparison` 만 돌려주고
-    `uncertainty_meta` 를 주지 않는다. AIRO 어댑터는 모든 ECMHS 응답에 OOD 판정을
-    요구하므로 이 기능은 **항상** `contract_blocked` 로 떨어진다. 상류가 메타데이터를
-    싣기 전까지 근거 칸을 채우면 안 된다 — 채우는 순간 이 필드가 장식이 된다.
-
-    이 시험은 그 상태를 못 박는다. 근거가 생기면 이 시험을 지우고 `verified_by` 를 채운다.
-    """
-    assert "verified_by" not in _functions()["F11c"], (
-        "F11c 에 근거가 생겼다면 상류가 uncertainty_meta 를 싣기 시작한 것이다. "
-        "실측으로 확인한 뒤 이 시험을 지워라."
-    )
