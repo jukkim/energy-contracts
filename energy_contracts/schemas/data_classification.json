@@ -11,9 +11,9 @@
     "agentleague",
     "eduarena"
   ],
-  "version": "1.0",
-  "updated": "2026-05-17",
-  "$comment": "myjob/docs/MODES_AND_DATA_RESEARCH.md §2.3 산출물.",
+  "version": "1.1",
+  "updated": "2026-09-03",
+  "$comment": "myjob/docs/MODES_AND_DATA_RESEARCH.md §2.3 산출물. | v1.1(2026-09-03): 축을 둘로 가른다 — DataSource(출처, +calibrated/imputed) 와 AbsenceKind(부재, 신설). 같은 enum 에 섞으면 '출처가 missing' 같은 말이 문법상 가능해진다. 기존 7종은 불변(추가만) — 소비 5곳 무영향.",
   "$defs": {
     "DataSource": {
       "type": "string",
@@ -24,9 +24,11 @@
         "predicted",
         "external",
         "synthetic",
-        "mock"
+        "mock",
+        "calibrated",
+        "imputed"
       ],
-      "description": "출처 축. measured=실 계량, certified=공식 인증, simulated=시뮬 산출, predicted=ML 예측, external=외부 벤더, synthetic=합성/생성기, mock=의도적 모킹"
+      "description": "출처 축. measured=실 계량, certified=공식 인증, simulated=시뮬 산출, predicted=ML 예측, external=외부 벤더, synthetic=합성/생성기, mock=의도적 모킹 calibrated=실측에 맞춰 보정(실측 아님), imputed=우리가 채운 값(method 필수). ⚠ 이 축은 **값이 있을 때만** 쓴다. 값이 없는 이유는 AbsenceKind 로 적는다."
     },
     "DataTier": {
       "type": "integer",
@@ -80,6 +82,15 @@
         "published"
       ],
       "description": "파이프라인 입수 단계. raw→curated→published 진행"
+    },
+    "AbsenceKind": {
+      "type": "string",
+      "enum": [
+        "not_applicable",
+        "missing",
+        "unknown"
+      ],
+      "description": "부재 축 — **값이 왜 없나**. DataSource(출처 축)와 섞지 않는다. not_applicable=설계·물리·정책상 대상이 아니다(자원을 쓰지 않는다) · missing=대상인데 아직 안 받았다(여기만 자원을 쓴다) · unknown=대상인지조차 판정 못 했다(못 잼 — 통과로 세지 않는다). ⛔ 분모는 covered+missing 이다. not_applicable 을 분모에 넣으면 진척이 실제보다 나빠 보이고 없는 결손에 예산이 나간다(전역 룰 absence-has-kinds)."
     }
   },
   "type": "object",
@@ -151,6 +162,20 @@
         "description": "의도적 mock",
         "example": "LLM stub, MQTT broker stub",
         "is_runtime": false
+      },
+      "calibrated": {
+        "source": "calibrated",
+        "tier": 2,
+        "description": "실측에 맞춰 보정",
+        "example": "세그먼트 모델 × 단지 측정 anchor",
+        "is_runtime": true
+      },
+      "imputed": {
+        "source": "imputed",
+        "tier": 3,
+        "description": "우리가 채운 값(method 필수)",
+        "example": "sido_month_profile_v1, building_year_scale_v1",
+        "is_runtime": true
       }
     },
     "tier_mapping": {
@@ -169,6 +194,23 @@
       },
       "gridbridge": {
         "telemetry_kind": "live (48h 이내) vs demo (retain) — 시간 기반 자동 판별"
+      }
+    },
+    "absence": {
+      "not_applicable": {
+        "kind": "not_applicable",
+        "in_denominator": false,
+        "description": "대상이 아니다 — 채우면 낭비. 근거 문서·절을 함께 적는다"
+      },
+      "missing": {
+        "kind": "missing",
+        "in_denominator": true,
+        "description": "대상인데 아직 안 했다 — 여기만 자원을 쓴다"
+      },
+      "unknown": {
+        "kind": "unknown",
+        "in_denominator": true,
+        "description": "판정 자체를 못 했다 — 통과로도 실패로도 세지 않는다"
       }
     }
   }

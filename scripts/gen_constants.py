@@ -44,6 +44,17 @@ WORKSPACE_ROOT = CONTRACTS_ROOT.parents[1]
 #
 # 화이트리스트 → m4_survey_exports.py 산출 (`scratch/m4_exports_audit.json`)
 # 기반으로 결정. 새 symbol 필요 시 본 manifest 갱신 후 `--all` 재실행.
+def _defs_enum(schemas: dict, name: str) -> list:
+    """`data_classification.json` 의 `$defs.<name>.enum` 을 그대로 읽는다.
+
+    ⛔ 생성기가 목록을 **손으로 적으면** 스키마가 늘어도 생성본이 안 따라온다 —
+    실제로 `DataSource` 가 9종이 됐는데 생성부는 7종을 박아 두고 있었다(2026-09-03).
+    없으면 빈 목록: 그 축을 **안 내보내는** 것이지 옛 값을 내보내지 않는다.
+    """
+    defs = (schemas.get("dataclass") or {}).get("$defs") or {}
+    return list((defs.get(name) or {}).get("enum") or [])
+
+
 PROJECT_TARGETS: dict[str, dict] = {
     # ⚠ **2026-08-02 추가** — sejong 의 `_generated_constants.py` 는 "AUTO-GENERATED …
     # gen_constants.py 로 재생성" 이라고 **스스로 밝히는데** 이 표에 없어서 `--all` 이
@@ -63,7 +74,8 @@ PROJECT_TARGETS: dict[str, dict] = {
                 "AGENT_REGISTRY", "AI_MODELS", "AUTH_JWT_POLICY",
                 "AUTH_PERMISSIONS", "AUTH_PROJECT_DEFAULT_SCOPES", "AUTH_SCOPES",
                 "BUILDING_USAGES", "COMPUTER_PROFILES", "DATA_SOURCES",
-                "DATA_SOURCE_LABELS", "DB_MIGRATIONS", "EMISSION_FACTORS_KR",
+                "DATA_SOURCE_LABELS", "ABSENCE_KINDS",
+                "ABSENCE_KIND_META", "ABSENCE_IN_DENOMINATOR", "DB_MIGRATIONS", "EMISSION_FACTORS_KR",
                 "ENERGY_CONVERSIONS", "ERROR_CODES", "ERROR_TYPE_PREFIX",
                 "I18N_FALLBACK_LANG", "I18N_KEYS", "INTENT_TYPES",
                 "LINT_CONFIG", "LOGGING_FORMAT", "MQTT_NAMESPACES",
@@ -84,7 +96,8 @@ PROJECT_TARGETS: dict[str, dict] = {
             "python": [
                 "AI_MODELS", "AUTH_JWT_POLICY", "AUTH_PROJECT_DEFAULT_SCOPES",
                 "BUILDING_USAGES", "COMPUTER_PROFILES", "DATA_SOURCES",
-                "DATA_SOURCE_LABELS", "DB_MIGRATIONS",
+                "DATA_SOURCE_LABELS", "ABSENCE_KINDS",
+                "ABSENCE_KIND_META", "ABSENCE_IN_DENOMINATOR", "DB_MIGRATIONS",
                 "EMISSION_FACTORS_KR", "ENERGY_CONVERSIONS",
                 "DEVICE_ACTIONS", "DEVICE_ACTION_VALUE_SPEC",
                 "DISPATCH_SOURCES", "DISPATCH_STATUSES",
@@ -111,7 +124,8 @@ PROJECT_TARGETS: dict[str, dict] = {
             "python": [
                 "AI_MODELS", "AUTH_JWT_POLICY", "AUTH_SCOPES",
                 "BID_STRATEGIES", "COMPUTER_PROFILES",
-                "DATA_SOURCES", "DATA_SOURCE_LABELS", "DB_MIGRATIONS",
+                "DATA_SOURCES", "DATA_SOURCE_LABELS", "ABSENCE_KINDS",
+                "ABSENCE_KIND_META", "ABSENCE_IN_DENOMINATOR", "DB_MIGRATIONS",
                 "DISPATCH_SOURCES", "DISPATCH_STATUSES",
                 "DISTRIBUTION_ALGORITHMS", "DR_TYPES",
                 "EMISSION_FACTORS_KR", "ENERGY_CONVERSIONS", "ERROR_CODES",
@@ -134,7 +148,8 @@ PROJECT_TARGETS: dict[str, dict] = {
                 "AGENT_REGISTRY", "AI_MODELS", "AUTH_JWT_POLICY", "AUTH_PERMISSIONS",
                 "AUTH_PROJECT_DEFAULT_SCOPES", "AUTH_SCOPES",
                 "BID_STRATEGIES", "BUILDING_USAGES",
-                "COMPUTER_PROFILES", "DATA_SOURCES", "DATA_SOURCE_LABELS",
+                "COMPUTER_PROFILES", "DATA_SOURCES", "DATA_SOURCE_LABELS", "ABSENCE_KINDS",
+                "ABSENCE_KIND_META", "ABSENCE_IN_DENOMINATOR",
                 "DB_MIGRATIONS", "DEVICE_ACTIONS", "DEVICE_ACTION_VALUE_SPEC",
                 "DISPATCH_SOURCES", "DISPATCH_STATUSES",
                 "DISTRIBUTION_ALGORITHMS", "DR_TYPES",
@@ -175,7 +190,8 @@ PROJECT_TARGETS: dict[str, dict] = {
             "python": [
                 "AI_MODELS", "AUTH_JWT_POLICY", "AUTH_PROJECT_DEFAULT_SCOPES",
                 "AUTH_SCOPES", "BUILDING_USAGES", "COMPUTER_PROFILES",
-                "DATA_SOURCE_LABELS", "EMISSION_FACTORS_KR",
+                "DATA_SOURCE_LABELS", "ABSENCE_KINDS",
+                "ABSENCE_KIND_META", "ABSENCE_IN_DENOMINATOR", "EMISSION_FACTORS_KR",
                 "ENERGY_CONVERSIONS", "ERROR_CODES",
                 "GRIDBRIDGE_URL_COMPUTER_A", "GRIDBRIDGE_URL_DEFAULT",
                 "I18N_KEYS", "LOGGING_FORMAT", "MQTT_NAMESPACES",
@@ -192,7 +208,8 @@ PROJECT_TARGETS: dict[str, dict] = {
             "python": [
                 "AI_MODELS", "AUTH_JWT_POLICY", "AUTH_PROJECT_DEFAULT_SCOPES",
                 "AUTH_SCOPES", "BUILDING_USAGES", "COMPUTER_PROFILES",
-                "DATA_SOURCE_LABELS", "EMISSION_FACTORS_KR",
+                "DATA_SOURCE_LABELS", "ABSENCE_KINDS",
+                "ABSENCE_KIND_META", "ABSENCE_IN_DENOMINATOR", "EMISSION_FACTORS_KR",
                 "ENERGY_CONVERSIONS", "ERROR_CODES",
                 "GRIDBRIDGE_URL_COMPUTER_A", "GRIDBRIDGE_URL_DEFAULT",
                 "I18N_KEYS", "LOGGING_FORMAT", "MQTT_NAMESPACES",
@@ -209,6 +226,11 @@ PROJECT_TARGETS: dict[str, dict] = {
         "python": "8.simulation/_shared/_generated_constants.py",
         "exports": {
             "python": [
+                #: ⛔ 계보 축 2종 추가(2026-09-03) — ems_transformer 의 계보 봉투가
+                #  손으로 적은 LINEAGE 대신 **여기서 파생**한다. 정본이 둘이 되면
+                #  한쪽만 고쳐진다(실제로 taxonomy 가 네 벌이 됐다).
+                "ABSENCE_IN_DENOMINATOR", "ABSENCE_KINDS", "ABSENCE_KIND_META",
+                "DATA_SOURCE_LABELS",
                 "EMISSION_FACTORS_KR", "PRIMARY_ENERGY_FACTORS",
                 "ZEB_BASELINE_KWH_M2_YR",
             ],
@@ -244,6 +266,7 @@ def load_schemas() -> dict:
     intents = json.loads(intents_fp.read_text(encoding="utf-8")) if intents_fp.exists() else {}
     # Phase E/F/G 신규
     modes_fp = SCHEMAS_DIR / "run_modes.json"
+    # (헬퍼는 모듈 상단 _defs_enum 참조)
     data_fp = SCHEMAS_DIR / "data_classification.json"
     tests_fp = SCHEMAS_DIR / "test_classification.json"
     modes = json.loads(modes_fp.read_text(encoding="utf-8")) if modes_fp.exists() else {}
@@ -527,7 +550,20 @@ def gen_python(schemas: dict) -> str:
     if dataclass:
         lines.append("# ─ Data Classification (Phase F SSOT) ───────────────────────")
         lines.append(f"DATA_SOURCES: dict[str, dict] = {dataclass.get('sources', {})!r}")
-        lines.append('DATA_SOURCE_LABELS: tuple[str, ...] = ("measured", "certified", "simulated", "predicted", "external", "synthetic", "mock")')
+        #: ⛔ 예전엔 이 목록을 **손으로 적어** 뒀다 — 스키마가 늘어도 생성본이 안 따라온다.
+        #  (2026-09-03: DataSource 에 calibrated/imputed 를 더하는데 여기만 7종이었다.)
+        _ds = _defs_enum(schemas, "DataSource")
+        lines.append(f"DATA_SOURCE_LABELS: tuple[str, ...] = {tuple(_ds)!r}")
+        #: 부재 축 — **값이 왜 없나**. 출처 축과 같은 enum 에 섞지 않는다(v1.1).
+        _ak = _defs_enum(schemas, "AbsenceKind")
+        if _ak:
+            lines.append(f"ABSENCE_KINDS: tuple[str, ...] = {tuple(_ak)!r}")
+            lines.append(f"ABSENCE_KIND_META: dict[str, dict] = "
+                         f"{dataclass.get('absence', {})!r}")
+            #: 분모에 드는 것만 따로 — 전역 룰 「분모는 covered+missing」의 기계 표현.
+            _den = tuple(k for k, v in (dataclass.get("absence") or {}).items()
+                         if v.get("in_denominator"))
+            lines.append(f"ABSENCE_IN_DENOMINATOR: tuple[str, ...] = {_den!r}")
         lines.append("")
 
     # Phase G — Test Classification
@@ -910,8 +946,18 @@ def gen_typescript(schemas: dict) -> str:
         lines.append("// ─ Data Classification (Phase F) ────────────────────────")
         lines.append(f"export const DATA_SOURCES = "
                      f"{json.dumps(dataclass.get('sources', {}), ensure_ascii=False)} as const;")
-        lines.append('export const DATA_SOURCE_LABELS = ["measured", "certified", "simulated", "predicted", "external", "synthetic", "mock"] as const;')
+        #: ⛔ 손으로 적던 목록 → 스키마 기반(2026-09-03).
+        _ds = _defs_enum(schemas, "DataSource")
+        lines.append(f"export const DATA_SOURCE_LABELS = "
+                     f"{json.dumps(_ds, ensure_ascii=False)} as const;")
         lines.append("export type DataSource = (typeof DATA_SOURCE_LABELS)[number];")
+        _ak = _defs_enum(schemas, "AbsenceKind")
+        if _ak:
+            lines.append(f"export const ABSENCE_KINDS = "
+                         f"{json.dumps(_ak, ensure_ascii=False)} as const;")
+            lines.append("export type AbsenceKind = (typeof ABSENCE_KINDS)[number];")
+            lines.append(f"export const ABSENCE_KIND_META = "
+                         f"{json.dumps(dataclass.get('absence', {}), ensure_ascii=False)} as const;")
         lines.append("")
 
     # Phase G
