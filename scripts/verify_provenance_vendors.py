@@ -36,6 +36,10 @@ CANON = (_ROOT / "projects" / "energy-contracts" / "energy_contracts"
 VENDORS = (
     _ROOT / "8.simulation" / "ems_transformer" / "serving" / "_provenance_envelope.py",
     _ROOT / "projects" / "building-energy-3d" / "src" / "shared" / "provenance_envelope.py",
+    #: 2026-09-04 — ingestion-worker 집계 provenance API (등재 #29·#36).
+    #  필지 종합집계(`gold.pnu_summary`)를 집계 단위 봉투로 내보내는 경로가
+    #  생기면서 이 저장소도 사본을 갖는다.
+    _ROOT / "projects" / "ingestion-worker" / "src" / "shared" / "provenance_envelope.py",
 )
 
 
