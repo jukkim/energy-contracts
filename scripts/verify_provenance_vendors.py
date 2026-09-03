@@ -40,6 +40,11 @@ VENDORS = (
     #  필지 종합집계(`gold.pnu_summary`)를 집계 단위 봉투로 내보내는 경로가
     #  생기면서 이 저장소도 사본을 갖는다.
     _ROOT / "projects" / "ingestion-worker" / "src" / "shared" / "provenance_envelope.py",
+    #: 2026-09-04 — AIROS 종단 소비 (등재 #29·#36). be-3d 집계 API 가 준 봉투를
+    #  **믿지 않고 다시 조립해** assert_quotable 을 태운다. 계약 문자열만 보고
+    #  통과시키던 구멍(사냥꾼 2차 팀B H-2)을 소비자 쪽에서도 닫는다.
+    _ROOT / "projects" / "airos-energy-decision" / "src" / "airos_energy_decision"
+          / "provenance_envelope.py",
 )
 
 
