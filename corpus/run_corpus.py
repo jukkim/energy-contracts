@@ -188,16 +188,28 @@ def _judge_cap(query, expect, refuse_ok, gw, timeout):
     ops = resp.get("ops", [])
     refuse = resp.get("refuse", False)
     got = [op.get("api", "") for op in ops]
+    # ⛔ **거부에도 종류가 있다.** 게이트웨이는 2026-09-04 부터 `refuse_kind` 로
+    #   `unsupported`(기능이 없다)와 `ineligible`(기능은 있으나 대상·데이터·권한이
+    #   없다)을 가른다(`ems_transformer/serving/app.py`). 여기서 `refuse` 불리언만
+    #   읽으면 그 구분이 원장에 도달하지 못하고, 능력이 늘어도 수치로 증명할 수 없다.
+    #   판정은 아직 종류를 쓰지 않는다 — 먼저 **관측**부터 시작한다.
+    kind = resp.get("refuse_kind")
     ev = {"ops": got, "refuse": refuse}
+    if kind:
+        ev["refuse_kind"] = kind
+    basis = resp.get("refuse_basis")
+    if basis is not None:
+        ev["refuse_basis"] = basis
+    kind_note = f"({kind})" if kind else ""
     if refuse:
         # WARN **안전한 거절은 실행 성공이 아니다.** 설계상 옳은 동작이지만
         #   "자연어로 실행됐다" 와 같은 칸에 세면 실행 가능성이 부풀려진다.
         #   WARN 은 결함이 아니라 *다른 종류의 성공* 이라는 표시다.
-        return (("WARN", "안전 거절(실행 아님)", "ESCALATE_BY_DESIGN", ev) if refuse_ok
-                else ("FAIL", "refuse=True", "NL_UNREACHABLE", ev))
+        return (("WARN", f"안전 거절{kind_note}(실행 아님)", "ESCALATE_BY_DESIGN", ev) if refuse_ok
+                else ("FAIL", f"refuse=True{kind_note}", "NL_UNREACHABLE", ev))
     if not ops:
-        return (("WARN", "빈 ops — 안전 거절(실행 아님)", "ESCALATE_BY_DESIGN", ev) if refuse_ok
-                else ("FAIL", "ops empty", "NL_UNREACHABLE", ev))
+        return (("WARN", f"빈 ops{kind_note} — 안전 거절(실행 아님)", "ESCALATE_BY_DESIGN", ev) if refuse_ok
+                else ("FAIL", f"ops empty{kind_note}", "NL_UNREACHABLE", ev))
     if expect and not any(a in got for a in expect):
         return "WARN", f"got={got} want∈{expect}", "MISROUTED", ev
     return "PASS", f"ops={got}", None, ev
