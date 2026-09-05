@@ -691,6 +691,43 @@ def suite_combo(corpus, ctx):
     return rows
 
 
+def _scenario_details(items, ctx):
+    """시나리오 **상세**에서 `payload.ops` 를 모은다 (2026-09-06 신설).
+
+    ⛔ 목록 응답에는 `ops` 가 없다. 목록만 보고 판정하면 등록된 100건이 전부
+       *"등록만 확인"* 으로 격하된다 — 실제로는 전부 재생 형상을 갖고 있는데도.
+
+    ⚠ 상세를 못 읽은 것은 **빈 ops 가 아니다**. 빈 리스트로 돌려주면 호출부가
+      `REGISTERED_ONLY`(등록만 확인)로 적는데, 그건 *"ops 가 0개다"* 라는 뜻이라
+      **못 읽음과 뜻이 다르다**. 그래서 못 읽은 id 는 **키를 아예 안 넣는다** →
+      호출부가 `None` 으로 구별한다.
+    """
+    import concurrent.futures as _cf                                # noqa: PLC0415
+    out = {}
+
+    def _one(it):
+        sid = str(it.get("id") or "")
+        if not sid:
+            return None
+        code, d = _get_json(f"{ctx['be3d']}/api/v1/scenarios/{sid}", ctx["timeout"], retries=1)
+        if code != 200 or not isinstance(d, dict):
+            return None
+        pl = d.get("payload") or {}
+        if isinstance(pl, str):
+            try:
+                pl = json.loads(pl)
+            except Exception:                                        # noqa: BLE001
+                pl = {}
+        ops = (pl.get("ops") if isinstance(pl, dict) else None) or d.get("ops")             or (d.get("spec") or {}).get("ops") or []
+        return sid, list(ops)
+
+    with _cf.ThreadPoolExecutor(max_workers=8) as ex:
+        for r in ex.map(_one, items):
+            if r:
+                out[r[0]] = r[1]
+    return out
+
+
 def suite_scenario(corpus, ctx):
     """B-op 3D 시연 = be-3d public_scenarios 재생 표면(E층) 등록 확인."""
     rows = []
@@ -710,18 +747,36 @@ def suite_scenario(corpus, ctx):
                           evidence={"count": len(items)}, layer="E"))
             # 등록 **개수**만 세면 "50개 있다"는 말밖에 못 한다. 각 시나리오가 실제로 재생
             #   가능한 형상인지(id·ops 보유) 개별 셀로 남긴다 — 추가 호출 0(같은 응답 재사용).
+            #: ⛔ **검사기가 맞는 곳을 안 보고 있었다** (2026-09-06 실측).
+            #  목록 응답(`/scenarios?limit=`)은 요약이라 `ops` 를 **아예 안 싣는다**
+            #  (필드 = id·title·mode·priority·좌표…). 그래서 `it["ops"]` 는 늘 비었고
+            #  **100건 전부가 `REGISTERED_ONLY` 앰버**로 찍혔다 — 실제로는 100/100 이
+            #  `payload.ops` 를 갖고 있다(mountMetricChoropleth·selectBuildings·
+            #  cameraFlyToAnchor·driveRouteByIntent …).
+            #  ⚠ 원인은 최적화였다: 주석이 *"추가 호출 0(같은 응답 재사용)"* 이라고
+            #    적혀 있다. **0.5초를 아끼려고 100칸을 거짓 앰버로 만들었다**
+            #    (상세 100건 병렬 조회 실측 0.5s).
+            #  ⚠ 그리고 be-3d 는 `ops` 를 **`payload` 안에** 둔다 — 검사기가 찾던
+            #    `ops`/`spec.ops` 는 이 서비스의 계약이 아니다. 키를 맞춘다.
+            detail = _scenario_details(items, ctx)
             for it in items:
                 sid = str(it.get("id") or "")[:16]
                 title = str(it.get("title") or "")[:40]
-                ops = it.get("ops") or it.get("spec", {}).get("ops") or []
+                ops = detail.get(str(it.get("id") or ""), [])
                 # ⚠ **등록과 재생 가능은 다른 말이다.** 예전엔 `id` 만 있으면 PASS 라
                 #   `op 0` 인 시나리오가 무더기로 통과했다 — 그건 "레코드가 있다" 는
                 #   증거이지 "재생된다" 는 증거가 아니다(외부 감사 2026-08-21).
                 #   ops 가 없으면 **REGISTERED** 로 격하한다: 통과도 실패도 아니고
                 #   *등록만 확인됐다* 는 별도 상태다. 뭉치면 등록 수가 재생 수로 읽힌다.
                 has_id = bool(sid)
+                _read = str(it.get("id") or "") in detail
                 if not has_id:
                     st, note, why = "FAIL", "id 없음(재생 불가)", "NO_RENDERER"
+                elif not _read:
+                    #: ⛔ **상세를 못 읽은 것을 '등록만 확인'으로 적지 않는다.**
+                    #  둘은 다른 칸이다 — 앞은 `unknown`(못 잼), 뒤는 `ops 0개`.
+                    st, note, why = ("UNKNOWN", f"{title} — 상세 조회 실패(재생 여부 못 잼)",
+                                     "SERVICE_DOWN")
                 elif not ops:
                     st, note, why = ("WARN", f"{title} — **등록만 확인**(op 0, 재생 미검증)",
                                      "REGISTERED_ONLY")
