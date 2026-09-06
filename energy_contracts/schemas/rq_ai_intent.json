@@ -221,7 +221,7 @@
           "default_output_type": "prescriptive"
         },
         "govt": {
-          "placeholder": "e.g., Compare four 2030 -40% NDC scenarios across 7.29M buildings.",
+          "placeholder": "e.g., Compare four 2030 -40% NDC scenarios across 7.40M buildings.",
           "examples": [
             "Provincial reduction potential under ₩1T retrofit subsidy",
             "Generation + jobs impact of mandatory rooftop PV",
