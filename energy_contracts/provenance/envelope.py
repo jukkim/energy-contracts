@@ -80,6 +80,18 @@ def _load_taxonomy() -> tuple[tuple, tuple, tuple]:
                    "schemas/data_classification.json",
                    "projects/energy-contracts/energy_contracts/schemas/"
                    "data_classification.json")
+    def _read_schema(p: _Path):
+        """정본 스키마 JSON 한 벌을 읽어 3 축을 돌려준다 (없으면 None)."""
+        if not p.is_file():
+            return None
+        d = _json.loads(p.read_text(encoding="utf-8"))
+        defs = d.get("$defs") or {}
+        src = tuple((defs.get("DataSource") or {}).get("enum") or ())
+        ab = tuple((defs.get("AbsenceKind") or {}).get("enum") or ())
+        absence = (d.get("default") or {}).get("absence") or {}
+        den = tuple(k for k, v in absence.items() if v.get("in_denominator"))
+        return (src, ab, den) if (src and ab and den) else None
+
     for anc in (here, *here.parents):
         for rel in rels_const:
             p = anc / rel
@@ -95,21 +107,33 @@ def _load_taxonomy() -> tuple[tuple, tuple, tuple]:
                 return (tuple(m.DATA_SOURCE_LABELS), tuple(m.ABSENCE_KINDS),
                         tuple(m.ABSENCE_IN_DENOMINATOR))
         for rel in rels_schema:
-            p = anc / rel
-            if not p.is_file():
-                continue
-            d = _json.loads(p.read_text(encoding="utf-8"))
-            defs = d.get("$defs") or {}
-            src = tuple((defs.get("DataSource") or {}).get("enum") or ())
-            ab = tuple((defs.get("AbsenceKind") or {}).get("enum") or ())
-            absence = (d.get("default") or {}).get("absence") or {}
-            den = tuple(k for k, v in absence.items() if v.get("in_denominator"))
-            if src and ab and den:
-                return src, ab, den
+            got = _read_schema(anc / rel)
+            if got:
+                return got
+
+    # ③ **설치된** 정본 패키지 — 조상 경로가 없는 곳에서도 정본을 읽는다.
+    #    ⚠ 왜 필요한가. CI 는 이 repo **하나만** 체크아웃하므로 형제 폴더
+    #    `projects/energy-contracts/` 가 조상에 없다. 그런데 정본은 거기 있는 게
+    #    아니라 **pip 로 설치된 `energy_contracts` 패키지에 동봉**돼 있다
+    #    (`schemas/*.json`). 이 갈래가 없으면 개발 PC 에서만 초록이고 CI 는
+    #    영영 빨갛다 — 실제로 그랬다(2026-09-05 pytest 8회 연속 실패).
+    #    리터럴 폴백이 아니다. 읽는 대상은 같은 정본 스키마다.
+    try:
+        import energy_contracts as _ec  # noqa: PLC0415
+    except Exception:                                          # pragma: no cover
+        _ec = None
+    if _ec is not None and getattr(_ec, "__file__", None):
+        got = _read_schema(_Path(_ec.__file__).resolve().parent
+                           / "schemas" / "data_classification.json")
+        if got:
+            return got
+
     raise ImportError(
         "계보 taxonomy 정본을 못 찾았다 — 생성본(`_generated_constants.py`)도 "
-        "스키마(`data_classification.json`)도 조상 경로에 없다. "
-        "리터럴로 때우지 마라(그 순간 목록이 한 벌 더 생긴다)")
+        "스키마(`data_classification.json`)도 조상 경로에 없고, 설치된 "
+        "`energy_contracts` 패키지에도 없다. "
+        "리터럴로 때우지 마라(그 순간 목록이 한 벌 더 생긴다). "
+        "고치기: pip install -e projects/energy-contracts")
 
 
 DATA_SOURCE_LABELS, ABSENCE_KINDS, ABSENCE_IN_DENOMINATOR = _load_taxonomy()
