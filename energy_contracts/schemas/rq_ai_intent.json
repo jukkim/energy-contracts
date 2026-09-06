@@ -297,7 +297,7 @@
           "default_output_type": "prescriptive"
         },
         "govt": {
-          "placeholder": "예: 전국 729만 건물 대상 2030 -40% NDC 시나리오 4 가지를 비교해주세요.",
+          "placeholder": "예: 전국 740만 건물 대상 2030 -40% NDC 시나리오 4 가지를 비교해주세요.",
           "examples": [
             "리트로핏 보조금 1조 투입 시 시도별 감축 잠재량",
             "옥상 PV 의무화 정책의 발전량·자원·일자리 영향",
