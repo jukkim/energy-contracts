@@ -7,7 +7,7 @@
   "_consumers": [
     "gridbridge"
   ],
-  "version": "2.0",
+  "version": "2.1",
   "type": "object",
   "properties": {
     "kau": {
@@ -103,7 +103,7 @@
     },
     "unit_prices": {
       "type": "object",
-      "description": "에너지 평균 단가 (원/kWh)",
+      "description": "에너지 평균 단가 (원/kWh) — 2026-09-10 스코프 확정: electricity_krw=일반용 전력량요금 mid-peak(기본요금 제외), gas_krw=서울 도시가스 일반용(영업1) 소매 사용요금(부가세 별도). residential 은 K-apt 관리비→kWh 역산 전용이며 2026 공표 단가와 어긋남(_audit 참조). 신규 계산은 retail_reference_2026 사용.",
       "properties": {
         "electricity_krw": {
           "type": "number"
@@ -128,6 +128,14 @@
               "type": "number"
             }
           }
+        },
+        "_scope": {
+          "type": "object",
+          "description": "각 키의 스코프 단어(인용 시 병기 의무)"
+        },
+        "_audit": {
+          "type": "object",
+          "description": "2026-09-10 감사 결과·후속 조치"
         }
       }
     },
@@ -155,6 +163,14 @@
       "additionalProperties": {
         "type": "object"
       }
+    },
+    "retail_reference_2026": {
+      "type": "object",
+      "description": "2026 canonical 소매·도매 단가 참조표 (원/kWh, 부가세 별도, 기준일 2026-09-01). 요금 계산·경제성·Query500 financial_assumptions 정본. 스코프 단어 없이 인용 금지."
+    },
+    "frozen_sets": {
+      "type": "object",
+      "description": "재현성 때문에 값을 고정한 세트의 등록부. 신규 계산에 쓰지 않는다. immutable=true 인 값은 변경 금지."
     }
   },
   "default": {
@@ -229,6 +245,17 @@
         "district_heat_krw": 70.0,
         "hot_water_krw": 65.0,
         "_comment": "공동주택(주택용) 관리비 비용→kWh 환산 단가. 한전 주택용 평균. 일반용(상업)은 상위 electricity_krw 120/gas_krw 80. K-apt xlsx 수집기(import_kapt_energy_xlsx) 가 참조."
+      },
+      "_scope": {
+        "electricity_krw": "일반용 전력량요금 mid-peak 단가(기본요금·기후환경요금 제외). 평균판매단가 아님(일반용 평균판매단가 2025 = 172.7).",
+        "gas_krw": "서울 도시가스 일반용(영업1) 소매 사용요금 79.62→80 원/kWh, 부가세 별도 (원/MJ 22.1160 × 3.6). 사무실 난방 목적이면 업무난방용 105.4 가 맞다.",
+        "residential": "공동주택 관리비(원)→kWh 역산 전용. 값은 2026 공표 단가와 어긋남 — _audit 참조."
+      },
+      "_audit": {
+        "date": "2026-09-10",
+        "finding": "residential.gas_krw 45 는 서울 주택용 소매 81.4 대비 -45%(원/MJ 미환산 의심), district_heat_krw 70 은 한난 주택용 96.6 대비 -28%, electricity_krw 110 은 주택용 평균판매단가 159.0 대비 -31%. 이 값으로 관리비를 나누면 kWh 가 1.4~1.8배 과대.",
+        "action": "값은 kapt_energy_monthly 재적재(단가 버전 컬럼 포함) 전까지 동결. 재적재 시 retail_reference_2026.electricity_avg_sales_price.residential / gas_retail_seoul.residential / district_heat_usage_charge.residential 로 교체. Owner=building-energy-3d import_kapt_energy_xlsx.py.",
+        "also": "a08_market/agent.py HEAT_PRICE_KRW=70.0 은 상업 건물 열비용에 주택용 값을 쓰는 오류 → district_heat_usage_charge.business 125.4 로 교체(be-3d·ingestion-worker·building-energy-sejong 3곳). policy_evaluate.py/kbep_client.py 의 EMS_F14_KRW_PER_KWH=200.0 은 SSOT 미연결 → electricity_avg_sales_price.general 172.7 로 교체."
       }
     },
     "renewable": {
@@ -252,6 +279,88 @@
         ],
         "_comment": "台灣 碳費 — 標準 NT00/tCO2e, 自主減量 우대 A 50/B 100. 전력·가스·제조 中 연 25,000 tCO2e 초과 대상. 2026년 첫 징수(2025 배출 기준). 出처=環境部 2024.10 공고."
       }
+    },
+    "retail_reference_2026": {
+      "basis_date": "2026-09-01",
+      "vat": "excluded",
+      "unit": "KRW/kWh",
+      "electricity_avg_sales_price": {
+        "all": 170.4,
+        "residential": 159.0,
+        "general": 172.7,
+        "industrial": 181.9,
+        "education_2024": 143.0,
+        "basis": "한전 평균판매단가 2025 잠정(2024 확정 162.92/156.91/172.99/168.17/143.00). 기본요금·기후환경요금·연료비조정단가 포함, 부가세·전력기금 제외. 2026-06-01 TOU 구조개편은 총수준 동결(3분기 연료비조정 +5원 유지).",
+        "source": "한국전력통계 2025판(EG-TIPS 재게시) · 한전 2025 결산 보도 2026-03-02"
+      },
+      "electricity_energy_charge_general_low_voltage_2026": {
+        "summer": 132.4,
+        "spring_fall": 91.9,
+        "winter": 119.0,
+        "base_krw_per_kw_month": 6160,
+        "basis": "한전 일반용(갑)Ⅰ 저압 전력량요금 2026-06-01 시행표. 편의점(AIR-RET) 계약종 기본값 후보.",
+        "source": "한전 사이버지점 요금표"
+      },
+      "gas_retail_seoul": {
+        "residential": 81.4,
+        "general_business1": 79.6,
+        "general_business2": 76.4,
+        "business_heating": 105.4,
+        "industrial": 95.6,
+        "hvac_winter": 101.8,
+        "hvac_summer": 69.2,
+        "conversion": "원/MJ × 3.6 (주택 22.6226 · 영업1 22.1160 · 영업2 21.2212 · 업무난방 29.2642 · 산업 26.5588 원/MJ)",
+        "source": "서울 도시가스 요금표 2026-09-01(코원에너지서비스) · 서울시 물가정보 소매공급비용"
+      },
+      "gas_wholesale_kogas": {
+        "residential": 75.1,
+        "general": 68.7,
+        "business_heating": 97.7,
+        "industrial": 90.3,
+        "conversion": "원/MJ × 3.6 (주택 20.8495 · 일반 19.0904 · 업무난방 27.1334 · 산업 25.0896 원/MJ, 원료비+공급비용)",
+        "source": "한국가스공사 도소매요금표 2026-09-01 적용"
+      },
+      "district_heat_usage_charge": {
+        "residential": 96.6,
+        "business": 125.4,
+        "public": 109.5,
+        "basic_charge": "주택 52.40 원/㎡·월 · 업무 396.79 원/Mcal/h·월 · 공공 361.98 원/Mcal/h·월 (단가에 섞지 말 것)",
+        "conversion": "원/Mcal × 0.86 (주택 112.32 · 업무 145.82 · 공공 127.34 원/Mcal, 사용요금 단일요금)",
+        "source": "한국지역난방공사 열요금표 2024-07-01(2025-07·2026 동결)"
+      },
+      "district_cooling_usage_charge": {
+        "peak": 116.5,
+        "mid": 89.6,
+        "off_peak": 53.7,
+        "conversion": "원/Mcal × 0.86 (첨두 135.41 · 중간 104.16 · 경부하 62.49)",
+        "source": "한국지역난방공사 지역냉방(냉수) 요금표"
+      },
+      "oil_kerosene": {
+        "retail_2024_avg": 143.6,
+        "conversion": "1,360.26 원/L(2024 연평균, 부가세 포함) ÷ 9.47 kWh/L(순발열량 34.1 MJ/L). 보일러 효율 미반영. 2025 연평균 출처 없음(2026-08 시점값 166.5).",
+        "source": "대한석유협회 주유소 판매가격 통계 2024"
+      },
+      "_scope": "요금 계산·경제성(MACC)·Query500 financial_assumptions 의 2026 canonical. 인용 시 항목명의 스코프(평균판매단가/소매 사용요금/도매/사용요금)를 병기한다."
+    },
+    "frozen_sets": {
+      "simulation_accounting_2025": {
+        "electricity": 152,
+        "gas": 65,
+        "district_heat": 95,
+        "district_cooling": 110,
+        "oil": 110,
+        "unit": "KRW/kWh",
+        "immutable": true,
+        "scope": "8.simulation/_shared/energy_accounting.py TARIFFS_KRW_KWH(및 mpc_model 사본) — 2025 시뮬 비용 회계, Qwen v2.5 학습 메타, eval GT, sim_campaign_2026 ENERGY_ACCOUNTING_SSOT. 재현성 때문에 값 고정.",
+        "known_bias_vs_retail_reference_2026": "전기 152 = TOU 전력량요금 시간가중(기본요금 제외), 일반용 평균판매단가 172.7 대비 -12%. 가스 65 ≈ 민수용 도매(68.7~75.1)이며 일반용 소매 80 대비 -19%, 업무난방 105.4 대비 -38%. 지역난방 95 ≈ 주택용 96.6 이며 업무용 125.4 대비 -24%. 지역냉방 110 ≈ 첨두 116.5. 오일 110 은 등유 143.6 대비 -23%.",
+        "rule": "신규 계산·보고에 쓰지 않는다. 이 세트로 산출한 비용은 '2025 시뮬 회계 단가 기준'을 반드시 병기한다.",
+        "planned_2026_estimate": {
+          "electricity": 136,
+          "basis": "ENERGY_SSOT §4-1 TOU 재편 시간가중 재산정(추정, 미적용)"
+        }
+      }
     }
-  }
+  },
+  "updated": "2026-09-10",
+  "$comment": "v2.1(2026-09-10) 단가 통일 감사: 세 벌(시뮬 회계 152/65/95/110/110 · 일반용 소매 120/80 · 주택용 환산 110/45/70/65)을 한 정본에 스코프 단어와 함께 등록. unit_prices 기존 키·값은 불변(하위호환·K-apt 재적재 전 혼합 방지). 신규 계산(요금·경제성·Query500 financial_assumptions)은 retail_reference_2026 만 사용. frozen_sets.simulation_accounting_2025 는 8.simulation/_shared/energy_accounting.py 의 동결 세트 등록본(값 변경 금지). 출처·환산은 각 블록의 source/conversion 참조. 값 정정 시 bulk-edit-verify."
 }
