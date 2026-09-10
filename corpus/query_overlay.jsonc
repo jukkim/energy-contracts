@@ -292,6 +292,12 @@
       "probeQueryVariants": ["광고 가능면 등급 필터를 띄워줘", "BFT 드롭다운을 화면에 올려줘"],
       "expectAny": ["mountBftDropdown"], "route": "compose", "refuseOk": false
     },
+    "mountEvidencePanel": {
+      "probeQuery": "이 건물의 에너지 분석값과 출처를 근거 패널로 함께 보여줘",
+      "probeQueryVariants": ["분석 결과 옆에 실측·시뮬레이션 근거를 표시해줘", "이 건물 결과의 계산값과 데이터 출처를 패널로 열어줘"],
+      "expectAny": ["mountEvidencePanel"], "route": "compose", "refuseOk": false,
+      "note": "전문 함수 결과의 evidenceId·binding·resolvedValue를 함께 표출"
+    },
     // ── B-class 잔여 32 (2026-08-01, Phase E 후속) ────────────────────────
     //   레거시 2종(driveKakaoRoute·driveOsrmRouteVia = V74 거부)은 **폐기 면제** — 시스템이
     //   스스로 거부하는 op 에 대표질의를 붙이는 것은 의미가 없다(gen_corpus 가 summary 로 자동 분류).

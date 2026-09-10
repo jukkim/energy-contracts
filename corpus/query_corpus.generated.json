@@ -8,9 +8,9 @@
     "executor_keys": "projects\\energy-decision-studio\\lib\\actions\\executor_keys.ts"
   },
   "counts": {
-    "opcodes": 96,
+    "opcodes": 98,
     "opA": 8,
-    "opB": 77,
+    "opB": 79,
     "opC": 11,
     "routerClasses": 43,
     "executors": 7,
@@ -98,11 +98,25 @@
       "summary": "BFT(광고가능면 tier) 드롭다운/레이어 장착."
     },
     {
+      "api": "mountEvidencePanel",
+      "name": "data.mountEvidencePanel",
+      "ns": "data",
+      "consumerClass": "B",
+      "summary": "전문 함수가 반환한 검증 결과를 근거 패널로 표시. evidenceId + binding(/facts/result) + resolvedValue"
+    },
+    {
       "api": "unmountBftDropdown",
       "name": "data.unmountBft",
       "ns": "data",
       "consumerClass": "B",
       "summary": "BFT 드롭다운/레이어 해제."
+    },
+    {
+      "api": "unmountEvidencePanel",
+      "name": "data.unmountEvidencePanel",
+      "ns": "data",
+      "consumerClass": "B",
+      "summary": "검증 결과 근거 패널 해제."
     },
     {
       "api": "startGangnamCamera",
@@ -1450,6 +1464,19 @@
       "route": "compose",
       "refuseOk": false
     },
+    "mountEvidencePanel": {
+      "probeQuery": "이 건물의 에너지 분석값과 출처를 근거 패널로 함께 보여줘",
+      "probeQueryVariants": [
+        "분석 결과 옆에 실측·시뮬레이션 근거를 표시해줘",
+        "이 건물 결과의 계산값과 데이터 출처를 패널로 열어줘"
+      ],
+      "expectAny": [
+        "mountEvidencePanel"
+      ],
+      "route": "compose",
+      "refuseOk": false,
+      "note": "전문 함수 결과의 evidenceId·binding·resolvedValue를 함께 표출"
+    },
     "createFacadeAd": {
       "probeQuery": "이 건물 외벽에 광고판을 붙여줘",
       "probeQueryVariants": [
@@ -2437,6 +2464,7 @@
         "mediaPlay",
         "mediaStop",
         "mountBftDropdown",
+        "mountEvidencePanel",
         "mountLadderDemo",
         "mountReverseCascade",
         "orbitAnchor",
@@ -2489,6 +2517,7 @@
         "stopGoldFlyoverDemo",
         "unmountAnalysis",
         "unmountBftDropdown",
+        "unmountEvidencePanel",
         "unmountLadderDemo",
         "unmountMetricChoropleth",
         "unmountMetricTimeline",
@@ -2496,8 +2525,8 @@
         "unmountReverseCascade",
         "unmountSeoulChoropleth"
       ],
-      "nlTarget": 52,
-      "nlCovered": 52,
+      "nlTarget": 53,
+      "nlCovered": 53,
       "nlUncovered": [],
       "lifecycleExempt": [
         "clearCompositeShader",
@@ -2512,6 +2541,7 @@
         "stopGoldFlyoverDemo",
         "unmountAnalysis",
         "unmountBftDropdown",
+        "unmountEvidencePanel",
         "unmountLadderDemo",
         "unmountMetricChoropleth",
         "unmountMetricTimeline",
