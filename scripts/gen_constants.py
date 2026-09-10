@@ -1291,13 +1291,12 @@ def apply_exports_filter(content: str, lang: str, project_cfg: dict) -> str:
 # ── 작업 실행 ───────────────────────────────────────────────────────────────
 
 def write_target(content: str, out_path: Path) -> bool:
-    """파일이 이미 동일하면 False (변경 없음), 다르면 True."""
-    if out_path.exists():
-        old = out_path.read_text(encoding="utf-8")
-        if old == content:
-            return False
+    """UTF-8/LF 바이트가 이미 동일하면 False, 다르면 결정론적으로 기록한다."""
+    encoded = content.encode("utf-8")
+    if out_path.exists() and out_path.read_bytes() == encoded:
+        return False
     out_path.parent.mkdir(parents=True, exist_ok=True)
-    out_path.write_text(content, encoding="utf-8")
+    out_path.write_bytes(encoded)
     return True
 
 

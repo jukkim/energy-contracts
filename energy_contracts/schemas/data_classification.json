@@ -11,9 +11,9 @@
     "agentleague",
     "eduarena"
   ],
-  "version": "1.1",
-  "updated": "2026-09-03",
-  "$comment": "myjob/docs/MODES_AND_DATA_RESEARCH.md §2.3 산출물. | v1.1(2026-09-03): 축을 둘로 가른다 — DataSource(출처, +calibrated/imputed) 와 AbsenceKind(부재, 신설). 같은 enum 에 섞으면 '출처가 missing' 같은 말이 문법상 가능해진다. 기존 7종은 불변(추가만) — 소비 5곳 무영향.",
+  "version": "1.2",
+  "updated": "2026-09-10",
+  "$comment": "myjob/docs/MODES_AND_DATA_RESEARCH.md §2.3 산출물. | v1.1(2026-09-03): DataSource와 AbsenceKind 분리. | v1.2(2026-09-10): Query500에서 쓰던 estimated/mixed/forecast/reference를 DataSource에 넣지 않고 EvidenceDisplayClass라는 별도 표시 축으로 정본화. DataSource 9종은 불변.",
   "$defs": {
     "DataSource": {
       "type": "string",
@@ -29,6 +29,18 @@
         "imputed"
       ],
       "description": "출처 축. measured=실 계량, certified=공식 인증, simulated=시뮬 산출, predicted=ML 예측, external=외부 벤더, synthetic=합성/생성기, mock=의도적 모킹 calibrated=실측에 맞춰 보정(실측 아님), imputed=우리가 채운 값(method 필수). ⚠ 이 축은 **값이 있을 때만** 쓴다. 값이 없는 이유는 AbsenceKind 로 적는다."
+    },
+    "EvidenceDisplayClass": {
+      "type": "string",
+      "enum": [
+        "measured",
+        "forecast",
+        "estimated",
+        "reference",
+        "synthetic",
+        "mixed"
+      ],
+      "description": "여러 Evidence를 하나의 답변·화면에 표시할 때 쓰는 합성 라벨. 원천 출처가 아니며 DataSource를 대체하지 않는다. 실제 원천은 data_sources[]에 DataSource 9종으로 별도 보존한다."
     },
     "DataTier": {
       "type": "integer",

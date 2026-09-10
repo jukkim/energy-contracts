@@ -1,0 +1,519 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "energy-contracts/building_model_packet.json",
+  "title": "BuildingModelPacket",
+  "description": "Building Twin에 배정된 EnergyPlus 계보 모델과 서빙 증적을 전달하는 계약. 에너지 수치나 예측값을 생성·운반하지 않으며, 실제 계산은 등록된 전문 실행기가 담당한다.",
+  "_usage": "reference-only",
+  "_consumers": [
+    "airos-energy-decision",
+    "building-energy-3d",
+    "ems-transformer",
+    "agentleague"
+  ],
+  "version": "1.0",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "packet_id",
+    "building_id",
+    "identity",
+    "assignment_epoch",
+    "captured_at",
+    "overall_grade",
+    "assignments",
+    "provenance"
+  ],
+  "properties": {
+    "schema_version": {"const": "1.0"},
+    "packet_id": {"type": "string", "pattern": "^bmp_[a-zA-Z0-9_-]+$"},
+    "building_id": {"type": "string", "minLength": 1},
+    "identity": {"$ref": "#/$defs/BuildingIdentity"},
+    "assignment_epoch": {
+      "type": "integer",
+      "minimum": 1,
+      "description": "입력·모델·날씨 배정이 바뀔 때 증가하는 불변 배정 세대. 과거 배정을 덮어쓰지 않는다."
+    },
+    "captured_at": {"type": "string", "format": "date-time"},
+    "overall_grade": {"$ref": "#/$defs/ValidationGrade"},
+    "assignments": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["baseline", "scenario", "profile"],
+      "properties": {
+        "baseline": {
+          "allOf": [
+            {"$ref": "#/$defs/CapabilityAssignment"},
+            {"properties": {"capability": {"const": "baseline"}}}
+          ]
+        },
+        "scenario": {
+          "allOf": [
+            {"$ref": "#/$defs/CapabilityAssignment"},
+            {"properties": {"capability": {"const": "scenario"}}}
+          ]
+        },
+        "profile": {
+          "allOf": [
+            {"$ref": "#/$defs/CapabilityAssignment"},
+            {"properties": {"capability": {"const": "profile"}}}
+          ]
+        }
+      }
+    },
+    "serving_receipt": {
+      "description": "아직 서빙하지 않은 packet은 null. 서빙 후에는 선택 모델과 replay 입력 해시만 기록하며 계산 결과 수치는 담지 않는다.",
+      "oneOf": [
+        {"type": "null"},
+        {"$ref": "#/$defs/ModelServingReceipt"}
+      ]
+    },
+    "provenance": {"$ref": "#/$defs/Provenance"}
+  },
+  "$defs": {
+    "Sha256": {
+      "type": "string",
+      "pattern": "^sha256:[a-f0-9]{64}$"
+    },
+    "ValidationGrade": {
+      "type": "string",
+      "enum": ["A", "B", "C", "D", "U"],
+      "description": "A=건물 실측 보정, B=동일 cohort 독립검증, C=E+ in-domain 검증, D=탐색용 fallback, U=지원 불가. 직접 E+ 실행만으로 A가 되지 않는다."
+    },
+    "BuildingIdentity": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["identifier_kind", "identity_status"],
+      "properties": {
+        "identifier_kind": {
+          "type": "string",
+          "enum": ["official_building", "parcel_proxy", "virtual_asset"]
+        },
+        "identity_status": {
+          "type": "string",
+          "enum": ["canonical", "provisional", "conflicted", "retired"]
+        },
+        "bld_mgt_sn": {"type": "string", "pattern": "^[0-9]{25}$"},
+        "pnu": {"type": "string", "pattern": "^[0-9]{19}$"},
+        "identifier_alias_refs": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {"type": "string", "minLength": 1}
+        }
+      },
+      "allOf": [
+        {
+          "if": {"properties": {"identifier_kind": {"const": "official_building"}}},
+          "then": {"required": ["bld_mgt_sn"]}
+        },
+        {
+          "if": {"properties": {"identifier_kind": {"const": "parcel_proxy"}}},
+          "then": {"required": ["pnu"]}
+        }
+      ]
+    },
+    "CapabilityAssignment": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "assignment_id",
+        "capability",
+        "resolution",
+        "status",
+        "model_class",
+        "grade",
+        "weather",
+        "ood",
+        "valid_from",
+        "provenance"
+      ],
+      "properties": {
+        "assignment_id": {"type": "string", "pattern": "^bma_[a-zA-Z0-9_-]+$"},
+        "capability": {"type": "string", "enum": ["baseline", "scenario", "profile"]},
+        "resolution": {
+          "type": "string",
+          "enum": ["annual", "monthly", "daily", "hourly", "subhourly"]
+        },
+        "status": {
+          "type": "string",
+          "enum": ["active", "fallback", "quarantined", "unsupported"]
+        },
+        "model_class": {
+          "type": "string",
+          "enum": ["E0", "E1", "E2", "E3", "E4", "U"],
+          "description": "E0=건물 실측 보정 E+, E1=계층·cohort 보정 E+, E2=E+ 출력 학습 surrogate, E3=E+ 기준선+실측 잔차, E4=E+ archetype lookup·scale, U=지원 불가."
+        },
+        "grade": {"$ref": "#/$defs/ValidationGrade"},
+        "model_version_ref": {"type": "string", "minLength": 1},
+        "eplus_lineage": {"$ref": "#/$defs/EPlusLineage"},
+        "model_artifacts": {"$ref": "#/$defs/ModelArtifacts"},
+        "weather": {"$ref": "#/$defs/WeatherBinding"},
+        "ood": {"$ref": "#/$defs/OodAssessment"},
+        "valid_from": {"type": "string", "format": "date-time"},
+        "valid_to": {"type": "string", "format": "date-time"},
+        "reason_codes": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {"type": "string", "minLength": 1}
+        },
+        "provenance": {"$ref": "#/$defs/AssignmentProvenance"}
+      },
+      "allOf": [
+        {
+          "if": {"properties": {"status": {"enum": ["active", "fallback"]}}},
+          "then": {
+            "required": ["model_version_ref", "eplus_lineage", "model_artifacts"],
+            "properties": {
+              "model_class": {"enum": ["E0", "E1", "E2", "E3", "E4"]},
+              "grade": {"enum": ["A", "B", "C", "D"]},
+              "ood": {"properties": {"hard_ood": {"const": false}}},
+              "weather": {"properties": {"snapshot": {"$ref": "#/$defs/WeatherSnapshot"}}, "required": ["snapshot"]}
+            }
+          }
+        },
+        {
+          "if": {"properties": {"model_class": {"const": "U"}}},
+          "then": {
+            "properties": {
+              "grade": {"const": "U"},
+              "status": {"enum": ["quarantined", "unsupported"]}
+            }
+          }
+        },
+        {
+          "if": {"properties": {"grade": {"const": "U"}}},
+          "then": {"properties": {"model_class": {"const": "U"}}}
+        },
+        {
+          "if": {"properties": {"ood": {"properties": {"hard_ood": {"const": true}}, "required": ["hard_ood"]}}},
+          "then": {
+            "properties": {
+              "status": {"enum": ["quarantined", "unsupported"]},
+              "model_class": {"const": "U"},
+              "grade": {"const": "U"}
+            }
+          }
+        },
+        {
+          "if": {"properties": {"model_class": {"enum": ["E0", "E1"]}}},
+          "then": {"properties": {"model_artifacts": {"required": ["calibration_snapshot_ref", "calibration_snapshot_hash"]}}}
+        },
+        {
+          "if": {"properties": {"model_class": {"const": "E2"}}},
+          "then": {"properties": {"model_artifacts": {"required": ["surrogate_model_ref", "surrogate_model_hash", "training_manifest_refs"]}}}
+        },
+        {
+          "if": {"properties": {"model_class": {"const": "E3"}}},
+          "then": {"properties": {"model_artifacts": {"required": ["residual_model_ref", "residual_model_hash", "calibration_snapshot_ref", "calibration_snapshot_hash"]}}}
+        },
+        {
+          "if": {"properties": {"model_class": {"const": "E4"}}},
+          "then": {"properties": {"model_artifacts": {"required": ["scale_pack_ref", "scale_pack_hash"]}}}
+        }
+      ]
+    },
+    "EPlusLineage": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "engine",
+        "engine_version",
+        "archetype_id",
+        "template_id",
+        "source_idf_hash",
+        "config_hash",
+        "lineage_hash",
+        "simulation_manifest_refs"
+      ],
+      "properties": {
+        "engine": {"const": "EnergyPlus"},
+        "engine_version": {"type": "string", "minLength": 1},
+        "archetype_id": {"type": "string", "minLength": 1},
+        "template_id": {"type": "string", "minLength": 1},
+        "source_idf_hash": {"$ref": "#/$defs/Sha256"},
+        "config_hash": {"$ref": "#/$defs/Sha256"},
+        "lineage_hash": {"$ref": "#/$defs/Sha256"},
+        "simulation_manifest_refs": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {"type": "string", "minLength": 1}
+        }
+      }
+    },
+    "ModelArtifacts": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["schedule_profile_ref", "schedule_profile_hash"],
+      "properties": {
+        "schedule_profile_ref": {"type": "string", "minLength": 1},
+        "schedule_profile_hash": {"$ref": "#/$defs/Sha256"},
+        "surrogate_model_ref": {"type": "string", "minLength": 1},
+        "surrogate_model_hash": {"$ref": "#/$defs/Sha256"},
+        "residual_model_ref": {"type": "string", "minLength": 1},
+        "residual_model_hash": {"$ref": "#/$defs/Sha256"},
+        "scale_pack_ref": {"type": "string", "minLength": 1},
+        "scale_pack_hash": {"$ref": "#/$defs/Sha256"},
+        "calibration_snapshot_ref": {"type": "string", "minLength": 1},
+        "calibration_snapshot_hash": {"$ref": "#/$defs/Sha256"},
+        "training_manifest_refs": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {"type": "string", "minLength": 1}
+        },
+        "uncertainty_profile_ref": {"type": "string", "minLength": 1},
+        "uncertainty_profile_hash": {"$ref": "#/$defs/Sha256"}
+      },
+      "dependentRequired": {
+        "surrogate_model_ref": ["surrogate_model_hash"],
+        "surrogate_model_hash": ["surrogate_model_ref"],
+        "residual_model_ref": ["residual_model_hash"],
+        "residual_model_hash": ["residual_model_ref"],
+        "scale_pack_ref": ["scale_pack_hash"],
+        "scale_pack_hash": ["scale_pack_ref"],
+        "calibration_snapshot_ref": ["calibration_snapshot_hash"],
+        "calibration_snapshot_hash": ["calibration_snapshot_ref"],
+        "uncertainty_profile_ref": ["uncertainty_profile_hash"],
+        "uncertainty_profile_hash": ["uncertainty_profile_ref"]
+      }
+    },
+    "WeatherBinding": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["requirement"],
+      "properties": {
+        "requirement": {"$ref": "#/$defs/WeatherRequirement"},
+        "snapshot": {"$ref": "#/$defs/WeatherSnapshot"}
+      }
+    },
+    "WeatherRequirement": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["purpose", "input_mode", "temporal_resolution", "spatial_resolution", "scenario_family", "required_variables"],
+      "properties": {
+        "purpose": {"type": "string", "enum": ["baseline", "forecast", "scenario"]},
+        "input_mode": {"type": "string", "enum": ["epw", "surrogate_features"]},
+        "temporal_resolution": {"const": "hourly"},
+        "spatial_resolution": {"type": "string", "enum": ["station", "5km_grid", "1km_grid", "site_adjusted"]},
+        "scenario_family": {"type": "string", "enum": ["current", "forecast", "tmy", "amy", "ssp126", "ssp245", "ssp370", "ssp585", "custom"]},
+        "required_variables": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {"$ref": "#/$defs/WeatherVariable"}
+        }
+      }
+    },
+    "WeatherVariable": {
+      "type": "string",
+      "enum": [
+        "dry_bulb_temperature",
+        "dew_point_temperature",
+        "relative_humidity",
+        "station_pressure",
+        "global_horizontal_radiation",
+        "direct_normal_radiation",
+        "diffuse_horizontal_radiation",
+        "wind_direction",
+        "wind_speed",
+        "total_sky_cover",
+        "opaque_sky_cover",
+        "precipitation_depth"
+      ]
+    },
+    "WeatherSnapshot": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "weather_snapshot_id",
+        "weather_cell_id",
+        "dataset_type",
+        "source_ref",
+        "content_hash",
+        "captured_at",
+        "valid_from",
+        "valid_to",
+        "timezone",
+        "spatial_resolution",
+        "variables",
+        "meets_requirement",
+        "epw_ready"
+      ],
+      "properties": {
+        "weather_snapshot_id": {"type": "string", "pattern": "^wx_[a-zA-Z0-9_-]+$"},
+        "weather_cell_id": {"type": "string", "minLength": 1},
+        "dataset_type": {"type": "string", "enum": ["observed", "forecast", "tmy", "amy", "ssp"]},
+        "source_ref": {"type": "string", "minLength": 1},
+        "content_hash": {"$ref": "#/$defs/Sha256"},
+        "captured_at": {"type": "string", "format": "date-time"},
+        "issued_at": {"type": "string", "format": "date-time"},
+        "valid_from": {"type": "string", "format": "date-time"},
+        "valid_to": {"type": "string", "format": "date-time"},
+        "timezone": {"type": "string", "minLength": 1},
+        "spatial_resolution": {"type": "string", "enum": ["station", "5km_grid", "1km_grid", "site_adjusted"]},
+        "variables": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {"$ref": "#/$defs/WeatherVariable"}
+        },
+        "meets_requirement": {"const": true},
+        "epw_ready": {"type": "boolean"},
+        "epw_hash": {"$ref": "#/$defs/Sha256"},
+        "quality_flags": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {"type": "string", "minLength": 1}
+        }
+      },
+      "dependentRequired": {"epw_hash": ["epw_ready"]},
+      "allOf": [
+        {
+          "if": {"properties": {"epw_ready": {"const": true}}},
+          "then": {"required": ["epw_hash"]}
+        },
+        {
+          "if": {"properties": {"dataset_type": {"const": "forecast"}}},
+          "then": {"required": ["issued_at"]}
+        }
+      ]
+    },
+    "OodAssessment": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["status", "hard_ood", "dimensions", "reason_codes", "assessed_at", "assessment_hash"],
+      "properties": {
+        "status": {"type": "string", "enum": ["in_domain", "warning", "out_of_domain", "not_evaluated"]},
+        "hard_ood": {"type": "boolean"},
+        "dimensions": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["feature", "geographic", "temporal", "missingness", "model_disagreement", "interval_width"],
+          "properties": {
+            "feature": {"$ref": "#/$defs/OodDimensionStatus"},
+            "geographic": {"$ref": "#/$defs/OodDimensionStatus"},
+            "temporal": {"$ref": "#/$defs/OodDimensionStatus"},
+            "missingness": {"$ref": "#/$defs/OodDimensionStatus"},
+            "model_disagreement": {"$ref": "#/$defs/OodDimensionStatus"},
+            "interval_width": {"$ref": "#/$defs/OodDimensionStatus"}
+          }
+        },
+        "reason_codes": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {"type": "string", "minLength": 1}
+        },
+        "assessed_at": {"type": "string", "format": "date-time"},
+        "assessment_hash": {"$ref": "#/$defs/Sha256"}
+      },
+      "allOf": [
+        {
+          "if": {"properties": {"hard_ood": {"const": true}}},
+          "then": {"properties": {"status": {"const": "out_of_domain"}}, "required": ["reason_codes"]}
+        }
+      ]
+    },
+    "OodDimensionStatus": {
+      "type": "string",
+      "enum": ["in_domain", "warning", "out_of_domain", "not_evaluated"]
+    },
+    "AssignmentProvenance": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["resolver_version", "resolver_hash", "input_snapshot_hash", "assigned_at", "evidence_refs"],
+      "properties": {
+        "resolver_version": {"type": "string", "minLength": 1},
+        "resolver_hash": {"$ref": "#/$defs/Sha256"},
+        "input_snapshot_hash": {"$ref": "#/$defs/Sha256"},
+        "assigned_at": {"type": "string", "format": "date-time"},
+        "evidence_refs": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {"type": "string", "minLength": 1}
+        }
+      }
+    },
+    "Provenance": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["producer", "source_snapshot_refs", "input_snapshot_hash", "content_hash", "evidence_refs"],
+      "properties": {
+        "producer": {"type": "string", "minLength": 1},
+        "source_snapshot_refs": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {"type": "string", "minLength": 1}
+        },
+        "input_snapshot_hash": {"$ref": "#/$defs/Sha256"},
+        "content_hash": {"$ref": "#/$defs/Sha256"},
+        "evidence_refs": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {"type": "string", "minLength": 1}
+        }
+      }
+    },
+    "ModelServingReceipt": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "receipt_id",
+        "served_at",
+        "outcome",
+        "request_hash",
+        "packet_hash",
+        "capabilities_used",
+        "assignment_refs",
+        "weather_snapshot_refs",
+        "replay"
+      ],
+      "properties": {
+        "receipt_id": {"type": "string", "pattern": "^msr_[a-zA-Z0-9_-]+$"},
+        "served_at": {"type": "string", "format": "date-time"},
+        "outcome": {"type": "string", "enum": ["served", "refused", "need_target", "need_data", "unsupported"]},
+        "request_hash": {"$ref": "#/$defs/Sha256"},
+        "packet_hash": {"$ref": "#/$defs/Sha256"},
+        "output_hash": {"$ref": "#/$defs/Sha256"},
+        "capabilities_used": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {"type": "string", "enum": ["baseline", "scenario", "profile"]}
+        },
+        "assignment_refs": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {"type": "string", "pattern": "^bma_[a-zA-Z0-9_-]+$"}
+        },
+        "weather_snapshot_refs": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {"type": "string", "pattern": "^wx_[a-zA-Z0-9_-]+$"}
+        },
+        "replay": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["run_key", "replay_hash", "code_hash", "config_hash", "deterministic_inputs_hash"],
+          "properties": {
+            "run_key": {"type": "string", "minLength": 1},
+            "replay_hash": {"$ref": "#/$defs/Sha256"},
+            "code_hash": {"$ref": "#/$defs/Sha256"},
+            "config_hash": {"$ref": "#/$defs/Sha256"},
+            "deterministic_inputs_hash": {"$ref": "#/$defs/Sha256"}
+          }
+        }
+      },
+      "allOf": [
+        {
+          "if": {"properties": {"outcome": {"const": "served"}}},
+          "then": {"required": ["output_hash"]}
+        }
+      ]
+    }
+  }
+}

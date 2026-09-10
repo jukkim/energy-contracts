@@ -1,0 +1,272 @@
+{
+  "schema_version": "1.0",
+  "packet_id": "bmp_bld-1111010100100040020031264-e7",
+  "building_id": "bld-1111010100100040020031264",
+  "identity": {
+    "identifier_kind": "official_building",
+    "identity_status": "canonical",
+    "bld_mgt_sn": "1111010100100040020031264",
+    "pnu": "1111010100100040020",
+    "identifier_alias_refs": ["building-id-alias://1111010100100040020031264"]
+  },
+  "assignment_epoch": 7,
+  "captured_at": "2026-09-10T10:00:00+09:00",
+  "overall_grade": "D",
+  "assignments": {
+    "baseline": {
+      "assignment_id": "bma_baseline_e7",
+      "capability": "baseline",
+      "resolution": "monthly",
+      "status": "active",
+      "model_class": "E1",
+      "grade": "B",
+      "model_version_ref": "model://eplus-cohort-baseline/v1",
+      "eplus_lineage": {
+        "engine": "EnergyPlus",
+        "engine_version": "24.1.0",
+        "archetype_id": "B02",
+        "template_id": "idf://B02/H_C/v3",
+        "source_idf_hash": "sha256:1111111111111111111111111111111111111111111111111111111111111111",
+        "config_hash": "sha256:2222222222222222222222222222222222222222222222222222222222222222",
+        "lineage_hash": "sha256:3333333333333333333333333333333333333333333333333333333333333333",
+        "simulation_manifest_refs": ["eplus-manifest://KEP/B02/H_C/C01/M00"]
+      },
+      "model_artifacts": {
+        "schedule_profile_ref": "schedule://office/weekday-09-18/v2",
+        "schedule_profile_hash": "sha256:4444444444444444444444444444444444444444444444444444444444444444",
+        "calibration_snapshot_ref": "calibration://cohort/B02/seoul/v4",
+        "calibration_snapshot_hash": "sha256:5555555555555555555555555555555555555555555555555555555555555555",
+        "uncertainty_profile_ref": "uncertainty://B02/seoul/v4",
+        "uncertainty_profile_hash": "sha256:6666666666666666666666666666666666666666666666666666666666666666"
+      },
+      "weather": {
+        "requirement": {
+          "purpose": "baseline",
+          "input_mode": "epw",
+          "temporal_resolution": "hourly",
+          "spatial_resolution": "station",
+          "scenario_family": "tmy",
+          "required_variables": ["dry_bulb_temperature", "relative_humidity", "station_pressure", "direct_normal_radiation", "diffuse_horizontal_radiation", "wind_speed"]
+        },
+        "snapshot": {
+          "weather_snapshot_id": "wx_seoul-tmyx-v3",
+          "weather_cell_id": "weather-cell-seoul-108",
+          "dataset_type": "tmy",
+          "source_ref": "weather://seoul/tmyx/v3",
+          "content_hash": "sha256:7777777777777777777777777777777777777777777777777777777777777777",
+          "captured_at": "2026-09-10T09:00:00+09:00",
+          "valid_from": "2026-01-01T00:00:00+09:00",
+          "valid_to": "2026-12-31T23:00:00+09:00",
+          "timezone": "Asia/Seoul",
+          "spatial_resolution": "station",
+          "variables": ["dry_bulb_temperature", "relative_humidity", "station_pressure", "direct_normal_radiation", "diffuse_horizontal_radiation", "wind_speed"],
+          "meets_requirement": true,
+          "epw_ready": true,
+          "epw_hash": "sha256:8888888888888888888888888888888888888888888888888888888888888888",
+          "quality_flags": []
+        }
+      },
+      "ood": {
+        "status": "in_domain",
+        "hard_ood": false,
+        "dimensions": {
+          "feature": "in_domain",
+          "geographic": "in_domain",
+          "temporal": "in_domain",
+          "missingness": "in_domain",
+          "model_disagreement": "not_evaluated",
+          "interval_width": "in_domain"
+        },
+        "reason_codes": [],
+        "assessed_at": "2026-09-10T10:00:00+09:00",
+        "assessment_hash": "sha256:9999999999999999999999999999999999999999999999999999999999999999"
+      },
+      "valid_from": "2026-09-10T10:00:00+09:00",
+      "reason_codes": ["COHORT_CALIBRATED"],
+      "provenance": {
+        "resolver_version": "building-model-resolver/1.0",
+        "resolver_hash": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "input_snapshot_hash": "sha256:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+        "assigned_at": "2026-09-10T10:00:00+09:00",
+        "evidence_refs": ["building-passport://bld-1111010100100040020031264/e7"]
+      }
+    },
+    "scenario": {
+      "assignment_id": "bma_scenario_e7",
+      "capability": "scenario",
+      "resolution": "hourly",
+      "status": "active",
+      "model_class": "E2",
+      "grade": "C",
+      "model_version_ref": "model://eplus-surrogate/B02/v5",
+      "eplus_lineage": {
+        "engine": "EnergyPlus",
+        "engine_version": "24.1.0",
+        "archetype_id": "B02",
+        "template_id": "idf://B02/H_C/v3",
+        "source_idf_hash": "sha256:1111111111111111111111111111111111111111111111111111111111111111",
+        "config_hash": "sha256:2222222222222222222222222222222222222222222222222222222222222222",
+        "lineage_hash": "sha256:3333333333333333333333333333333333333333333333333333333333333333",
+        "simulation_manifest_refs": ["eplus-manifest://KEP/B02/H_C/scenarios"]
+      },
+      "model_artifacts": {
+        "schedule_profile_ref": "schedule://office/weekday-09-18/v2",
+        "schedule_profile_hash": "sha256:4444444444444444444444444444444444444444444444444444444444444444",
+        "surrogate_model_ref": "artifact://surrogate/B02/v5",
+        "surrogate_model_hash": "sha256:cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+        "training_manifest_refs": ["eplus-training://KEP/B02/v5"]
+      },
+      "weather": {
+        "requirement": {
+          "purpose": "scenario",
+          "input_mode": "surrogate_features",
+          "temporal_resolution": "hourly",
+          "spatial_resolution": "1km_grid",
+          "scenario_family": "ssp245",
+          "required_variables": ["dry_bulb_temperature", "relative_humidity", "direct_normal_radiation", "diffuse_horizontal_radiation", "wind_speed"]
+        },
+        "snapshot": {
+          "weather_snapshot_id": "wx_seoul-ssp245-2050-v1",
+          "weather_cell_id": "weather-cell-1km-5172-3881",
+          "dataset_type": "ssp",
+          "source_ref": "weather://kma/ssp245/2050/5172-3881",
+          "content_hash": "sha256:dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd",
+          "captured_at": "2026-09-10T09:00:00+09:00",
+          "valid_from": "2050-01-01T00:00:00+09:00",
+          "valid_to": "2050-12-31T23:00:00+09:00",
+          "timezone": "Asia/Seoul",
+          "spatial_resolution": "1km_grid",
+          "variables": ["dry_bulb_temperature", "relative_humidity", "direct_normal_radiation", "diffuse_horizontal_radiation", "wind_speed"],
+          "meets_requirement": true,
+          "epw_ready": false,
+          "quality_flags": ["SURROGATE_FEATURE_INPUT"]
+        }
+      },
+      "ood": {
+        "status": "in_domain",
+        "hard_ood": false,
+        "dimensions": {
+          "feature": "in_domain",
+          "geographic": "in_domain",
+          "temporal": "warning",
+          "missingness": "in_domain",
+          "model_disagreement": "warning",
+          "interval_width": "in_domain"
+        },
+        "reason_codes": ["FUTURE_CLIMATE_EXTRAPOLATION"],
+        "assessed_at": "2026-09-10T10:00:00+09:00",
+        "assessment_hash": "sha256:eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee"
+      },
+      "valid_from": "2026-09-10T10:00:00+09:00",
+      "reason_codes": ["EPLUS_SURROGATE_IN_DOMAIN"],
+      "provenance": {
+        "resolver_version": "building-model-resolver/1.0",
+        "resolver_hash": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "input_snapshot_hash": "sha256:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+        "assigned_at": "2026-09-10T10:00:00+09:00",
+        "evidence_refs": ["building-passport://bld-1111010100100040020031264/e7"]
+      }
+    },
+    "profile": {
+      "assignment_id": "bma_profile_e7",
+      "capability": "profile",
+      "resolution": "hourly",
+      "status": "fallback",
+      "model_class": "E4",
+      "grade": "D",
+      "model_version_ref": "model://eplus-profile/B02/v2",
+      "eplus_lineage": {
+        "engine": "EnergyPlus",
+        "engine_version": "24.1.0",
+        "archetype_id": "B02",
+        "template_id": "idf://B02/H_C/v3",
+        "source_idf_hash": "sha256:1111111111111111111111111111111111111111111111111111111111111111",
+        "config_hash": "sha256:2222222222222222222222222222222222222222222222222222222222222222",
+        "lineage_hash": "sha256:3333333333333333333333333333333333333333333333333333333333333333",
+        "simulation_manifest_refs": ["eplus-manifest://KEP/B02/H_C/profiles"]
+      },
+      "model_artifacts": {
+        "schedule_profile_ref": "schedule://office/weekday-09-18/v2",
+        "schedule_profile_hash": "sha256:4444444444444444444444444444444444444444444444444444444444444444",
+        "scale_pack_ref": "scale://B02/area-v2",
+        "scale_pack_hash": "sha256:ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
+      },
+      "weather": {
+        "requirement": {
+          "purpose": "forecast",
+          "input_mode": "surrogate_features",
+          "temporal_resolution": "hourly",
+          "spatial_resolution": "5km_grid",
+          "scenario_family": "forecast",
+          "required_variables": ["dry_bulb_temperature", "relative_humidity", "global_horizontal_radiation", "wind_speed"]
+        },
+        "snapshot": {
+          "weather_snapshot_id": "wx_kma-forecast-20260910t0900",
+          "weather_cell_id": "kma-grid-60-127",
+          "dataset_type": "forecast",
+          "source_ref": "weather://kma/forecast/60-127/20260910T0900",
+          "content_hash": "sha256:1212121212121212121212121212121212121212121212121212121212121212",
+          "captured_at": "2026-09-10T09:05:00+09:00",
+          "issued_at": "2026-09-10T09:00:00+09:00",
+          "valid_from": "2026-09-11T00:00:00+09:00",
+          "valid_to": "2026-09-11T23:00:00+09:00",
+          "timezone": "Asia/Seoul",
+          "spatial_resolution": "5km_grid",
+          "variables": ["dry_bulb_temperature", "relative_humidity", "global_horizontal_radiation", "wind_speed"],
+          "meets_requirement": true,
+          "epw_ready": false,
+          "quality_flags": ["FORECAST_ISSUED_AT_PINNED"]
+        }
+      },
+      "ood": {
+        "status": "warning",
+        "hard_ood": false,
+        "dimensions": {
+          "feature": "in_domain",
+          "geographic": "in_domain",
+          "temporal": "in_domain",
+          "missingness": "warning",
+          "model_disagreement": "not_evaluated",
+          "interval_width": "warning"
+        },
+        "reason_codes": ["NO_SITE_HOURLY_MEASUREMENT"],
+        "assessed_at": "2026-09-10T10:00:00+09:00",
+        "assessment_hash": "sha256:1313131313131313131313131313131313131313131313131313131313131313"
+      },
+      "valid_from": "2026-09-10T10:00:00+09:00",
+      "reason_codes": ["COLD_START_PROFILE"],
+      "provenance": {
+        "resolver_version": "building-model-resolver/1.0",
+        "resolver_hash": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "input_snapshot_hash": "sha256:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+        "assigned_at": "2026-09-10T10:00:00+09:00",
+        "evidence_refs": ["building-passport://bld-1111010100100040020031264/e7"]
+      }
+    }
+  },
+  "serving_receipt": {
+    "receipt_id": "msr_query500-mcp021-001",
+    "served_at": "2026-09-10T10:01:00+09:00",
+    "outcome": "served",
+    "request_hash": "sha256:1414141414141414141414141414141414141414141414141414141414141414",
+    "packet_hash": "sha256:1515151515151515151515151515151515151515151515151515151515151515",
+    "output_hash": "sha256:1616161616161616161616161616161616161616161616161616161616161616",
+    "capabilities_used": ["profile"],
+    "assignment_refs": ["bma_profile_e7"],
+    "weather_snapshot_refs": ["wx_kma-forecast-20260910t0900"],
+    "replay": {
+      "run_key": "query500:MCP-021:2026-09-10:e7",
+      "replay_hash": "sha256:1717171717171717171717171717171717171717171717171717171717171717",
+      "code_hash": "sha256:1818181818181818181818181818181818181818181818181818181818181818",
+      "config_hash": "sha256:1919191919191919191919191919191919191919191919191919191919191919",
+      "deterministic_inputs_hash": "sha256:2020202020202020202020202020202020202020202020202020202020202020"
+    }
+  },
+  "provenance": {
+    "producer": "building-model-resolver/1.0",
+    "source_snapshot_refs": ["source-snapshot://building-registry/2026-09-10", "source-snapshot://weather/2026-09-10T09:00+09:00"],
+    "input_snapshot_hash": "sha256:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+    "content_hash": "sha256:2121212121212121212121212121212121212121212121212121212121212121",
+    "evidence_refs": ["building-passport://bld-1111010100100040020031264/e7"]
+  }
+}
