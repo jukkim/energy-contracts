@@ -99,6 +99,21 @@
           "type": "array",
           "uniqueItems": true,
           "items": {"type": "string", "minLength": 1}
+        },
+        "selected_identifier_match_status": {
+          "type": "string",
+          "enum": ["exact", "probable", "unmatched"],
+          "description": "선택된 건물번호/PNU 연결 중 가장 약한 매치 상태. probable을 canonical로 오표현하지 않기 위한 보조 필드."
+        },
+        "binding_status_counts": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["exact", "probable", "conflict"],
+          "properties": {
+            "exact": {"type": "integer", "minimum": 0},
+            "probable": {"type": "integer", "minimum": 0},
+            "conflict": {"type": "integer", "minimum": 0}
+          }
         }
       },
       "allOf": [
