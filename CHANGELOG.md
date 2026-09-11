@@ -4,6 +4,13 @@
 
 ---
 
+## Unreleased
+
+- 비식별 데모 건물은 기존 `BuildingIdentity`의
+  `virtual_asset + provisional + unmatched` 조합으로 전달한다. 실제 건물의 25자리
+  건물관리번호와 19자리 필지번호가 원본에서 비식별된 상태이며, 가상 건물을 만들었다는
+  뜻도 공간 식별이 `not_applicable`이라는 뜻도 아니다. 번호를 임의 생성하지 않는다.
+
 ## v0.3.46 — 2026-08-26
 
 ### `household_consent` v1.2 — 보호는 동의보다 위에 있고, 준비 판정은 한 곳에서
