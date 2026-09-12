@@ -83,7 +83,7 @@ wheel 진입 조건 = **2개 이상 sibling 이 wheel 계약으로 read/receive*
 - 토글 양방향을 매끄럽게 하려면 손댈 곳 = **be-3d 수신 경로(W13 cutover, 현재 gold 소비 0건)** 이지 본 repo wheel schema 아님
 - **결론**: "쉬운 전환" 목적이라면 W-1 은 **보류가 정답** (건드릴수록 손해)
 
-## 2026-09-12 — `agent_contracts.json` `BuildingContext.building_mgmt_no` (건물 식별 사냥꾼 2차)
+## 2026-09-12 — `agent_contracts.json` `BuildingContext.building_mgmt_no` (건물 식별 사냥꾼 2차) — ✅ 해소(v0.3.55)
 
 | Stage | 상태 |
 |---|---|
@@ -96,7 +96,11 @@ wheel 진입 조건 = **2개 이상 sibling 이 wheel 계약으로 read/receive*
 이유: 소비자가 아직 없는 **선택** 필드 하나를 위해 6 저장소 CI 를 건드리는 릴리스를 돌리지 않는다.
 그때까지 에이전트 입력(A01 등)은 필지 단위이며, 건물 식별은 여권 v1.2 `identity` 와 airos 레지스트리가 담당한다.
 
-## 2026-09-12 — be-3d 내부 에이전트의 25자리 입력 (위 `BuildingContext.building_mgmt_no` 와 한 릴리스로)
+> ✅ **해소 (2026-09-12, EC v0.3.55)** — `agent_contracts.json` v1.2 가 여섯 모델(`BuildingContext`·`BuildingForecast`·`DREnrollment`·
+> `SetbackPattern`·`BenchmarkStats`·`FireRiskAssessment`)에 선택·nullable 필드 4개를 싣는다. 기존 필드·필수 목록은 그대로다.
+> 소비 저장소는 `bump_ec_pin.py v0.3.55` 로 재핀한다(ingestion-worker 는 그 저장소 요청으로 보류, 별도 재핀).
+
+## 2026-09-12 — be-3d 내부 에이전트의 25자리 입력 (위 `BuildingContext.building_mgmt_no` 와 한 릴리스로) — ✅ 해소(v0.3.55)
 
 | Stage | 상태 |
 |---|---|
@@ -109,3 +113,9 @@ wheel 진입 조건 = **2개 이상 sibling 이 wheel 계약으로 read/receive*
 이유(사냥꾼 검토): ① 계약 밖 필드를 에코하면 25자리가 게이트웨이를 통과하는 순간 네 경로가 502 "schema mismatch" 가 된다.
 ② 필지 단위 답에 요청 번호만 붙이면 그 동의 답으로 읽힌다 — `building_use_allowed` 없이는 안 된다.
 ③ DR 가입·테넌트 행은 구 시도코드(42/45)로만 있다 — 입력 필지를 승계 코드로만 바꾸면 조회가 빈다(승계 우선·원래 코드 폴백 필요).
+
+> ✅ **해소 (2026-09-12)** — 세 지적을 반영해 다시 구현했다. ① 되돌리는 필드는 이제 계약 필드(v1.2)다.
+> ② 25자리 응답은 `building_use_allowed`·`metric_scope` 를 싣고, 번호 있는 동이 그 건물 하나인 필지에서만 `building_mgmt_no` 를
+>    채운다(`scope_for_building`). 구 시도코드 행에서 읽은 답은 승격하지 않는다. ③ 승계 코드 우선, 답이 비면 원래 19자리로 폴백.
+> 대상: profile·dr-enrollment·benchmark·timeseries-forecast·setback-pattern·fire-risk·hourly-energy(게이트웨이 7개 경로와 같다).
+> anomaly·maintenance-facts·alert-signals 는 계약 모델에 식별 필드가 없어 19자리로 남는다.

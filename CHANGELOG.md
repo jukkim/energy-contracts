@@ -4,6 +4,15 @@
 
 ---
 
+## Unreleased
+
+- `agent_contracts.json` v1.1 → **v1.2**: `BuildingContext`·`BuildingForecast`·`DREnrollment`·`SetbackPattern`·
+  `BenchmarkStats`·`FireRiskAssessment` 에 선택·nullable 필드 4개 — `building_mgmt_no`·`requested_building_mgmt_no`
+  (25자리 `^[0-9]{25}$`)·`building_use_allowed`(boolean)·`metric_scope`(parcel|building). 기존 필드와 `required` 는 그대로다
+  (추가만이라 minor). `BuildingContext.pnu` 설명을 "필지 키" 로 바로잡았다. be-3d 내부 에이전트가 25자리 건물 번호로
+  물으면 이 필드로 "누구의 값인가" 를 답한다 — 19자리 요청의 응답은 전과 같다(새 필드 없음).
+  `docs/DEFERRED_INTEGRATIONS.md` 2026-09-12 두 항목 해소, `docs/BUILDING_IDENTITY_VOCABULARY.md` 갱신.
+
 ## 0.3.54 (2026-09-12)
 
 > 릴리스 사유: 소비자 6저장소가 이미 미릴리스 master(market_prices v2.1 · data_classification v1.2 `EvidenceDisplayClass` · korean_bb 핀 · 여권 v1.2)로

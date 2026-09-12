@@ -11,8 +11,8 @@
     "agentleague",
     "eduarena"
   ],
-  "version": "1.1",
-  "updated": "2026-06-23",
+  "version": "1.2",
+  "updated": "2026-09-12",
   "$comment": "Phase C1 산출물 (myjob/docs/SSOT_GOVERNANCE.md). gen_constants.py 가 이 스키마를 Tier 3 코드로 자동 생성.",
   "$defs": {
     "BuildingContext": {
@@ -33,7 +33,7 @@
       "properties": {
         "pnu": {
           "type": "string",
-          "description": "법정 PNU 19자리"
+          "description": "법정 PNU 19자리 — 필지 키. 건물 식별은 building_mgmt_no."
         },
         "address": {
           "type": "string"
@@ -80,7 +80,11 @@
         "has_fire_risk": {
           "type": "boolean",
           "default": false
-        }
+        },
+        "building_mgmt_no": {"type": ["string", "null"], "pattern": "^[0-9]{25}$", "default": null, "description": "건물관리번호 25자리 — 이 답이 그 필지의 유일한 번호 있는 동일 때만 채운다(공공데이터, 사람이 만들지 않음)."},
+        "requested_building_mgmt_no": {"type": ["string", "null"], "pattern": "^[0-9]{25}$", "default": null, "description": "호출자가 25자리 건물 번호로 물었을 때 그 번호 그대로(되돌림). 필지로 물었으면 null."},
+        "building_use_allowed": {"type": ["boolean", "null"], "default": null, "description": "필지 키 값(energy_results 등)을 이 건물의 값으로 써도 되는가 — 필지에 등록된 번호 있는 동이 정확히 1개일 때만 true. 모르면 null."},
+        "metric_scope": {"type": ["string", "null"], "enum": ["parcel", "building", null], "default": null, "description": "값의 주체: parcel(필지 합계) · building(그 건물). 모르면 null."}
       },
       "additionalProperties": false
     },
@@ -194,7 +198,11 @@
           "type": "boolean",
           "default": false,
           "description": "실측 168h 시계열 보유 여부. false 면 forecast 도 synthetic"
-        }
+        },
+        "building_mgmt_no": {"type": ["string", "null"], "pattern": "^[0-9]{25}$", "default": null, "description": "건물관리번호 25자리 — 이 답이 그 필지의 유일한 번호 있는 동일 때만 채운다(공공데이터, 사람이 만들지 않음)."},
+        "requested_building_mgmt_no": {"type": ["string", "null"], "pattern": "^[0-9]{25}$", "default": null, "description": "호출자가 25자리 건물 번호로 물었을 때 그 번호 그대로(되돌림). 필지로 물었으면 null."},
+        "building_use_allowed": {"type": ["boolean", "null"], "default": null, "description": "필지 키 값(energy_results 등)을 이 건물의 값으로 써도 되는가 — 필지에 등록된 번호 있는 동이 정확히 1개일 때만 true. 모르면 null."},
+        "metric_scope": {"type": ["string", "null"], "enum": ["parcel", "building", null], "default": null, "description": "값의 주체: parcel(필지 합계) · building(그 건물). 모르면 null."}
       },
       "additionalProperties": false
     },
@@ -290,7 +298,11 @@
         "max_reduction_kw": {"type": "number", "minimum": 0, "default": 0.0},
         "baseline_kw": {"type": "number", "minimum": 0, "default": 0.0},
         "recent_telem_count_7d": {"type": "integer", "minimum": 0, "default": 0},
-        "has_recent_telemetry": {"type": "boolean", "default": false}
+        "has_recent_telemetry": {"type": "boolean", "default": false},
+        "building_mgmt_no": {"type": ["string", "null"], "pattern": "^[0-9]{25}$", "default": null, "description": "건물관리번호 25자리 — 이 답이 그 필지의 유일한 번호 있는 동일 때만 채운다(공공데이터, 사람이 만들지 않음)."},
+        "requested_building_mgmt_no": {"type": ["string", "null"], "pattern": "^[0-9]{25}$", "default": null, "description": "호출자가 25자리 건물 번호로 물었을 때 그 번호 그대로(되돌림). 필지로 물었으면 null."},
+        "building_use_allowed": {"type": ["boolean", "null"], "default": null, "description": "필지 키 값(energy_results 등)을 이 건물의 값으로 써도 되는가 — 필지에 등록된 번호 있는 동이 정확히 1개일 때만 true. 모르면 null."},
+        "metric_scope": {"type": ["string", "null"], "enum": ["parcel", "building", null], "default": null, "description": "값의 주체: parcel(필지 합계) · building(그 건물). 모르면 null."}
       },
       "additionalProperties": false
     },
@@ -336,7 +348,11 @@
             "note": {"type": "string"}
           },
           "additionalProperties": false
-        }
+        },
+        "building_mgmt_no": {"type": ["string", "null"], "pattern": "^[0-9]{25}$", "default": null, "description": "건물관리번호 25자리 — 이 답이 그 필지의 유일한 번호 있는 동일 때만 채운다(공공데이터, 사람이 만들지 않음)."},
+        "requested_building_mgmt_no": {"type": ["string", "null"], "pattern": "^[0-9]{25}$", "default": null, "description": "호출자가 25자리 건물 번호로 물었을 때 그 번호 그대로(되돌림). 필지로 물었으면 null."},
+        "building_use_allowed": {"type": ["boolean", "null"], "default": null, "description": "필지 키 값(energy_results 등)을 이 건물의 값으로 써도 되는가 — 필지에 등록된 번호 있는 동이 정확히 1개일 때만 true. 모르면 null."},
+        "metric_scope": {"type": ["string", "null"], "enum": ["parcel", "building", null], "default": null, "description": "값의 주체: parcel(필지 합계) · building(그 건물). 모르면 null."}
       },
       "additionalProperties": false
     },
@@ -370,7 +386,11 @@
         "has_obligation": {"type": "boolean", "default": false},
         "obligation_source": {"type": ["string", "null"], "default": null},
         "obligation_confidence": {"type": ["string", "null"], "default": null},
-        "obligation_type": {"type": ["string", "null"], "default": null}
+        "obligation_type": {"type": ["string", "null"], "default": null},
+        "building_mgmt_no": {"type": ["string", "null"], "pattern": "^[0-9]{25}$", "default": null, "description": "건물관리번호 25자리 — 이 답이 그 필지의 유일한 번호 있는 동일 때만 채운다(공공데이터, 사람이 만들지 않음)."},
+        "requested_building_mgmt_no": {"type": ["string", "null"], "pattern": "^[0-9]{25}$", "default": null, "description": "호출자가 25자리 건물 번호로 물었을 때 그 번호 그대로(되돌림). 필지로 물었으면 null."},
+        "building_use_allowed": {"type": ["boolean", "null"], "default": null, "description": "필지 키 값(energy_results 등)을 이 건물의 값으로 써도 되는가 — 필지에 등록된 번호 있는 동이 정확히 1개일 때만 true. 모르면 null."},
+        "metric_scope": {"type": ["string", "null"], "enum": ["parcel", "building", null], "default": null, "description": "값의 주체: parcel(필지 합계) · building(그 건물). 모르면 null."}
       },
       "additionalProperties": false
     },
@@ -412,7 +432,11 @@
           "type": ["string", "null"],
           "description": "예: 'rf_v1_168h_F1_0.911'",
           "default": null
-        }
+        },
+        "building_mgmt_no": {"type": ["string", "null"], "pattern": "^[0-9]{25}$", "default": null, "description": "건물관리번호 25자리 — 이 답이 그 필지의 유일한 번호 있는 동일 때만 채운다(공공데이터, 사람이 만들지 않음)."},
+        "requested_building_mgmt_no": {"type": ["string", "null"], "pattern": "^[0-9]{25}$", "default": null, "description": "호출자가 25자리 건물 번호로 물었을 때 그 번호 그대로(되돌림). 필지로 물었으면 null."},
+        "building_use_allowed": {"type": ["boolean", "null"], "default": null, "description": "필지 키 값(energy_results 등)을 이 건물의 값으로 써도 되는가 — 필지에 등록된 번호 있는 동이 정확히 1개일 때만 true. 모르면 null."},
+        "metric_scope": {"type": ["string", "null"], "enum": ["parcel", "building", null], "default": null, "description": "값의 주체: parcel(필지 합계) · building(그 건물). 모르면 null."}
       },
       "additionalProperties": false
     },
