@@ -4,7 +4,12 @@
 
 ---
 
-## Unreleased
+## 0.3.54 (2026-09-12)
+
+> 릴리스 사유: 소비자 6저장소가 이미 미릴리스 master(market_prices v2.1 · data_classification v1.2 `EvidenceDisplayClass` · korean_bb 핀 · 여권 v1.2)로
+> 상수를 재생성해 v0.3.53 핀으로는 CI 가 전부 DRIFT(해시 9ef25a47 ≠ 1b887ba6). `bump_ec_pin.py v0.3.54` 로 일괄 재핀한다.
+> `BuildingContext.building_mgmt_no` 는 여전히 보류(DEFERRED) — 이 릴리스에 없다.
+
 
 - `building_passport.json` v1.1 → **v1.2**: `identity.identity_match_status` (exact/probable/unmatched) —
   packet `BuildingIdentity.selected_identifier_match_status` 와 같은 어휘. verified 만 exact 다.
