@@ -78,7 +78,8 @@ def _resolve_external_refs(schema: dict[str, Any]) -> dict[str, Any]:
             ref = node.get("$ref")
             if isinstance(ref, str) and not ref.startswith("#"):
                 node["$ref"] = resolve_ref(ref)
-            for v in node.values():
+            # resolve_ref() 가 순회 중 루트 $defs 에 항목을 추가한다 — 스냅샷을 돈다.
+            for v in list(node.values()):
                 walk(v)
         elif isinstance(node, list):
             for v in node:

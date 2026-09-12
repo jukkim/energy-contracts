@@ -15,10 +15,14 @@ from energy_contracts import load_schema
 #   active_checkpoint 의 '존재'가 아니라 '정확값'을 pin 해야 한다. 본선 frozen 4 모델의
 #   checkpoint 를 의도적으로 교체하려면 본 dict 도 동반 수정 → PR 리뷰 강제.
 EXPECTED_FROZEN_CHECKPOINTS = {
-    "korean_bb": "TransformerWithGaussian-M-v3-3k_bb700_s18000_revin_on_best.pt",
+    "korean_bb": "TransformerWithGaussian-M-v3-3k_ms_n50_s18000_revin_on_seed42_best.pt",
     "ems_transformer": "qwen2.5-7b-qlora-final",
     "korean_bb_residential": "v0.3-development",
     "reverse": "llm_v2_final_run_20260505_182617+lightgbm_v1+m_bits=16",
+}
+
+EXPECTED_FROZEN_SHA256 = {
+    "korean_bb": "66aad235e4705ede773586557f149556d197a4b8fa15442eb98f5c6ad84d4372",
 }
 
 
@@ -80,6 +84,18 @@ def test_frozen_checkpoints_pinned() -> None:
         f"frozen checkpoint drift (actual, expected): {drift}. "
         "의도된 변경이면 EXPECTED_FROZEN_CHECKPOINTS 동반 갱신 필요."
     )
+
+
+def test_frozen_checkpoint_hashes_pinned() -> None:
+    """등록된 모델 파일 내용 해시도 고정해 같은 이름의 파일 교체를 차단."""
+    r = load_schema("ai_model_registry")
+    models = r["default"]["models"]
+    drift = {
+        mid: (models[mid].get("sha256"), expected)
+        for mid, expected in EXPECTED_FROZEN_SHA256.items()
+        if models[mid].get("sha256") != expected
+    }
+    assert not drift, f"frozen checkpoint SHA-256 drift (actual, expected): {drift}"
 
 
 def test_gateway_verify_policy_valid() -> None:
