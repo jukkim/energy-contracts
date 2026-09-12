@@ -6,6 +6,17 @@
 
 ## Unreleased
 
+- `building_passport.json` v1.0 → **v1.1**: `identity` 에 `building_mgmt_no`(25자리)·`parcel_id`(19자리)·
+  `physical_identity`(building/parcel/none) 를 추가한다. 여권의 주어는 필지가 아니라 **건물**이며,
+  `pnu` 는 `parcel_id` 의 호환 별칭으로 남는다. `building_mgmt_no` 가 있으면 `parcel_id` 필수.
+  AIROS `make_passport` 가 이미 내보내던 `residential_subtype`·`built_year`·`vintage_class`·`district` 도
+  스키마에 등재한다(`additionalProperties:false` 였으므로 그동안은 이 값이 있는 여권이 계약 위반이었다).
+  값 추가만이라 minor.
+- `scripts/gen_pydantic_models.py --all` 이 `dictionary changed size during iteration` 으로 중간에
+  죽던 것을 고쳤다(`walk()` 가 순회 중 루트 `$defs` 에 항목을 넣는다 — 스냅샷 순회). 그 때문에
+  2026-08-07 스키마 변경 뒤에도 재생성되지 못했던 `telemetry.py`·`ui_capabilities.py` 모델을 정본대로
+  다시 생성했다(point address `{building}` 세그먼트·`DataSource`·`PointKind`).
+
 - 비식별 데모 건물은 기존 `BuildingIdentity`의
   `virtual_asset + provisional + unmatched` 조합으로 전달한다. 실제 건물의 25자리
   건물관리번호와 19자리 필지번호가 원본에서 비식별된 상태이며, 가상 건물을 만들었다는

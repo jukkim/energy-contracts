@@ -5,7 +5,7 @@
   "description": "건물 의사결정 시점에 무엇을 알고 무엇을 모르는지 고정하는 데이터 여권. 건물 모델 자체가 아니라 모델 라우팅·증거표시의 입력 계약이다.",
   "_usage": "reference-only",
   "_consumers": ["airos-energy-decision", "building-energy-3d", "xbems"],
-  "version": "1.0",
+  "version": "1.1",
   "type": "object",
   "additionalProperties": false,
   "required": ["passport_id", "building_id", "captured_at", "data_tier", "identity", "availability", "provenance"],
@@ -23,11 +23,21 @@
       "additionalProperties": false,
       "required": ["asset_class"],
       "properties": {
+        "building_mgmt_no": {"type": "string", "pattern": "^[0-9]{25}$", "description": "25자리 건물관리번호(건축물대장 bld_mgt_sn). 물리 건물 하나. 앞 19자리 = parcel_id. 공공데이터(주소검색 bdMgtSn 또는 필지 위 건물 목록)에서만 온다."},
+        "parcel_id": {"type": "string", "pattern": "^[0-9]{19}$", "description": "19자리 필지 PNU. 필지 단위 에너지의 공유 근거 키. pnu 는 호환 별칭으로 같은 값."},
         "pnu": {"type": "string", "pattern": "^[0-9]{19}$"},
+        "physical_identity": {"type": "string", "enum": ["building", "parcel", "none"], "description": "여권의 주어 수준. building = building_mgmt_no 있음(BuildingIdentity.official_building), parcel = 필지만(parcel_proxy), none = 둘 다 없음."},
         "asset_class": {"type": "string", "enum": ["building", "home", "site", "portfolio_member"]},
         "use_type": {"type": "string"},
+        "residential_subtype": {"type": "string", "enum": ["detached_prosumer", "apartment"]},
+        "built_year": {"type": "integer", "minimum": 1800, "maximum": 2200},
+        "vintage_class": {"type": "string", "maxLength": 50},
+        "district": {"type": "string", "maxLength": 100},
         "timezone": {"type": "string", "default": "Asia/Seoul"}
-      }
+      },
+      "allOf": [
+        {"if": {"required": ["building_mgmt_no"]}, "then": {"required": ["parcel_id"]}}
+      ]
     },
     "availability": {
       "type": "object",
