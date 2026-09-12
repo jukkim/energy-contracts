@@ -4,7 +4,10 @@
 
 ---
 
-## Unreleased
+## 0.3.55 (2026-09-12)
+
+> 릴리스 사유: `agent_contracts.json` v1.2(에이전트 응답의 건물 식별 선택 필드 4개)를 소비 저장소에 싣는다.
+> `bump_ec_pin.py v0.3.55` 로 재핀하고 agentleague·eduarena 생성 상수도 재생성한다. ingestion-worker 는 그 저장소 요청으로 보류.
 
 - `agent_contracts.json` v1.1 → **v1.2**: `BuildingContext`·`BuildingForecast`·`DREnrollment`·`SetbackPattern`·
   `BenchmarkStats`·`FireRiskAssessment` 에 선택·nullable 필드 4개 — `building_mgmt_no`·`requested_building_mgmt_no`
