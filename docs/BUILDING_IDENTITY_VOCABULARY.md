@@ -34,7 +34,8 @@ geocode `match_basis` → 필지 등급: `juso_bdMgtSn_exact` → candidate_phys
 
 - 여권: `energy_contracts/schemas/building_passport.json` (v1.2 `identity.identity_match_status`)
 - 모델 패킷: `energy_contracts/schemas/building_model_packet.json` `$defs.BuildingIdentity`
-- 에이전트 입력: `energy_contracts/schemas/agent_contracts.json` `BuildingContext` — **아직 `pnu`(필지) 만**. `building_mgmt_no` 추가는 다음 태그 릴리스로 보류(DEFERRED_INTEGRATIONS 참조). 그때까지 A01 등 에이전트 입력은 필지 단위다.
+- 에이전트 입력·응답: `energy_contracts/schemas/agent_contracts.json` **v1.2** — `BuildingContext`·`BuildingForecast`·`DREnrollment`·`SetbackPattern`·`BenchmarkStats`·`FireRiskAssessment` 에 선택 필드 `building_mgmt_no`·`requested_building_mgmt_no`(25자리)·`building_use_allowed`·`metric_scope`. `pnu` 는 그대로 필지 키(필수)다.
+  25자리로 물으면 be-3d 가 등록 필지(승계 시도코드 우선, 비면 원래 19자리)로 답하고, 그 필지의 번호 있는 동이 요청한 그 건물 하나일 때만 `building_use_allowed=true`·`metric_scope=building`·`building_mgmt_no` 를 채운다. 구 시도코드(42/45) 행에서 읽은 답은 승격하지 않는다. 19자리 요청의 응답은 전과 같다(새 필드 없음).
 - 생산자: `building-energy-3d/src/visualization/{search,smart_building,buildings_detail}.py`
 - 소비자: `airos-energy-decision/src/airos_energy_decision/{adapters/be3d,spatial_identity,asset_registry,routing}.py`
 - 게이트: `airos-energy-decision/tools/verify_spatial_identity.py`
