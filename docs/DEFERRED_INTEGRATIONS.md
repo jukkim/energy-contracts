@@ -95,3 +95,17 @@ wheel 진입 조건 = **2개 이상 sibling 이 wheel 계약으로 read/receive*
 
 이유: 소비자가 아직 없는 **선택** 필드 하나를 위해 6 저장소 CI 를 건드리는 릴리스를 돌리지 않는다.
 그때까지 에이전트 입력(A01 등)은 필지 단위이며, 건물 식별은 여권 v1.2 `identity` 와 airos 레지스트리가 담당한다.
+
+## 2026-09-12 — be-3d 내부 에이전트의 25자리 입력 (위 `BuildingContext.building_mgmt_no` 와 한 릴리스로)
+
+| Stage | 상태 |
+|---|---|
+| ① 도구 | 패치 작성·검증(259 passed) 후 **철회** — 적용하지 않았다 |
+| ② SSOT 문서 | 이 항목 |
+| ③ 체인 통합 | **skipped** — 게이트웨이(`ems_transformer serving/app.py`) 5개 경로가 19자리만 받는다 |
+| ④ 검증 훅 | **skipped** — 응답 스키마 `BuildingContext`·`BuildingForecast`·`DREnrollment`·`SetbackPattern` 이 `extra='forbid'` 라 에코 필드는 계약 필드여야 한다 |
+| ⑤ 사용자 트리거 | **skipped** — 위 `building_mgmt_no` 계약 릴리스 때 함께: 계약 필드(요청 번호·`building_use_allowed`·`metric_scope`) → 재핀 → 게이트웨이 25자리 허용 → 에이전트 |
+
+이유(사냥꾼 검토): ① 계약 밖 필드를 에코하면 25자리가 게이트웨이를 통과하는 순간 네 경로가 502 "schema mismatch" 가 된다.
+② 필지 단위 답에 요청 번호만 붙이면 그 동의 답으로 읽힌다 — `building_use_allowed` 없이는 안 된다.
+③ DR 가입·테넌트 행은 구 시도코드(42/45)로만 있다 — 입력 필지를 승계 코드로만 바꾸면 조회가 빈다(승계 우선·원래 코드 폴백 필요).
