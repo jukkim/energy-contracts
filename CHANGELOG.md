@@ -6,6 +6,13 @@
 
 ## Unreleased
 
+- `building_passport.json` v1.1 → **v1.2**: `identity.identity_match_status` (exact/probable/unmatched) —
+  packet `BuildingIdentity.selected_identifier_match_status` 와 같은 어휘. verified 만 exact 다.
+- `agent_contracts.json` `BuildingContext` 는 여전히 `pnu` 만 받는다(**미변경, 보류**). 이 스키마는
+  generated constants 의 원천이라 한 바이트 변경이 6개 소비 저장소의 태그 재핀(`bump_ec_pin.py`)을 부른다.
+  `building_mgmt_no` 선택 필드는 다음 EC 태그 릴리스에 함께 싣는다 — `docs/DEFERRED_INTEGRATIONS.md`.
+- 신설 `docs/BUILDING_IDENTITY_VOCABULARY.md` — be-3d/airos 상태 어휘 ↔ `BuildingIdentity` ↔ 여권 대응표와 5 원칙.
+
 - `building_passport.json` v1.0 → **v1.1**: `identity` 에 `building_mgmt_no`(25자리)·`parcel_id`(19자리)·
   `physical_identity`(building/parcel/none) 를 추가한다. 여권의 주어는 필지가 아니라 **건물**이며,
   `pnu` 는 `parcel_id` 의 호환 별칭으로 남는다. `building_mgmt_no` 가 있으면 `parcel_id` 필수.

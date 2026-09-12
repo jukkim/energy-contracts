@@ -82,3 +82,16 @@ wheel 진입 조건 = **2개 이상 sibling 이 wheel 계약으로 read/receive*
 - 오히려 지금 만들면 3-repo pin 을 **조기 동결** → 실제 배선 시 모양 바뀌면 또 6-repo regen → 토글이 **무거워짐**(standby 의 "코드는 살리되 계약 비동결" 철학에 역행)
 - 토글 양방향을 매끄럽게 하려면 손댈 곳 = **be-3d 수신 경로(W13 cutover, 현재 gold 소비 0건)** 이지 본 repo wheel schema 아님
 - **결론**: "쉬운 전환" 목적이라면 W-1 은 **보류가 정답** (건드릴수록 손해)
+
+## 2026-09-12 — `agent_contracts.json` `BuildingContext.building_mgmt_no` (건물 식별 사냥꾼 2차)
+
+| Stage | 상태 |
+|---|---|
+| ① 도구 | 스키마 변경안 작성(25자리 선택 필드 + `pnu` 를 "필지 키" 로 설명) — 적용했다가 되돌림 |
+| ② SSOT 문서 | `docs/BUILDING_IDENTITY_VOCABULARY.md` 에 보류 사실과 이유 기록 |
+| ③ 체인 통합 | **skipped** — 이 스키마는 generated constants 원천(`gen_constants.py:263`). 변경 시 6개 소비 저장소(edge-agent·gridbridge·building-energy-3d·agentleague·eduarena·mgcc/sejong)가 태그 재핀 필요 |
+| ④ 검증 훅 | **skipped** — `validate_ssot.py` 가 SOURCE_HASH drift 6건으로 커밋을 막는 것을 확인(2026-09-12) |
+| ⑤ 사용자 트리거 | **skipped** — 다음 EC 태그 릴리스(`bump_ec_pin.py vX`) 때 함께 싣는다 |
+
+이유: 소비자가 아직 없는 **선택** 필드 하나를 위해 6 저장소 CI 를 건드리는 릴리스를 돌리지 않는다.
+그때까지 에이전트 입력(A01 등)은 필지 단위이며, 건물 식별은 여권 v1.2 `identity` 와 airos 레지스트리가 담당한다.
