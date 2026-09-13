@@ -8,9 +8,9 @@
     "executor_keys": "projects\\energy-decision-studio\\lib\\actions\\executor_keys.ts"
   },
   "counts": {
-    "opcodes": 100,
+    "opcodes": 101,
     "opA": 8,
-    "opB": 81,
+    "opB": 82,
     "opC": 11,
     "routerClasses": 43,
     "executors": 7,
@@ -446,6 +446,13 @@
       "ns": "gb",
       "consumerClass": "C",
       "summary": "VEN 목록 조회 — GridBridge GET /venues: 등록된 EdgeAgent 목록. kind 필터(telemetry=관측형/disp"
+    },
+    {
+      "api": "mountFlowLines",
+      "name": "insight.flowLines",
+      "ns": "insight",
+      "consumerClass": "B",
+      "summary": "근거 패널 결과의 흐름 행(flowsKey, 예 flow_rows: from_node·to_node·value_key·label)을 앵커 둘레의"
     },
     {
       "api": "showAiOutput",
@@ -2526,6 +2533,7 @@
         "driveOsrmRoute",
         "driveOsrmRouteVia",
         "driveTmapRoute",
+        "mountFlowLines",
         "mountValueMarkers",
         "placeVehicleAlongRoute",
         "playEvidenceTimeline",
@@ -2541,9 +2549,10 @@
         "unmountReverseCascade",
         "unmountSeoulChoropleth"
       ],
-      "nlTarget": 55,
+      "nlTarget": 56,
       "nlCovered": 53,
       "nlUncovered": [
+        "mountFlowLines",
         "mountValueMarkers",
         "playEvidenceTimeline"
       ],
