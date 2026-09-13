@@ -49,6 +49,12 @@ PROJECTS = WORKSPACE_ROOT / "projects"
 #: 여기 등재해야 게이트가 이 repo 를 본다 — mgcc(#78) 와 같은 종류의 누락이다.
 CONSUMERS = ("edge-agent", "gridbridge", "building-energy-3d", "ingestion-worker",
              "mgcc", "building-energy-sejong")
+#: ⚠ **핀이 CI 워크플로 안에만 있는 저장소 (2026-09-13 추가)** — eduarena 는 pyproject 핀이
+#:   없고 `.github/workflows/pytest.yml` 의 `pip install "energy-contracts @ git+…@vX"` 한 줄로
+#:   EC 를 설치한다. pyproject·ssot-drift 만 고치던 이 도구는 그 줄을 몰라 v0.3.55 때 손으로
+#:   고쳤다. `current_ci_pins`/`bump_ci_pins` 는 CONSUMERS + 이 목록의 **모든 워크플로**에서
+#:   pip 설치 핀을 찾아 같은 태그로 맞춘다(ssot-drift 의 checkout `ref:` 는 `_WF_REF_RE` 몫).
+CI_PIN_REPOS = ("eduarena",)
 _PIN_RE = re.compile(r"(energy-contracts.*?@)(v[0-9][\w.\-]*)")
 # ssot-drift.yml 의 EC checkout step — `repository: jukkim/energy-contracts` 뒤따르는
 # `ref: vX.Y.Z`(주석 유무 무관). 다른 repo checkout 의 ref 는 건드리지 않는다.
@@ -143,6 +149,35 @@ def bump_wf_refs(target: str) -> list[str]:
     return changed
 
 
+def _ci_workflows(repo: str) -> list[Path]:
+    wf_dir = PROJECTS / repo / ".github" / "workflows"
+    return sorted(wf_dir.glob("*.y*ml")) if wf_dir.is_dir() else []
+
+
+def current_ci_pins() -> dict[str, list[str]]:
+    """워크플로 파일별 pip 설치 핀(`energy-contracts … @vX`, 같은 줄). checkout `ref:` 는 제외."""
+    pins: dict[str, list[str]] = {}
+    for repo in CONSUMERS + CI_PIN_REPOS:
+        for wf in _ci_workflows(repo):
+            found = [m.group(2) for m in _PIN_RE.finditer(_read_keep_newlines(wf))]
+            if found:
+                pins[f"{repo}/{wf.name}"] = found
+    return pins
+
+
+def bump_ci_pins(target: str) -> list[str]:
+    """워크플로의 pip 설치 핀을 target 으로 (줄끝 보존)."""
+    changed: list[str] = []
+    for repo in CONSUMERS + CI_PIN_REPOS:
+        for wf in _ci_workflows(repo):
+            txt = _read_keep_newlines(wf)
+            new = _PIN_RE.sub(lambda m: m.group(1) + target, txt)
+            if new != txt:
+                _write_keep_newlines(wf, new)
+                changed.append(f"{repo}/{wf.name}")
+    return changed
+
+
 def run(cmd: list[str]) -> int:
     print(f"  $ {' '.join(cmd)}")
     return subprocess.call(cmd, cwd=str(CONTRACTS_ROOT))
@@ -165,6 +200,9 @@ def main() -> int:
         #   `UNMEASURED`(다른 세션 오염) 였던 탓에 아무도 못 봤다.
         #   핀이 없는 것은 고장이 아니라 **사실**이다 — 그렇게 적는다.
         print(f"  {r:22} pin={(p or '(핀 없음)'):12} ref={','.join(refs)}")
+    ci_pins = current_ci_pins()
+    for where, found in ci_pins.items():
+        print(f"  {where:40} ci-pin={','.join(found)}")
 
     if args.check:
         distinct = {p for p in pins.values() if p}
@@ -176,6 +214,11 @@ def main() -> int:
         if skew:
             print(f"\n[bump_ec_pin] ✗ ssot-drift ref 가 pin 과 skew: ref={distinct_refs} vs pin={distinct}")
             print("  → CI 가 옛 스키마로 --check 를 돌려 DRIFT 오탐한다. bump 로 동반 갱신할 것.")
+            return 1
+        ci_skew = {x for v in ci_pins.values() for x in v} - distinct
+        if ci_skew:
+            print(f"\n[bump_ec_pin] ✗ CI 워크플로 pip 핀이 pin 과 skew: {ci_skew} vs pin={distinct}")
+            print("  → 그 저장소 CI 는 옛 태그 EC 를 설치해 시험한다. bump 로 동반 갱신할 것.")
             return 1
         # ⚠ 여기까지는 **핀끼리** 같은지만 봤다. 그게 사각이었다 —
         #   2026-08-16 실측: 전 소비자 pin=v0.3.39 로 일치해 이 검사가 ✓ 를 냈는데,
@@ -204,6 +247,8 @@ def main() -> int:
     print(f"  pyproject pin 변경: {changed or '없음(이미 동일)'}")
     changed_wf = bump_wf_refs(args.target)
     print(f"  ssot-drift ref 변경: {changed_wf or '없음(이미 동일)'}")
+    changed_ci = bump_ci_pins(args.target)
+    print(f"  CI 워크플로 pip 핀 변경: {changed_ci or '없음(이미 동일)'}")
 
     print("\n[bump_ec_pin] regen (gen_constants.py --all):")
     if run([sys.executable, "scripts/gen_constants.py", "--all"]) != 0:

@@ -60,3 +60,35 @@ def test_workspace_pin_and_ref_are_lockstep() -> None:
         return
     assert len(pins) == 1, f"pin lockstep 위반: {pins}"
     assert refs <= pins, f"ssot-drift ref 가 pin 과 skew: ref={refs} pin={pins}"
+
+
+_CI_SAMPLE = """
+          pip install "energy-contracts @ git+https://github.com/jukkim/energy-contracts@v0.3.55"
+"""
+
+
+def test_ci_pip_pin_regex_substitutes() -> None:
+    """eduarena 처럼 워크플로 pip 줄에만 있는 핀도 같은 정규식으로 바뀐다 (2026-09-13)."""
+    out = bump._PIN_RE.sub(lambda m: m.group(1) + "v0.3.56", _CI_SAMPLE)
+    assert out == _CI_SAMPLE.replace("v0.3.55", "v0.3.56")
+
+
+_CHECKOUT_SAMPLE = """
+        uses: actions/checkout@v4
+        with:
+          repository: jukkim/energy-contracts
+"""
+
+
+def test_ci_pip_pin_ignores_action_versions() -> None:
+    """actions/checkout@v4 · EC checkout 의 repository 줄은 pip 핀이 아니다."""
+    assert bump._PIN_RE.sub(lambda m: m.group(1) + "v9.9.9", _CHECKOUT_SAMPLE) == _CHECKOUT_SAMPLE
+
+
+def test_workspace_ci_pins_follow_pin() -> None:
+    """실제 워크스페이스 — 워크플로 pip 핀도 pyproject 핀과 같은 태그여야 한다."""
+    pins = {v for v in bump.current_pins().values() if v}
+    ci = {x for v in bump.current_ci_pins().values() for x in v}
+    if not pins or not ci:  # consumer repo 미체크아웃 환경(CI 단독 clone)
+        return
+    assert ci <= pins, f"CI 워크플로 pip 핀이 pin 과 skew: ci={ci} pin={pins}"

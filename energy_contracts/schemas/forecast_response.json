@@ -17,7 +17,7 @@
   "properties": {
     "pnu": {
       "type": "string",
-      "description": "건물 PNU (19자리)",
+      "description": "필지 PNU (19자리) — 필지 키. 건물 식별은 building_mgmt_no(25자리)",
       "pattern": "^\\d{19}$"
     },
     "model": {

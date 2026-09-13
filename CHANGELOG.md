@@ -4,6 +4,21 @@
 
 ---
 
+## 0.3.56 (2026-09-13)
+
+> 릴리스 사유: 필지 규칙(2026-09-13 사용자 결정 — 1동 필지만 건물 값, 여러 동·모름은 값 없음 + 이유)을
+> 에이전트 계약에 싣는다. `bump_ec_pin.py v0.3.56` 로 재핀한다(이번부터 CI 워크플로 pip 핀도 함께 바뀐다).
+
+- `agent_contracts.json` v1.2 → **v1.3**: `BuildingContext.eui` 를 **선택·nullable**(기본 null)로, `value_withheld_reason`
+  (string|null) 추가. 여러 동 필지처럼 이 건물의 값으로 쓸 수 없는 답을 404 대신 "eui=null + 이유" 로 돌려줄 수 있다.
+  배분 추정·필지 합계로 채우지 않는다. 필수 해제·필드 추가만이라 기존 생산자(eui 를 늘 채우는 쪽)는 그대로 유효하다 — minor.
+  ⚠ 소비자는 `ctx.eui` 가 None 일 수 있음을 다뤄야 한다(be-3d 는 null 답으로 바꿀 때 에이전트 가드를 함께 고친다).
+- `forecast_response.json`·`anomaly_response.json` 의 `pnu` 설명 "건물 PNU" → **필지 PNU(19자리 — 필지 키)**.
+- `ui_capabilities.json` `ui.counterfactual.backend`: "F9 /v1/counterfactual (KBEP)" → KBEP :8020 `/v2/counterfactual` 직접
+  (게이트웨이 F9 는 노출되지 않는다 — 게이트웨이 반사실은 F14 fast-path 내부).
+- `scripts/bump_ec_pin.py`: 소비 저장소 워크플로의 **pip 설치 핀**(`energy-contracts @ git+…@vX`)도 찾아 바꾸고 `--check` 로
+  skew 를 잡는다(`CI_PIN_REPOS` = eduarena — pyproject 핀 없이 `pytest.yml` 한 줄로 설치한다). 시험 3개 추가.
+
 ## 0.3.55 (2026-09-12)
 
 > 릴리스 사유: `agent_contracts.json` v1.2(에이전트 응답의 건물 식별 선택 필드 4개)를 소비 저장소에 싣는다.
