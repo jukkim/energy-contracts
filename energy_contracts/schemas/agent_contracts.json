@@ -11,8 +11,8 @@
     "agentleague",
     "eduarena"
   ],
-  "version": "1.2",
-  "updated": "2026-09-12",
+  "version": "1.3",
+  "updated": "2026-09-13",
   "$comment": "Phase C1 산출물 (myjob/docs/SSOT_GOVERNANCE.md). gen_constants.py 가 이 스키마를 Tier 3 코드로 자동 생성.",
   "$defs": {
     "BuildingContext": {
@@ -26,7 +26,6 @@
         "floors",
         "built_year",
         "structure",
-        "eui",
         "energy_tier",
         "energy_grade"
       ],
@@ -56,8 +55,9 @@
           "type": "string"
         },
         "eui": {
-          "type": "number",
-          "description": "Energy Use Intensity (kWh/m²·yr)"
+          "type": ["number", "null"],
+          "default": null,
+          "description": "Energy Use Intensity (kWh/m²·yr). v1.3 부터 선택 — 이 값을 이 건물의 값으로 쓸 수 없으면(여러 동 필지·동 수 모름) null 이고 이유는 value_withheld_reason 에 적는다. 배분 추정·필지 합계로 채우지 않는다."
         },
         "energy_tier": {
           "type": "integer",
@@ -84,7 +84,8 @@
         "building_mgmt_no": {"type": ["string", "null"], "pattern": "^[0-9]{25}$", "default": null, "description": "건물관리번호 25자리 — 이 답이 그 필지의 유일한 번호 있는 동일 때만 채운다(공공데이터, 사람이 만들지 않음)."},
         "requested_building_mgmt_no": {"type": ["string", "null"], "pattern": "^[0-9]{25}$", "default": null, "description": "호출자가 25자리 건물 번호로 물었을 때 그 번호 그대로(되돌림). 필지로 물었으면 null."},
         "building_use_allowed": {"type": ["boolean", "null"], "default": null, "description": "필지 키 값(energy_results 등)을 이 건물의 값으로 써도 되는가 — 필지에 등록된 번호 있는 동이 정확히 1개일 때만 true. 모르면 null."},
-        "metric_scope": {"type": ["string", "null"], "enum": ["parcel", "building", null], "default": null, "description": "값의 주체: parcel(필지 합계) · building(그 건물). 모르면 null."}
+        "metric_scope": {"type": ["string", "null"], "enum": ["parcel", "building", null], "default": null, "description": "값의 주체: parcel(필지 합계) · building(그 건물). 모르면 null."},
+        "value_withheld_reason": {"type": ["string", "null"], "default": null, "description": "eui 등 에너지 값을 비운 이유(예: parcel_has_multiple_buildings · parcel_building_count_unknown). 값이 있으면 null. v1.3 추가 — 비운 답을 404 대신 이 칸으로 돌려줄 수 있다."}
       },
       "additionalProperties": false
     },

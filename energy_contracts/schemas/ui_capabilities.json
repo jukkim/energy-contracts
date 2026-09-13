@@ -147,7 +147,7 @@
         "label_ko": "다르게 운전하면(반사실) 얼마나 바뀌나",
         "category": "diagnosis",
         "binding_layer": "f_route",
-        "backend": "F9 /v1/counterfactual (KBEP)",
+        "backend": "KBEP :8020 /v2/counterfactual 직접 (게이트웨이 F9 미노출 — 게이트웨이 반사실은 F14 fast-path 내부)",
         "params": { "building_id": { "type": "string", "required": true }, "strategy_id": { "type": "string", "required": true, "enum_ref": "ems_strategies.json M00~M20" } },
         "composition_ok": true,
         "primary_tier": "tier1_function",

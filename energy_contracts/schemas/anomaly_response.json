@@ -16,7 +16,7 @@
   "properties": {
     "entity_id": {
       "type": "string",
-      "description": "건물 PNU(19자리) 또는 VEN ID",
+      "description": "필지 PNU(19자리 — 필지 키) 또는 VEN ID",
       "examples": [
         "1168010300100140000",
         "VEN-STORE-B008"
