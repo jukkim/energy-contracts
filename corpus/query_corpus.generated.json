@@ -8,9 +8,9 @@
     "executor_keys": "projects\\energy-decision-studio\\lib\\actions\\executor_keys.ts"
   },
   "counts": {
-    "opcodes": 98,
+    "opcodes": 100,
     "opA": 8,
-    "opB": 79,
+    "opB": 81,
     "opC": 11,
     "routerClasses": 43,
     "executors": 7,
@@ -462,11 +462,25 @@
       "summary": "활성 선택(또는 region/ids)에 분석/what-if 엔진 결과를 표출. engine=analysis_registry.json row id"
     },
     {
+      "api": "playEvidenceTimeline",
+      "name": "insight.timeline",
+      "ns": "insight",
+      "consumerClass": "B",
+      "summary": "근거 패널 결과의 시간별 행(rowsKey, 예 hourly_rows)을 한 칸씩 재생하며 현재 시각을 3D HUD 와 패널에 방송(lab-ev"
+    },
+    {
       "api": "unmountAnalysis",
       "name": "insight.unmountAnalysis",
       "ns": "insight",
       "consumerClass": "B",
       "summary": "Analysis Bus 배지/패널 해제."
+    },
+    {
+      "api": "mountValueMarkers",
+      "name": "insight.valueMarkers",
+      "ns": "insight",
+      "consumerClass": "B",
+      "summary": "근거 패널 결과의 행(rowsKey, 예 response_rows)마다 값 표지를 앵커 둘레에 놓는다. 값·라벨·단위는 결과에서 키로 읽고 op"
     },
     {
       "api": "placeSmartLamp",
@@ -2512,7 +2526,9 @@
         "driveOsrmRoute",
         "driveOsrmRouteVia",
         "driveTmapRoute",
+        "mountValueMarkers",
         "placeVehicleAlongRoute",
+        "playEvidenceTimeline",
         "stopGoldFaceSliding",
         "stopGoldFlyoverDemo",
         "unmountAnalysis",
@@ -2525,9 +2541,12 @@
         "unmountReverseCascade",
         "unmountSeoulChoropleth"
       ],
-      "nlTarget": 53,
+      "nlTarget": 55,
       "nlCovered": 53,
-      "nlUncovered": [],
+      "nlUncovered": [
+        "mountValueMarkers",
+        "playEvidenceTimeline"
+      ],
       "lifecycleExempt": [
         "clearCompositeShader",
         "clearFacadePaints",
