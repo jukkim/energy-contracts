@@ -11,9 +11,9 @@
     "reverse",
     "sim_campaign_2026"
   ],
-  "version": "1.0.1",
-  "updated": "2026-05-29",
-  "$comment": "Phase 1.3 산출. SPEC_POLICY_VECTOR.md §2.2 가 본 매트릭스를 import. cell 값 의미: compatible (정상 적용) / marginal (적용 가능 but 절감 < 5%, warn) / infeasible (G-PE1 422 STRATEGY_INFEASIBLE_FOR_HVAC) / expected_skip (EMS_STRATEGY §21, infeasible 의 subset). | 2026-08-03: mgcc 소비자 등재. MGCC 가 그룹 발령 전 **원형 × 전략 적합성**을 판정한다(중앙 공조기 없는 건물에 M01·M02 를 걸고 '적용됨'이라 하지 않기 위해). ⚠ 이 매트릭스는 **원형 축**이고 캠페인 `expected_silent_skip.yaml` 은 **건물×원형 축**(34셀)이라 해상도가 다르다 — 34셀은 원형-보편이 아니다(실측: HD 5동 중 3동 · HE 8동 중 5동 · HF 5동 중 3동 · HG 6동 중 1동 · HA 5동 중 2동). 둘을 합치거나 한쪽으로 덮어쓰면 안 된다.",
+  "version": "1.1.0",
+  "updated": "2026-09-15",
+  "$comment": "Phase 1.3 산출. SPEC_POLICY_VECTOR.md §2.2 가 본 매트릭스를 import. cell 값 의미: compatible (정상 적용) / marginal (적용 가능 but 절감 < 5%, warn) / infeasible (G-PE1 422 STRATEGY_INFEASIBLE_FOR_HVAC) / expected_skip (EMS_STRATEGY §21, infeasible 의 subset). | 2026-08-03: mgcc 소비자 등재. MGCC 가 그룹 발령 전 **원형 × 전략 적합성**을 판정한다(중앙 공조기 없는 건물에 M01·M02 를 걸고 '적용됨'이라 하지 않기 위해). ⚠ 이 매트릭스는 **원형 축**이고 캠페인 `expected_silent_skip.yaml` 은 **건물×원형 축**(34셀)이라 해상도가 다르다 — 34셀은 원형-보편이 아니다(실측: HD 5동 중 3동 · HE 8동 중 5동 · HF 5동 중 3동 · HG 6동 중 1동 · HA 5동 중 2동). 둘을 합치거나 한쪽으로 덮어쓰면 안 된다. | 2026-09-15 v1.1.0: hvac_types 의 설명 상수(ASHRAE 원형 문장)가 서빙 인코더와 다른 설비를 가리키고 있었다(예: HG='gas-fired boiler + radiator' 인데 인코더·시뮬은 지역난방). 이름을 여기 따로 두지 않고 행 키가 가리키는 정본 코드(region_codes.json#hvac_types)만 적는다. ⚠ A~E 행의 셀 주석은 ASHRAE 원형 기준으로 작성돼 있다(예: E×M02 'DOAS 외기 활용') — 셀 값 재검토는 별건.",
   "type": "object",
   "_comment_required": "사냥꾼 라운드 LOW (2026-06-08): hvac_types/ems_strategies 는 차원 정의 메타데이터(const map + 코드 참조)이며 data instance 의 payload 가 아니다 → required 에서 제외해 default(matrix-only) 가 자체 유효하도록 정정.",
   "required": [
@@ -23,35 +23,35 @@
   "properties": {
     "hvac_types": {
       "type": "object",
-      "description": "ASHRAE 901 STD2019 5 종 (A~E) + 한국화 4 종 (HD~HG)",
+      "description": "행 키 → 정본 HVAC 코드(region_codes.json#hvac_types). 표시 이름은 그 표의 name_kr 만 쓴다. 짝 = 서빙 인코더 kbep_client._HVAC_TYPE_TO_ID (A=HA=H_A … G=HG=H_G). 대조 = validate_ssot.check_hvac_display_names.",
       "additionalProperties": false,
       "properties": {
         "A": {
-          "const": "Central chilled water + boiler (chiller multi-stage)"
+          "const": "H_A"
         },
         "B": {
-          "const": "Packaged DX (split / rooftop, 1~2 stage)"
+          "const": "H_B"
         },
         "C": {
-          "const": "Single zone DX (residential / small commercial)"
+          "const": "H_C"
         },
         "D": {
-          "const": "VRF (inverter-driven multi-zone)"
+          "const": "H_D"
         },
         "E": {
-          "const": "Hydronic radiant + DOAS"
+          "const": "H_E"
         },
         "HD": {
-          "const": "Korean — VRF + 온돌 (residential 한국화)"
+          "const": "H_D"
         },
         "HE": {
-          "const": "Korean — 온돌 + gas boiler + PTAC (mid-rise residential)"
+          "const": "H_E"
         },
         "HF": {
-          "const": "Korean — Hybrid (central + 온돌)"
+          "const": "H_F"
         },
         "HG": {
-          "const": "Korean — gas-fired boiler + radiator (older retrofit)"
+          "const": "H_G"
         }
       }
     },

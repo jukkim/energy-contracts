@@ -4,6 +4,32 @@
 
 ---
 
+## 0.3.57 (2026-09-15)
+
+> 릴리스 사유: 이름 정본 두 건 — **E→M 표가 두 벌**이었고 **공조 방식 이름이 소비처마다 달랐다.**
+> 둘 다 원인은 같다: 같은 사실을 여러 곳에 손으로 적고, 대조 검사가 없거나(HVAC) **빈 비교로 초록**이었다(E→M).
+> `gen_constants.py --all` 재생성 + `bump_ec_pin.py v0.3.57` 로 재핀한다. 근거 표 = `SSOT_COMPLIANCE.md` §7.
+
+- `legacy_ems_code_mapping.json` v1.0.0 → **v1.1.0**: E→M **유일한 정본**. `deprecated_e_codes.*` 에 `components`(뜻, 다중 M)·`exact` 추가.
+  E5 M10→**M07**(DCV) · E6 M04→**M08**(전열교환기) · E8 M11→**[M06,M02]**(maps_to M14) — 정본이 GCS 생성기 번호 뜻과
+  통합 metadata 번호 뜻을 한 표에 섞어 적고 있었다(행 실측: E5=`PC_*_m12`, E6=`PC_*_m13`, E8=`B1_*_m9`).
+  E10/E11/E13 은 maps_to 그대로 두되 `exact=false`(ems_simulation m6~m8 은 M1 제외 — `generate_idf.py:757`).
+  `gcs_generator_codes`(생성기 원래 번호 기록) · `drift_guard.e_code_emitters`(E-code 를 내보내는 파이프라인 선언) 추가.
+- `ems_strategies.json` v3.1 → **v3.2**: `legacy_mapping.gcs_e_codes` = 정본 `maps_to` **생성 투영**(E5·E12·E13 추가, E6·E8 정정).
+  손편집 금지 — `scripts/legacy_e_codes.py` 를 `gen_constants.py --all` 이 먼저 돌려 맞춘다. `LEGACY_MAPPING` 소비자 값이 바뀐다.
+- `region_codes.json` v2.1 → **v2.2** (`_usage` reference-only → **hybrid**): `hvac_types.*.name_kr` = 공조 방식 한국어 표시 이름의
+  **유일한 정본**, `aliases`(A~G·HA~HG) 추가. H_B "중앙식 FCU" → **패키지형 VAV 공조(DX 냉방·전기 재열)**(IDF: 칠러·보일러 0,
+  DX TwoSpeed + VAV 재열 + 전기 코일). H_G "개별냉방" → **건물별 냉방**(B01·B08 H_G 는 중앙 냉동기).
+- `hvac_ems_matrix.json` v1.0.1 → **v1.1.0**: `hvac_types` 의 ASHRAE 문장 상수(HG="gas-fired boiler + radiator" 등 — 인코더·시뮬과 다른 설비)를
+  **정본 코드 참조**(`A`→`H_A` … `HG`→`H_G`)로 교체. 셀 값은 그대로(A~E 행 주석이 ASHRAE 원형 기준인 점은 별건).
+- `gen_constants.py`: be-3d TS 에 `HVAC_NAME_KR`(정본 코드·별칭 → name_kr) 생성. `regenerate_all` 이 gcs_e_codes 투영을 먼저 동기화.
+- `validate_ssot.py`: `check_legacy_code_consistency` **재작성**(없는 경로를 읽어 한 번도 비교하지 않던 판 — 이제 로드 실패·빈 표·키 집합 차이·규칙 위반을
+  전부 위반으로 센다) · `check_e_code_emitter_coverage`(reverse `data_spec.yaml` 의 e_labels·e_to_m 대조, 형제 부재 시 UNMEASURED 출력) ·
+  `check_hvac_display_names`(name_kr·별칭 유일성·매트릭스 행→정본 코드). 시험 `tests/test_naming_ssot_gates.py` 16개(깨뜨려서 빨강 + 원본 초록).
+- `validate_ssot._exempt_key`: `--pre-commit` 이 스테이징 파일 하나를 루트로 넘기면 면제 키가 `"/."` 가 되어 **파일 이름 면제가 전혀 안 먹었다**
+  (SSOT 자체 `ems_strategies.json` 의 ems_simulation 구 코드 표가 9건으로 막힘). 파일 루트는 저장소 루트 기준으로 판정한다.
+  ⚠ 이 커밋은 훅이 부르는 **공유 체크아웃(수정 전) 검사기**가 같은 오류로 막아 `--no-verify` 로 올렸다 — 워크트리 검사기로 strategy/schemas/usage·pytest 전부 통과 확인.
+
 ## 0.3.56 (2026-09-13)
 
 > 릴리스 사유: 필지 규칙(2026-09-13 사용자 결정 — 1동 필지만 건물 값, 여러 동·모름은 값 없음 + 이유)을

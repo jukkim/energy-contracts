@@ -2,13 +2,15 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "energy-contracts/region_codes.json",
   "title": "Region Codes",
-  "description": "도시·기후구역·일사량 SSOT. NAMING_UNIFICATION.md §4 + ENERGY_SSOT.md §6 기반. v2.1 (2026-07-11): KEP C12-C18 도시확장 반영 (KEP_C12C18_CAMPAIGN_2026-07-05.md) — 18도시 + kbep_city_id(0~17) 신설. C12~C18 의 climate_zone/solar 는 권위값 미확보로 의도적 미등재 (캠페인 엔진 = 전 도시 중부2 baked envelope + 도시별 EPW).",
-  "_usage": "reference-only",
+  "description": "도시·기후구역·일사량 SSOT. NAMING_UNIFICATION.md §4 + ENERGY_SSOT.md §6 기반. v2.1 (2026-07-11): KEP C12-C18 도시확장 반영 (KEP_C12C18_CAMPAIGN_2026-07-05.md) — 18도시 + kbep_city_id(0~17) 신설. C12~C18 의 climate_zone/solar 는 권위값 미확보로 의도적 미등재 (캠페인 엔진 = 전 도시 중부2 baked envelope + 도시별 EPW). v2.2 (2026-09-15): hvac_types.*.name_kr 를 공조 방식 **한국어 표시 이름의 유일한 정본**으로 지정하고 aliases(A~G·HA~HG) 를 더했다. H_B 를 IDF 실측(패키지형 VAV·DX·전기 재열)으로 정정.",
+  "_usage": "hybrid",
   "_consumers": [
-    "building-energy-3d",
-    "8sim-shared (drift-guard read-only: ems_transformer kbep_client._CITY_TO_ID 대조)"
+    "building-energy-3d (gen_constants → HVAC_NAME_KR)",
+    "8sim-shared (drift-guard read-only: ems_transformer kbep_client._CITY_TO_ID 대조)",
+    "energy-decision-canvas (guarded mirror lib/labels.ts HVAC_LABEL — verify_mirror_sync.py)",
+    "8.simulation (sim_campaign_2026 generate_climate_qa.py HVAC_KR 로드)"
   ],
-  "version": "2.1",
+  "version": "2.2",
   "type": "object",
   "properties": {
     "simulation_cities": {
@@ -40,7 +42,7 @@
     },
     "hvac_types": {
       "type": "object",
-      "description": "HVAC 유형 코드 H_A~H_G. NAMING_UNIFICATION.md §3.",
+      "description": "HVAC 유형 코드 H_A~H_G. 물리 정의 = NAMING_UNIFICATION.md §3(2026-08-31 IDF 실측 정정본). name_kr = 화면·문서에 쓰는 **유일한** 한국어 표시 이름(소비처는 생성본 HVAC_NAME_KR 또는 가드된 미러로만 쓴다). aliases = 같은 설비를 가리키는 다른 표기(글자 하나·sim_id) — 서빙 인코더 kbep_client._HVAC_TYPE_TO_ID 와 같은 짝.",
       "additionalProperties": {
         "type": "object",
         "properties": {
@@ -52,7 +54,8 @@
             "type": "string"
           },
           "name_kr": {
-            "type": "string"
+            "type": "string",
+            "description": "한국어 표시 이름 — 공조 방식 이름의 유일한 정본"
           },
           "cooling": {
             "type": "string"
@@ -65,6 +68,13 @@
           },
           "economizer_m02": {
             "type": "boolean"
+          },
+          "aliases": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "같은 설비의 다른 표기. 전 항목에 걸쳐 유일해야 한다(validate_ssot.check_hvac_display_names)."
           }
         }
       }
@@ -188,8 +198,12 @@
     "hvac_types": {
       "H_A": {
         "sim_id": "HA",
+        "aliases": [
+          "A",
+          "HA"
+        ],
         "name_en": "Central Plant VAV",
-        "name_kr": "중앙식 VAV",
+        "name_kr": "중앙집중식 VAV 공조(냉동기·보일러)",
         "cooling": "Chiller x2+",
         "heating": "Boiler",
         "staging_m03": true,
@@ -197,17 +211,25 @@
       },
       "H_B": {
         "sim_id": "HB",
-        "name_en": "Central Plant FCU",
-        "name_kr": "중앙식 FCU",
-        "cooling": "Chiller 2단",
-        "heating": "Boiler",
+        "aliases": [
+          "B",
+          "HB"
+        ],
+        "name_en": "Packaged VAV (DX, electric reheat)",
+        "name_kr": "패키지형 VAV 공조(DX 냉방·전기 재열)",
+        "cooling": "DX 2단 (Coil:Cooling:DX:TwoSpeed)",
+        "heating": "전기 재열 (Coil:Heating:Electric)",
         "staging_m03": false,
         "economizer_m02": true
       },
       "H_C": {
         "sim_id": "HC",
+        "aliases": [
+          "C",
+          "HC"
+        ],
         "name_en": "Package/PSZ",
-        "name_kr": "패키지/개별공조",
+        "name_kr": "패키지형 단일존 공조(PSZ)",
         "cooling": "DX/HP xN",
         "heating": "내장 HP",
         "staging_m03": false,
@@ -215,8 +237,12 @@
       },
       "H_D": {
         "sim_id": "HD",
+        "aliases": [
+          "D",
+          "HD"
+        ],
         "name_en": "VRF/EHP",
-        "name_kr": "VRF/EHP",
+        "name_kr": "시스템에어컨 냉난방(VRF·EHP)",
         "cooling": "실외기",
         "heating": "내장 HP",
         "staging_m03": false,
@@ -224,17 +250,25 @@
       },
       "H_E": {
         "sim_id": "HE",
-        "name_en": "Ondol+Gas Boiler+Wall AC",
-        "name_kr": "온돌+가스보일러+벽걸이",
-        "cooling": "벽걸이 스플릿",
-        "heating": "온돌 바닥복사(가스)",
+        "aliases": [
+          "E",
+          "HE"
+        ],
+        "name_en": "Ondol+Central Gas Boiler+Wall AC",
+        "name_kr": "온돌(중앙 가스보일러) + 벽걸이 에어컨",
+        "cooling": "벽걸이 스플릿 (PTAC)",
+        "heating": "온돌 바닥복사(중앙 가스보일러 1대)",
         "staging_m03": false,
         "economizer_m02": false
       },
       "H_F": {
         "sim_id": "HF",
-        "name_en": "EHP Cassette+Gas Boiler",
-        "name_kr": "시스템에어컨+가스보일러",
+        "aliases": [
+          "F",
+          "HF"
+        ],
+        "name_en": "VRF Cooling+Gas Boiler Heating",
+        "name_kr": "시스템에어컨 냉방 + 가스보일러 난방",
         "cooling": "천장 카세트 VRF",
         "heating": "가스보일러",
         "staging_m03": false,
@@ -242,9 +276,13 @@
       },
       "H_G": {
         "sim_id": "HG",
-        "name_en": "District Heating+Individual Cool",
-        "name_kr": "지역난방+개별냉방",
-        "cooling": "건물별 냉방",
+        "aliases": [
+          "G",
+          "HG"
+        ],
+        "name_en": "District Heating+Building Cooling",
+        "name_kr": "지역난방 + 건물별 냉방",
+        "cooling": "건물별 냉방 (원형 설비 유지: 냉동기 VAV · DX VAV · PTAC)",
         "heating": "DistrictHeating:Water",
         "staging_m03": false,
         "economizer_m02": false

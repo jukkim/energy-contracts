@@ -28,6 +28,10 @@ from pathlib import Path
 
 CONTRACTS_ROOT = Path(__file__).resolve().parents[1]
 SCHEMAS_DIR = CONTRACTS_ROOT / "energy_contracts" / "schemas"
+
+# E→M 정본(legacy_ems_code_mapping.json) → gcs_e_codes 투영. 생성본보다 먼저 맞춘다(2026-09-15).
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+import legacy_e_codes  # noqa: E402
 WORKSPACE_ROOT = CONTRACTS_ROOT.parents[1]
 
 # 표준 프로젝트별 출력 경로 (Tier 3) — Phase M-4: exports 화이트리스트 도입
@@ -181,6 +185,8 @@ PROJECT_TARGETS: dict[str, dict] = {
                 "VERDICT_VALUES", "VERDICT_LABEL_KO",
                 "GATE_DECISIONS", "JUDGE_DECISIONS",
                 "DR_MANDATORY_SIGNAL_LEVELS",
+                # 공조 방식 표시 이름 (region_codes.json, 2026-09-15) — policy picker·정책 평가 화면
+                "HVAC_NAME_KR",
             ],
         },
     },
@@ -310,7 +316,10 @@ def load_schemas() -> dict:
     #   읽게 한다. 양쪽이 각자 상수를 들면 "보통" 의 뜻이 갈라지고, 갈라진 뒤에는
     #   어느 쪽이 진실인지 판정할 근거가 없다.
     household_consent = _load("household_consent.json")
-    return {"edge_cap": edge_cap, "household_consent": household_consent,
+    # 공조 방식 표시 이름 정본(2026-09-15) — hvac_types[*].name_kr + aliases. 화면마다 이름을 따로
+    #   들고 있어 H_B 가 "중앙식 FCU"·"패키지 VAV" 로 갈라졌다. 소비처는 생성본 HVAC_NAME_KR 만 쓴다.
+    region = _load("region_codes.json")
+    return {"edge_cap": edge_cap, "household_consent": household_consent, "region": region,
         "ems": ems, "ports": ports, "common": common,
             "agents": agents, "intents": intents,
             "modes": modes, "dataclass": dataclass, "tests": tests,
@@ -854,6 +863,17 @@ def gen_typescript(schemas: dict) -> str:
                  + json.dumps(ems["legacy_mapping"], ensure_ascii=False) + " as const;")
     lines.append("")
 
+    hvac_types = (schemas.get("region") or {}).get("default", {}).get("hvac_types", {})
+    if hvac_types:
+        hvac_names: dict[str, str] = {}
+        for code, meta in hvac_types.items():
+            for alias in [code, *(meta.get("aliases") or [])]:
+                hvac_names[alias] = meta["name_kr"]
+        lines.append("// ─ HVAC 표시 이름 (region_codes.json#hvac_types[*].name_kr — 정본 코드·별칭 전부) ─")
+        lines.append("export const HVAC_NAME_KR: Record<string, string> = "
+                     + json.dumps(hvac_names, ensure_ascii=False) + ";")
+        lines.append("")
+
     lines.append("// ─ Port allocation ──────────────────────────────────────────")
     lines.append("export const PORTS: Record<string, number> = {")
     for svc in ports.get("services", []):
@@ -1301,8 +1321,14 @@ def write_target(content: str, out_path: Path) -> bool:
 
 
 def regenerate_all(check_only: bool = False) -> int:
+    # gcs_e_codes 는 정본(legacy_ems_code_mapping.json)의 투영이다 — 스키마 로드(해시) 전에 맞춘다.
+    projection_drift = legacy_e_codes.sync_projection(check_only)
+    if projection_drift:
+        tag = "DRIFT:" if check_only else "WROTE"
+        print(f"[gen_constants] {tag} energy_contracts/schemas/ems_strategies.json"
+              "#default.legacy_mapping.gcs_e_codes (정본 투영)")
     schemas = load_schemas()
-    drift = 0
+    drift = 1 if (check_only and projection_drift) else 0
     for proj, project_cfg in PROJECT_TARGETS.items():
         for lang in ("python", "ts"):
             rel_path = project_cfg.get(lang)

@@ -12,9 +12,9 @@
     "building-energy-3d",
     "agents"
   ],
-  "version": "1.0.0",
-  "updated": "2026-05-29",
-  "$comment": "Phase 1.2 산출 (NEG-2026-05-29-002-final + GPT review). 8.simulation/docs/NAMING_UNIFICATION.md §1.2 + ems_transformer/docs/EMS_CODE_MAPPING.md 를 머신리더블 통합. Phase 2.2 pre-commit lint_ems_code_drift.py 와 Phase 2.3 scripts/add_ems_code.py 가 본 schema 를 참조. Phase 7.2 scripts/debate_validator.py 가 hallucination 검출 시 본 schema 의 STRATEGY_REGEX 강제.",
+  "version": "1.1.0",
+  "updated": "2026-09-15",
+  "$comment": "Phase 1.2 산출 (NEG-2026-05-29-002-final + GPT review). 8.simulation/docs/NAMING_UNIFICATION.md §1.2 + ems_transformer/docs/EMS_CODE_MAPPING.md 를 머신리더블 통합. Phase 2.2 pre-commit lint_ems_code_drift.py 와 Phase 2.3 scripts/add_ems_code.py 가 본 schema 를 참조. Phase 7.2 scripts/debate_validator.py 가 hallucination 검출 시 본 schema 의 STRATEGY_REGEX 강제. | 2026-09-15 v1.1.0: E→M 정본을 이 파일 하나로 못 박았다. deprecated_e_codes 에 components(뜻)·exact 를 더하고 E5/E6/E8 을 파이프라인이 실제로 쓰는 번호 체계로 정정했다. ems_strategies.json#default.legacy_mapping.gcs_e_codes 는 이 표의 maps_to 투영(gen_constants.py --all 이 동기화)이고 validate_ssot.check_legacy_code_consistency 가 대조한다.",
   "type": "object",
   "required": [
     "ssot",
@@ -48,79 +48,165 @@
     },
     "deprecated_e_codes": {
       "type": "object",
-      "description": "구 generate_ems_idfs.py (GCS) E0~E13 코드. 2026-05-03 함수명↔구현 drift 정정. 신규 코드 작성 금지. 잔존 데이터 발견 시 정정 PR.",
+      "description": "구 E0~E13 코드 → M-code. **E→M 의 유일한 정본**(ems_strategies.json 의 gcs_e_codes 는 이 표의 생성 투영). 번호 체계 = 2026-05-03 fix_gcs_ems_codes.py 리매핑 이후의 통합 metadata 번호(ems_transformer/scripts/unify_phase_data.py STRATEGY_TO_EMS · reverse/configs/data_spec.yaml e_to_m · RVK build_rvk_metadata.py 가 쓰는 번호). GCS 생성기(generate_ems_idfs.py) 의 원래 번호 뜻은 gcs_generator_codes 에 따로 적는다 — 둘을 한 표에 섞으면 E5·E6·E8 이 틀린다. components = 이 코드가 켜는 M 전략 전부(뜻의 정본). maps_to = 대표 M-code 하나: components 와 같은 전략이 있으면 그것(exact=true), 없으면 components 를 모두 포함하는 가장 작은 M00~M15 전략(exact=false, 과대 표기이니 뜻은 components 로 읽는다). 규칙 검사 = validate_ssot.check_legacy_code_consistency. 신규 코드 작성 금지.",
       "additionalProperties": false,
       "properties": {
         "E0": {
           "maps_to": "M00",
-          "actual_implementation": "Baseline + Night Setback schedule",
+          "components": [
+            "M00"
+          ],
+          "exact": true,
+          "actual_implementation": "Baseline + 야간 Setback 스케줄",
           "drift_note": ""
         },
         "E1": {
           "maps_to": "M06",
-          "actual_implementation": "NightCycle",
+          "components": [
+            "M06"
+          ],
+          "exact": true,
+          "actual_implementation": "NightCycle (AvailabilityManager:NightCycle)",
           "drift_note": ""
         },
         "E2": {
           "maps_to": "M01",
+          "components": [
+            "M01"
+          ],
+          "exact": true,
           "actual_implementation": "ScheduleOpt (OptimalStart + EarlyStop)",
           "drift_note": ""
         },
         "E3": {
           "maps_to": "M02",
-          "actual_implementation": "Economizer",
+          "components": [
+            "M02"
+          ],
+          "exact": true,
+          "actual_implementation": "Economizer (DifferentialEnthalpy)",
           "drift_note": ""
         },
         "E4": {
           "maps_to": "M03",
-          "actual_implementation": "Staging",
+          "components": [
+            "M03"
+          ],
+          "exact": true,
+          "actual_implementation": "Staging (냉동기 대수 제어)",
           "drift_note": ""
         },
         "E5": {
-          "maps_to": "M10",
-          "actual_implementation": "DemandLimiting (전력 피크 제한)",
-          "drift_note": "함수명 apply_e5 는 DCV 의도였으나 실제 구현은 DemandLimiting. metadata 5,999 row 확인 (2026-05-29 migrate dry-run). 실 의미 기준 M10 (DemandResponse) 매핑. NAMING_UNIFICATION §1.2 의 E5=DCV=M07 표현은 'intent' 매핑 (별 컨텍스트). **신규 사용 금지**"
+          "maps_to": "M07",
+          "components": [
+            "M07"
+          ],
+          "exact": true,
+          "actual_implementation": "DCV (CO2 수요제어환기) — Phase C m12",
+          "drift_note": "2026-09-15 정정 M10→M07. metadata_unified.jsonl 의 E5 5,999행은 전부 source=phaseC · npy_dir=PC_*_m12 (unify_phase_data.py:41 m12→E5 DCV), RVK 도 M07→E5 (reverse/scripts/build_rvk_metadata.py:32). 'DemandLimiting' 은 GCS 생성기 apply_e5(generate_ems_idfs.py:876) 의 뜻이고 그 번호의 행은 0건이었다(fix_gcs_ems_codes.py 헤더) — 두 번호 체계를 한 줄에 섞은 오기. ⚠ 2026-05-29 migrate_metadata_e_to_m.py 가 이 5,999행을 M10 으로 옮겼다(재라벨 미처리)."
         },
         "E6": {
-          "maps_to": "M04",
-          "actual_implementation": "PMV 0.5 (apply_pmv 위임)",
-          "drift_note": "함수명 apply_e6 는 HeatRecovery 의도였으나 실제 구현은 PMV 0.5. 2026-05-03 리매핑 완료 (23,228 건 → E7)"
+          "maps_to": "M08",
+          "components": [
+            "M08"
+          ],
+          "exact": true,
+          "actual_implementation": "HeatRecovery (전열교환기 ERV) — Phase C m13",
+          "drift_note": "2026-09-15 정정 M04→M08. E6 6,718행 = source=phaseC · npy_dir=PC_*_m13 (unify_phase_data.py:42 m13→E6). 'PMV 0.5' 는 GCS 생성기 apply_e6 의 뜻이고 그 행 23,228건은 2026-05-03 E7 로 옮겨졌다. ⚠ 2026-05-29 migrate 가 6,718행을 M04 로 옮겼다(재라벨 미처리)."
         },
         "E7": {
           "maps_to": "M04",
+          "components": [
+            "M04"
+          ],
+          "exact": true,
           "actual_implementation": "PMV 0.5",
-          "drift_note": "GCS 와 Local 둘 다 PMV 0.5. ems_simulation 의 m4 도 동일"
+          "drift_note": "Local m4 + GCS 생성기 E6 리매핑분(23,228건)"
         },
         "E8": {
-          "maps_to": "M11",
-          "actual_implementation": "Eco+Staging (E3+E4)",
-          "drift_note": "함수명 apply_e8 는 NightCycle+Eco 의도였으나 실제 구현은 Eco+Staging. 2026-05-03 리매핑 완료 (67,174 건 → E10)"
+          "maps_to": "M14",
+          "components": [
+            "M06",
+            "M02"
+          ],
+          "exact": false,
+          "actual_implementation": "NightCycle + Economizer — Phase B-1 m9",
+          "drift_note": "2026-09-15 정정 M11→components [M06, M02]. E8 6,000행 = source=phase_b1 · npy_dir=B1_*_m9 (unify_phase_data.py:40). 같은 뜻의 M 전략이 없어 maps_to 는 규칙상 최소 상위집합 M14 다 — 과대 표기. 'Economizer + Staging' 은 GCS 생성기 apply_e8 의 뜻(→E10 리매핑). ⚠ 2026-05-29 migrate 가 6,000행을 M11 로 옮겼다(재라벨 미처리)."
         },
         "E9": {
           "maps_to": "M12",
-          "actual_implementation": "Eco+Staging+PMV0.5 (E8+E6)",
-          "drift_note": "함수명 apply_e9 는 NightCycle+Eco+DCV 의도였으나 실제 구현은 Eco+Stg+PMV0.5. 2026-05-03 리매핑 완료 (60,254 건 → E11)"
+          "components": [
+            "M02",
+            "M03",
+            "M04"
+          ],
+          "exact": false,
+          "actual_implementation": "(퇴역) Economizer + Staging + PMV 0.5",
+          "drift_note": "GCS 생성기 apply_e9 번호. 2026-05-03 전량(60,254건) E11 로 옮겨져 지금은 0행 — E11 과 같은 뜻으로 둔다."
         },
         "E10": {
           "maps_to": "M11",
-          "actual_implementation": "Eco+Staging",
-          "drift_note": "≈ M11 (Combined_EMS) 부분집합"
+          "components": [
+            "M02",
+            "M03"
+          ],
+          "exact": false,
+          "actual_implementation": "Economizer + Staging (ems_simulation m6)",
+          "drift_note": "ems_simulation/scripts/generate_idf.py:757 'M6: EMS Full (M2 + M3 복합, M1 제외)'. M11 = M01+M02+M03 이라 정확 일치가 아니다. ⚠ gcp 출처 E10 132,814행 중 E8 리매핑분은 67,174행 — 남는 65,640행은 GCS 생성기 apply_e10(Economizer + Staging + PMV 0.7) 의 원래 번호일 수 있다(미검증)."
         },
         "E11": {
           "maps_to": "M12",
-          "actual_implementation": "Eco+Staging+PMV 0.5",
-          "drift_note": "Combined_PMV05"
+          "components": [
+            "M02",
+            "M03",
+            "M04"
+          ],
+          "exact": false,
+          "actual_implementation": "Economizer + Staging + PMV 0.5 (ems_simulation m7)",
+          "drift_note": "generate_idf.py:772 'M7: EMS Full + PMV 0.5 (M2 + M3 + M4 복합, M1 제외)'."
         },
         "E12": {
           "maps_to": "M05",
+          "components": [
+            "M05"
+          ],
+          "exact": true,
           "actual_implementation": "PMV 0.7",
-          "drift_note": ""
+          "drift_note": "Local m5 + GCS 생성기 E7 리매핑분(20,902건)"
         },
         "E13": {
           "maps_to": "M13",
-          "actual_implementation": "Eco+Staging+PMV 0.7",
-          "drift_note": "Combined_PMV07"
+          "components": [
+            "M02",
+            "M03",
+            "M05"
+          ],
+          "exact": false,
+          "actual_implementation": "Economizer + Staging + PMV 0.7 (ems_simulation m8)",
+          "drift_note": "generate_idf.py:806 'M8: EMS Full + PMV 0.7 (M2 + M3 + M5 복합, M1 제외)'."
         }
+      }
+    },
+    "gcs_generator_codes": {
+      "type": "object",
+      "description": "GCS 생성기(ems_transformer/scripts/generate_ems_idfs.py) 가 붙인 **원래 번호**의 뜻 — 기록 전용, E→M 조회에 쓰지 않는다. 번호는 deprecated_e_codes 와 겹치지만 뜻이 다르다. 2026-05-03 fix_gcs_ems_codes.py 가 metadata 를 remap 대로 옮겼다.",
+      "default": {
+        "meaning": {
+          "E5": "DemandLimiting (generate_ems_idfs.py:876)",
+          "E6": "PMV 0.5 (apply_pmv 위임, :1190)",
+          "E7": "PMV 0.7 (apply_pmv 위임, :1194)",
+          "E8": "Economizer + Staging (:1201)",
+          "E9": "Economizer + Staging + PMV 0.5 (:1213)",
+          "E10": "Economizer + Staging + PMV 0.7 (:1220)",
+          "E11": "Economizer + DemandLimiting (:1227)"
+        },
+        "remap_2026_05_03": {
+          "E6": "E7",
+          "E7": "E12",
+          "E8": "E10",
+          "E9": "E11"
+        },
+        "unresolved": "생성기 E10(PMV 0.7 포함) 은 리매핑 대상이 아니었다. gcp 출처 E10 행이 리매핑분보다 65,640행 많다 — 그 행이 생성기 E10 이면 통합 번호로는 E13 이어야 한다. 원천 GCS 산출물로 확인 전까지 판정 보류."
       }
     },
     "deprecated_s_codes": {
@@ -305,6 +391,18 @@
             "8.simulation/docs/NAMING_UNIFICATION.md",
             "8.simulation/ems_transformer/docs/specs/SPEC_EMS_STRATEGIES.md",
             "8.simulation/ems_transformer/docs/EMS_CODE_MAPPING.md"
+          ]
+        },
+        "e_code_emitters": {
+          "type": "array",
+          "description": "E-code 를 **내보내는** 파이프라인의 선언 위치(워크스페이스 상대). validate_ssot.check_e_code_emitter_coverage 가 labels 의 모든 코드가 deprecated_e_codes 에 있고 mapping 이 components 와 같은지 대조한다(형제 저장소가 없으면 건너뛴다).",
+          "default": [
+            {
+              "path": "8.simulation/reverse/configs/data_spec.yaml",
+              "labels": "ems.e_labels",
+              "mapping": "ems.e_to_m",
+              "emitter": "reverse Module B (/v1/ems/recommend → canvas 순위 카드)"
+            }
           ]
         }
       }
