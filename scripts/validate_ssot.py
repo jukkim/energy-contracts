@@ -673,7 +673,9 @@ def check_e_code_emitter_coverage(schemas_dir: Path | None = None,
     violations, skipped = _legacy_e_codes().emitter_violations(
         workspace_root or WORKSPACE_ROOT, schemas_dir, path_for=path_for)
     for note in skipped:
-        print(f"[SSOT] 못 잼(UNMEASURED): {note}")
+        # 범위 밖(형제 소관)은 대상이 아닌 것이지 못 잰 것이 아니다 — 두 칸을 뭉치지 않는다.
+        kind = "범위 밖(대상 아님)" if "커밋 범위 밖" in note else "못 잼(UNMEASURED)"
+        print(f"[SSOT] {kind}: {note}")
     return violations
 
 
