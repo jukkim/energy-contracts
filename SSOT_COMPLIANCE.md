@@ -34,7 +34,34 @@ canonical 값(아래)은 **`energy-contracts/schemas/*.json` 한 곳에서만** 
 - **EC pre-commit**: `validate_ssot.py` — 폐기 구값 코드 잔재 차단(`--check canonical`) + codegen 입력 스키마 `_usage∈{codegen,hybrid}` 강제.
 - **consumer CI**: `.github/workflows/ssot-drift.yml` — `gen_constants.py --check` 가 EC master 와 drift 시 차단. **신규 consumer 는 이 workflow 추가 의무.**
 - **pre-commit lockstep**: sibling `_generated_constants` SOURCE_HASH 불일치(부분 regen) 차단.
-- `--no-verify` 우회 지양. 불가피하면 사유 명시.
+- `--no-verify` 우회 금지. hook 이 잘못 막으면 **hook 을 고친다**.
+
+### 4.1 커밋 게이트의 범위 = 커밋하는 저장소 (2026-09-15)
+
+| 누가 | 명령 | 범위 |
+|---|---|---|
+| pre-commit hook (EC·소비처·be-3d) | `validate_ssot.py --pre-commit --project-root "$(git rev-parse --show-toplevel)"` + `gen_constants_scoped.py --check --project-root …` | **자기 저장소 소관만** |
+| CI · 센티넬 · 사람 전수 점검 | `validate_ssot.py --check all` · `gen_constants.py --check` (인자 없음) | 등록 소비처 **전부** |
+
+- **왜**: hook 이 범위 없이 `gen_constants.py --check` 를 돌려 형제 체크아웃 하나(8.simulation `_shared`)의
+  drift 가 EC·be-3d·소비처 5곳의 무관한 커밋을 막았다. 막힌 쪽은 고칠 권한이 없으니 `--no-verify` 가
+  상습화됐다. 게이트는 **커밋하는 사람이 고칠 수 있는 것** 만 막아야 지켜진다. 형제의 drift 는 그 형제의
+  커밋·CI 와 전수 점검이 잡는다.
+- **범위 모드가 막는 것**: 자기 생성본 본문 drift·누락 · 자기 SOURCE_HASH ≠ 현재 스키마 · 자기 pin 이
+  lockstep 그룹 최신보다 뒤처짐 · 자기 STRATEGY_CODES ⊄ 자기 pin 태그 enum · 자기 저장소의 E-code emitter.
+  형제의 같은 어긋남은 **경고로 출력만** 한다. 소관 대상이 없는 저장소는 통과(대상 아님).
+  EC 자신의 소관 = `gcs_e_codes` 투영.
+- **저장소 정체 = `git rev-parse --git-common-dir`**. `PROJECT_TARGETS` 는 메인 체크아웃 경로로 등록돼 있고
+  링크드 워크트리의 `--show-toplevel` 은 워크트리 경로다 → 문자열 비교로는 안 맞는다. 같은 저장소면
+  **그 작업 트리 안의 같은 상대 경로**(= 실제로 커밋되는 파일)를 비교한다. 훅이 export 한 `GIT_*` 는 벗긴다.
+- **왜 `gen_constants.py --project-root` 가 아니라 별도 `gen_constants_scoped.py` 인가**: `schemas_hash()` 가
+  gen_constants.py 자기 바이트를 해시에 넣는다(§3). 옵션 하나 추가로 등록 생성본 10개가 전부 drift 가 된다.
+  비교 로직은 gen_constants 의 함수를 import 해 그대로 쓴다.
+- **EC 저장소에서 커밋하면** hook 이 메인 체크아웃이 아니라 **그 작업 트리의** `scripts/` 로 검사한다.
+- **hook 설치·갱신**: 소비처 + EC = `sh scripts/install_ssot_gate.sh` (자기가 쓴 hook 은 매번 새로 씀,
+  남이 쓴 범위 없는 hook 은 `[STALE]` 로 알림 → `--force <repo>`) · be-3d = `sh scripts/install-pre-commit.sh`
+  (정본 `tools/hooks/pre-commit` 복사). `.git/hooks` 손편집 금지.
+- 시험 = `tests/test_scoped_precommit_gate.py` (형제 drift 초록 · 자기 drift 빨강 · 워크트리 · 전수는 여전히 빨강).
 
 ## 5. 값 정정 시 — 맥락 확인 (bulk-edit-verify)
 

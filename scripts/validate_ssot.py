@@ -332,8 +332,27 @@ GENERATED_TARGETS: list[tuple[str, str]] = [
 ]
 
 
-def check_generated_drift() -> list[str]:
+def load_scope(project_root: Path, workspace_root: Path | None = None):
+    """`--project-root` 범위 필터 (2026-09-15). 정의·근거 = scripts/gen_constants_scoped.py.
+
+    ⛔ 커밋 게이트가 **형제 저장소의 상태** 로 커밋을 막으면 막힌 쪽은 고칠 수가 없어
+    `--no-verify` 가 상습화된다(실측: 8.simulation `_shared` 한 곳의 drift 가 be-3d·EC·
+    소비처 5곳 커밋을 막았다). 범위 모드에서는 **커밋하는 저장소가 소유한 것** 만 차단하고
+    형제의 어긋남은 출력만 한다. 인자 없는 전수 모드(CI·센티넬)는 그대로다.
+    """
+    # 일반 import — dataclass 는 sys.modules 에 등록된 모듈이어야 만들어진다
+    # (spec_from_file_location 만 쓰면 AttributeError, 2026-09-15 실측).
+    here = str(Path(__file__).resolve().parent)
+    if here not in sys.path:
+        sys.path.insert(0, here)
+    import gen_constants_scoped  # noqa: PLC0415
+    return gen_constants_scoped.Scope(project_root, workspace_root or WORKSPACE_ROOT)
+
+
+def check_generated_drift(scope=None) -> list[str]:
     """_generated_constants.* 파일의 SOURCE_HASH 헤더 vs 실 schemas hash 비교.
+
+    `scope`(load_scope) 를 주면 그 저장소 소관 대상만, **그 작업 트리 안의 파일** 로 본다.
 
     수동 편집된 파일을 탐지한다. gen_constants.py와 동일 알고리즘.
 
@@ -361,19 +380,27 @@ def check_generated_drift() -> list[str]:
     py_pat = re.compile(r'SOURCE_HASH\s*=\s*"([0-9a-f]{16})"')
     ts_pat = re.compile(r'export const SOURCE_HASH\s*=\s*"([0-9a-f]{16})"')
     skipped: list[str] = []
+    out_of_scope = 0
     for lang, rel in GENERATED_TARGETS:
-        fp = WORKSPACE_ROOT / rel
-        # 형제 repo 자체가 없거나 빈 디렉토리(repo marker 없음)면 CI 단일 repo
-        # 체크아웃으로 간주 → 스킵. 각 형제 repo 자체 pre-commit hook + 자체 CI 가 검증.
-        # 빈 디렉토리 우회 방지(M5): .git/pyproject.toml/package.json 중 하나가 있어야 진짜 repo.
-        sibling_repo_root = WORKSPACE_ROOT / rel.split("/")[0] / rel.split("/")[1]
-        if not sibling_repo_root.exists():
-            skipped.append(rel)
-            continue
-        repo_markers = (".git", "pyproject.toml", "package.json", "Cargo.toml")
-        if not any((sibling_repo_root / m).exists() for m in repo_markers):
-            skipped.append(f"{rel} (빈 디렉토리 — repo marker 없음)")
-            continue
+        if scope is not None:
+            mapped = scope.map(rel)
+            if mapped is None:
+                out_of_scope += 1
+                continue
+            fp = mapped
+        else:
+            fp = WORKSPACE_ROOT / rel
+            # 형제 repo 자체가 없거나 빈 디렉토리(repo marker 없음)면 CI 단일 repo
+            # 체크아웃으로 간주 → 스킵. 각 형제 repo 자체 pre-commit hook + 자체 CI 가 검증.
+            # 빈 디렉토리 우회 방지(M5): .git/pyproject.toml/package.json 중 하나가 있어야 진짜 repo.
+            sibling_repo_root = WORKSPACE_ROOT / rel.split("/")[0] / rel.split("/")[1]
+            if not sibling_repo_root.exists():
+                skipped.append(rel)
+                continue
+            repo_markers = (".git", "pyproject.toml", "package.json", "Cargo.toml")
+            if not any((sibling_repo_root / m).exists() for m in repo_markers):
+                skipped.append(f"{rel} (빈 디렉토리 — repo marker 없음)")
+                continue
         if not fp.exists():
             violations.append(f"{rel}  생성 파일 없음 — `gen_constants.py --all` 실행 필요")
             continue
@@ -396,6 +423,8 @@ def check_generated_drift() -> list[str]:
         print(f"[SSOT] 형제 repo {len(skipped)}건 스킵 (CI 단일 repo 환경 또는 빈 dir):")
         for s in skipped:
             print(f"  - {s}")
+    if out_of_scope:
+        print(f"[SSOT] 생성본 SOURCE_HASH: 형제 저장소 {out_of_scope}건은 커밋 범위 밖 — 여기서 안 봄")
     return violations
 
 
@@ -630,16 +659,23 @@ def check_legacy_code_consistency(schemas_dir: Path | None = None) -> list[str]:
 
 
 def check_e_code_emitter_coverage(schemas_dir: Path | None = None,
-                                  workspace_root: Path | None = None) -> list[str]:
+                                  workspace_root: Path | None = None,
+                                  scope=None) -> list[str]:
     """E-code 를 내보내는 파이프라인(선언 = drift_guard.e_code_emitters)이 정본에 다 있는가.
 
     reverse Module B 는 아직 E-code 를 보낸다(canvas 순위 카드). 그 코드가 정본에 없거나
     그쪽 미러(`data_spec.yaml e_to_m`)가 정본 components 와 다르면 위반. 형제 저장소가
     체크아웃돼 있지 않으면(서버 CI) 건너뛰고 그 사실을 출력한다 — 통과로 세지 않는다.
+
+    `scope`(load_scope) 를 주면 커밋하는 저장소가 소유한 emitter 만 본다(2026-09-15).
     """
-    violations, skipped = _legacy_e_codes().emitter_violations(workspace_root or WORKSPACE_ROOT, schemas_dir)
+    path_for = scope.map if scope is not None else None
+    violations, skipped = _legacy_e_codes().emitter_violations(
+        workspace_root or WORKSPACE_ROOT, schemas_dir, path_for=path_for)
     for note in skipped:
-        print(f"[SSOT] 못 잼(UNMEASURED): {note}")
+        # 범위 밖(형제 소관)은 대상이 아닌 것이지 못 잰 것이 아니다 — 두 칸을 뭉치지 않는다.
+        kind = "범위 밖(대상 아님)" if "커밋 범위 밖" in note else "못 잼(UNMEASURED)"
+        print(f"[SSOT] {kind}: {note}")
     return violations
 
 
@@ -846,7 +882,25 @@ def _git_show_at_tag(tag: str, path: str) -> tuple[str | None, str]:
     return _show()
 
 
-def check_ec_pin_lockstep() -> list[str]:
+def _pin_key(pin: str) -> tuple:
+    """`v0.3.57` → (0, 3, 57). 숫자가 아닌 조각은 -1 (순서 비교만 가능하게)."""
+    return tuple(int(x) if x.isdigit() else -1 for x in re.split(r"[.\-]", pin.lstrip("v")))
+
+
+def _expected_source_hash() -> tuple[str | None, str]:
+    """현재 EC 스키마 기준 SOURCE_HASH 와 실패 사유."""
+    try:
+        import importlib.util
+        spec = importlib.util.spec_from_file_location(
+            "gen_constants", CONTRACTS_ROOT / "scripts" / "gen_constants.py")
+        gen = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(gen)                 # type: ignore[union-attr]
+        return gen.schemas_hash(gen.load_schemas()), ""
+    except Exception as exc:                         # 스키마 손상·import 실패
+        return None, str(exc)
+
+
+def check_ec_pin_lockstep(scope=None) -> list[str]:
     """energy-contracts pin lockstep + 커밋 constants ⊆ pin 태그 enum 가드.
 
     2026-06-17 skew 재발 방지. 세 가지를 커밋 시점에 차단:
@@ -854,14 +908,27 @@ def check_ec_pin_lockstep() -> list[str]:
       2) 커밋된 STRATEGY_CODES ⊆ pin 태그의 control_command enum
          (regen 은 M19/M20 인데 pin 태그 schema 는 M15 상한 = CI-only 실패 유형)
       3) consumer 간 SOURCE_HASH 동일 (부분 regen 방지)
+
+    `scope`(load_scope, 2026-09-15) 를 주면 **커밋하는 저장소의 어긋남만** 차단한다:
+      1') 자기 pin 이 그룹 최신 pin 보다 뒤처지면 위반 — 형제가 뒤처진 것은 경고만
+      2') 자기 STRATEGY_CODES ⊆ 자기 pin 태그 enum
+      3') 자기 SOURCE_HASH == 현재 EC 스키마 해시 — 형제끼리 어긋난 것은 경고만
+    그룹 밖 저장소는 대상이 아니다(통과). 전수(1~3)는 인자 없이 부르는 CI·센티넬 몫이다.
     """
     proj = WORKSPACE_ROOT / "projects"
     pins: dict[str, str] = {}
     hashes: dict[str, str] = {}
+    dirs: dict[str, Path] = {}
+    own: str | None = None
     for name in EC_PIN_CONSUMERS:
         repo = proj / name
+        if scope is not None:
+            mapped = scope.map(f"projects/{name}/pyproject.toml")
+            if mapped is not None:                   # 커밋 중인 작업 트리(워크트리 포함)에서 읽는다
+                repo, own = mapped.parent, name
         if not repo.exists():
             continue
+        dirs[name] = repo
         pin = _ec_pin(repo)
         if pin:
             pins[name] = pin
@@ -872,19 +939,43 @@ def check_ec_pin_lockstep() -> list[str]:
                 hashes[name] = m.group(1)
 
     violations: list[str] = []
+    if scope is not None and own is None:
+        return violations                            # lockstep 그룹 밖 = 대상 아님
     distinct_pins = set(pins.values())
     if len(distinct_pins) > 1:
-        violations.append(
-            f"energy-contracts pin lockstep 위반: {pins} — 전 consumer 동일 태그 필요 "
-            f"(scripts/bump_ec_pin.py 로 일괄 bump)")
+        if scope is None:
+            violations.append(
+                f"energy-contracts pin lockstep 위반: {pins} — 전 consumer 동일 태그 필요 "
+                f"(scripts/bump_ec_pin.py 로 일괄 bump)")
+        else:
+            newest = max(distinct_pins, key=_pin_key)
+            if own in pins and _pin_key(pins[own]) < _pin_key(newest):
+                violations.append(
+                    f"{own}: pin {pins[own]} 가 lockstep 그룹 최신 {newest} 보다 뒤처졌다 {pins} "
+                    f"— scripts/bump_ec_pin.py 로 올릴 것")
+            else:
+                print(f"[SSOT] 경고(차단 안 함): 형제 저장소 pin 이 갈라져 있다 {pins} — 그 저장소 소관")
     distinct_hashes = set(hashes.values())
-    if len(distinct_hashes) > 1:
-        violations.append(
-            f"_generated_constants SOURCE_HASH 불일치(부분 regen): {hashes} — gen_constants.py --all 재실행")
+    if scope is None:
+        if len(distinct_hashes) > 1:
+            violations.append(
+                f"_generated_constants SOURCE_HASH 불일치(부분 regen): {hashes} — gen_constants.py --all 재실행")
+    elif own in hashes:
+        expected, why = _expected_source_hash()
+        if expected is None:
+            violations.append(f"현재 EC 스키마 SOURCE_HASH 계산 실패 — {why}")
+        elif hashes[own] != expected:
+            violations.append(
+                f"{own}: _generated_constants SOURCE_HASH {hashes[own]} != 현재 EC 스키마 {expected} "
+                f"— gen_constants.py --all 재실행")
+        elif len(distinct_hashes) > 1:
+            print(f"[SSOT] 경고(차단 안 함): 형제 저장소 SOURCE_HASH 가 뒤처졌다 {hashes} — 그 저장소 소관")
 
-    # pin 태그 enum 커버리지 (단일 pin 일 때만)
-    if len(distinct_pins) == 1:
-        pin = next(iter(distinct_pins))
+    # pin 태그 enum 커버리지 — 전수 모드는 단일 pin 일 때만, 범위 모드는 자기 pin 으로 자기 것만
+    coverage_pin = (pins.get(own) if scope is not None
+                    else (next(iter(distinct_pins)) if len(distinct_pins) == 1 else None))
+    if coverage_pin:
+        pin = coverage_pin
         enum: set[str] | None = None
         # 태그 미존재 시 self-heal(targeted fetch). 오프라인·태그 부재면 None → soft-skip.
         blob, why = _git_show_at_tag(pin, "energy_contracts/schemas/control_command.json")
@@ -900,8 +991,8 @@ def check_ec_pin_lockstep() -> list[str]:
             except Exception:
                 violations.append(f"pin 태그 {pin} control_command.json 파싱 실패 (커버리지 검증 skip)")
         if enum:
-            for name in EC_PIN_CONSUMERS:
-                gc = _gen_const_file(proj / name)
+            for name in ((own,) if scope is not None else EC_PIN_CONSUMERS):
+                gc = _gen_const_file(dirs.get(name, proj / name))
                 if not gc:
                     continue
                 m = re.search(r"STRATEGY_CODES[^=]*=\s*\[(.*?)\]",
@@ -939,20 +1030,28 @@ def _load_mirror_verifier():
     return mod
 
 
-def check_local_mirror_drift() -> list[str]:
+def check_local_mirror_drift(scope=None) -> list[str]:
     """커밋 대상 repo 의 CLAUDE.md mirror 헤더가 요구 키워드(BASE + REVERSE 거점이면 REVERSE)를
     보유하는지 로컬 검증 (P3). 2026-06-17 be-3d 가 REVERSE 5/8 → ratio 0.89 로 ai-champion CI
     에서만 터지던 drift 를 push 전에 차단. 키워드 SSOT = ai-champion verifier (복제 없음).
+
+    ⚠ 저장소 이름은 **작업 트리 폴더 이름이 아니다** (2026-09-15). 링크드 워크트리
+    (`wt_building-energy-3d_x`)에서 커밋하면 폴더 이름으로는 REVERSE 거점 판정이 빗나간다 →
+    scope 가 있으면 git common dir 의 부모(메인 체크아웃) 이름을 쓴다.
     """
     mod = _load_mirror_verifier()
     if mod is None:
         return []  # verifier 미존재 — soft-skip (CI ai-champion 게이트가 authoritative)
-    try:
-        repo_root = Path(subprocess.check_output(
-            ["git", "rev-parse", "--show-toplevel"], text=True, encoding="utf-8").strip())
-    except Exception:
-        return []
-    repo_name = repo_root.name
+    if scope is not None and scope.repo is not None:
+        repo_root = scope.repo.toplevel
+        repo_name = scope.repo.common_path.parent.name
+    else:
+        try:
+            repo_root = Path(subprocess.check_output(
+                ["git", "rev-parse", "--show-toplevel"], text=True, encoding="utf-8").strip())
+        except Exception:
+            return []
+        repo_name = repo_root.name
     fp = repo_root / "CLAUDE.md"
     if not fp.exists():
         return []
@@ -974,12 +1073,17 @@ def check_local_mirror_drift() -> list[str]:
 
 # ── 변경 파일 (pre-commit) ───────────────────────────────────────────────────
 
-def changed_files() -> list[Path]:
-    """git diff --cached --name-only 결과. CWD = pre-commit이 실행된 git repo 루트."""
+def changed_files(project_root: Path | None = None) -> list[Path]:
+    """git diff --cached --name-only 결과. 루트 = `project_root`(주면) 또는 CWD 의 git repo 루트.
+
+    ⚠ GIT_* 는 벗기지 않는다 — 여기서 보는 것은 **커밋 중인 바로 그 저장소** 이고, 부분 커밋
+    (`git commit <paths>`)은 GIT_INDEX_FILE 로 임시 인덱스를 가리킨다.
+    """
     try:
         # 현재 작업 디렉토리의 git repo 루트를 찾음
         repo_root = Path(subprocess.check_output(
             ["git", "rev-parse", "--show-toplevel"],
+            cwd=str(project_root) if project_root else None,
             text=True, encoding="utf-8").strip())
         out = subprocess.check_output(
             ["git", "diff", "--cached", "--name-only"],
@@ -1007,13 +1111,23 @@ def main() -> int:
                     default="all")
     ap.add_argument("--pre-commit", action="store_true",
                     help="git diff --cached 대상만 검사")
+    ap.add_argument("--project-root", type=Path, default=None,
+                    help="커밋하는 저장소 작업 트리 루트. 주면 생성본·lockstep·emitter·mirror 검사를 "
+                         "그 저장소 소관으로 좁힌다(형제 drift 로 막지 않음). pre-commit hook 전용")
     ap.add_argument("paths", nargs="*", help="검사할 경로 (기본: 워크스페이스 주요 프로젝트)")
     args = ap.parse_args()
+
+    scope = None
+    if args.project_root is not None:
+        if not args.project_root.is_dir():
+            print(f"[SSOT] --project-root 가 디렉토리가 아니다: {args.project_root}")
+            return 2
+        scope = load_scope(args.project_root)
 
     if args.paths:
         paths = [Path(p).resolve() for p in args.paths]
     elif args.pre_commit:
-        paths = changed_files()
+        paths = changed_files(args.project_root)
         if not paths:
             print("[SSOT] 변경 파일 없음, 통과")
             return 0
@@ -1073,10 +1187,10 @@ def main() -> int:
         v += check_objective_dispatch_sync()       # R18 Item 1·3 — ObjectiveType↔DispatchSource lock-step
         v += check_index_completeness()            # 사냥꾼 LOW — _index.yaml 전수 등재
         v += check_legacy_code_consistency()       # Deferred D-2 (M7) — E→M 정본 하나 + 투영 (2026-09-15 재작성)
-        v += check_e_code_emitter_coverage()       # 2026-09-15 — 파이프라인이 내보내는 E-code 전부 정본에 있는가
+        v += check_e_code_emitter_coverage(scope=scope)  # 2026-09-15 — 파이프라인이 내보내는 E-code 전부 정본에 있는가
         v += check_hvac_display_names()            # 2026-09-15 — 공조 방식 이름 정본 하나 + 매트릭스 행 대응
         v += check_mirror_core_keywords()          # Deferred D-3 — 20 BASE CORE_KEYWORDS 로컬 검증
-        v += check_local_mirror_drift()            # P3 (2026-06-17) — 커밋 repo CLAUDE.md REVERSE 키워드 로컬 가드
+        v += check_local_mirror_drift(scope)       # P3 (2026-06-17) — 커밋 repo CLAUDE.md REVERSE 키워드 로컬 가드
         if v:
             failed = True
             total_violations += len(v)
@@ -1085,8 +1199,8 @@ def main() -> int:
                 print(f"  {line}")
 
     if args.check in ("generated", "all"):
-        v = check_generated_drift()
-        v += check_ec_pin_lockstep()               # P1 (2026-06-17) — EC pin↔regen skew 차단
+        v = check_generated_drift(scope)
+        v += check_ec_pin_lockstep(scope)          # P1 (2026-06-17) — EC pin↔regen skew 차단
         if v:
             failed = True
             total_violations += len(v)

@@ -125,8 +125,14 @@ def rule_violations(schemas_dir: Path | None = None) -> list[str]:
     return out
 
 
-def emitter_violations(workspace_root: Path, schemas_dir: Path | None = None) -> tuple[list[str], list[str]]:
-    """(위반, 건너뜀 안내). E-code 를 내보내는 파이프라인 선언이 정본에 다 있는가."""
+def emitter_violations(workspace_root: Path, schemas_dir: Path | None = None,
+                       path_for=None) -> tuple[list[str], list[str]]:
+    """(위반, 건너뜀 안내). E-code 를 내보내는 파이프라인 선언이 정본에 다 있는가.
+
+    `path_for(rel) -> Path | None` 을 주면 선언 경로를 그 함수로 푼다. None 을 돌려주면
+    **커밋 범위 밖**(형제 저장소 소관)이라 건너뛴다 — pre-commit 을 형제 drift 로 막지 않기
+    위해서다(2026-09-15). 전수 검사는 path_for 없이 부른다.
+    """
     try:
         table = canonical_e_codes(schemas_dir)
         emitters = _load("legacy_ems_code_mapping.json", schemas_dir)[
@@ -140,7 +146,10 @@ def emitter_violations(workspace_root: Path, schemas_dir: Path | None = None) ->
     out: list[str] = []
     skipped: list[str] = []
     for em in emitters:
-        path = workspace_root / em["path"]
+        path = path_for(em["path"]) if path_for else workspace_root / em["path"]
+        if path is None:
+            skipped.append(f"{em['path']} — 커밋 범위 밖(형제 저장소 소관), 여기서 안 봄")
+            continue
         if not path.exists():
             skipped.append(f"{em['path']} 없음 — emitter 검사 건너뜀(형제 저장소 미체크아웃)")
             continue
