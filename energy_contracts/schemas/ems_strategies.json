@@ -11,7 +11,7 @@
     "agentleague",
     "eduarena"
   ],
-  "version": "3.1",
+  "version": "3.2",
   "$defs": {
     "StrategyCode": {
       "type": "string",
@@ -261,7 +261,8 @@
           "type": "object"
         },
         "gcs_e_codes": {
-          "type": "object"
+          "type": "object",
+          "description": "GENERATED — 손편집 금지. legacy_ems_code_mapping.json#deprecated_e_codes[*].maps_to 의 투영이다(scripts/legacy_e_codes.py, gen_constants.py --all 이 동기화). 뜻(다중 M)은 그 표의 components 를 읽는다."
         },
         "ems_transformer_sc": {
           "type": "object"
@@ -528,12 +529,15 @@
         "E2": "M01",
         "E3": "M02",
         "E4": "M03",
-        "E6": "M04",
+        "E5": "M07",
+        "E6": "M08",
         "E7": "M04",
-        "E8": "M11",
+        "E8": "M14",
         "E9": "M12",
         "E10": "M11",
-        "E11": "M12"
+        "E11": "M12",
+        "E12": "M05",
+        "E13": "M13"
       },
       "ems_transformer_sc": {
         "S1": "M03",

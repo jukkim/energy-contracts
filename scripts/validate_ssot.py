@@ -195,9 +195,17 @@ def _exempt_key(fp: Path, root: Path) -> str:
 
     `/scratch/` 같은 면제는 *"저장소 안의 scratch 폴더"* 를 뜻하지 *"경로 아무 데나
     scratch 라는 글자"* 를 뜻하지 않는다. 그래서 루트 기준 상대경로로 판정한다.
+
+    ⚠ **루트가 파일이면 저장소 루트 기준으로 판정한다** (2026-09-15). `--pre-commit` 은
+    스테이징된 파일 하나하나를 루트로 넘기는데, 파일을 자기 자신 기준으로 풀면 `"/."` 가
+    되어 **파일 이름 면제가 하나도 안 먹었다** — SSOT 자체(`ems_strategies.json` 의
+    ems_simulation 구 코드 표)를 고치는 커밋이 전부 막혔다.
     """
+    base = root
+    if root.is_file():
+        base = next((p for p in root.parents if (p / ".git").exists()), root.parent)
     try:
-        rel = fp.relative_to(root)
+        rel = fp.relative_to(base)
     except ValueError:
         rel = fp
     return "/" + str(rel).replace("\\", "/")
@@ -595,33 +603,92 @@ def check_codegen_input_usage() -> list[str]:
     return violations
 
 
-def check_legacy_code_consistency() -> list[str]:
-    """legacy E-code 교차 정합 가드 (Deferred D-2, 사냥꾼 M7).
+def _legacy_e_codes():
+    """scripts/legacy_e_codes.py — importlib 로 이 파일만 로드하는 시험에서도 찾게 경로를 보탠다."""
+    here = str(Path(__file__).resolve().parent)
+    if here not in sys.path:
+        sys.path.insert(0, here)
+    import legacy_e_codes  # noqa: PLC0415
+    return legacy_e_codes
 
-    `ems_strategies.json#default.legacy_mapping.gcs_e_codes` 와 전용 drift-guard SSOT
-    `legacy_ems_code_mapping.json#deprecated_e_codes[*].maps_to` 가 같은 E-code 에서
-    동일 M-code 를 가리켜야 한다. 정본은 legacy_ems_code_mapping.json (drift_note 근거 보유).
-    두 파일에 공통 존재하는 E-code 만 비교한다(부분집합 허용).
+
+def check_legacy_code_consistency(schemas_dir: Path | None = None) -> list[str]:
+    """E→M 정본 하나 + 그 투영 가드 (Deferred D-2 재작성, 2026-09-15).
+
+    ⛔ **이전 판은 한 번도 비교하지 않았다.** `legacy.get("deprecated_e_codes")` 는 없는
+    경로(실제는 `properties` 아래)라 빈 dict 였고, "정본에 없는 E-code 는 비교 대상 아님"
+    이라 모든 코드를 건너뛰었다. 그 사이 두 표는 E5·E12·E13 유무부터 갈라졌다.
+
+    지금 검사:
+      1. 정본(`legacy_ems_code_mapping.json#deprecated_e_codes`)을 못 읽거나 비면 **위반**.
+      2. 각 코드의 `components` 가 StrategyCode 안이고, `maps_to`/`exact` 가 규칙
+         (같은 전략 → 그것, 없으면 최소 상위집합)을 따르는가.
+      3. `ems_strategies.json#default.legacy_mapping.gcs_e_codes` 가 정본 `maps_to` 투영과
+         **키 집합까지** 같은가(부분집합 허용 안 함).
     """
+    return _legacy_e_codes().rule_violations(schemas_dir)
+
+
+def check_e_code_emitter_coverage(schemas_dir: Path | None = None,
+                                  workspace_root: Path | None = None) -> list[str]:
+    """E-code 를 내보내는 파이프라인(선언 = drift_guard.e_code_emitters)이 정본에 다 있는가.
+
+    reverse Module B 는 아직 E-code 를 보낸다(canvas 순위 카드). 그 코드가 정본에 없거나
+    그쪽 미러(`data_spec.yaml e_to_m`)가 정본 components 와 다르면 위반. 형제 저장소가
+    체크아웃돼 있지 않으면(서버 CI) 건너뛰고 그 사실을 출력한다 — 통과로 세지 않는다.
+    """
+    violations, skipped = _legacy_e_codes().emitter_violations(workspace_root or WORKSPACE_ROOT, schemas_dir)
+    for note in skipped:
+        print(f"[SSOT] 못 잼(UNMEASURED): {note}")
+    return violations
+
+
+def check_hvac_display_names(schemas_dir: Path | None = None) -> list[str]:
+    """공조 방식 이름의 정본 하나 가드 (2026-09-15).
+
+    정본 = `region_codes.json#default.hvac_types[*].name_kr`. 소비처가 제각각 이름을 들고
+    있었다(H_B 를 "중앙식 FCU" 로 부르는 표, A 를 "팬코일+냉동기" 로 부르는 화면,
+    HG 를 "gas-fired boiler + radiator" 로 적은 매트릭스 — 셋 다 IDF 실측과 다르다).
+
+    검사:
+      1. 모든 코드에 name_kr 가 있고, 표기(코드·aliases·sim_id)가 한 코드만 가리킨다.
+      2. `hvac_ems_matrix.json` 의 모든 행이 hvac_types 에 정본 코드로 선언돼 있고,
+         그 행 키를 별칭으로 풀면 선언한 코드와 같다(D→H_D, HG→H_G …).
+    """
+    sd = schemas_dir or SCHEMAS_DIR
     try:
-        ems = json.loads((SCHEMAS_DIR / "ems_strategies.json").read_text(encoding="utf-8"))
-        legacy = json.loads(
-            (SCHEMAS_DIR / "legacy_ems_code_mapping.json").read_text(encoding="utf-8"))
-    except Exception as e:
-        return [f"legacy code 정합 검사 로드 실패: {e}"]
-    gcs = ems.get("default", {}).get("legacy_mapping", {}).get("gcs_e_codes", {})
-    authoritative = legacy.get("deprecated_e_codes", {})
+        region = json.loads((sd / "region_codes.json").read_text(encoding="utf-8"))
+        matrix = json.loads((sd / "hvac_ems_matrix.json").read_text(encoding="utf-8"))
+        types = region["default"]["hvac_types"]
+        declared = matrix["properties"]["hvac_types"]["properties"]
+        rows = matrix["properties"]["matrix"]["properties"]
+    except (OSError, KeyError, TypeError, ValueError) as exc:
+        return [f"HVAC 이름 정본 로드 실패 — {exc}"]
     violations: list[str] = []
-    for ecode, mcode in sorted(gcs.items()):
-        auth_entry = authoritative.get(ecode)
-        if not isinstance(auth_entry, dict):
-            continue  # 정본에 없는 E-code 는 비교 대상 아님
-        auth_m = auth_entry.get("maps_to")
-        if auth_m is not None and mcode != auth_m:
-            violations.append(
-                f"ems_strategies gcs_e_codes[{ecode}]={mcode} != "
-                f"legacy_ems_code_mapping.deprecated_e_codes[{ecode}].maps_to={auth_m} "
-                f"(정본=legacy_ems_code_mapping.json)")
+    if not types:
+        violations.append("region_codes.json#default.hvac_types 가 비어 있다")
+    owner: dict[str, str] = {}
+    for code, meta in types.items():
+        name = meta.get("name_kr") if isinstance(meta, dict) else None
+        if not isinstance(name, str) or not name.strip():
+            violations.append(f"region_codes hvac_types[{code}].name_kr 가 비었다")
+            continue
+        aliases = meta.get("aliases") or []
+        if meta.get("sim_id") not in aliases:
+            violations.append(f"region_codes hvac_types[{code}].sim_id={meta.get('sim_id')!r} 가 aliases 에 없다")
+        for alias in [code, *aliases]:
+            if owner.get(alias, code) != code:
+                violations.append(f"HVAC 표기 {alias!r} 가 {owner[alias]} 와 {code} 를 동시에 가리킨다")
+            owner.setdefault(alias, code)
+    for row in rows:
+        if row not in declared:
+            violations.append(f"hvac_ems_matrix 행 {row!r} 에 정본 코드 선언(hvac_types)이 없다")
+    for row, node in declared.items():
+        target = node.get("const") if isinstance(node, dict) else None
+        if target not in types:
+            violations.append(f"hvac_ems_matrix hvac_types[{row}]={target!r} 는 region_codes 정본 코드가 아니다")
+        elif owner.get(row) != target:
+            violations.append(f"hvac_ems_matrix 행 {row!r} 는 표기상 {owner.get(row)!r} 인데 {target!r} 를 가리킨다")
     return violations
 
 
@@ -1005,7 +1072,9 @@ def main() -> int:
         v += check_strategy_pattern_consistency()  # 사냥꾼 M6
         v += check_objective_dispatch_sync()       # R18 Item 1·3 — ObjectiveType↔DispatchSource lock-step
         v += check_index_completeness()            # 사냥꾼 LOW — _index.yaml 전수 등재
-        v += check_legacy_code_consistency()       # Deferred D-2 (M7) — E-code 교차 정합
+        v += check_legacy_code_consistency()       # Deferred D-2 (M7) — E→M 정본 하나 + 투영 (2026-09-15 재작성)
+        v += check_e_code_emitter_coverage()       # 2026-09-15 — 파이프라인이 내보내는 E-code 전부 정본에 있는가
+        v += check_hvac_display_names()            # 2026-09-15 — 공조 방식 이름 정본 하나 + 매트릭스 행 대응
         v += check_mirror_core_keywords()          # Deferred D-3 — 20 BASE CORE_KEYWORDS 로컬 검증
         v += check_local_mirror_drift()            # P3 (2026-06-17) — 커밋 repo CLAUDE.md REVERSE 키워드 로컬 가드
         if v:
