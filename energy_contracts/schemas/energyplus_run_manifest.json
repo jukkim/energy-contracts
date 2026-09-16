@@ -1,7 +1,7 @@
 {
   "$schema":"https://json-schema.org/draft/2020-12/schema","$id":"energy-contracts/energyplus_run_manifest.json","title":"EnergyPlusRunManifest",
   "description":"표준 HVAC 가설 하나의 불변 EnergyPlus 설정온도 실행 묶음. 실측·현장 적용·M&V 증거가 아니다.",
-  "_usage":"runtime-validate","_consumers":["airos-energy-decision","ems-transformer","mpc-model"],"version":"1.0",
+  "_usage":"runtime-validate","_consumers":["airos-energy-decision","ems-transformer","mpc-model"],"version":"1.1",
   "type":"object","additionalProperties":false,
   "required":["schema_version","manifest_id","created_at","producer","evidence_state","building_archetype","hvac_hypothesis","weather","period","runs"],
   "properties":{
@@ -18,10 +18,21 @@
   },
   "$defs":{
     "Sha256":{"type":"string","pattern":"^sha256:[a-f0-9]{64}$"},
+    "ComfortExtremum":{"type":"object","additionalProperties":false,"required":["zone","hour_index","ta_c","tr_c","rh_pct"],
+      "description":"극값이 실제로 발생한 지점. 어느 존이 극값을 몰았는지 알아야 그 이탈이 비공조 존 때문인지(not_applicable) 실제 결과인지(missing) 갈린다.",
+      "properties":{"zone":{"type":"string","minLength":1},"hour_index":{"type":"integer","minimum":0},"ta_c":{"type":"number"},"tr_c":{"type":"number"},"rh_pct":{"type":"number","minimum":0,"maximum":100}}},
     "Run":{"type":"object","additionalProperties":false,"required":["run_id","cooling_setpoint_c","role","status","energyplus_version","input_idf_sha256","result_sha256","severe_count","annual_energy_kwh","comfort"],
       "properties":{"run_id":{"type":"string","minLength":1},"cooling_setpoint_c":{"type":"number","enum":[24,25,26]},"role":{"type":"string","enum":["baseline","counterfactual"]},"status":{"const":"verified"},"energyplus_version":{"type":"string","minLength":1},"input_idf_sha256":{"$ref":"#/$defs/Sha256"},"result_sha256":{"$ref":"#/$defs/Sha256"},"severe_count":{"const":0},
         "annual_energy_kwh":{"type":"object","additionalProperties":false,"required":["electricity","natural_gas","district_heating","district_cooling","facility_total"],"properties":{"electricity":{"type":"number","minimum":0},"natural_gas":{"type":"number","minimum":0},"district_heating":{"type":"number","minimum":0},"district_cooling":{"type":"number","minimum":0},"facility_total":{"type":"number","minimum":0}}},
-        "comfort":{"type":"object","additionalProperties":false,"required":["method","warm_limit","cold_limit","pmv_warmest","pmv_coldest"],"properties":{"method":{"type":"string","minLength":1},"warm_limit":{"type":"number","minimum":0},"cold_limit":{"type":"number","maximum":0},"pmv_warmest":{"type":"number"},"pmv_coldest":{"type":"number"}}}
+        "comfort":{"type":"object","additionalProperties":false,"required":["method","warm_limit","cold_limit","pmv_warmest","pmv_coldest"],
+          "description":"PMV 는 계산 규칙에 따라 달라지므로 값만으로는 재현되지 않는다. 아래 선택 항목은 그 계산이 어느 존 집합에 무슨 코드로 적용됐는지를 값과 함께 싣는다. 옛 번들에는 없으므로 required 에 넣지 않는다.",
+          "properties":{"method":{"type":"string","minLength":1},"warm_limit":{"type":"number","minimum":0},"cold_limit":{"type":"number","maximum":0},"pmv_warmest":{"type":"number"},"pmv_coldest":{"type":"number"},
+            "zone_selection":{"type":"string","minLength":1,"description":"존을 고른 규칙. 예: idf_zonehvac_equipmentconnections"},
+            "conditioned_zone_count":{"type":"integer","minimum":0},"reported_zone_count":{"type":"integer","minimum":0},
+            "occupied_zone_hours":{"type":"number","minimum":0},
+            "postprocess_code_sha256":{"$ref":"#/$defs/Sha256","description":"후처리 코드의 해시. 입력 해시가 같아도 계산 규칙이 바뀌면 PMV 가 달라지므로 이것이 없으면 그 변경이 드러나지 않는다."},
+            "warmest_at":{"$ref":"#/$defs/ComfortExtremum"},"coldest_at":{"$ref":"#/$defs/ComfortExtremum"},
+            "zones_used":{"type":"array","items":{"type":"string","minLength":1}},"zones_excluded":{"type":"array","items":{"type":"string","minLength":1}}}}
       },"allOf":[{"if":{"properties":{"cooling_setpoint_c":{"const":24}}},"then":{"properties":{"role":{"const":"baseline"}}}},{"if":{"properties":{"cooling_setpoint_c":{"enum":[25,26]}}},"then":{"properties":{"role":{"const":"counterfactual"}}}}]
     }
   }

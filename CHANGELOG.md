@@ -4,6 +4,25 @@
 
 ---
 
+## 0.3.58 (2026-09-16)
+
+> 릴리스 사유: **PMV 는 값만으로 재현되지 않는다.** 입력 해시가 같아도 후처리 규칙이 바뀌면 값이 달라지는데,
+> 매니페스트에 그 계보가 없었다. 실측 사건 — 표준 E+ 63 run 중 45가 ISO ±3 척도 밖이었고, 원인은 계산기가 아니라
+> **존 선택**이었다(비공조 세탁실이 Ta 90.26 ℃ 로 자유부동해 `pmv_warmest 25.9546` 을 냈다). 어느 존이 극값을
+> 몰았는지가 자료에 없어 소비처가 replay 로 되짚어야 했고, 그래서 귀속이 매니페스트가 아니라 재현 코드를 믿고 있었다.
+
+- `energyplus_run_manifest.json` v1.0 → **v1.1** (가산): `$defs/Run/properties/comfort` 에 **선택** 항목 9개 —
+  `zone_selection`(존을 고른 규칙) · `conditioned_zone_count` · `reported_zone_count` · `occupied_zone_hours` ·
+  `postprocess_code_sha256`(후처리 코드 해시 — 이것이 없으면 규칙 변경이 해시로 드러나지 않는다) ·
+  `warmest_at` · `coldest_at` · `zones_used` · `zones_excluded`.
+  `$defs/ComfortExtremum` 신설(`zone`·`hour_index`·`ta_c`·`tr_c`·`rh_pct`) — 극값이 **어디서** 났는지가 있어야
+  그 이탈이 비공조 존 탓인지(`not_applicable`) 실제 결과인지(`missing`) 갈린다.
+- `required` 5필드와 `additionalProperties:false` 는 **유지**. 옛 번들은 그대로 통과하고, 스키마에 없는 필드는 계속 거부된다 —
+  그 거부가 실제로 작동해 airos `sync_standard_eplus_bundle.py` 가 새 필드를 실은 번들을 막았고, 그래서 이 릴리스가 생겼다.
+  생산자 = ems-transformer, 소비자 = airos-energy-decision(동기화·게이트)·mpc-model.
+
+---
+
 ## 0.3.57 (2026-09-15)
 
 > 릴리스 사유: 이름 정본 두 건 — **E→M 표가 두 벌**이었고 **공조 방식 이름이 소비처마다 달랐다.**
