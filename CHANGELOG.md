@@ -4,6 +4,38 @@
 
 ---
 
+## 0.3.61 (2026-09-16)
+
+> 릴리스 사유: **요일이 결과를 좌우하는 입력이 됐는데 계보에 없었다.** 후처리가 주 시작 요일을
+> 0(월)로 가정했으나 `eplusout.eio` 는 화요일을 기록한다 — 재실 마스크가 하루 통째로 밀렸고,
+> 63 run 중 **50 run** 의 PMV 가 움직였다(warm 35 · cold 31 · 양쪽 16). 에너지와
+> `period_hours` 는 **0 run** 이 움직였다. 값이 바뀐 이유를 사후에 설명할 수단이 없었다.
+
+- `energyplus_run_manifest.json` v1.3 → **v1.4** (가산):
+  - `$defs/Run/properties/comfort` 에 **선택** 항목 `start_dow_used`(0..6, 0=월)와
+    `start_dow_source`. 요일은 재실 마스크에만 쓰이고 에너지에는 쓰이지 않으므로 comfort 의
+    인자다.
+  - `$defs/Run` 에 **선택** 항목 `eio_sha256`. `start_dow_used` 의 출처 파일이므로
+    `input_idf_sha256`·`result_sha256` 과 같은 층이다.
+- `required` 와 `additionalProperties:false` 는 **유지** — 옛 번들이 그대로 통과한다.
+- ⚠ `start_dow_source` 는 **선언이다.** 생산자가 실제로 그 자리에서 읽었는지를 이 필드가
+  증명하지는 않는다. 출처가 하나뿐인 동안은 무해하나 둘 이상이 되면 측정으로 바꿔야 한다.
+  (생산자가 먼저 이 한계를 밝혔고, 그대로 스키마 description 에 적었다.)
+
+### 생성본이 세 세대 동안 낡아 있었다
+
+`_pydantic_models/energyplus_run_manifest.py` 에 **속성 20 개가 빠져 있었다** — v1.1 의 존
+증거, v1.2 의 `clo`/`met`/extremum, v1.3 의 `period_hours` 가 전부. 그 세 PR 모두 스키마와
+CHANGELOG 만 고쳤고, **재생성을 부르는 단계가 체인 어디에도 없다.** 스키마를 읽는 쪽은 맞고
+모델을 import 하는 쪽은 틀린 채로 세 세대가 지났다.
+
+- 이 스키마의 모델을 재생성해 커밋했다(다른 모델은 헤더의 임시 파일명만 바뀌어 되돌렸다).
+- `tests/test_generated_models_track_their_schemas.py` — 스키마가 선언한 모든 속성이 생성본에
+  나타나야 한다. 78 개 스키마 전수. 재생성하지는 않는다(codegen 은 느리고 헤더가 매번 달라진다);
+  **필드가 통째로 빠지는** 이 사고의 모양만 잡는다.
+
+---
+
 ## 0.3.60 (2026-09-16)
 
 > 릴리스 사유: **`period: "annual"` 은 선언이고 아무도 재지 않았다.** 설계일 2일(48h)이 앞에 붙은

@@ -1,7 +1,7 @@
 {
   "$schema":"https://json-schema.org/draft/2020-12/schema","$id":"energy-contracts/energyplus_run_manifest.json","title":"EnergyPlusRunManifest",
   "description":"표준 HVAC 가설 하나의 불변 EnergyPlus 설정온도 실행 묶음. 실측·현장 적용·M&V 증거가 아니다.",
-  "_usage":"runtime-validate","_consumers":["airos-energy-decision","ems-transformer","mpc-model"],"version":"1.3",
+  "_usage":"runtime-validate","_consumers":["airos-energy-decision","ems-transformer","mpc-model"],"version":"1.4",
   "type":"object","additionalProperties":false,
   "required":["schema_version","manifest_id","created_at","producer","evidence_state","building_archetype","hvac_hypothesis","weather","period","runs"],
   "properties":{
@@ -26,6 +26,7 @@
         "air_velocity_m_s":{"type":"number","minimum":0}}},
     "Run":{"type":"object","additionalProperties":false,"required":["run_id","cooling_setpoint_c","role","status","energyplus_version","input_idf_sha256","result_sha256","severe_count","annual_energy_kwh","comfort"],
       "properties":{"run_id":{"type":"string","minLength":1},"cooling_setpoint_c":{"type":"number","enum":[24,25,26]},"role":{"type":"string","enum":["baseline","counterfactual"]},"status":{"const":"verified"},"energyplus_version":{"type":"string","minLength":1},"input_idf_sha256":{"$ref":"#/$defs/Sha256"},"result_sha256":{"$ref":"#/$defs/Sha256"},"severe_count":{"const":0},
+        "eio_sha256":{"$ref":"#/$defs/Sha256","description":"이 run 의 eplusout.eio 해시. start_dow_used 가 여기서 나오므로, 요일이 결과를 좌우하는 입력이 된 이상 그 출처 파일도 input_idf_sha256·result_sha256 과 같은 층에서 계보에 묶여야 한다. 옛 번들에는 없으므로 required 가 아니다."},
         "period_hours":{"type":"integer","minimum":1,"description":"결과 창의 실제 길이(시간). period 는 선언이고 이것은 측정이다 — 설계일이 앞에 붙은 CSV 를 전 행 합산하면 총계가 부풀지만 성분 합=총계가 유지돼 정합성 검사도 단조성도 통과한다(2026-09-16 B02 3셀, 0.60~0.82% 오염). 남는 유일한 구분점이 창 길이다. 옛 번들에는 없으므로 required 가 아니다."},
         "annual_energy_kwh":{"type":"object","additionalProperties":false,"required":["electricity","natural_gas","district_heating","district_cooling","facility_total"],"properties":{"electricity":{"type":"number","minimum":0},"natural_gas":{"type":"number","minimum":0},"district_heating":{"type":"number","minimum":0},"district_cooling":{"type":"number","minimum":0},"facility_total":{"type":"number","minimum":0}}},
         "comfort":{"type":"object","additionalProperties":false,"required":["method","warm_limit","cold_limit","pmv_warmest","pmv_coldest"],
@@ -36,7 +37,9 @@
             "occupied_zone_hours":{"type":"number","minimum":0},
             "postprocess_code_sha256":{"$ref":"#/$defs/Sha256","description":"후처리 코드의 해시. 입력 해시가 같아도 계산 규칙이 바뀌면 PMV 가 달라지므로 이것이 없으면 그 변경이 드러나지 않는다."},
             "warmest_at":{"$ref":"#/$defs/ComfortExtremum"},"coldest_at":{"$ref":"#/$defs/ComfortExtremum"},
-            "zones_used":{"type":"array","items":{"type":"string","minLength":1}},"zones_excluded":{"type":"array","items":{"type":"string","minLength":1}}}}
+            "zones_used":{"type":"array","items":{"type":"string","minLength":1}},"zones_excluded":{"type":"array","items":{"type":"string","minLength":1}},
+            "start_dow_used":{"type":"integer","minimum":0,"maximum":6,"description":"재실 마스크가 실제로 쓴 주 시작 요일. 0=월 .. 6=일. 요일은 재실 창에만 쓰이고 에너지에는 쓰이지 않으므로 comfort 의 인자다. 2026-09-16: 후처리가 0(월)을 가정했으나 RunPeriod 는 화요일이어서 마스크가 하루 밀렸고, 63 run 중 50 run 의 PMV 가 움직였다(에너지·period_hours 는 0). 값을 좌우하는 인자가 계보에 없으면 그 차이를 사후에 설명할 수 없다."},
+            "start_dow_source":{"type":"string","minLength":1,"description":"그 요일을 읽은 곳. 예: eplusout.eio:Environment,WeatherFileRunPeriod. ⚠ 이것은 선언이다 — 생산자가 실제로 그 자리에서 읽었는지를 이 필드가 증명하지는 않는다. 출처가 하나뿐인 동안은 무해하나, 둘 이상이 되면 측정으로 바꿔야 한다."}}}
       },"allOf":[{"if":{"properties":{"cooling_setpoint_c":{"const":24}}},"then":{"properties":{"role":{"const":"baseline"}}}},{"if":{"properties":{"cooling_setpoint_c":{"enum":[25,26]}}},"then":{"properties":{"role":{"const":"counterfactual"}}}}]
     }
   }
