@@ -244,7 +244,8 @@ PROJECT_TARGETS: dict[str, dict] = {
                 "KR_STANDARDS_VERSION", "KR_LAW_CURRENCY", "KR_LEGAL_SOURCES",
                 "KR_ENVELOPE_U_LIMITS", "KR_CLIMATE_ZONES", "KR_SIM_CITY_CLIMATE_ZONE",
                 "KR_VENTILATION", "KR_ASSESSMENT_CONDITIONS", "KR_DESIGN_INDOOR_CONDITIONS",
-                "KR_USAGE_PROFILES",
+                "KR_USAGE_PROFILES", "KR_ENVELOPE_SURFACE_RULES", "KR_SURFACE_RESISTANCES",
+                "KR_AIR_LAYER_RESISTANCES", "KR_CALCULATION_RULES",
             ],
         },
     },
@@ -808,6 +809,10 @@ def gen_python(schemas: dict) -> str:
         lines.append(f"KR_ASSESSMENT_CONDITIONS: dict = {kbs.get('assessment_conditions', {})!r}")
         lines.append(f"KR_DESIGN_INDOOR_CONDITIONS: dict = {kbs.get('design_indoor_conditions', {})!r}")
         lines.append(f"KR_USAGE_PROFILES: dict = {kbs.get('usage_profiles', {})!r}")
+        lines.append(f"KR_ENVELOPE_SURFACE_RULES: dict = {kbs.get('envelope_surface_rules', {})!r}")
+        lines.append(f"KR_SURFACE_RESISTANCES: dict = {kbs.get('surface_resistances', {})!r}")
+        lines.append(f"KR_AIR_LAYER_RESISTANCES: dict = {kbs.get('air_layer_resistances', {})!r}")
+        lines.append(f"KR_CALCULATION_RULES: dict = {kbs.get('calculation_rules', {})!r}")
         lines.append("")
 
     dbmig = schemas.get("dbmig", {}).get("default", {})

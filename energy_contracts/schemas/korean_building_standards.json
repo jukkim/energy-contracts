@@ -36,6 +36,18 @@
     },
     "primary_energy_factor_check": {
       "type": "object"
+    },
+    "envelope_surface_rules": {
+      "type": "object"
+    },
+    "surface_resistances": {
+      "type": "object"
+    },
+    "air_layer_resistances": {
+      "type": "object"
+    },
+    "calculation_rules": {
+      "type": "object"
     }
   },
   "default": {
@@ -64,7 +76,23 @@
             "file": "docs/legal_sources/2026-09-17/esdc_annex8.pdf",
             "flSeq": 167084865,
             "sha256": "2dc46abb686526e7259689d131c81fcd79fa2c985a56891126ffa300cdf40bdc"
+          },
+          "5": {
+            "title": "열관류율 계산 시 적용되는 실내 및 실외측 표면 열전달저항",
+            "file": "docs/legal_sources/2026-09-17/esdc_annex5.pdf",
+            "flSeq": 167084847,
+            "sha256": "1c2a8cdb008b17eb7c382cb8d6fbdb3fdd385d3c01c111e45ecf536677b79674"
+          },
+          "6": {
+            "title": "열관류율 계산시 적용되는 중공층의 열저항",
+            "file": "docs/legal_sources/2026-09-17/esdc_annex6.pdf",
+            "flSeq": 167084853,
+            "sha256": "1b87d4fbaa25167cc8e56bb8b512da3c72d96474cdeaad568766bab26b31ae29"
           }
+        },
+        "articles": {
+          "5": "용어의 정의 (10호 바·사 = 외기에 직접/간접 면하는 부위)",
+          "6": "건축부문의 의무사항 (1호 다 3: 열전도율 계산 시 표면열전달저항·중공층 열저항은 별표5·6 값 사용 · 5: 소수점 3자리 맺음(4째 자리 반올림) · 바: 바닥난방 공간 하부가 비바닥난방 공간이면 최하층 바닥·간접 기준)"
         }
       },
       "bldg_equip_rule_1614": {
@@ -1315,6 +1343,68 @@
         "district_heating": 0.728,
         "district_cooling": 0.937
       }
+    },
+    "envelope_surface_rules": {
+      "source_ref": "esdc_2026_360 제5조 10호 바·사 · 제6조 1호 가",
+      "direct": "바깥쪽이 외기이거나 외기가 직접 통하는 공간에 면한 부위",
+      "indirect": "외기가 직접 통하지 아니하는 비난방 공간(지붕 또는 반자, 벽체, 바닥 구조의 일부로 구성되는 내부 공기층은 제외한다)에 접한 부위, 외기가 직접 통하는 구조이나 실내공기의 배기를 목적으로 설치하는 샤프트 등에 면한 부위, 지면 또는 토양에 면한 부위",
+      "insulation_exemptions": [
+        "지표면 아래 2미터를 초과하여 위치한 지하 부위(공동주택의 거실 부위는 제외)로서 이중벽의 설치 등 하계 표면결로 방지 조치를 한 경우",
+        "지면 및 토양에 접한 바닥 부위로서 난방공간의 외벽 내표면까지의 모든 수평거리가 10미터를 초과하는 바닥부위",
+        "외기에 간접 면하는 부위로서 당해 부위가 면한 비난방공간의 외기에 직접 또는 간접 면하는 부위를 별표1에 준하여 단열조치하는 경우",
+        "공동주택의 층간바닥(최하층 제외) 중 바닥난방을 하지 않는 현관 및 욕실의 바닥부위",
+        "방풍구조(외벽제외) 또는 바닥면적 150제곱미터 이하의 개별 점포의 출입문"
+      ],
+      "note": "법령 정의를 E+ 경계조건에 대응시키는 규칙은 모델링 가정이다 — 소비 repo 가 정하고 근거를 적는다(여기는 원문만)."
+    },
+    "surface_resistances": {
+      "source_ref": "esdc_2026_360#5",
+      "unit": "m2K/W",
+      "wall": {
+        "inside": 0.11,
+        "outside_indirect": 0.11,
+        "outside_direct": 0.043,
+        "note": "거실의 외벽(측벽 및 창, 문 포함)"
+      },
+      "lowest_floor": {
+        "inside": 0.086,
+        "outside_indirect": 0.15,
+        "outside_direct": 0.043
+      },
+      "top_roof": {
+        "inside": 0.086,
+        "outside_indirect": 0.086,
+        "outside_direct": 0.043
+      },
+      "apartment_interfloor": {
+        "inside": 0.086,
+        "outside_indirect": null,
+        "outside_direct": null
+      }
+    },
+    "air_layer_resistances": {
+      "source_ref": "esdc_2026_360#6",
+      "unit": "m2K/W (da = cm)",
+      "factory_sealed": {
+        "per_cm_upto_cm": 2,
+        "per_cm": 0.086,
+        "above": 0.17
+      },
+      "site_built": {
+        "per_cm_upto_cm": 1,
+        "per_cm": 0.086,
+        "above": 0.086
+      },
+      "reflective_multiplier": {
+        "emissivity_le_0_5": 1.5,
+        "emissivity_le_0_1": 2.0
+      }
+    },
+    "calculation_rules": {
+      "source_ref": "esdc_2026_360 제6조 1호 다·바",
+      "rounding": "열관류율·열관류저항 계산결과는 소수점 3자리로 맺음(4째 자리에서 반올림)하여 판정",
+      "window_door_u": "별표1 의 창·문 열관류율은 유리와 창틀(문틀)을 포함한 평균 열관류율 (제5조 10호 파)",
+      "floor_heating_over_unheated": "바닥난방 공간의 하부가 바닥난방을 하지 않는 공간이면 최하층 바닥 · 외기에 간접 면하는 경우 기준"
     }
   }
 }

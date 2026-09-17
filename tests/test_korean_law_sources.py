@@ -64,6 +64,10 @@ def _set(path, value):
     (("assessment_conditions", "zeb_setpoints", "cooling_c"), 24, "zeb_setpoints"),
     (("design_indoor_conditions", "rows", "office", "heating_c"), [20, 22], "office"),
     (("climate_zones", "definitions", "중부2"), "부산광역시, 서울특별시", "중부2"),
+    (("surface_resistances", "wall", "outside_direct"), 0.04, "surface_resistances"),       # ISO 6946 값(원문 아님)
+    (("surface_resistances", "lowest_floor", "outside_indirect"), 0.17, "surface_resistances"),
+    (("air_layer_resistances", "site_built", "above"), 0.17, "air_layer_resistances"),
+    (("envelope_surface_rules", "indirect"), "외기가 직접 통하지 아니하는 비난방 공간에 접한 부위", "envelope_surface_rules.indirect"),
 ])
 def test_each_mutation_is_caught(tmp_path, monkeypatch, path, value, expect):
     rc, msgs = _run(tmp_path, monkeypatch, _set(path, value))

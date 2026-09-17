@@ -170,6 +170,39 @@ def verify(today: dt.date) -> tuple[int, list[str]]:
         sch = data["sources"]["school_health_rule_366"]["annexes"]["2"]
         if f"{vent['school']['per_person_m3h']}세제곱미터" not in _pdf_text(ROOT / sch["file"]):
             problems.append("ventilation.school: 원문 [별표 2] 과 다름")
+        # [별표5] 표면 열전달저항 — 텍스트 순서: 벽 Ri, Ro간접, Ro직접 / 바닥 Ri, Ro간접, Ro직접 / 지붕 … / 층간 Ri
+        sr = data["surface_resistances"]
+        t5 = _pdf_text(ROOT / esdc["5"]["file"])
+        got5 = [float(x) for x in re.findall(r"(\d\.\d+)\s*\(", t5)]
+        want5 = []
+        for part in ("wall", "lowest_floor", "top_roof"):
+            want5 += [sr[part]["inside"], sr[part]["outside_indirect"], sr[part]["outside_direct"]]
+        want5 += [sr["apartment_interfloor"]["inside"]]
+        if got5 != want5:
+            problems.append(f"surface_resistances ≠ 원문 [별표5] (원문 {got5})")
+        al = data["air_layer_resistances"]
+        t6 = re.sub(r"\s+", "", _pdf_text(ROOT / esdc["6"]["file"]))
+        frags6 = [f"{al['factory_sealed']['per_cm_upto_cm']}cm이하{al['factory_sealed']['per_cm']}×da(cm)",
+                  f"{al['factory_sealed']['per_cm_upto_cm']}cm초과{al['factory_sealed']['above']}(",
+                  f"{al['site_built']['per_cm_upto_cm']}cm이하{al['site_built']['per_cm']}×da(cm)",
+                  f"{al['site_built']['per_cm_upto_cm']}cm초과{al['site_built']['above']}(",
+                  f"방사율0.5이하:(1)또는(2)에서계산된열저항의{al['reflective_multiplier']['emissivity_le_0_5']}배",
+                  f"방사율0.1이하:(1)또는(2)에서계산된열저항의{al['reflective_multiplier']['emissivity_le_0_1']}배"]
+        for fr in frags6:
+            if fr not in t6:
+                problems.append(f"air_layer_resistances: 원문 [별표6] 에 '{fr}' 없음")
+        excerpt = ROOT / "docs" / "legal_sources" / data["currency"]["retrieved"] / "esdc_2026_360_articles_excerpt.txt"
+        if excerpt.exists():
+            ex = re.sub(r"\s+", "", excerpt.read_text(encoding="utf-8"))
+            rules = data["envelope_surface_rules"]
+            for key in ("direct", "indirect"):
+                if re.sub(r"\s+", "", rules[key]) not in ex:
+                    problems.append(f"envelope_surface_rules.{key}: 조문 발췌와 다름")
+            for i, e in enumerate(rules["insulation_exemptions"]):
+                if re.sub(r"\s+", "", e) not in ex:
+                    problems.append(f"envelope_surface_rules.insulation_exemptions[{i}]: 조문 발췌와 다름")
+        else:
+            unmeasured.append("조문 발췌 파일 없음 — envelope_surface_rules 대조 못 잼")
         zeb = data["sources"]["zeb_criteria_2024_893"]["annexes"]["3"]
         tz = _pdf_text(ROOT / zeb["file"]).replace(" ", "")
         ac = data["assessment_conditions"]["zeb_setpoints"]
