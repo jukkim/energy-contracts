@@ -1,0 +1,1320 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "energy-contracts/korean_building_standards.json",
+  "title": "Korean Building Standards (law-sourced)",
+  "description": "한국 건축 기준값 정본 — 외피 열관류율 상한·법정 기후지역·필요환기량·인증 평가 조건·설계용 실내 온습도·용도프로필. v1.0 (2026-09-17): 모든 값은 law.go.kr 현행 원문(시행일·별표·조회일·파일 sha256)에 묶인다. 원문 파일 = docs/legal_sources/<조회일>/. 전사는 scripts/verify_korean_law_sources.py 가 원문 텍스트로 대조한다. ⚠ 조회일·해시는 현행성 증명이 아니라 확인 이력이다 — currency.recheck_after_days 가 지나면 소비 코드는 '현행 법령' 실행을 거부한다. 법령값과 모델링 가정(소비 repo 의 modeling_policies)은 섞지 않는다. PE 계수 정본은 energy_constants.pe_factors — 여기는 원문 대조 기록만.",
+  "_usage": "codegen",
+  "_consumers": [
+    "8sim-shared (gen_constants → KR_* — mpc_model/_shared/korean_standards.py 가 파생)"
+  ],
+  "version": "1.0",
+  "type": "object",
+  "properties": {
+    "currency": {
+      "type": "object"
+    },
+    "sources": {
+      "type": "object"
+    },
+    "envelope_u_limits": {
+      "type": "object"
+    },
+    "climate_zones": {
+      "type": "object"
+    },
+    "ventilation": {
+      "type": "object"
+    },
+    "assessment_conditions": {
+      "type": "object"
+    },
+    "design_indoor_conditions": {
+      "type": "object"
+    },
+    "usage_profiles": {
+      "type": "object"
+    },
+    "primary_energy_factor_check": {
+      "type": "object"
+    }
+  },
+  "default": {
+    "currency": {
+      "retrieved": "2026-09-17",
+      "recheck_after_days": 90,
+      "policy": "조회일 + recheck_after_days 가 지나면 소비 코드는 'current_law' 실행을 거부한다(과거 재현 실행은 허용·표시). 90 일은 제안값 — 운영 정책 승인 대상."
+    },
+    "sources": {
+      "esdc_2026_360": {
+        "title": "건축물의 에너지절약설계기준",
+        "kind": "고시",
+        "number": "국토교통부고시 제2026-360호",
+        "effective": "2026-07-08",
+        "retrieved": "2026-09-17",
+        "url": "https://www.law.go.kr/LSW/admRulSc.do?query=건축물의 에너지절약설계기준",
+        "annexes": {
+          "1": {
+            "title": "지역별 건축물 부위의 열관류율표",
+            "file": "docs/legal_sources/2026-09-17/esdc_annex1.pdf",
+            "flSeq": 167084819,
+            "sha256": "d7707d73f0188bce5677d61cd597d0ff46ca828a4c2c8fc6ddddbb5aa692f1fe"
+          },
+          "8": {
+            "title": "냉·난방설비의 용량계산을 위한 실내 온·습도 기준",
+            "file": "docs/legal_sources/2026-09-17/esdc_annex8.pdf",
+            "flSeq": 167084865,
+            "sha256": "2dc46abb686526e7259689d131c81fcd79fa2c985a56891126ffa300cdf40bdc"
+          }
+        }
+      },
+      "bldg_equip_rule_1614": {
+        "title": "건축물의 설비기준 등에 관한 규칙",
+        "kind": "부령",
+        "number": "국토교통부령 제1614호",
+        "effective": "2026-08-24",
+        "retrieved": "2026-09-17",
+        "url": "https://www.law.go.kr/LSW/lsInfoP.do?lsId=006188",
+        "lsiSeq": 289011,
+        "articles": {
+          "11": "공동주택 및 다중이용시설의 환기설비기준 등"
+        },
+        "annexes": {
+          "1의6": {
+            "title": "기계환기설비를 설치해야 하는 다중이용시설 및 각 시설의 필요 환기량",
+            "amended": "2021-08-27",
+            "file": "docs/legal_sources/2026-09-17/bldg_equip_rule_annex1_6.pdf",
+            "flSeq": 168578863,
+            "sha256": "ac36045385b60c31824ff37c25b5058db2a0b7b0860b25ecbaa9bf21af8cc621"
+          }
+        }
+      },
+      "school_health_rule_366": {
+        "title": "학교보건법 시행규칙",
+        "kind": "부령",
+        "number": "교육부령 제366호",
+        "effective": "2025-09-19",
+        "retrieved": "2026-09-17",
+        "url": "https://www.law.go.kr/LSW/lsInfoP.do?lsId=010118",
+        "lsiSeq": 273853,
+        "annexes": {
+          "2": {
+            "title": "환기·채광·조명·온습도의 조절기준과 환기설비의 구조 및 설치기준",
+            "amended": "2019-09-17",
+            "file": "docs/legal_sources/2026-09-17/school_health_rule_annex2.pdf",
+            "flSeq": 156413815,
+            "sha256": "6c042405d332471fb56efdb5c8e0230a43bc91d5c3efd30b54720abd13b308b6"
+          }
+        }
+      },
+      "zeb_criteria_2024_893": {
+        "title": "제로에너지건축물 인증 기준",
+        "kind": "고시",
+        "number": "국토교통부고시 제2024-893호 · 산업통상자원부고시 제2024-208호",
+        "effective": "2025-01-01",
+        "retrieved": "2026-09-17",
+        "annexes": {
+          "3": {
+            "title": "제로에너지건축물 인증 평가 적용 실내 냉방·난방 온도 설정조건",
+            "file": "docs/legal_sources/2026-09-17/zeb_criteria_annex3.pdf",
+            "flSeq": 147249001,
+            "sha256": "402ae3bb571a8a4b08bf9e0cadb5ccf73b557c4d1503600ff02bdce2183e4240"
+          }
+        }
+      },
+      "kea_zeb_rule_20260320": {
+        "title": "(한국에너지공단) 제로에너지건축물 인증 제도 운영규정",
+        "kind": "공공기관 규정",
+        "effective": "2026-03-20",
+        "retrieved": "2026-09-17",
+        "annexes": {
+          "2": {
+            "title": "주거 및 주거용 이외 건축물 용도프로필",
+            "amended": "2022-08-30",
+            "file": "docs/legal_sources/2026-09-17/kea_zeb_rule_annex2_profiles.hwp",
+            "flSeq": 163988271,
+            "sha256": "9638bc13ead6e137118bde40496652fc4a4f9d8414a83d36cb6a1ac2e8576ee7"
+          },
+          "3": {
+            "title": "1차에너지 환산계수",
+            "file": "docs/legal_sources/2026-09-17/kea_zeb_rule_annex3_pe.hwp",
+            "flSeq": 163988319,
+            "sha256": "421c5759a72821a1316b528a1483729ba9db5bea66e61c0badd542c07e577944"
+          }
+        }
+      }
+    },
+    "envelope_u_limits": {
+      "unit": "W/m2K",
+      "semantics": "upper_limit",
+      "wall": {
+        "direct": {
+          "apartment": {
+            "중부1": 0.15,
+            "중부2": 0.17,
+            "남부": 0.22,
+            "제주": 0.29
+          },
+          "other": {
+            "중부1": 0.17,
+            "중부2": 0.24,
+            "남부": 0.32,
+            "제주": 0.41
+          }
+        },
+        "indirect": {
+          "apartment": {
+            "중부1": 0.21,
+            "중부2": 0.24,
+            "남부": 0.31,
+            "제주": 0.41
+          },
+          "other": {
+            "중부1": 0.24,
+            "중부2": 0.34,
+            "남부": 0.45,
+            "제주": 0.56
+          }
+        }
+      },
+      "roof": {
+        "direct": {
+          "중부1": 0.15,
+          "중부2": 0.15,
+          "남부": 0.18,
+          "제주": 0.25
+        },
+        "indirect": {
+          "중부1": 0.21,
+          "중부2": 0.21,
+          "남부": 0.26,
+          "제주": 0.35
+        }
+      },
+      "floor": {
+        "direct": {
+          "floor_heating": {
+            "중부1": 0.15,
+            "중부2": 0.17,
+            "남부": 0.22,
+            "제주": 0.29
+          },
+          "no_floor_heating": {
+            "중부1": 0.17,
+            "중부2": 0.2,
+            "남부": 0.25,
+            "제주": 0.33
+          }
+        },
+        "indirect": {
+          "floor_heating": {
+            "중부1": 0.21,
+            "중부2": 0.24,
+            "남부": 0.31,
+            "제주": 0.41
+          },
+          "no_floor_heating": {
+            "중부1": 0.24,
+            "중부2": 0.29,
+            "남부": 0.35,
+            "제주": 0.47
+          }
+        }
+      },
+      "interfloor_floor_heating": 0.81,
+      "window": {
+        "direct": {
+          "apartment": {
+            "중부1": 0.9,
+            "중부2": 1.0,
+            "남부": 1.2,
+            "제주": 1.6
+          },
+          "other": {
+            "중부1": 1.3,
+            "중부2": 1.5,
+            "남부": 1.8,
+            "제주": 2.2
+          }
+        },
+        "indirect": {
+          "apartment": {
+            "중부1": 1.3,
+            "중부2": 1.5,
+            "남부": 1.7,
+            "제주": 2.0
+          },
+          "other": {
+            "중부1": 1.6,
+            "중부2": 1.9,
+            "남부": 2.2,
+            "제주": 2.8
+          }
+        }
+      },
+      "door": {
+        "direct": {
+          "other": {
+            "중부1": 1.5,
+            "중부2": 1.5,
+            "남부": 1.8,
+            "제주": 2.2
+          }
+        },
+        "indirect": {
+          "other": {
+            "중부1": 1.9,
+            "중부2": 1.9,
+            "남부": 2.2,
+            "제주": 2.8
+          }
+        }
+      },
+      "apartment_entrance_fire_door": {
+        "direct": 1.4,
+        "indirect": 1.8
+      },
+      "merged_cells_note": "지붕 중부1·중부2 병합 · 공동주택 외 창/문 중부2~제주 병합 · 층간바닥·세대현관문 전 지역 병합 (원문 이미지 확인)",
+      "source_ref": "esdc_2026_360#1"
+    },
+    "climate_zones": {
+      "source_ref": "esdc_2026_360#1 비고",
+      "keys": [
+        "중부1",
+        "중부2",
+        "남부",
+        "제주"
+      ],
+      "definitions": {
+        "중부1": "강원특별자치도(고성, 속초, 양양, 강릉, 동해, 삼척 제외), 경기도(연천, 포천, 가평, 남양주, 의정부, 양주, 동두천, 파주), 충청북도(제천), 경상북도(봉화, 청송)",
+        "중부2": "서울특별시, 대전광역시, 세종특별자치시, 인천광역시, 강원특별자치도(고성, 속초, 양양, 강릉, 동해, 삼척), 경기도(연천, 포천, 가평, 남양주, 의정부, 양주, 동두천, 파주 제외), 충청북도(제천 제외), 충청남도, 경상북도(봉화, 청송, 울진, 영덕, 포항, 경주, 청도, 경산 제외), 전북특별자치도, 경상남도(거창, 함양), 대구광역시(군위)",
+        "남부": "부산광역시, 대구광역시(군위 제외), 울산광역시, 광주광역시, 전라남도, 경상북도(울진, 영덕, 포항, 경주, 청도, 경산), 경상남도(거창, 함양 제외)",
+        "제주": "제주특별자치도"
+      }
+    },
+    "ventilation": {
+      "apartment": {
+        "ach": 0.5,
+        "basis": "제11조제1항 (30세대 이상 신축공동주택등) — 의무"
+      },
+      "small_housing_detached": {
+        "ach": 0.5,
+        "basis": "제11조제4항 (30세대 미만·단독주택) — 허가권자 권장 가능(의무 아님)"
+      },
+      "multi_use_per_person_m3h": {
+        "underground_station": 25,
+        "underground_mall": 36,
+        "culture_assembly": 29,
+        "sales": 29,
+        "transport": 29,
+        "medical": 36,
+        "education_research": 36,
+        "welfare": 36,
+        "office": 29,
+        "parking_per_m2": 27,
+        "funeral": 36,
+        "other": 25
+      },
+      "applicability": {
+        "sales": "「유통산업발전법」 제2조제3호에 따른 대규모점포",
+        "medical": "연면적 2천㎡ 이상이거나 병상 수 100개 이상인 의료기관",
+        "education_research": "연면적 3천㎡ 이상 도서관 · 연면적 1천㎡ 이상 학원 (학교는 해당 없음)",
+        "office": "연면적 3천㎡ 이상인 업무시설"
+      },
+      "notes": [
+        "필요 환기량은 예상 이용인원이 가장 높은 시간대를 기준으로 산정",
+        "숙박·일반음식점·학교는 목록에 없음"
+      ],
+      "school": {
+        "source": "school_health_rule_366#2",
+        "per_person_m3h": 21.6,
+        "basis": "1인당 환기량 시간당 21.6㎥ 이상 (교실)"
+      },
+      "source_ref": "bldg_equip_rule_1614"
+    },
+    "assessment_conditions": {
+      "zeb_setpoints": {
+        "source_ref": "zeb_criteria_2024_893#3",
+        "cooling_c": 26,
+        "heating_c": 20
+      },
+      "school_classroom": {
+        "source_ref": "school_health_rule_366#2",
+        "heating_c": [
+          18,
+          20
+        ],
+        "cooling_c": [
+          26,
+          28
+        ]
+      }
+    },
+    "design_indoor_conditions": {
+      "source_ref": "esdc_2026_360#8",
+      "unit": "heating_c / cooling_c / cooling_rh_pct = [하한, 상한]",
+      "rows": {
+        "apartment": {
+          "heating_c": [
+            20,
+            22
+          ],
+          "cooling_c": [
+            26,
+            28
+          ],
+          "cooling_rh_pct": [
+            50,
+            60
+          ]
+        },
+        "school_classroom": {
+          "heating_c": [
+            20,
+            22
+          ],
+          "cooling_c": [
+            26,
+            28
+          ],
+          "cooling_rh_pct": [
+            50,
+            60
+          ]
+        },
+        "hospital_ward": {
+          "heating_c": [
+            21,
+            23
+          ],
+          "cooling_c": [
+            26,
+            28
+          ],
+          "cooling_rh_pct": [
+            50,
+            60
+          ]
+        },
+        "assembly_seats": {
+          "heating_c": [
+            20,
+            22
+          ],
+          "cooling_c": [
+            26,
+            28
+          ],
+          "cooling_rh_pct": [
+            50,
+            60
+          ]
+        },
+        "lodging_room": {
+          "heating_c": [
+            20,
+            24
+          ],
+          "cooling_c": [
+            26,
+            28
+          ],
+          "cooling_rh_pct": [
+            50,
+            60
+          ]
+        },
+        "sales": {
+          "heating_c": [
+            18,
+            21
+          ],
+          "cooling_c": [
+            26,
+            28
+          ],
+          "cooling_rh_pct": [
+            50,
+            60
+          ]
+        },
+        "office": {
+          "heating_c": [
+            20,
+            23
+          ],
+          "cooling_c": [
+            26,
+            28
+          ],
+          "cooling_rh_pct": [
+            50,
+            60
+          ]
+        },
+        "bathhouse": {
+          "heating_c": [
+            26,
+            29
+          ],
+          "cooling_c": [
+            26,
+            29
+          ],
+          "cooling_rh_pct": [
+            50,
+            75
+          ]
+        },
+        "swimming_pool": {
+          "heating_c": [
+            27,
+            30
+          ],
+          "cooling_c": [
+            27,
+            30
+          ],
+          "cooling_rh_pct": [
+            50,
+            70
+          ]
+        }
+      }
+    },
+    "usage_profiles": {
+      "source_ref": "kea_zeb_rule_20260320#2",
+      "annex_amended": "2022-08-30",
+      "units": {
+        "time": "hh:mm (24:00 = 자정)",
+        "min_outdoor_air_m3_per_m2h": "m3/(m2 h)",
+        "dhw_wh_per_m2d": "Wh/(m2 d)",
+        "lighting_hours": "h",
+        "people_heat_wh_per_m2d": "Wh/(m2 d)",
+        "equipment_heat_wh_per_m2d": "Wh/(m2 d)",
+        "monthly_use_days": "d/month"
+      },
+      "open_questions": [
+        "'일(d)' 이 사용일인지 달력일인지 — 원문 표에 정의 없음(원문 확인 필요)",
+        "사람 발열이 총열인지 현열인지 — 원문 표에 정의 없음(원문 확인 필요)"
+      ],
+      "retail_lighting_correction": "조명 보정계수 = 0.625 × 보정치; LPD ≤ 10 W/m2 → 보정치 1; LPD > 10 → [(LPD-10)×0.4+10]/LPD",
+      "profiles": {
+        "residential": {
+          "name_kr": "주거공간",
+          "use_start": "00:00",
+          "use_end": "24:00",
+          "operation_start": "00:00",
+          "operation_end": "24:00",
+          "min_outdoor_air_m3_per_m2h": 1.1,
+          "dhw_wh_per_m2d": 84.0,
+          "lighting_hours": 5.0,
+          "people_heat_wh_per_m2d": 53.0,
+          "equipment_heat_wh_per_m2d": 52.0,
+          "heating_setpoint_c": 20.0,
+          "cooling_setpoint_c": 26.0,
+          "monthly_use_days": [
+            31,
+            28,
+            31,
+            30,
+            31,
+            30,
+            31,
+            31,
+            30,
+            31,
+            30,
+            31
+          ],
+          "correction_factors": {
+            "heating": 1.0,
+            "cooling": 1.0,
+            "dhw": 1.0,
+            "lighting": 1.0,
+            "ventilation": 1.0
+          }
+        },
+        "office_small": {
+          "name_kr": "소규모사무실(30㎡ 이하)",
+          "use_start": "09:00",
+          "use_end": "18:00",
+          "operation_start": "07:00",
+          "operation_end": "18:00",
+          "min_outdoor_air_m3_per_m2h": 4.0,
+          "dhw_wh_per_m2d": 30.0,
+          "lighting_hours": 6.0,
+          "people_heat_wh_per_m2d": 30.0,
+          "equipment_heat_wh_per_m2d": 42.0,
+          "heating_setpoint_c": 20.0,
+          "cooling_setpoint_c": 26.0,
+          "monthly_use_days": [
+            22,
+            19,
+            21,
+            22,
+            22,
+            20,
+            22,
+            21,
+            18,
+            21,
+            21,
+            21
+          ],
+          "correction_factors": {
+            "heating": 1.0,
+            "cooling": 1.0,
+            "dhw": 1.0,
+            "lighting": 1.5,
+            "ventilation": 1.0
+          }
+        },
+        "office_large": {
+          "name_kr": "대규모사무실(30㎡ 초과)",
+          "use_start": "09:00",
+          "use_end": "18:00",
+          "operation_start": "07:00",
+          "operation_end": "18:00",
+          "min_outdoor_air_m3_per_m2h": 6.0,
+          "dhw_wh_per_m2d": 30.0,
+          "lighting_hours": 9.0,
+          "people_heat_wh_per_m2d": 55.8,
+          "equipment_heat_wh_per_m2d": 126.0,
+          "heating_setpoint_c": 20.0,
+          "cooling_setpoint_c": 26.0,
+          "monthly_use_days": [
+            22,
+            19,
+            21,
+            22,
+            22,
+            20,
+            22,
+            21,
+            18,
+            21,
+            21,
+            21
+          ],
+          "correction_factors": {
+            "heating": 1.0,
+            "cooling": 1.0,
+            "dhw": 1.0,
+            "lighting": 1.0,
+            "ventilation": 1.0
+          }
+        },
+        "meeting": {
+          "name_kr": "회의실 및 세미나실",
+          "use_start": "07:00",
+          "use_end": "18:00",
+          "operation_start": "07:00",
+          "operation_end": "18:00",
+          "min_outdoor_air_m3_per_m2h": 15.0,
+          "dhw_wh_per_m2d": 30.0,
+          "lighting_hours": 11.0,
+          "people_heat_wh_per_m2d": 96.0,
+          "equipment_heat_wh_per_m2d": 8.0,
+          "heating_setpoint_c": 20.0,
+          "cooling_setpoint_c": 26.0,
+          "monthly_use_days": [
+            22,
+            19,
+            21,
+            22,
+            22,
+            20,
+            22,
+            21,
+            18,
+            21,
+            21,
+            21
+          ],
+          "correction_factors": {
+            "heating": 1.0,
+            "cooling": 1.0,
+            "dhw": 1.0,
+            "lighting": 0.818,
+            "ventilation": 1.0
+          }
+        },
+        "auditorium": {
+          "name_kr": "강당",
+          "use_start": "07:00",
+          "use_end": "18:00",
+          "operation_start": "07:00",
+          "operation_end": "18:00",
+          "min_outdoor_air_m3_per_m2h": 2.0,
+          "dhw_wh_per_m2d": 30.0,
+          "lighting_hours": 11.0,
+          "people_heat_wh_per_m2d": 36.0,
+          "equipment_heat_wh_per_m2d": 24.0,
+          "heating_setpoint_c": 20.0,
+          "cooling_setpoint_c": 26.0,
+          "monthly_use_days": [
+            22,
+            19,
+            21,
+            22,
+            22,
+            20,
+            22,
+            21,
+            18,
+            21,
+            21,
+            21
+          ],
+          "correction_factors": {
+            "heating": 1.0,
+            "cooling": 1.0,
+            "dhw": 1.0,
+            "lighting": 0.818,
+            "ventilation": 1.0
+          }
+        },
+        "cafeteria": {
+          "name_kr": "구내식당",
+          "use_start": "08:00",
+          "use_end": "15:00",
+          "operation_start": "08:00",
+          "operation_end": "15:00",
+          "min_outdoor_air_m3_per_m2h": 18.0,
+          "dhw_wh_per_m2d": 1250.0,
+          "lighting_hours": 7.0,
+          "people_heat_wh_per_m2d": 177.0,
+          "equipment_heat_wh_per_m2d": 10.0,
+          "heating_setpoint_c": 20.0,
+          "cooling_setpoint_c": 26.0,
+          "monthly_use_days": [
+            22,
+            19,
+            21,
+            22,
+            22,
+            20,
+            22,
+            21,
+            18,
+            21,
+            21,
+            21
+          ],
+          "correction_factors": {
+            "heating": 1.571,
+            "cooling": 1.571,
+            "dhw": 0.024,
+            "lighting": 1.286,
+            "ventilation": 1.571
+          }
+        },
+        "restroom": {
+          "name_kr": "화장실",
+          "use_start": "07:00",
+          "use_end": "18:00",
+          "operation_start": "07:00",
+          "operation_end": "18:00",
+          "min_outdoor_air_m3_per_m2h": 15.0,
+          "dhw_wh_per_m2d": 0.0,
+          "lighting_hours": 11.0,
+          "people_heat_wh_per_m2d": 0.0,
+          "equipment_heat_wh_per_m2d": 0.0,
+          "heating_setpoint_c": 20.0,
+          "cooling_setpoint_c": 26.0,
+          "monthly_use_days": [
+            22,
+            19,
+            21,
+            22,
+            22,
+            20,
+            22,
+            21,
+            18,
+            21,
+            21,
+            21
+          ],
+          "correction_factors": {
+            "heating": 1.0,
+            "cooling": 1.0,
+            "dhw": 0.0,
+            "lighting": 0.818,
+            "ventilation": 1.0
+          }
+        },
+        "other_occupied": {
+          "name_kr": "그 외 체류공간(휴게실, 탈의실, 헬스장, 열람실, 매점 등)",
+          "use_start": "07:00",
+          "use_end": "18:00",
+          "operation_start": "07:00",
+          "operation_end": "18:00",
+          "min_outdoor_air_m3_per_m2h": 7.0,
+          "dhw_wh_per_m2d": 30.0,
+          "lighting_hours": 11.0,
+          "people_heat_wh_per_m2d": 96.0,
+          "equipment_heat_wh_per_m2d": 8.0,
+          "heating_setpoint_c": 20.0,
+          "cooling_setpoint_c": 26.0,
+          "monthly_use_days": [
+            22,
+            19,
+            21,
+            22,
+            22,
+            20,
+            22,
+            21,
+            18,
+            21,
+            21,
+            21
+          ],
+          "correction_factors": {
+            "heating": 1.0,
+            "cooling": 1.0,
+            "dhw": 1.0,
+            "lighting": 0.818,
+            "ventilation": 1.0
+          }
+        },
+        "circulation": {
+          "name_kr": "부속공간(로비, 복도, 계단실 등)",
+          "use_start": "07:00",
+          "use_end": "18:00",
+          "operation_start": "07:00",
+          "operation_end": "18:00",
+          "min_outdoor_air_m3_per_m2h": 0.15,
+          "dhw_wh_per_m2d": 0.0,
+          "lighting_hours": 11.0,
+          "people_heat_wh_per_m2d": 0.0,
+          "equipment_heat_wh_per_m2d": 0.0,
+          "heating_setpoint_c": 20.0,
+          "cooling_setpoint_c": 26.0,
+          "monthly_use_days": [
+            22,
+            19,
+            21,
+            22,
+            22,
+            20,
+            22,
+            21,
+            18,
+            21,
+            21,
+            21
+          ],
+          "correction_factors": {
+            "heating": 1.0,
+            "cooling": 1.0,
+            "dhw": 0.0,
+            "lighting": 0.818,
+            "ventilation": 1.0
+          }
+        },
+        "storage_plant": {
+          "name_kr": "창고/설비/문서실",
+          "use_start": "07:00",
+          "use_end": "18:00",
+          "operation_start": "07:00",
+          "operation_end": "18:00",
+          "min_outdoor_air_m3_per_m2h": 0.15,
+          "dhw_wh_per_m2d": 0.0,
+          "lighting_hours": 11.0,
+          "people_heat_wh_per_m2d": 0.0,
+          "equipment_heat_wh_per_m2d": 0.0,
+          "heating_setpoint_c": 20.0,
+          "cooling_setpoint_c": 26.0,
+          "monthly_use_days": [
+            22,
+            19,
+            21,
+            22,
+            22,
+            20,
+            22,
+            21,
+            18,
+            21,
+            21,
+            21
+          ],
+          "correction_factors": {
+            "heating": 1.0,
+            "cooling": 1.0,
+            "dhw": 0.0,
+            "lighting": 0.818,
+            "ventilation": 1.0
+          }
+        },
+        "server_room": {
+          "name_kr": "전산실",
+          "use_start": "00:00",
+          "use_end": "24:00",
+          "operation_start": "00:00",
+          "operation_end": "24:00",
+          "min_outdoor_air_m3_per_m2h": 1.3,
+          "dhw_wh_per_m2d": 30.0,
+          "lighting_hours": 12.0,
+          "people_heat_wh_per_m2d": 15.0,
+          "equipment_heat_wh_per_m2d": 1800.0,
+          "heating_setpoint_c": 20.0,
+          "cooling_setpoint_c": 26.0,
+          "monthly_use_days": [
+            31,
+            28,
+            31,
+            30,
+            31,
+            30,
+            31,
+            31,
+            30,
+            31,
+            30,
+            31
+          ],
+          "correction_factors": {
+            "heating": 0.503,
+            "cooling": 0.196,
+            "dhw": 0.685,
+            "lighting": 0.514,
+            "ventilation": 0.314
+          }
+        },
+        "kitchen": {
+          "name_kr": "주방 및 조리실",
+          "use_start": "08:00",
+          "use_end": "15:00",
+          "operation_start": "08:00",
+          "operation_end": "15:00",
+          "min_outdoor_air_m3_per_m2h": 90.0,
+          "dhw_wh_per_m2d": 0.0,
+          "lighting_hours": 7.0,
+          "people_heat_wh_per_m2d": 56.0,
+          "equipment_heat_wh_per_m2d": 1800.0,
+          "heating_setpoint_c": 20.0,
+          "cooling_setpoint_c": 26.0,
+          "monthly_use_days": [
+            22,
+            19,
+            21,
+            22,
+            22,
+            20,
+            22,
+            21,
+            18,
+            21,
+            21,
+            21
+          ],
+          "correction_factors": {
+            "heating": 1.571,
+            "cooling": 1.571,
+            "dhw": 0.0,
+            "lighting": 1.286,
+            "ventilation": 1.571
+          }
+        },
+        "hospital_ward": {
+          "name_kr": "병실",
+          "use_start": "00:00",
+          "use_end": "24:00",
+          "operation_start": "00:00",
+          "operation_end": "24:00",
+          "min_outdoor_air_m3_per_m2h": 4.0,
+          "dhw_wh_per_m2d": 82.0,
+          "lighting_hours": 12.0,
+          "people_heat_wh_per_m2d": 108.0,
+          "equipment_heat_wh_per_m2d": 24.0,
+          "heating_setpoint_c": 20.0,
+          "cooling_setpoint_c": 26.0,
+          "monthly_use_days": [
+            31,
+            28,
+            31,
+            30,
+            31,
+            30,
+            31,
+            31,
+            30,
+            31,
+            30,
+            31
+          ],
+          "correction_factors": {
+            "heating": 0.314,
+            "cooling": 0.314,
+            "dhw": 0.251,
+            "lighting": 0.514,
+            "ventilation": 0.314
+          }
+        },
+        "hotel_room": {
+          "name_kr": "객실",
+          "use_start": "21:00",
+          "use_end": "08:00",
+          "operation_start": "21:00",
+          "operation_end": "08:00",
+          "min_outdoor_air_m3_per_m2h": 3.0,
+          "dhw_wh_per_m2d": 82.0,
+          "lighting_hours": 4.0,
+          "people_heat_wh_per_m2d": 70.0,
+          "equipment_heat_wh_per_m2d": 44.0,
+          "heating_setpoint_c": 20.0,
+          "cooling_setpoint_c": 26.0,
+          "monthly_use_days": [
+            31,
+            28,
+            31,
+            30,
+            31,
+            30,
+            31,
+            31,
+            30,
+            31,
+            30,
+            31
+          ],
+          "correction_factors": {
+            "heating": 0.685,
+            "cooling": 0.685,
+            "dhw": 0.251,
+            "lighting": 1.541,
+            "ventilation": 0.685
+          }
+        },
+        "classroom_k12": {
+          "name_kr": "교실(초중고)",
+          "use_start": "08:00",
+          "use_end": "15:00",
+          "operation_start": "08:00",
+          "operation_end": "15:00",
+          "min_outdoor_air_m3_per_m2h": 10.0,
+          "dhw_wh_per_m2d": 30.0,
+          "lighting_hours": 6.0,
+          "people_heat_wh_per_m2d": 100.0,
+          "equipment_heat_wh_per_m2d": 20.0,
+          "heating_setpoint_c": 20.0,
+          "cooling_setpoint_c": 26.0,
+          "monthly_use_days": [
+            0,
+            14,
+            23,
+            22,
+            21,
+            22,
+            15,
+            3,
+            22,
+            21,
+            22,
+            15
+          ],
+          "correction_factors": {
+            "heating": 1.964,
+            "cooling": 1.964,
+            "dhw": 1.25,
+            "lighting": 1.875,
+            "ventilation": 1.964
+          }
+        },
+        "lecture_hall": {
+          "name_kr": "강의실(대학)",
+          "use_start": "09:00",
+          "use_end": "18:00",
+          "operation_start": "09:00",
+          "operation_end": "18:00",
+          "min_outdoor_air_m3_per_m2h": 30.0,
+          "dhw_wh_per_m2d": 30.0,
+          "lighting_hours": 6.0,
+          "people_heat_wh_per_m2d": 420.0,
+          "equipment_heat_wh_per_m2d": 24.0,
+          "heating_setpoint_c": 20.0,
+          "cooling_setpoint_c": 26.0,
+          "monthly_use_days": [
+            0,
+            0,
+            20,
+            20,
+            15,
+            20,
+            5,
+            0,
+            20,
+            20,
+            21,
+            9
+          ],
+          "correction_factors": {
+            "heating": 2.037,
+            "cooling": 2.037,
+            "dhw": 1.667,
+            "lighting": 2.5,
+            "ventilation": 2.037
+          }
+        },
+        "retail": {
+          "name_kr": "매장(상점/백화점)",
+          "use_start": "08:00",
+          "use_end": "20:00",
+          "operation_start": "08:00",
+          "operation_end": "20:00",
+          "min_outdoor_air_m3_per_m2h": 4.0,
+          "dhw_wh_per_m2d": 30.0,
+          "lighting_hours": 12.0,
+          "people_heat_wh_per_m2d": 84.0,
+          "equipment_heat_wh_per_m2d": 24.0,
+          "heating_setpoint_c": 20.0,
+          "cooling_setpoint_c": 26.0,
+          "monthly_use_days": [
+            26,
+            23,
+            25,
+            26,
+            26,
+            24,
+            26,
+            26,
+            22,
+            25,
+            26,
+            25
+          ],
+          "correction_factors": {
+            "heating": 0.764,
+            "cooling": 0.764,
+            "dhw": 0.833,
+            "lighting": "formula:retail_lighting_correction",
+            "ventilation": 0.764
+          }
+        },
+        "exhibition": {
+          "name_kr": "전시실(전시관/박물관)",
+          "use_start": "10:00",
+          "use_end": "18:00",
+          "operation_start": "10:00",
+          "operation_end": "18:00",
+          "min_outdoor_air_m3_per_m2h": 2.0,
+          "dhw_wh_per_m2d": 30.0,
+          "lighting_hours": 8.0,
+          "people_heat_wh_per_m2d": 28.0,
+          "equipment_heat_wh_per_m2d": 0.0,
+          "heating_setpoint_c": 20.0,
+          "cooling_setpoint_c": 26.0,
+          "monthly_use_days": [
+            22,
+            19,
+            21,
+            22,
+            22,
+            20,
+            22,
+            21,
+            18,
+            21,
+            21,
+            21
+          ],
+          "correction_factors": {
+            "heating": 1.375,
+            "cooling": 1.375,
+            "dhw": 1.0,
+            "lighting": 1.125,
+            "ventilation": 1.375
+          }
+        },
+        "reading_room": {
+          "name_kr": "열람실(도서관)",
+          "use_start": "08:00",
+          "use_end": "20:00",
+          "operation_start": "08:00",
+          "operation_end": "20:00",
+          "min_outdoor_air_m3_per_m2h": 8.0,
+          "dhw_wh_per_m2d": 30.0,
+          "lighting_hours": 12.0,
+          "people_heat_wh_per_m2d": 168.0,
+          "equipment_heat_wh_per_m2d": 0.0,
+          "heating_setpoint_c": 20.0,
+          "cooling_setpoint_c": 26.0,
+          "monthly_use_days": [
+            26,
+            23,
+            25,
+            26,
+            26,
+            24,
+            26,
+            26,
+            22,
+            25,
+            26,
+            25
+          ],
+          "correction_factors": {
+            "heating": 0.764,
+            "cooling": 0.764,
+            "dhw": 0.833,
+            "lighting": 0.625,
+            "ventilation": 0.764
+          }
+        },
+        "sports": {
+          "name_kr": "체육시설",
+          "use_start": "08:00",
+          "use_end": "23:00",
+          "operation_start": "08:00",
+          "operation_end": "23:00",
+          "min_outdoor_air_m3_per_m2h": 3.0,
+          "dhw_wh_per_m2d": 220.0,
+          "lighting_hours": 15.0,
+          "people_heat_wh_per_m2d": 60.0,
+          "equipment_heat_wh_per_m2d": 0.0,
+          "heating_setpoint_c": 20.0,
+          "cooling_setpoint_c": 26.0,
+          "monthly_use_days": [
+            26,
+            23,
+            25,
+            26,
+            26,
+            24,
+            26,
+            26,
+            22,
+            25,
+            26,
+            25
+          ],
+          "correction_factors": {
+            "heating": 0.611,
+            "cooling": 0.611,
+            "dhw": 0.114,
+            "lighting": 0.5,
+            "ventilation": 0.611
+          }
+        },
+        "cafeteria_k12": {
+          "name_kr": "구내식당(초중고)",
+          "use_start": "11:00",
+          "use_end": "15:00",
+          "operation_start": "11:00",
+          "operation_end": "15:00",
+          "min_outdoor_air_m3_per_m2h": 18.0,
+          "dhw_wh_per_m2d": 1250.0,
+          "lighting_hours": 4.0,
+          "people_heat_wh_per_m2d": 177.0,
+          "equipment_heat_wh_per_m2d": 10.0,
+          "heating_setpoint_c": 20.0,
+          "cooling_setpoint_c": 26.0,
+          "monthly_use_days": [
+            0,
+            14,
+            23,
+            22,
+            21,
+            22,
+            15,
+            3,
+            22,
+            21,
+            22,
+            15
+          ],
+          "correction_factors": {
+            "heating": 3.438,
+            "cooling": 3.438,
+            "dhw": 0.03,
+            "lighting": 2.813,
+            "ventilation": 3.438
+          }
+        },
+        "kitchen_k12": {
+          "name_kr": "주방 및 조리실(초중고)",
+          "use_start": "08:00",
+          "use_end": "15:00",
+          "operation_start": "08:00",
+          "operation_end": "15:00",
+          "min_outdoor_air_m3_per_m2h": 90.0,
+          "dhw_wh_per_m2d": 0.0,
+          "lighting_hours": 7.0,
+          "people_heat_wh_per_m2d": 56.0,
+          "equipment_heat_wh_per_m2d": 1800.0,
+          "heating_setpoint_c": 20.0,
+          "cooling_setpoint_c": 26.0,
+          "monthly_use_days": [
+            0,
+            14,
+            23,
+            22,
+            21,
+            22,
+            15,
+            3,
+            22,
+            21,
+            22,
+            15
+          ],
+          "correction_factors": {
+            "heating": 1.964,
+            "cooling": 1.964,
+            "dhw": 0.0,
+            "lighting": 1.607,
+            "ventilation": 1.964
+          }
+        },
+        "sports_k12": {
+          "name_kr": "체육시설(초중고)",
+          "use_start": "09:00",
+          "use_end": "16:00",
+          "operation_start": "09:00",
+          "operation_end": "16:00",
+          "min_outdoor_air_m3_per_m2h": 3.0,
+          "dhw_wh_per_m2d": 220.0,
+          "lighting_hours": 7.0,
+          "people_heat_wh_per_m2d": 60.0,
+          "equipment_heat_wh_per_m2d": 0.0,
+          "heating_setpoint_c": 20.0,
+          "cooling_setpoint_c": 26.0,
+          "monthly_use_days": [
+            26,
+            23,
+            25,
+            26,
+            26,
+            24,
+            26,
+            26,
+            22,
+            25,
+            26,
+            25
+          ],
+          "correction_factors": {
+            "heating": 1.31,
+            "cooling": 1.31,
+            "dhw": 0.114,
+            "lighting": 1.071,
+            "ventilation": 1.31
+          }
+        }
+      }
+    },
+    "primary_energy_factor_check": {
+      "source_ref": "kea_zeb_rule_20260320#3",
+      "canonical": "energy_constants.pe_factors",
+      "values": {
+        "fuel": 1.1,
+        "electricity": 2.75,
+        "district_heating": 0.728,
+        "district_cooling": 0.937
+      }
+    }
+  }
+}
