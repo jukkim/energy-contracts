@@ -49,7 +49,14 @@ VENDORS = (
 
 
 def _sha(p: Path) -> str:
-    return hashlib.sha256(p.read_bytes()).hexdigest()
+    """**커밋되는 내용**의 해시 — 작업 트리의 줄바꿈(CRLF/LF)은 뺀다(2026-09-17).
+
+    ⛔ 원래는 작업 트리 바이트를 그대로 해시했다. 저장소마다 줄바꿈 정책이 달라(autocrlf=true 인 곳은 CRLF,
+       airos-energy-decision 은 .gitattributes 로 LF 고정) **다섯 저장소의 커밋 내용이 모두 같은데**
+       (`git show HEAD:` 해시 9a859bb55353 전부 동일) airos 사본만 DRIFT 로 떴고, 무관한 8.simulation 커밋이 막혔다.
+       한 글자라도 내용이 다르면 여전히 DRIFT 다 — 빼는 것은 CR 뿐이다(`tests/test_verify_provenance_vendors.py`).
+    """
+    return hashlib.sha256(p.read_bytes().replace(b"\r\n", b"\n")).hexdigest()
 
 
 def check() -> int:
