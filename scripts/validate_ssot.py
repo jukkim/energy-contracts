@@ -1107,7 +1107,7 @@ def main() -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument("--check",
                     choices=["strategy", "canonical", "ports", "schemas",
-                             "generated", "usage", "all"],
+                             "generated", "usage", "law", "all"],
                     default="all")
     ap.add_argument("--pre-commit", action="store_true",
                     help="git diff --cached 대상만 검사")
@@ -1217,6 +1217,25 @@ def main() -> int:
             print(f"\n[SSOT] schema _usage 헤더 위반: {len(v)}건")
             for line in v:
                 print(f"  {line}")
+
+    if args.check in ("law", "all"):
+        # 한국 건축 기준값 ↔ law.go.kr 원문 파일 (2026-09-17). rc 1 = 전사 불일치 → 차단.
+        #   rc 2(못 잼 — pypdf/pyhwp 없음)·3(현행성 기한 지남)은 경고만 — 기한의 집행은
+        #   '현행 법령' 실행을 하는 소비 코드가 한다(이 게이트는 무관한 커밋을 막지 않는다).
+        import datetime as _dt
+        import importlib.util as _ilu
+        _sp = _ilu.spec_from_file_location("_vkls", Path(__file__).with_name("verify_korean_law_sources.py"))
+        _vk = _ilu.module_from_spec(_sp)
+        _sp.loader.exec_module(_vk)
+        rc, msgs = _vk.verify(_dt.date.today())
+        if rc == 1:
+            failed = True
+            total_violations += len(msgs)
+            print(f"\n[SSOT] 한국 기준값 ↔ 법령 원문 불일치: {len(msgs)}건")
+        elif rc in (2, 3):
+            print("\n[SSOT] 경고 — 한국 기준값 원문 대조:")
+        for line in (msgs if rc else []):
+            print(f"  {line}")
 
     if failed:
         print(f"\n[SSOT] 위반 총 {total_violations}건 — 커밋 차단")

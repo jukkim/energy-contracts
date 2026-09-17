@@ -239,6 +239,13 @@ PROJECT_TARGETS: dict[str, dict] = {
                 "DATA_SOURCE_LABELS",
                 "EMISSION_FACTORS_KR", "PRIMARY_ENERGY_FACTORS",
                 "ZEB_BASELINE_KWH_M2_YR",
+                #: ⛔ 한국 건축 기준값(2026-09-17) — mpc_model/_shared/korean_standards.py 가
+                #  손 리터럴 대신 여기서 파생한다(외피 U·기후지역·환기·인증 조건·용도프로필).
+                "KR_STANDARDS_VERSION", "KR_LAW_CURRENCY", "KR_LEGAL_SOURCES",
+                "KR_ENVELOPE_U_LIMITS", "KR_CLIMATE_ZONES", "KR_SIM_CITY_CLIMATE_ZONE",
+                "KR_VENTILATION", "KR_ASSESSMENT_CONDITIONS", "KR_DESIGN_INDOOR_CONDITIONS",
+                "KR_USAGE_PROFILES", "KR_ENVELOPE_SURFACE_RULES", "KR_SURFACE_RESISTANCES",
+                "KR_AIR_LAYER_RESISTANCES", "KR_CALCULATION_RULES",
             ],
         },
     },
@@ -319,7 +326,11 @@ def load_schemas() -> dict:
     # 공조 방식 표시 이름 정본(2026-09-15) — hvac_types[*].name_kr + aliases. 화면마다 이름을 따로
     #   들고 있어 H_B 가 "중앙식 FCU"·"패키지 VAV" 로 갈라졌다. 소비처는 생성본 HVAC_NAME_KR 만 쓴다.
     region = _load("region_codes.json")
-    return {"edge_cap": edge_cap, "household_consent": household_consent, "region": region,
+    # 한국 건축 기준값(2026-09-17) — 외피 U 상한·법정 기후지역·필요환기량·인증 평가 조건·용도프로필.
+    #   값마다 law.go.kr 원문(시행일·별표·파일 해시)에 묶인다. 소비처는 KR_* 생성본만 쓴다 —
+    #   손으로 적은 표가 세 벌(korean_standards.py · simulation_scenarios.ko_envelope_uvalue · 문서)이었고 셋 다 원문과 달랐다.
+    kbs = _load("korean_building_standards.json")
+    return {"edge_cap": edge_cap, "household_consent": household_consent, "region": region, "kbs": kbs,
         "ems": ems, "ports": ports, "common": common,
             "agents": agents, "intents": intents,
             "modes": modes, "dataclass": dataclass, "tests": tests,
@@ -780,6 +791,28 @@ def gen_python(schemas: dict) -> str:
                      f"{sim_scn.get('pmv_thresholds', {})!r}")
         lines.append(f"SIM_KO_ENVELOPE_UVALUE: dict = "
                      f"{sim_scn.get('ko_envelope_uvalue', {})!r}")
+        lines.append("")
+
+    # ─ 한국 건축 기준값 (korean_building_standards.json — law.go.kr 원문에 묶임) ─────
+    kbs = (schemas.get("kbs") or {}).get("default", {})
+    if kbs:
+        cities = (schemas.get("region") or {}).get("default", {}).get("simulation_cities", {})
+        city_zone = {c: m["climate_zone"] for c, m in cities.items() if m.get("climate_zone")}
+        lines.append("# ─ Korean Building Standards (law-sourced, 2026-09-17) ──────────")
+        lines.append(f"KR_STANDARDS_VERSION: str = {schemas['kbs'].get('version')!r}")
+        lines.append(f"KR_LAW_CURRENCY: dict = {kbs.get('currency', {})!r}")
+        lines.append(f"KR_LEGAL_SOURCES: dict = {kbs.get('sources', {})!r}")
+        lines.append(f"KR_ENVELOPE_U_LIMITS: dict = {kbs.get('envelope_u_limits', {})!r}")
+        lines.append(f"KR_CLIMATE_ZONES: dict = {kbs.get('climate_zones', {})!r}")
+        lines.append(f"KR_SIM_CITY_CLIMATE_ZONE: dict[str, str] = {city_zone!r}")
+        lines.append(f"KR_VENTILATION: dict = {kbs.get('ventilation', {})!r}")
+        lines.append(f"KR_ASSESSMENT_CONDITIONS: dict = {kbs.get('assessment_conditions', {})!r}")
+        lines.append(f"KR_DESIGN_INDOOR_CONDITIONS: dict = {kbs.get('design_indoor_conditions', {})!r}")
+        lines.append(f"KR_USAGE_PROFILES: dict = {kbs.get('usage_profiles', {})!r}")
+        lines.append(f"KR_ENVELOPE_SURFACE_RULES: dict = {kbs.get('envelope_surface_rules', {})!r}")
+        lines.append(f"KR_SURFACE_RESISTANCES: dict = {kbs.get('surface_resistances', {})!r}")
+        lines.append(f"KR_AIR_LAYER_RESISTANCES: dict = {kbs.get('air_layer_resistances', {})!r}")
+        lines.append(f"KR_CALCULATION_RULES: dict = {kbs.get('calculation_rules', {})!r}")
         lines.append("")
 
     dbmig = schemas.get("dbmig", {}).get("default", {})
