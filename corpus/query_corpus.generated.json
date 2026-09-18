@@ -452,7 +452,7 @@
       "name": "insight.flowLines",
       "ns": "insight",
       "consumerClass": "B",
-      "summary": "근거 패널 결과의 흐름 행(flowsKey, 예 flow_rows: from_node·to_node·value_key·label)을 앵커 둘레의"
+      "summary": "근거 패널 결과의 흐름 행(flowsKey, 예 flow_rows: from_node·to_node·value_key·label·tone)을 앵"
     },
     {
       "api": "showAiOutput",
