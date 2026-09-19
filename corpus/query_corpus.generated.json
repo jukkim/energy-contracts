@@ -46,7 +46,7 @@
       "name": "camera.flyToAnchor",
       "ns": "camera",
       "consumerClass": "A",
-      "summary": "앵커로 카메라 비행(좌표 freeze 차단, 권장). view 프리셋."
+      "summary": "앵커로 카메라 비행(좌표 freeze 차단, 권장). view 프리셋. fitAnchors(앵커 목록 — 게이트웨이 결정 경로 전용, 학습 SY"
     },
     {
       "api": "orbitAnchor",
