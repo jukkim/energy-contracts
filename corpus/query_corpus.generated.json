@@ -8,9 +8,9 @@
     "executor_keys": "projects\\energy-decision-studio\\lib\\actions\\executor_keys.ts"
   },
   "counts": {
-    "opcodes": 101,
+    "opcodes": 103,
     "opA": 8,
-    "opB": 82,
+    "opB": 84,
     "opC": 11,
     "routerClasses": 43,
     "executors": 7,
@@ -455,6 +455,13 @@
       "summary": "근거 패널 결과의 흐름 행(flowsKey, 예 flow_rows: from_node·to_node·value_key·label·tone)을 앵"
     },
     {
+      "api": "setEvidenceScene",
+      "name": "insight.sceneState",
+      "ns": "insight",
+      "consumerClass": "B",
+      "summary": "Switch the verified result's declared scene_states by sceneKey. A state binds zo"
+    },
+    {
       "api": "showAiOutput",
       "name": "insight.showAi",
       "ns": "insight",
@@ -488,6 +495,13 @@
       "ns": "insight",
       "consumerClass": "B",
       "summary": "근거 패널 결과의 행(rowsKey, 예 response_rows)마다 값 표지를 앵커 둘레에 놓는다. 값·라벨·단위는 결과에서 키로 읽고 op"
+    },
+    {
+      "api": "mountZoneHighlights",
+      "name": "insight.zoneHighlights",
+      "ns": "insight",
+      "consumerClass": "B",
+      "summary": "Draw explicit zone polygon surfaces from verified result rows. Each row requires"
     },
     {
       "api": "placeSmartLamp",
@@ -2535,8 +2549,10 @@
         "driveTmapRoute",
         "mountFlowLines",
         "mountValueMarkers",
+        "mountZoneHighlights",
         "placeVehicleAlongRoute",
         "playEvidenceTimeline",
+        "setEvidenceScene",
         "stopGoldFaceSliding",
         "stopGoldFlyoverDemo",
         "unmountAnalysis",
@@ -2549,12 +2565,14 @@
         "unmountReverseCascade",
         "unmountSeoulChoropleth"
       ],
-      "nlTarget": 56,
+      "nlTarget": 58,
       "nlCovered": 53,
       "nlUncovered": [
         "mountFlowLines",
         "mountValueMarkers",
-        "playEvidenceTimeline"
+        "mountZoneHighlights",
+        "playEvidenceTimeline",
+        "setEvidenceScene"
       ],
       "lifecycleExempt": [
         "clearCompositeShader",
