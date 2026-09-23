@@ -8,9 +8,9 @@
     "executor_keys": "projects\\energy-decision-studio\\lib\\actions\\executor_keys.ts"
   },
   "counts": {
-    "opcodes": 103,
+    "opcodes": 104,
     "opA": 8,
-    "opB": 84,
+    "opB": 85,
     "opC": 11,
     "routerClasses": 43,
     "executors": 7,
@@ -54,6 +54,13 @@
       "ns": "camera",
       "consumerClass": "B",
       "summary": "앵커 중심 360° 카메라 선회 조망(Cesium lookAtTransform + onTick). 좌표 freeze 차단."
+    },
+    {
+      "api": "flyCameraPath",
+      "name": "camera.path",
+      "ns": "camera",
+      "consumerClass": "B",
+      "summary": "기준점 여러 개(앵커 또는 좌표 · 거리·방위·기울기)를 하나의 매끄러운 카메라 경로로 비행. 처음·끝만 가감속, 지형 높이 고정, 지도 조각이"
     },
     {
       "api": "clearV68Features",
@@ -2547,6 +2554,7 @@
         "driveOsrmRoute",
         "driveOsrmRouteVia",
         "driveTmapRoute",
+        "flyCameraPath",
         "mountFlowLines",
         "mountValueMarkers",
         "mountZoneHighlights",
@@ -2565,9 +2573,10 @@
         "unmountReverseCascade",
         "unmountSeoulChoropleth"
       ],
-      "nlTarget": 58,
+      "nlTarget": 59,
       "nlCovered": 53,
       "nlUncovered": [
+        "flyCameraPath",
         "mountFlowLines",
         "mountValueMarkers",
         "mountZoneHighlights",
