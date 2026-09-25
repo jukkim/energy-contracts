@@ -8,9 +8,9 @@
     "executor_keys": "projects\\energy-decision-studio\\lib\\actions\\executor_keys.ts"
   },
   "counts": {
-    "opcodes": 104,
+    "opcodes": 105,
     "opA": 8,
-    "opB": 85,
+    "opB": 86,
     "opC": 11,
     "routerClasses": 43,
     "executors": 7,
@@ -61,6 +61,13 @@
       "ns": "camera",
       "consumerClass": "B",
       "summary": "기준점 여러 개(앵커 또는 좌표 · 거리·방위·기울기)를 하나의 매끄러운 카메라 경로로 비행. 처음·끝만 가감속, 지형 높이 고정, 지도 조각이"
+    },
+    {
+      "api": "flyCameraShot",
+      "name": "camera.shot",
+      "ns": "camera",
+      "consumerClass": "B",
+      "summary": "이름 있는 카메라 장면 — shot=dive(전국에서 앵커로 급강하)·orbit(앵커 한 바퀴)·tour(앵커 2~6곳 차례 방문)·compar"
     },
     {
       "api": "clearV68Features",
@@ -2555,6 +2562,7 @@
         "driveOsrmRouteVia",
         "driveTmapRoute",
         "flyCameraPath",
+        "flyCameraShot",
         "mountFlowLines",
         "mountValueMarkers",
         "mountZoneHighlights",
@@ -2573,10 +2581,11 @@
         "unmountReverseCascade",
         "unmountSeoulChoropleth"
       ],
-      "nlTarget": 59,
+      "nlTarget": 60,
       "nlCovered": 53,
       "nlUncovered": [
         "flyCameraPath",
+        "flyCameraShot",
         "mountFlowLines",
         "mountValueMarkers",
         "mountZoneHighlights",
