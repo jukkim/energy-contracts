@@ -69,3 +69,38 @@ def test_question_spec_example_is_valid_and_cannot_carry_capability_fields() -> 
         return found
 
     assert keys(schema).isdisjoint(forbidden)
+
+
+# ── v1.1 (2026-09-25): 계열에 따라 필수 칸이 갈린다 — 막을 것과 통과시킬 것 양쪽 ─────
+
+def _binding(**over) -> dict:
+    base = json.loads((ROOT / "examples" / "model_binding.json").read_text(encoding="utf-8"))
+    base.update(over)
+    return {k: v for k, v in base.items() if v is not None}
+
+
+def _errors(payload: dict) -> list:
+    return list(Draft202012Validator(load_schema("model_binding"), format_checker=FormatChecker())
+                .iter_errors(payload))
+
+
+def test_an_ml_surrogate_without_its_feature_hash_is_refused():
+    assert _errors(_binding(model_family="surrogate_ml", feature_schema_hash=None))
+
+
+def test_a_physics_model_with_not_applicable_passes_without_ml_hashes():
+    ok = _binding(model_family="physics_site", model_id="eplus_site_model",
+                  feature_schema_hash=None, checkpoint_hash=None, feature_schema_status="not_applicable")
+    assert not _errors(ok)
+
+
+def test_a_physics_model_must_say_the_feature_schema_does_not_apply():
+    """반례: 물리 모델이 표시 없이 오면 막는다 — 칸이 빠진 것과 '해당 없음' 은 다르다."""
+    silent = _binding(model_family="physics_archetype", feature_schema_hash=None, checkpoint_hash=None)
+    assert _errors(silent)
+    wrong = _binding(model_family="grid_table", feature_schema_hash=None, feature_schema_status="hashed")
+    assert _errors(wrong)
+
+
+def test_the_family_is_required():
+    assert _errors(_binding(model_family=None))

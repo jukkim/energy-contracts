@@ -2,22 +2,32 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "energy-contracts/model_binding.json",
   "title": "ModelBinding",
-  "description": "특정 모델 체크포인트를 특정 자원과 용도에 적용할 수 있는지 고정하는 계약. 데이터가 많다는 이유만으로 자동 발급하지 않는다.",
+  "description": "특정 모델 체크포인트를 특정 자원과 용도에 적용할 수 있는지 고정하는 계약. 데이터가 많다는 이유만으로 자동 발급하지 않는다. v1.1(2026-09-25): 물리 모델(E+)·격자 조회표 결속을 담는다 — model_family 로 계열을 가르고(한 자원에 계열마다 issued 하나), ML 대리 모델만 feature_schema_hash·checkpoint_hash 를 필수로 둔다. 그 밖의 계열은 feature_schema_status='not_applicable'.",
   "_usage": "reference-only",
   "_consumers": ["airos-energy-decision", "xbems", "ems-transformer"],
-  "version": "1.0",
+  "version": "1.1",
   "type": "object",
   "additionalProperties": false,
-  "required": ["binding_id", "model_id", "model_version", "resource_id", "issued_at", "status", "feature_schema_hash", "checkpoint_hash", "calibration_status", "domain_check", "allowed_uses", "prohibited_uses", "reasons"],
+  "required": ["binding_id", "model_id", "model_version", "model_family", "resource_id", "issued_at", "status", "calibration_status", "domain_check", "allowed_uses", "prohibited_uses", "reasons"],
+  "allOf": [
+    {
+      "if": {"properties": {"model_family": {"const": "surrogate_ml"}}, "required": ["model_family"]},
+      "then": {"required": ["feature_schema_hash", "checkpoint_hash"]},
+      "else": {"required": ["feature_schema_status"], "properties": {"feature_schema_status": {"const": "not_applicable"}}}
+    }
+  ],
   "properties": {
     "binding_id": {"type": "string", "minLength": 1},
     "model_id": {"type": "string", "minLength": 1},
     "model_version": {"type": "string", "minLength": 1},
+    "model_family": {"type": "string", "enum": ["physics_site", "physics_archetype", "grid_table", "surrogate_ml"], "description": "physics_site=그 건물 자신의 E+ 모델 · physics_archetype=원형(참조 건물) E+ · grid_table=원형 격자 조회표 · surrogate_ml=E+ 를 흉내 낸 ML 대리 모델"},
     "resource_id": {"type": "string", "minLength": 1},
+    "default_for_resource": {"type": "boolean", "description": "한 자원에 계열이 다른 issued 결속이 둘 이상일 때, 계열을 밝히지 않은 호출이 받는 것. 자원마다 많아야 하나"},
     "issued_at": {"type": "string", "format": "date-time"},
     "expires_at": {"type": "string", "format": "date-time"},
-    "status": {"type": "string", "enum": ["issued", "provisional", "rejected", "expired", "revoked"]},
+    "status": {"type": "string", "enum": ["issued", "provisional", "rejected", "expired", "revoked", "superseded"]},
     "feature_schema_hash": {"type": "string", "pattern": "^(sha256:)?[a-fA-F0-9]{64}$"},
+    "feature_schema_status": {"type": "string", "enum": ["hashed", "not_applicable"], "description": "ML 입력 특징 스키마가 있나. 물리·격자 모델은 not_applicable(그 개념이 없다)"},
     "checkpoint_hash": {"type": "string", "pattern": "^(sha256:)?[a-fA-F0-9]{64}$"},
     "calibration_status": {"type": "string", "enum": ["site_calibrated", "domain_calibrated", "uncalibrated", "not_applicable"]},
     "calibration_id": {"type": "string"},
@@ -26,23 +36,28 @@
       "additionalProperties": false,
       "required": ["building_type_match", "hvac_type_match", "feature_schema_match", "ood_status"],
       "properties": {
-        "building_type_match": {"type": "boolean"},
-        "hvac_type_match": {"type": "boolean"},
-        "feature_schema_match": {"type": "boolean"},
+        "building_type_match": {"type": ["boolean", "null"], "description": "null = 확인하지 못했다(거짓이 아니다)"},
+        "hvac_type_match": {"type": ["boolean", "null"], "description": "null = 확인하지 못했다(거짓이 아니다)"},
+        "feature_schema_match": {"type": ["boolean", "null"], "description": "null = 확인하지 못했다(거짓이 아니다)"},
         "ood_status": {"type": "string", "enum": ["in_domain", "warning", "out_of_domain", "not_evaluated"]},
         "ood_score": {"type": "number", "minimum": 0},
-        "ood_threshold": {"type": "number", "minimum": 0}
+        "ood_threshold": {"type": "number", "minimum": 0},
+        "building_type_source": {"type": "string"},
+        "hvac_note": {"type": "string"},
+        "registry_note": {"type": "string"},
+        "registry_usage_type": {"type": "string"},
+        "weather_city": {"type": "string"}
       }
     },
     "allowed_uses": {
       "type": "array",
       "uniqueItems": true,
-      "items": {"type": "string", "enum": ["screening", "advisory", "shadow_mpc", "approved_bounded_control"]}
+      "items": {"type": "string", "enum": ["screening", "advisory", "shadow_mpc", "approved_bounded_control", "relative_comparison", "savings_rate_relative", "fuel_accounting_shape"]}
     },
     "prohibited_uses": {
       "type": "array",
       "uniqueItems": true,
-      "items": {"type": "string", "enum": ["physics_verdict", "field_safety", "national_extrapolation", "mv_claim", "unapproved_control"]}
+      "items": {"type": "string", "enum": ["physics_verdict", "field_safety", "national_extrapolation", "mv_claim", "unapproved_control", "savings_amount", "eui_claim", "fuel_split_claim"]}
     },
     "reasons": {"type": "array", "items": {"type": "string"}},
     "evidence_refs": {"type": "array", "items": {"type": "string"}}

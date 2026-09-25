@@ -2,6 +2,7 @@
   "binding_id": "binding-ecmhs-bgj-v004",
   "model_id": "ecmhs",
   "model_version": "v004",
+  "model_family": "surrogate_ml",
   "resource_id": "bgj",
   "issued_at": "2026-08-23T13:00:00+09:00",
   "status": "provisional",
