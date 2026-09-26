@@ -1,7 +1,5 @@
 # CLAUDE.md — Energy Contracts (공유 스펙)
 
-- ⭐ **검증기는 반드시 재검증한다**(사용자 2026-09-25): 검사·게이트·판정기를 만들거나 고치면 **모듈을 읽어 세고**(낱말로 세지 않는다) · **양쪽 반례**를 걸고 · **검사가 몇 건 돌았는지** 보고한다(`실패 0` 은 통과가 아니다). 정본 = [`~/.claude/rules/verifier-must-be-verified.md`](~/.claude/rules/verifier-must-be-verified.md)
-- ⭐ **시험·측정·커밋 시간 규율**(전체 시험 시점 · 무관한 수정은 재측정을 무효화하지 않는다 · 못 잼은 봉인이 막는다 · 넓은 회귀는 옮긴다) = 정본 [`~/.claude/rules/full-test-discipline.md`](~/.claude/rules/full-test-discipline.md). 값을 여기 베끼지 않는다 — 정본에서 읽는다.
 
 > **SSOT**: ai_core_role_separation_plan v1.9.2 §6.5 — Policy Evaluation Contract. 본 repo = energy-contracts Tier 2 도메인 계약 허브. 본 폴더가 9 sibling repo (ems-transformer / ingestion-worker / edge-agent / building-energy-3d / gridbridge / agentleague / eduarena / energy-contracts / sim_campaign_2026) 의 schema/_pydantic_models/critics 단일 SSOT 를 제공한다. SSOT 본문 = `공모전/2026-04-24_AI챔피언_*/docs/ai_core_role_separation_plan.md` v1.9.2.
 >
