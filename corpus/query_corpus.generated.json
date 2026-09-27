@@ -634,7 +634,7 @@
       "name": "roof.solar",
       "ns": "roof",
       "consumerClass": "B",
-      "summary": "옥상 태양광 패널 배치."
+      "summary": "옥상 태양광 패널 배치. 검토된 평지붕 target={building_mgmt_no,surface_id}는 패널 치수·간격·이격거리·방향·정격을"
     },
     {
       "api": "placeRoofThermalImager",
