@@ -1,0 +1,159 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "energy-contracts/airos_replay_anomaly_policy.json",
+  "title": "AirosReplayAnomalyPolicy",
+  "_usage": "runtime-validate",
+  "_consumers": [
+    "airos-energy-decision",
+    "ems_transformer"
+  ],
+  "type": "object",
+  "default": {
+    "policy_id": "airos-query500-replay-anomaly",
+    "version": "1.0",
+    "classification": "declared_replay_analysis_policy",
+    "timezone": "Asia/Seoul",
+    "replay_day": "2022-07-21",
+    "previous_day": "2022-07-20",
+    "baseline_start": "2022-06-01",
+    "baseline_end_exclusive": "2022-07-01",
+    "sensor_start": "2022-07-01",
+    "sensor_end_exclusive": "2022-08-01",
+    "residual_z_threshold": 3.0,
+    "comparison": "strictly_greater",
+    "standard_deviation": "population",
+    "sensor_rule": "all_observed_thermostat_values_zero; missing_is_unknown",
+    "execution_authorized": false,
+    "source": {
+      "path": "공모전/2026-04-24_AI챔피언_전국민AI경진대회/validation/query500/store_ops_brief_support.py",
+      "sha256": "682d4091a9ffef2133531080bac9a0bdaeba49ccb8613d0402ce80b87622a4e5",
+      "basis": "Existing 2026-09-13 delegated and explicitly declared replay criteria; no new threshold or date chosen."
+    }
+  },
+  "const": {
+    "policy_id": "airos-query500-replay-anomaly",
+    "version": "1.0",
+    "classification": "declared_replay_analysis_policy",
+    "timezone": "Asia/Seoul",
+    "replay_day": "2022-07-21",
+    "previous_day": "2022-07-20",
+    "baseline_start": "2022-06-01",
+    "baseline_end_exclusive": "2022-07-01",
+    "sensor_start": "2022-07-01",
+    "sensor_end_exclusive": "2022-08-01",
+    "residual_z_threshold": 3.0,
+    "comparison": "strictly_greater",
+    "standard_deviation": "population",
+    "sensor_rule": "all_observed_thermostat_values_zero; missing_is_unknown",
+    "execution_authorized": false,
+    "source": {
+      "path": "공모전/2026-04-24_AI챔피언_전국민AI경진대회/validation/query500/store_ops_brief_support.py",
+      "sha256": "682d4091a9ffef2133531080bac9a0bdaeba49ccb8613d0402ce80b87622a4e5",
+      "basis": "Existing 2026-09-13 delegated and explicitly declared replay criteria; no new threshold or date chosen."
+    }
+  },
+  "properties": {
+    "policy_id": {
+      "type": "string",
+      "const": "airos-query500-replay-anomaly"
+    },
+    "version": {
+      "type": "string",
+      "const": "1.0"
+    },
+    "classification": {
+      "type": "string",
+      "const": "declared_replay_analysis_policy"
+    },
+    "timezone": {
+      "type": "string",
+      "const": "Asia/Seoul"
+    },
+    "replay_day": {
+      "type": "string",
+      "const": "2022-07-21"
+    },
+    "previous_day": {
+      "type": "string",
+      "const": "2022-07-20"
+    },
+    "baseline_start": {
+      "type": "string",
+      "const": "2022-06-01"
+    },
+    "baseline_end_exclusive": {
+      "type": "string",
+      "const": "2022-07-01"
+    },
+    "sensor_start": {
+      "type": "string",
+      "const": "2022-07-01"
+    },
+    "sensor_end_exclusive": {
+      "type": "string",
+      "const": "2022-08-01"
+    },
+    "residual_z_threshold": {
+      "type": "number",
+      "const": 3.0
+    },
+    "comparison": {
+      "type": "string",
+      "const": "strictly_greater"
+    },
+    "standard_deviation": {
+      "type": "string",
+      "const": "population"
+    },
+    "sensor_rule": {
+      "type": "string",
+      "const": "all_observed_thermostat_values_zero; missing_is_unknown"
+    },
+    "execution_authorized": {
+      "type": "boolean",
+      "const": false
+    },
+    "source": {
+      "type": "object",
+      "properties": {
+        "path": {
+          "type": "string",
+          "const": "공모전/2026-04-24_AI챔피언_전국민AI경진대회/validation/query500/store_ops_brief_support.py"
+        },
+        "sha256": {
+          "type": "string",
+          "const": "682d4091a9ffef2133531080bac9a0bdaeba49ccb8613d0402ce80b87622a4e5"
+        },
+        "basis": {
+          "type": "string",
+          "const": "Existing 2026-09-13 delegated and explicitly declared replay criteria; no new threshold or date chosen."
+        }
+      },
+      "required": [
+        "path",
+        "sha256",
+        "basis"
+      ],
+      "additionalProperties": false
+    }
+  },
+  "required": [
+    "policy_id",
+    "version",
+    "classification",
+    "timezone",
+    "replay_day",
+    "previous_day",
+    "baseline_start",
+    "baseline_end_exclusive",
+    "sensor_start",
+    "sensor_end_exclusive",
+    "residual_z_threshold",
+    "comparison",
+    "standard_deviation",
+    "sensor_rule",
+    "execution_authorized",
+    "source"
+  ],
+  "additionalProperties": false
+}

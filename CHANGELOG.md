@@ -4,6 +4,14 @@
 
 ---
 
+## 공통 사용자·자산 권한 계약 (2026-09-27, unreleased)
+
+- `auth_scopes.json` 1.1: AIROS 사용자 역할 6종은 전역 RBAC 역할과 분리하고 현재 배정 자산의 `read:asset` / `analyze:asset` 역량만 정의한다. 미정 승인·실행 조건은 거절하며 관리 자산 배정이 필수다.
+- `auth_policy.json` 1.1: 서버 검증 AIROS 세션 전달 헤더를 명시한다. 서비스 키·본문 ID·분석 페르소나는 사용자 인증이 아니다. 기존 JWT 정책을 AIROS opaque 세션 형식으로 오인하지 않는다.
+- `resource_authorization.json`: 배정 개정·정책 버전/해시를 포함한 공통 context/decision 계약. 실행 권한을 부여하지 않는다. `_utils/resource_authorization.py`는 검증된 입력을 전제로 배정과 역량의 교집합만 계산한다.
+- 생성기 `AUTH_RESOURCE_AUTHORIZATION` Python/TypeScript 출력 및 해당 Pydantic 모델을 추가했다. 기존 `airo_request` 생성 모델의 누락된 intent도 스키마에서 재생성했다.
+- 소비자 cascade: `scripts/gen_constants.py --all`로 생성본을 갱신하고 소비자별 pin/hash 및 SSOT 검증을 함께 수행해야 한다. 작업 트리 정책을 과거 immutable pin의 내용으로 취급하지 않는다.
+
 ## 태그 v0.3.58 (2026-09-17) — 패키지 버전 0.3.58
 
 > 아래 0.3.62 절(#147 한국 건축 기준값)과 #148(계보 봉투 사본 게이트 줄바꿈)을 담는 **릴리스 태그**다.

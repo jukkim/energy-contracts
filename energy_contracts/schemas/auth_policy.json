@@ -10,10 +10,14 @@
     "building-energy-3d",
     "agentleague",
     "eduarena",
-    "smartbuilding"
+    "smartbuilding",
+    "airos-energy-decision",
+    "ems-transformer",
+    "energy-decision-studio",
+    "building-energy-3d-lab"
   ],
-  "version": "1.0",
-  "updated": "2026-05-17",
+  "version": "1.1",
+  "updated": "2026-09-27",
   "type": "object",
   "default": {
     "jwt": {
@@ -70,6 +74,15 @@
           "access_expire_minutes": 1440
         }
       }
+    },
+    "user_resource_identity": {
+      "authority": "airos",
+      "delegated_header": "X-Airos-Authorization",
+      "transport": "Bearer",
+      "body_identity_is_authoritative": false,
+      "service_key_is_user_identity": false,
+      "authorization_contract": "resource_authorization.json",
+      "description": "The JWT policy above does not assert that AIROS opaque sessions are JWTs. Consumers validate the actual AIROS session server-side; never reinterpret another product JWT as an AIROS session."
     }
   }
 }

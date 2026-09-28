@@ -9,10 +9,14 @@
     "gridbridge",
     "building-energy-3d",
     "agentleague",
-    "eduarena"
+    "eduarena",
+    "airos-energy-decision",
+    "ems-transformer",
+    "energy-decision-studio",
+    "building-energy-3d-lab"
   ],
-  "version": "1.0",
-  "updated": "2026-05-17",
+  "version": "1.2",
+  "updated": "2026-09-27",
   "$defs": {
     "Scope": {
       "type": "string",
@@ -42,6 +46,10 @@
     },
     "project_default_scopes": {
       "type": "object"
+    },
+    "resource_authorization": {
+      "type": "object",
+      "description": "Verified AIROS identity capabilities intersected with the current assigned asset snapshot; never inherits global RBAC roles."
     }
   },
   "default": {
@@ -178,6 +186,101 @@
     "demo_mode_fallback": {
       "description": "RUN_MODE=demo 시 인증 누락 요청에 자동 적용할 scope",
       "scope": "guest"
+    },
+    "resource_authorization": {
+      "version": "1.1",
+      "identity_authority": "airos",
+      "scope": "assigned_assets_only",
+      "unknown_role": "deny",
+      "unknown_action": "deny",
+      "execution_authorized": false,
+      "roles": {
+        "analyst": {
+          "permissions": [
+            "read:asset",
+            "analyze:asset"
+          ],
+          "inherits": []
+        },
+        "building_manager": {
+          "permissions": [
+            "read:asset",
+            "analyze:asset"
+          ],
+          "inherits": []
+        },
+        "home_owner": {
+          "permissions": [
+            "read:asset",
+            "analyze:asset",
+            "write:home_consent",
+            "revoke:home_consent",
+            "write:home_protection"
+          ],
+          "inherits": []
+        },
+        "platform_admin": {
+          "permissions": [
+            "read:asset",
+            "analyze:asset",
+            "write:asset_record"
+          ],
+          "inherits": []
+        },
+        "policy_official": {
+          "permissions": [
+            "read:asset",
+            "analyze:asset"
+          ],
+          "inherits": []
+        },
+        "portfolio_manager": {
+          "permissions": [
+            "read:asset",
+            "analyze:asset"
+          ],
+          "inherits": []
+        }
+      },
+      "actions": {
+        "read:asset": {
+          "effect": "allow_with_assignment"
+        },
+        "analyze:asset": {
+          "effect": "allow_with_assignment"
+        },
+        "approve:action": {
+          "effect": "deny",
+          "reason_code": "AUTHORIZATION_CONDITIONS_UNDEFINED"
+        },
+        "exec:dispatch": {
+          "effect": "deny",
+          "reason_code": "AUTHORIZATION_CONDITIONS_UNDEFINED"
+        },
+        "write:asset_record": {
+          "effect": "allow_with_assignment",
+          "basis": "Existing AIROS admin asset record/identity routes require platform_admin and the same assigned asset."
+        },
+        "write:home_consent": {
+          "effect": "allow_with_assignment",
+          "required_asset_class": "HOM",
+          "contract_ref": "household_consent.json#/$defs/ConsentRequest",
+          "basis": "The registered household owner selects, withdraws or changes protection for their own household. This does not authorize dispatch or approval."
+        },
+        "revoke:home_consent": {
+          "effect": "allow_with_assignment",
+          "required_asset_class": "HOM",
+          "contract_ref": "household_consent.json#/$defs/ParticipationState",
+          "basis": "The registered household owner selects, withdraws or changes protection for their own household. This does not authorize dispatch or approval."
+        },
+        "write:home_protection": {
+          "effect": "allow_with_assignment",
+          "required_asset_class": "HOM",
+          "contract_ref": "household_consent.json#/$defs/ProtectionState",
+          "basis": "The registered household owner selects, withdraws or changes protection for their own household. This does not authorize dispatch or approval."
+        }
+      },
+      "description": "Current assigned-resource capabilities. AIROS roles are independent of global admin/operator roles. Home participation/protection belongs to the assigned home_owner; platform_admin asset metadata writes preserve existing route authority. No approval, dispatch or broader write grant is implied. Service credentials and declared personas are not user identity."
     }
   }
 }
