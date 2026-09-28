@@ -11,9 +11,9 @@
     "reverse",
     "sim_campaign_2026"
   ],
-  "version": "1.1.0",
+  "version": "1.2.0",
   "updated": "2026-09-15",
-  "$comment": "Phase 1.3 산출. SPEC_POLICY_VECTOR.md §2.2 가 본 매트릭스를 import. cell 값 의미: compatible (정상 적용) / marginal (적용 가능 but 절감 < 5%, warn) / infeasible (G-PE1 422 STRATEGY_INFEASIBLE_FOR_HVAC) / expected_skip (EMS_STRATEGY §21, infeasible 의 subset). | 2026-08-03: mgcc 소비자 등재. MGCC 가 그룹 발령 전 **원형 × 전략 적합성**을 판정한다(중앙 공조기 없는 건물에 M01·M02 를 걸고 '적용됨'이라 하지 않기 위해). ⚠ 이 매트릭스는 **원형 축**이고 캠페인 `expected_silent_skip.yaml` 은 **건물×원형 축**(34셀)이라 해상도가 다르다 — 34셀은 원형-보편이 아니다(실측: HD 5동 중 3동 · HE 8동 중 5동 · HF 5동 중 3동 · HG 6동 중 1동 · HA 5동 중 2동). 둘을 합치거나 한쪽으로 덮어쓰면 안 된다. | 2026-09-15 v1.1.0: hvac_types 의 설명 상수(ASHRAE 원형 문장)가 서빙 인코더와 다른 설비를 가리키고 있었다(예: HG='gas-fired boiler + radiator' 인데 인코더·시뮬은 지역난방). 이름을 여기 따로 두지 않고 행 키가 가리키는 정본 코드(region_codes.json#hvac_types)만 적는다. ⚠ A~E 행의 셀 주석은 ASHRAE 원형 기준으로 작성돼 있다(예: E×M02 'DOAS 외기 활용') — 셀 값 재검토는 별건.",
+  "$comment": "Phase 1.3 산출. SPEC_POLICY_VECTOR.md §2.2 가 본 매트릭스를 import. cell 값 의미: compatible (정상 적용) / marginal (적용 가능 but 절감 < 5%, warn) / infeasible (G-PE1 422 STRATEGY_INFEASIBLE_FOR_HVAC) / expected_skip (EMS_STRATEGY §21, infeasible 의 subset). | 2026-08-03: mgcc 소비자 등재. MGCC 가 그룹 발령 전 **원형 × 전략 적합성**을 판정한다(중앙 공조기 없는 건물에 M01·M02 를 걸고 '적용됨'이라 하지 않기 위해). ⚠ 이 매트릭스는 **원형 축**이고 캠페인 `expected_silent_skip.yaml` 은 **건물×원형 축**(34셀)이라 해상도가 다르다 — 34셀은 원형-보편이 아니다(실측: HD 5동 중 3동 · HE 8동 중 5동 · HF 5동 중 3동 · HG 6동 중 1동 · HA 5동 중 2동). 둘을 합치거나 한쪽으로 덮어쓰면 안 된다. | 2026-09-15 v1.1.0: hvac_types 의 설명 상수(ASHRAE 원형 문장)가 서빙 인코더와 다른 설비를 가리키고 있었다(예: HG='gas-fired boiler + radiator' 인데 인코더·시뮬은 지역난방). 이름을 여기 따로 두지 않고 행 키가 가리키는 정본 코드(region_codes.json#hvac_types)만 적는다. ⚠ A~E 행의 셀 주석은 ASHRAE 원형 기준으로 작성돼 있다(예: E×M02 'DOAS 외기 활용') — 셀 값 재검토는 별건. | 2026-09-28 v1.2.0: H_E 중복 행 통합 — E 행 삭제·HE 정본·row_aliases{E:HE}. 두 행은 2026-05-29 첫 커밋부터 같은 날 함께 들어왔고(M19 는 06-16 동시 추가) 이력으로는 가를 수 없어 근거(region_codes 설비 정의·캠페인 시뮬 범위)로 골랐다.",
   "type": "object",
   "_comment_required": "사냥꾼 라운드 LOW (2026-06-08): hvac_types/ems_strategies 는 차원 정의 메타데이터(const map + 코드 참조)이며 data instance 의 payload 가 아니다 → required 에서 제외해 default(matrix-only) 가 자체 유효하도록 정정.",
   "required": [
@@ -62,7 +62,7 @@
     },
     "matrix": {
       "type": "object",
-      "description": "key = HVAC type (A~E, HD~HG), value = { strategy_id: compatibility }. compatibility ∈ {compatible, marginal, infeasible, expected_skip}.",
+      "description": "key = HVAC type (A~D, HD~HG), value = { strategy_id: compatibility }. compatibility ∈ {compatible, marginal, infeasible, expected_skip}. H_E 는 HE 행 하나(2026-09-28) — E 는 row_aliases 로 HE 를 가리킨다.",
       "additionalProperties": false,
       "properties": {
         "A": {
@@ -77,9 +77,6 @@
         "D": {
           "$ref": "#/$defs/StrategyRow"
         },
-        "E": {
-          "$ref": "#/$defs/StrategyRow"
-        },
         "HD": {
           "$ref": "#/$defs/StrategyRow"
         },
@@ -91,6 +88,16 @@
         },
         "HG": {
           "$ref": "#/$defs/StrategyRow"
+        }
+      }
+    },
+    "row_aliases": {
+      "type": "object",
+      "description": "행이 없는 HVAC 코드 → 그 코드를 대신하는 정본 행 키. 2026-09-28 사용자 결정: 같은 H_E 를 가리키던 E·HE 두 행이 8칸(M02·M03·M11~M15·M19)에서 판정이 갈려 소비처마다 다른 답을 냈다 — region_codes H_E(온돌 중앙 가스보일러 + 벽걸이 에어컨, economizer_m02=false · staging_m03=false · sim_id=HE) 와 SCA/KBEP 캠페인(해당 칸 미시뮬)에 맞는 HE 를 정본으로 남기고 E 는 별칭으로 둔다. 근거표 = 8.simulation 보고(2026-09-28).",
+      "additionalProperties": false,
+      "properties": {
+        "E": {
+          "const": "HE"
         }
       }
     }
@@ -643,109 +650,6 @@
           "note": "추가 직후 default — 실제 호환성 reviewer 갱신 필요 (M21 열저장/M22 PV=발전측, 대부분 compatible)"
         }
       },
-      "E": {
-        "M00": {
-          "compatibility": "compatible"
-        },
-        "M01": {
-          "compatibility": "compatible"
-        },
-        "M02": {
-          "compatibility": "compatible",
-          "note": "DOAS 외기 활용"
-        },
-        "M03": {
-          "compatibility": "marginal",
-          "note": "Hydronic pump staging만"
-        },
-        "M04": {
-          "compatibility": "compatible"
-        },
-        "M05": {
-          "compatibility": "compatible"
-        },
-        "M06": {
-          "compatibility": "compatible"
-        },
-        "M07": {
-          "compatibility": "compatible",
-          "note": "CO2 수요제어환기 (DCV) — IAQ 기반 외기도입"
-        },
-        "M08": {
-          "compatibility": "compatible",
-          "note": "전열교환기 (ERV) — 외기-배기 폐열회수"
-        },
-        "M09": {
-          "compatibility": "compatible",
-          "note": "피크 전 프리쿨링/프리히팅 — 열용량 선축냉(예냉)"
-        },
-        "M10": {
-          "compatibility": "compatible"
-        },
-        "M11": {
-          "compatibility": "marginal"
-        },
-        "M12": {
-          "compatibility": "marginal"
-        },
-        "M13": {
-          "compatibility": "marginal"
-        },
-        "M14": {
-          "compatibility": "marginal"
-        },
-        "M15": {
-          "compatibility": "marginal"
-        },
-        "M16": {
-          "compatibility": "compatible",
-          "expected_saving_pct_range": [
-            4,
-            9
-          ],
-          "note": "DR 능동 야간셋백 — M01 availability 적용성 상속 (P6 ADR 성분상속)"
-        },
-        "M17": {
-          "compatibility": "compatible",
-          "expected_saving_pct_range": [
-            2,
-            6
-          ],
-          "note": "조명 디밍 — HVAC 독립"
-        },
-        "M18": {
-          "compatibility": "compatible",
-          "expected_saving_pct_range": [
-            3,
-            8
-          ],
-          "note": "ESS 피크셰이빙 — HVAC 독립 (전기 저장)"
-        },
-        "M19": {
-          "compatibility": "compatible",
-          "expected_saving_pct_range": [
-            5,
-            12
-          ],
-          "note": "DR 통합(setpoint+조명+ESS) — economizer 성분 제약 시 marginal, 조명/ESS 항상 기여 (P6 ADR)"
-        },
-        "M20": {
-          "compatibility": "compatible",
-          "expected_saving_pct_range": [
-            8,
-            20
-          ],
-          "note": "DR 긴급 감축 cascade — 가용 레버 총동원 (HVAC 무관)"
-        },
-        "M21": {
-          "compatibility": "compatible",
-          "note": "추가 직후 default — 실제 호환성 reviewer 갱신 필요 (M21 열저장/M22 PV=발전측, 대부분 compatible)"
-        },
-        "M22": {
-          "compatibility": "compatible",
-          "note": "추가 직후 default — 실제 호환성 reviewer 갱신 필요 (M21 열저장/M22 PV=발전측, 대부분 compatible)"
-        }
-      },
       "HD": {
         "M00": {
           "compatibility": "compatible"
@@ -1155,6 +1059,9 @@
           "note": "추가 직후 default — 실제 호환성 reviewer 갱신 필요 (M21 열저장/M22 PV=발전측, 대부분 compatible)"
         }
       }
+    },
+    "row_aliases": {
+      "E": "HE"
     }
   }
 }
