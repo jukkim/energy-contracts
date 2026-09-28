@@ -356,7 +356,11 @@ def load_schemas() -> dict:
     archetypes = _load("building_archetypes.json")
     hvac_matrix = _load("hvac_ems_matrix.json")
     target_vocab = _load("target_vocabulary.json")
+    calendar = _load("calendar_conventions.json")
+    thresholds = _load("judgement_thresholds.json")
+    cost_catalog = _load("measure_cost_catalog.json")
     return {"archetypes": archetypes, "hvac_matrix": hvac_matrix, "target_vocab": target_vocab,
+            "calendar": calendar, "thresholds": thresholds, "cost_catalog": cost_catalog,
         "edge_cap": edge_cap, "household_consent": household_consent, "region": region, "kbs": kbs,
         "ems": ems, "ports": ports, "common": common,
             "agents": agents, "intents": intents,
@@ -982,6 +986,22 @@ def _generalization_python(schemas: dict) -> list[str]:
     if (schemas.get("hvac_matrix") or {}).get("default", {}).get("canonical_rows"):
         out.append("# ─ 설비 × 전략 호환 (hvac_ems_matrix.json — 정본 행, M00~M22 전부) ───────")
         out.append(f"HVAC_EMS_COMPAT: dict[str, dict[str, str]] = {hvac_ems_compat(schemas)!r}")
+        out.append("")
+    cal = (schemas.get("calendar") or {}).get("default")
+    if cal:
+        out.append("# ─ 달력 규약 (calendar_conventions.json — 계절 체계·하루 창·기간 결과 칸) ────────")
+        out.append(f"CALENDAR_CONVENTIONS: dict = {cal!r}")
+        out.append("")
+    thr = (schemas.get("thresholds") or {}).get("default")
+    if thr:
+        out.append("# ─ 판정 문턱 (judgement_thresholds.json — 개념별·맥락 이름) ───────────────────")
+        out.append(f"JUDGEMENT_THRESHOLDS: dict = {thr!r}")
+        out.append("")
+    method = ((schemas.get("cost_catalog") or {}).get("default") or {}).get("method") or {}
+    if method.get("discount_rate_default") is not None:
+        out.append("# ─ 할인율 (measure_cost_catalog.json#method — 결정 D3, 근거 포함) ───────────────")
+        out.append(f"DISCOUNT_RATE_DEFAULT: float = {method['discount_rate_default']!r}")
+        out.append(f"DISCOUNT_RATE_SOURCE: dict = {method.get('discount_rate_source', {})!r}")
         out.append("")
     out.append("")
     out.append("# ─ 순수 규칙 함수 (energy_contracts/rules_pure.py 원문 그대로 — 별칭 대조·용도→원형·백분위수·탄소) ─")

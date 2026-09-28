@@ -238,3 +238,30 @@ def test_percentile_and_carbon_rules():
     assert axes.carbon_kg({"electricity": 1000}) == pytest.approx(417.3)
     with pytest.raises(KeyError, match="CARBON_FUEL_UNKNOWN"):
         axes.carbon_kg({"coal": 1})
+
+
+# ── G1 2차: 달력 · 문턱 · 계절 TOU · 할인율 ─────────────────────────────────────
+
+def test_calendar_thresholds_tariff_pass_and_divergent_summer_rate_is_caught(tmp_schemas: Path):
+    assert vs.check_calendar_thresholds_tariff() == []
+    _edit(tmp_schemas, "market_prices.json",
+          lambda d: d["default"]["electricity_tariff"].__setitem__("peak", 999.0))
+    assert any("대표 TOU" in v for v in vs.check_calendar_thresholds_tariff(tmp_schemas))
+
+
+def test_season_system_must_cover_each_month_once(tmp_schemas: Path):
+    _edit(tmp_schemas, "calendar_conventions.json",
+          lambda d: d["default"]["season_systems"]["kepco_tariff"]["seasons"].__setitem__("summer", [6, 7, 8, 9]))
+    assert any("kepco_tariff" in v for v in vs.check_calendar_thresholds_tariff(tmp_schemas))
+
+
+def test_discount_rate_is_d3_with_a_source(tmp_schemas: Path):
+    full = gc.gen_python(gc.load_schemas())
+    ns: dict = {}
+    exec(full, ns)
+    assert ns["DISCOUNT_RATE_DEFAULT"] == 0.045 and "4.5%" in ns["DISCOUNT_RATE_SOURCE"]["basis"]
+    assert ns["JUDGEMENT_THRESHOLDS"]["data_quality"]["eui_plausible_kwh_m2"]["max"] == 3000.0
+    assert ns["CALENDAR_CONVENTIONS"]["season_systems"]["kepco_tariff"]["seasons"]["summer"] == [6, 7, 8]
+    _edit(tmp_schemas, "measure_cost_catalog.json",
+          lambda d: d["default"]["method"].pop("discount_rate_source"))
+    assert any("할인율" in v or "discount" in v for v in vs.check_calendar_thresholds_tariff(tmp_schemas))

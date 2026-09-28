@@ -1,0 +1,265 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "energy-contracts/calendar_conventions.json",
+  "title": "Calendar Conventions",
+  "description": "달력 규약 정본(2026-09-28 일반화 G1). 계절 체계·하루 창·기간 결과 칸·상대 표현 기준점을 **이름 붙여** 한 곳에 둔다. 월→계절 정의가 10곳·야간 정의가 4가지로 흩어져 같은 '여름'·'야간'이 도구마다 다른 달·시간을 뜻했다. 한 체계를 여러 곳이 쓰면 결과에 체계 이름(season_system·day_window)을 싣는다. 값을 바꾸지 않고 이름을 붙였다 — 서로 다른 뜻은 다른 이름으로 남는다(예: night_product 0~5시 ↔ night_dr 22~06시).",
+  "_usage": "codegen",
+  "_consumers": [
+    "ems_transformer (G4 기간 해석기·연산 매니페스트)",
+    "building-energy-3d",
+    "8sim-shared",
+    "airos-energy-decision"
+  ],
+  "version": "1.0",
+  "updated": "2026-09-28",
+  "$defs": {
+    "PeriodRole": {
+      "enum": [
+        "window",
+        "comparison_base",
+        "target_year"
+      ],
+      "description": "기간 말의 역할. '전년 대비' = comparison_base, '2030년 목표' = target_year — 자료 창(window)으로 쓰지 않는다."
+    },
+    "DayWindow": {
+      "type": "object",
+      "required": [
+        "hours"
+      ],
+      "properties": {
+        "hours": {
+          "type": "array",
+          "items": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 23
+          }
+        },
+        "label_ko": {
+          "type": "string"
+        },
+        "source": {
+          "type": "string"
+        }
+      }
+    }
+  },
+  "type": "object",
+  "default": {
+    "timezone": "Asia/Seoul",
+    "naive_timestamp_rule": {
+      "rule": "reject",
+      "note": "시간대 없는 시각은 거절한다. 입구(경계)에서 한 번 KST 를 붙이고 안쪽은 전부 시간대 있는 값으로 둔다."
+    },
+    "season_systems": {
+      "kepco_tariff": {
+        "seasons": {
+          "summer": [
+            6,
+            7,
+            8
+          ],
+          "spring_fall": [
+            3,
+            4,
+            5,
+            9,
+            10
+          ],
+          "winter": [
+            11,
+            12,
+            1,
+            2
+          ]
+        },
+        "label_ko": "한전 요금 계절",
+        "source": "한전 전기요금표(2026-06-01 시행) 계절 구분 — be-3d shared/constants.get_season · 게이트웨이 store_operations_brief._SEASON · internal_query_tools._KEPCO_SEASON_BY_MONTH 와 같은 값"
+      },
+      "meteorological": {
+        "seasons": {
+          "spring": [
+            3,
+            4,
+            5
+          ],
+          "summer": [
+            6,
+            7,
+            8
+          ],
+          "autumn": [
+            9,
+            10,
+            11
+          ],
+          "winter": [
+            12,
+            1,
+            2
+          ]
+        },
+        "label_ko": "기상학적 계절",
+        "source": "게이트웨이 simulation_pack_analysis._SEASONS"
+      },
+      "gas_bimonthly_merge": {
+        "months": [
+          6,
+          7,
+          8,
+          9
+        ],
+        "label_ko": "도시가스 여름 격월 검침",
+        "rule": "빈 달은 다음 달 검침에 합산돼 있다 — 빈 달을 '나쁜 달'로 세거나 합산 달을 두 번 외삽하지 않는다",
+        "source": "be-3d data_ingestion/collect_building_energy.GAS_MERGE_MONTHS (19,105필지 적용, 2026-09-21)"
+      },
+      "sim_run_periods": {
+        "ref": "simulation_scenarios.json#default.run_periods",
+        "note": "시뮬 실행 구간(여름 피크 7~8월 등) — 값은 그 표"
+      },
+      "dr_event": {
+        "ref": "ems_strategies.json#default.dr_assumptions.event_window_default",
+        "note": "DR 이벤트 창(7~8월 평일 17~20시) — 값은 그 표"
+      }
+    },
+    "question_season_system": null,
+    "question_season_system_note": "질문의 '여름철'을 어느 체계로 풀지는 G4(기간 해석기, 3b)에서 정한다 — 정하기 전에는 되묻는다.",
+    "quarters": {
+      "Q1": [
+        1,
+        2,
+        3
+      ],
+      "Q2": [
+        4,
+        5,
+        6
+      ],
+      "Q3": [
+        7,
+        8,
+        9
+      ],
+      "Q4": [
+        10,
+        11,
+        12
+      ]
+    },
+    "halves": {
+      "H1": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6
+      ],
+      "H2": [
+        7,
+        8,
+        9,
+        10,
+        11,
+        12
+      ]
+    },
+    "day_windows": {
+      "night_product": {
+        "hours": [
+          0,
+          1,
+          2,
+          3,
+          4,
+          5
+        ],
+        "label_ko": "야간(0~6시)",
+        "source": "게이트웨이 airos_store_bridge.OVERNIGHT_HOURS · 하네스 DAWN(브리핑 기본값)"
+      },
+      "outside_hours_store": {
+        "hours": [
+          1,
+          2,
+          3,
+          4,
+          5,
+          6
+        ],
+        "label_ko": "영업 외(1~7시)",
+        "source": "하네스 OUTSIDE_HOURS(AIROS-005 선언)"
+      },
+      "night_dr": {
+        "hours": [
+          22,
+          23,
+          0,
+          1,
+          2,
+          3,
+          4,
+          5
+        ],
+        "label_ko": "DR 야간(22~06시)",
+        "source": "ems_strategies.json#default.dr_assumptions.night_window_default"
+      },
+      "day_product": {
+        "hours": [
+          9,
+          10,
+          11,
+          12,
+          13,
+          14,
+          15,
+          16
+        ],
+        "label_ko": "주간(9~17시)",
+        "source": "게이트웨이 DAY_HOURS"
+      },
+      "afternoon": {
+        "hours": [
+          12,
+          13,
+          14,
+          15,
+          16
+        ],
+        "label_ko": "오후(12~17시)",
+        "source": "게이트웨이 _STORE_RESPONSE_RULE"
+      }
+    },
+    "question_hours_win": "질문이 시각 범위를 말하면 질문이 이긴다(하루 창은 질문이 시간을 말하지 않을 때만).",
+    "period_result": {
+      "fields": [
+        "start",
+        "end_exclusive",
+        "grain",
+        "basis",
+        "role",
+        "season_system",
+        "clipped"
+      ],
+      "end_rule": "end 는 항상 end_exclusive 다. 포함 끝이 필요한 도구는 last_day 라는 다른 이름을 쓴다(같은 이름에 두 뜻 금지).",
+      "range_rule": "범위('7월~9월'·'2023~2024년')는 앞 끝의 연도를 뒤로 물려받아 한 창으로, 열거('A와 B')는 창 여럿으로 돌려준다(합치지 않는다).",
+      "clipped": "자료 범위로 잘랐으면 clipped=true 와 원래 요청 창을 함께 싣는다(조용히 자르지 않는다)."
+    },
+    "relative_anchors": {
+      "calendar_relative": "today_kst",
+      "recent_n": "data_end",
+      "note": "'지난달·올해'는 오늘(KST) 기준, '최근 N'은 자료 끝 기준 — 답에 기준점을 함께 밝힌다."
+    },
+    "default_period_precedence": [
+      "question",
+      "client_selection",
+      "coverage_of_needs",
+      "ask"
+    ],
+    "replay_policies": {
+      "airos_store_replay_2022": {
+        "ref": "airos_replay_anomaly_policy.json#default",
+        "note": "재생 기간은 그 측정 묶음의 성질이다 — 다른 자료에는 적용하지 않는다(G4 에서 묶음별로 선언)."
+      }
+    }
+  }
+}

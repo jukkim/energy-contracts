@@ -1,0 +1,107 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "energy-contracts/judgement_thresholds.json",
+  "title": "Judgement Thresholds",
+  "description": "판정 문턱 정본(2026-09-28 일반화 G1). '이상'·'의미 있는 절감'·쾌적·설정온도 준수·자료 타당 범위의 문턱을 개념별로 이름 붙여 한 곳에 둔다. 같은 낱말에 문턱이 여럿이던 자리(이상 z3·z2·IQR1.5, 절감 3%·0.5%·5%)는 값을 지우지 않고 맥락 이름으로 가른다 — 답에는 어느 맥락의 문턱인지 싣는다. classification 이 assumed 인 값은 합의된 운영 기준이 아니다.",
+  "_usage": "codegen",
+  "_consumers": [
+    "building-energy-3d",
+    "8sim-shared",
+    "agentleague",
+    "ems_transformer (G5)",
+    "airos-energy-decision"
+  ],
+  "version": "1.0",
+  "updated": "2026-09-28",
+  "type": "object",
+  "default": {
+    "anomaly": {
+      "residual_z": {
+        "value": 3.0,
+        "comparison": "strictly_greater",
+        "standard_deviation": "population",
+        "source": "airos_replay_anomaly_policy.json#default.residual_z_threshold",
+        "classification": "declared"
+      },
+      "screening_z": {
+        "value": 2.0,
+        "comparison": "strictly_greater",
+        "source": "be-3d internal_agents/common.ANOMALY_Z_THRESHOLD",
+        "note": "선별(주의) 단계 — 확정 이상은 residual_z"
+      },
+      "tukey_iqr_k": {
+        "value": 1.5,
+        "source": "게이트웨이 원단위 이상치(Tukey)"
+      }
+    },
+    "saving": {
+      "meaningful_pct": {
+        "success": {
+          "value": 3.0,
+          "source": "store_brief_declared_criteria_v1.savings_comfort_success_rule.min_saving_pct",
+          "classification": "assumed"
+        },
+        "dcv": {
+          "value": 0.5,
+          "source": "게이트웨이 internal_query_tools._DCV_MIN_SAVING_PCT"
+        },
+        "before_after_effect": {
+          "value": 5.0,
+          "source": "store_brief_declared_criteria_v1.effect_threshold_pct",
+          "classification": "assumed"
+        }
+      },
+      "effect_low_fraction": {
+        "value": 0.3,
+        "source": "store_brief_declared_criteria_v1.effect_low_fraction",
+        "classification": "assumed"
+      }
+    },
+    "comfort": {
+      "proxy_exceed": {
+        "temp_c": 26.0,
+        "max_extra_exceed_hours": 50.0,
+        "source": "store_brief_declared_criteria_v1.savings_comfort_success_rule",
+        "classification": "assumed"
+      },
+      "indoor_max_c": {
+        "value": 28.0,
+        "source": "store_brief_declared_criteria_v1.comfort_max_c",
+        "classification": "assumed"
+      },
+      "indoor_min_c": {
+        "value": 18.0,
+        "source": "store_brief_declared_criteria_v1.comfort_min_c",
+        "classification": "assumed"
+      },
+      "pmv_band": {
+        "ref": "simulation_scenarios.json#default.pmv_thresholds"
+      }
+    },
+    "setpoint": {
+      "unmet_limit_h": {
+        "value": 300.0,
+        "rule": "퍼-축 max(heating_h, cooling_h) <= 300",
+        "source": "ASHRAE 90.1 Appendix G 미충족 300 h — 8.simulation _shared/setpoint_compliance.SETPOINT_LIMIT_H(계산은 그 모듈)"
+      }
+    },
+    "data_quality": {
+      "eui_plausible_kwh_m2": {
+        "min": 10.0,
+        "max": 3000.0,
+        "source": "상한 = 계량 기록기 자신의 상한(be-3d collect_building_energy.MAX_PLAUSIBLE_EUI 3,000 — 넘으면 기록 때 implausible 표시). 하한 = 지도 하한(metric_choropleth._EUI_MIN_PLAUSIBLE 10).",
+        "replaces": [
+          "be-3d internal_agents/common.EUI_VALIDATION_MAX 5000",
+          "be-3d buildings_analysis.MAX_PLAUSIBLE_EUI 2000",
+          "AIROS adapters/be3d.plausible_eui_range ≈1900",
+          "게이트웨이 region_energy_aggregate 상한 없음"
+        ],
+        "decision": "2026-09-28 일반화 G1 — 기록기가 implausible 로 표시한 값을 읽는 쪽이 다시 칠하지 않게 기록기 상한 하나로 맞춘다."
+      },
+      "rank_min_sample_buildings": {
+        "value": 30,
+        "source": "be-3d region_census.MIN_RANK_SAMPLE_BUILDINGS(ingestion 이관 135 와 같은 선)"
+      }
+    }
+  }
+}

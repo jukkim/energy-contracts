@@ -25,6 +25,9 @@ components:
     AiModelRegistry:          {$ref: 'ai_model_registry.json'}
     AirosReplayAnomalyPolicy: {$ref: 'airos_replay_anomaly_policy.json'}
     TargetVocabulary:         {$ref: 'target_vocabulary.json'}
+    CalendarConventions:      {$ref: 'calendar_conventions.json'}
+    JudgementThresholds:      {$ref: 'judgement_thresholds.json'}
+    OperationManifest:        {$ref: 'operation_manifest.json'}
     AiroRequest:              {$ref: 'airo_request.json'}
     AnomalyResponse:          {$ref: 'anomaly_response.json'}
     AuthPolicy:               {$ref: 'auth_policy.json'}

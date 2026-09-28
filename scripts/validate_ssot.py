@@ -936,6 +936,67 @@ def check_admin_succession(schemas_dir: Path | None = None) -> list[str]:
     return v
 
 
+def check_calendar_thresholds_tariff(schemas_dir: Path | None = None) -> list[str]:
+    """달력·문턱·계절 TOU·할인율(2026-09-28 G1 2차).
+
+    * 계절 체계(달 목록이 있는 것)는 1~12월을 한 번씩만 덮는다 · 하루 창 시각은 0~23.
+    * 대표 TOU(A·II·summer) == electricity_tariff 3값 — 여름 요금이 두 곳에서 갈리지 않게.
+    * TOU 는 전압·선택·계절 전부 3구간을 갖고, 계절마다 시간표가 24시간을 한 번씩 덮는다.
+    * EUI 타당 범위 min < max · 할인율 값이 있고 근거가 있다.
+    """
+    sd = schemas_dir or SCHEMAS_DIR
+    v: list[str] = []
+    try:
+        cal = json.loads((sd / "calendar_conventions.json").read_text(encoding="utf-8"))["default"]
+        thr = json.loads((sd / "judgement_thresholds.json").read_text(encoding="utf-8"))["default"]
+        mp = json.loads((sd / "market_prices.json").read_text(encoding="utf-8"))["default"]
+        method = json.loads((sd / "measure_cost_catalog.json").read_text(encoding="utf-8"))["default"]["method"]
+    except (OSError, KeyError, TypeError, ValueError) as exc:
+        return [f"달력·문턱·요금 로드 실패 — {exc}"]
+    checked = 0
+    for name, sys_ in cal.get("season_systems", {}).items():
+        seasons = sys_.get("seasons")
+        if not seasons:
+            continue
+        checked += 1
+        months = sorted(m for ms in seasons.values() for m in ms)
+        if months != list(range(1, 13)):
+            v.append(f"calendar season_systems.{name} 가 1~12월을 한 번씩 덮지 않는다: {months}")
+    for name, w in cal.get("day_windows", {}).items():
+        hs = w.get("hours") or []
+        if not hs or any(not (0 <= h <= 23) for h in hs) or len(set(hs)) != len(hs):
+            v.append(f"calendar day_windows.{name} 시각 {hs} 가 틀렸다")
+    if checked == 0:
+        v.append("calendar season_systems 에서 대조한 체계가 0건")
+    tou = mp.get("electricity_tou_general_b_2026") or {}
+    rep = tou.get("representative") or {}
+    try:
+        rep_rates = tou["rates"][rep["voltage"]][rep["option"]]["summer"]
+        flat = {k: mp["electricity_tariff"][k] for k in ("off_peak", "mid_peak", "peak")}
+        if rep_rates != flat:
+            v.append(f"대표 TOU {rep} 여름 {rep_rates} != electricity_tariff {flat}")
+        for season, key in tou["season_hours"].items():
+            hours = tou["hours"][key]
+            allh = sorted(h for band in ("peak", "mid_peak", "off_peak") for h in hours[band])
+            if allh != list(range(24)):
+                v.append(f"TOU 시간표 {key} 가 24시간을 한 번씩 덮지 않는다")
+            if season not in cal["season_systems"][tou["season_system"].rsplit(".", 1)[-1]]["seasons"]:
+                v.append(f"TOU 계절 {season} 가 달력 체계에 없다")
+        for volt, opts in tou["rates"].items():
+            for opt, seasons in opts.items():
+                for season, bands in seasons.items():
+                    if set(bands) != {"off_peak", "mid_peak", "peak"} or season not in tou["season_hours"]:
+                        v.append(f"TOU rates[{volt}][{opt}][{season}] 모양이 틀렸다")
+    except (KeyError, TypeError) as exc:
+        v.append(f"계절 TOU 표 모양 오류 — {exc}")
+    rng = (thr.get("data_quality") or {}).get("eui_plausible_kwh_m2") or {}
+    if not (isinstance(rng.get("min"), (int, float)) and isinstance(rng.get("max"), (int, float)) and rng["min"] < rng["max"]):
+        v.append(f"judgement_thresholds data_quality.eui_plausible_kwh_m2 {rng} 가 틀렸다")
+    if method.get("discount_rate_default") is None or not (method.get("discount_rate_source") or {}).get("basis"):
+        v.append("measure_cost_catalog method.discount_rate_default 값·근거(discount_rate_source.basis)가 없다")
+    return v
+
+
 def check_mirror_core_keywords() -> list[str]:
     """20 BASE CORE_KEYWORDS 로컬 검증 가드 (Deferred D-3, 사냥꾼 LOW).
 
@@ -1403,6 +1464,7 @@ def main() -> int:
         v += check_axis_tables()                   # 2026-09-28 G1 — 축 어휘 별칭 충돌·KBEP 정수 축
         v += check_replay_policy_source()          # 2026-09-28 G0 — 재생 정책 원천 해시
         v += check_admin_succession()              # 2026-09-28 G1 — 행정구역 승계표 모양
+        v += check_calendar_thresholds_tariff()    # 2026-09-28 G1 2차 — 달력·문턱·계절 TOU·할인율
         v += check_mirror_core_keywords()          # Deferred D-3 — 20 BASE CORE_KEYWORDS 로컬 검증
         v += check_local_mirror_drift(scope)       # P3 (2026-06-17) — 커밋 repo CLAUDE.md REVERSE 키워드 로컬 가드
         if v:

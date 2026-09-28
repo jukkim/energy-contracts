@@ -7,7 +7,7 @@
   "_consumers": [
     "gridbridge"
   ],
-  "version": "2.2",
+  "version": "2.3",
   "type": "object",
   "properties": {
     "kau": {
@@ -31,14 +31,37 @@
         "phase4_2030_outlook_krw_per_tco2": {
           "type": "object",
           "description": "K-ETS 4기(2026~2030) 2030년 전망가 범위(원/tCO2). 보도 전망치 — 시장가가 아니다. 민감도·정책 상향 범위로만 쓰고 기본값을 대체하지 않는다.",
-          "required": ["min", "max", "source", "source_urls", "as_of"],
+          "required": [
+            "min",
+            "max",
+            "source",
+            "source_urls",
+            "as_of"
+          ],
           "properties": {
-            "min": {"type": "number"},
-            "max": {"type": "number"},
-            "source": {"type": "string"},
-            "source_urls": {"type": "array", "items": {"type": "string"}},
-            "as_of": {"type": "string", "format": "date"},
-            "data_source": {"type": "string", "description": "data_classification.json#DataSource — 외부 보도 전망 = external."}
+            "min": {
+              "type": "number"
+            },
+            "max": {
+              "type": "number"
+            },
+            "source": {
+              "type": "string"
+            },
+            "source_urls": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "as_of": {
+              "type": "string",
+              "format": "date"
+            },
+            "data_source": {
+              "type": "string",
+              "description": "data_classification.json#DataSource — 외부 보도 전망 = external."
+            }
           }
         }
       }
@@ -388,8 +411,212 @@
           "basis": "ENERGY_SSOT §4-1 TOU 재편 시간가중 재산정(추정, 미적용)"
         }
       }
+    },
+    "electricity_tou_general_b_2026": {
+      "tariff": "한전 일반용(을) 고압",
+      "effective_date": "2026-06-01",
+      "unit": "KRW/kWh",
+      "vat": "excluded",
+      "season_system": "calendar_conventions.json#default.season_systems.kepco_tariff",
+      "hours": {
+        "spring_summer_fall": {
+          "peak": [
+            15,
+            16,
+            17,
+            18,
+            19,
+            20
+          ],
+          "mid_peak": [
+            8,
+            9,
+            10,
+            11,
+            12,
+            13,
+            14,
+            21
+          ],
+          "off_peak": [
+            22,
+            23,
+            0,
+            1,
+            2,
+            3,
+            4,
+            5,
+            6,
+            7
+          ]
+        },
+        "winter": {
+          "peak": [
+            9,
+            10,
+            11,
+            16,
+            17,
+            18
+          ],
+          "mid_peak": [
+            8,
+            12,
+            13,
+            14,
+            15,
+            19,
+            20,
+            21
+          ],
+          "off_peak": [
+            22,
+            23,
+            0,
+            1,
+            2,
+            3,
+            4,
+            5,
+            6,
+            7
+          ]
+        }
+      },
+      "season_hours": {
+        "summer": "spring_summer_fall",
+        "spring_fall": "spring_summer_fall",
+        "winter": "winter"
+      },
+      "rates": {
+        "A": {
+          "I": {
+            "summer": {
+              "off_peak": 92.8,
+              "mid_peak": 145.7,
+              "peak": 227.8
+            },
+            "spring_fall": {
+              "off_peak": 92.8,
+              "mid_peak": 115.3,
+              "peak": 146.0
+            },
+            "winter": {
+              "off_peak": 99.8,
+              "mid_peak": 145.9,
+              "peak": 203.4
+            }
+          },
+          "II": {
+            "summer": {
+              "off_peak": 87.3,
+              "mid_peak": 140.2,
+              "peak": 222.3
+            },
+            "spring_fall": {
+              "off_peak": 87.3,
+              "mid_peak": 109.8,
+              "peak": 140.5
+            },
+            "winter": {
+              "off_peak": 94.3,
+              "mid_peak": 140.4,
+              "peak": 197.9
+            }
+          },
+          "III": {
+            "summer": {
+              "off_peak": 86.4,
+              "mid_peak": 139.6,
+              "peak": 209.9
+            },
+            "spring_fall": {
+              "off_peak": 86.4,
+              "mid_peak": 108.5,
+              "peak": 132.2
+            },
+            "winter": {
+              "off_peak": 93.7,
+              "mid_peak": 139.8,
+              "peak": 186.7
+            }
+          }
+        },
+        "B": {
+          "I": {
+            "summer": {
+              "off_peak": 95.9,
+              "mid_peak": 148.2,
+              "peak": 229.4
+            },
+            "spring_fall": {
+              "off_peak": 95.9,
+              "mid_peak": 118.2,
+              "peak": 148.5
+            },
+            "winter": {
+              "off_peak": 102.9,
+              "mid_peak": 148.2,
+              "peak": 204.4
+            }
+          },
+          "II": {
+            "summer": {
+              "off_peak": 92.1,
+              "mid_peak": 144.4,
+              "peak": 225.6
+            },
+            "spring_fall": {
+              "off_peak": 92.1,
+              "mid_peak": 114.4,
+              "peak": 144.7
+            },
+            "winter": {
+              "off_peak": 99.1,
+              "mid_peak": 144.4,
+              "peak": 200.6
+            }
+          },
+          "III": {
+            "summer": {
+              "off_peak": 90.4,
+              "mid_peak": 142.7,
+              "peak": 224.0
+            },
+            "spring_fall": {
+              "off_peak": 90.4,
+              "mid_peak": 112.8,
+              "peak": 143.1
+            },
+            "winter": {
+              "off_peak": 97.5,
+              "mid_peak": 142.7,
+              "peak": 198.9
+            }
+          }
+        }
+      },
+      "basic_charge_krw_per_kw_month": {
+        "A": {
+          "I": 7220,
+          "II": 8320,
+          "III": 9810
+        },
+        "B": {
+          "I": 6630,
+          "II": 7380,
+          "III": 8190
+        }
+      },
+      "representative": {
+        "voltage": "A",
+        "option": "II",
+        "note": "electricity_tariff(여름 3값)는 이 표의 A·II·summer 와 같아야 한다(validate_ssot)"
+      },
+      "source": "KEPCO 전기요금표(종합) 2026.6.1 시행 — be-3d src/shared/constants.py ELECTRICITY_TARIFF_BY_OPTION·ELECTRICITY_TARIFF_HV_B·WINTER_*_HOURS 에서 이관(2026-09-28). 일반용(을)은 고압A·B만(고압C 는 산업용)."
     }
   },
-  "updated": "2026-09-10",
+  "updated": "2026-09-28",
   "$comment": "v2.1(2026-09-10) 단가 통일 감사: 세 벌(시뮬 회계 152/65/95/110/110 · 일반용 소매 120/80 · 주택용 환산 110/45/70/65)을 한 정본에 스코프 단어와 함께 등록. unit_prices 기존 키·값은 불변(하위호환·K-apt 재적재 전 혼합 방지). 신규 계산(요금·경제성·Query500 financial_assumptions)은 retail_reference_2026 만 사용. frozen_sets.simulation_accounting_2025 는 8.simulation/_shared/energy_accounting.py 의 동결 세트 등록본(값 변경 금지). 출처·환산은 각 블록의 source/conversion 참조. 값 정정 시 bulk-edit-verify."
 }
