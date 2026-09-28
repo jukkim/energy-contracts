@@ -63,6 +63,15 @@ canonical 값(아래)은 **`energy-contracts/schemas/*.json` 한 곳에서만** 
   (정본 `tools/hooks/pre-commit` 복사). `.git/hooks` 손편집 금지.
 - 시험 = `tests/test_scoped_precommit_gate.py` (형제 drift 초록 · 자기 drift 빨강 · 워크트리 · 전수는 여전히 빨강).
 
+### 4.2 생성본 `SOURCE_HASH` 대조 규칙 (2026-09-28 최종 라운드 O5 — 공개)
+
+- `SOURCE_HASH` = sha256(스키마 dict 정렬 JSON ‖ `gen_constants.py` 자기 바이트(줄끝 정규화) ‖ `rules_pure.py` 순수 규칙 원문) 앞 16자.
+  생성기 바이트가 들어가므로 **소비처는 스스로 다시 계산할 수 없다** — 대조는 EC 쪽 `gen_constants.py --check`(전수) ·
+  `gen_constants_scoped.py --check --project-root`(자기 저장소)가 한다. 소비처 런타임은 생성본 파일 **하나**만 적재한다
+  (8.simulation = `_shared/_generated_constants.py`; `mpc_model/mpc_shared/_generated_constants.py` 는 등록되지 않은 옛 사본 —
+  codegen 대상이 아니며 읽지 않는다. 지우는 것은 그 저장소 담당이 확인 후).
+- `PROJECT_TARGETS` 에 없는 `_generated_constants.*` 는 생성본이 아니다 — `--all` 이 건드리지 않으므로 낡는다(2026-08-02 sejong 사고).
+
 ## 5. 값 정정 시 — 맥락 확인 (bulk-edit-verify)
 
 scan N건 ≠ N건 수정. occurrence별 맥락 판정. 예: `제2024-1026호`는 **PE 환산계수 출처=정당(불변)** / **ZEB baseline 출처=구값(→ 제2025-738호)**. 일괄 치환 금지.

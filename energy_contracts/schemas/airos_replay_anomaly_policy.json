@@ -25,9 +25,16 @@
     "sensor_rule": "all_observed_thermostat_values_zero; missing_is_unknown",
     "execution_authorized": false,
     "source": {
-      "path": "공모전/2026-04-24_AI챔피언_전국민AI경진대회/validation/query500/store_ops_brief_support.py",
-      "sha256": "656504fb43ba6cef28edd70b051029a1424da6494850c8dbd989c72790f71365",
-      "basis": "Existing 2026-09-13 delegated and explicitly declared replay criteria; no new threshold or date chosen."
+      "kind": "canonical_self",
+      "path": "projects/energy-contracts/energy_contracts/schemas/airos_replay_anomaly_policy.json#default",
+      "sha256": "951ee3268b8df411e2518af5c00b82629c53102399aed58b2aae41ef33921ffa",
+      "sha256_rule": "sha256(json.dumps(default 에서 source 를 뺀 값, sort_keys, ensure_ascii=False, separators=(',',':')))",
+      "applied_by": [
+        "8.simulation/ems_transformer/serving/asset_inputs/replay_anomaly_facts.py",
+        "8.simulation/ems_transformer/serving/asset_inputs/_virtual.py",
+        "8.simulation/ems_transformer/serving/period_parser.py"
+      ],
+      "basis": "2026-09-28 최종 라운드: 원천을 퇴역한 하네스(validation/query500/store_ops_brief_support.py)에서 정본 자신으로 옮김. 날짜·z 문턱·비교·표준편차·센서 규칙은 이 표가 정본이고 게이트웨이(replay_anomaly_facts.canonical_policy)는 아이로스 재생 문서의 기준을 이 값과 대조만 한다. 값은 2026-09-13 선언 그대로(새 문턱·날짜 없음)."
     }
   },
   "const": {
@@ -47,9 +54,16 @@
     "sensor_rule": "all_observed_thermostat_values_zero; missing_is_unknown",
     "execution_authorized": false,
     "source": {
-      "path": "공모전/2026-04-24_AI챔피언_전국민AI경진대회/validation/query500/store_ops_brief_support.py",
-      "sha256": "656504fb43ba6cef28edd70b051029a1424da6494850c8dbd989c72790f71365",
-      "basis": "Existing 2026-09-13 delegated and explicitly declared replay criteria; no new threshold or date chosen."
+      "kind": "canonical_self",
+      "path": "projects/energy-contracts/energy_contracts/schemas/airos_replay_anomaly_policy.json#default",
+      "sha256": "951ee3268b8df411e2518af5c00b82629c53102399aed58b2aae41ef33921ffa",
+      "sha256_rule": "sha256(json.dumps(default 에서 source 를 뺀 값, sort_keys, ensure_ascii=False, separators=(',',':')))",
+      "applied_by": [
+        "8.simulation/ems_transformer/serving/asset_inputs/replay_anomaly_facts.py",
+        "8.simulation/ems_transformer/serving/asset_inputs/_virtual.py",
+        "8.simulation/ems_transformer/serving/period_parser.py"
+      ],
+      "basis": "2026-09-28 최종 라운드: 원천을 퇴역한 하네스(validation/query500/store_ops_brief_support.py)에서 정본 자신으로 옮김. 날짜·z 문턱·비교·표준편차·센서 규칙은 이 표가 정본이고 게이트웨이(replay_anomaly_facts.canonical_policy)는 아이로스 재생 문서의 기준을 이 값과 대조만 한다. 값은 2026-09-13 선언 그대로(새 문턱·날짜 없음)."
     }
   },
   "properties": {
@@ -116,23 +130,38 @@
     "source": {
       "type": "object",
       "properties": {
+        "kind": {
+          "type": "string",
+          "const": "canonical_self"
+        },
         "path": {
           "type": "string",
-          "const": "공모전/2026-04-24_AI챔피언_전국민AI경진대회/validation/query500/store_ops_brief_support.py"
+          "const": "projects/energy-contracts/energy_contracts/schemas/airos_replay_anomaly_policy.json#default"
         },
         "sha256": {
           "type": "string",
-          "const": "656504fb43ba6cef28edd70b051029a1424da6494850c8dbd989c72790f71365"
+          "const": "951ee3268b8df411e2518af5c00b82629c53102399aed58b2aae41ef33921ffa"
+        },
+        "sha256_rule": {
+          "type": "string"
+        },
+        "applied_by": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "minItems": 1
         },
         "basis": {
-          "type": "string",
-          "const": "Existing 2026-09-13 delegated and explicitly declared replay criteria; no new threshold or date chosen."
+          "type": "string"
         }
       },
       "required": [
+        "kind",
         "path",
         "sha256",
-        "basis"
+        "basis",
+        "applied_by"
       ],
       "additionalProperties": false
     }

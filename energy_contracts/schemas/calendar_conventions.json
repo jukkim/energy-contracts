@@ -76,6 +76,12 @@
         "label_ko": "한전 요금 계절",
         "source": "한전 전기요금표(2026-06-01 시행) 계절 구분 — be-3d shared/constants.get_season · 게이트웨이 store_operations_brief._SEASON · internal_query_tools._KEPCO_SEASON_BY_MONTH 와 같은 값"
       },
+      "heating_season": {
+        "months": [11, 12, 1, 2, 3],
+        "label_ko": "난방기(보일러 운전 달 — 3월 포함)",
+        "rule": "보일러·난방 설비 분석의 기본 난방 달(질문이 달을 말하면 그 달). 한전 요금 계절 winter(11~2월)와 다른 뜻이다 — 같은 이름에 두 뜻을 두지 않는다",
+        "source": "게이트웨이 boiler_simulation_analysis._WINTER_MONTHS_DEFAULT (1,2,3,11,12) 이관(2026-09-28 W5 F8-06)"
+      },
       "meteorological": {
         "seasons": {
           "spring": [
@@ -248,6 +254,11 @@
       "calendar_relative": "today_kst",
       "recent_n": "data_end",
       "note": "'지난달·올해'는 오늘(KST) 기준, '최근 N'은 자료 끝 기준 — 답에 기준점을 함께 밝힌다."
+    },
+    "complete_month": {
+      "coverage_min": 0.99,
+      "rule": "달의 시간 칸 중 유효 값이 이 몫 이상이면 '온전한 달'. 부분 달을 온전한 달·연간 값처럼 쓰지 않는다.",
+      "source": "게이트웨이 asset_inputs/_series.COMPLETE_MONTH_COVERAGE = measured_store_analysis coverage>=0.99 (2026-09-28 W4 G5 정본 이관)"
     },
     "default_period_precedence": [
       "question",

@@ -332,6 +332,19 @@
         "_comment": "台灣 碳費 — 標準 NT00/tCO2e, 自主減量 우대 A 50/B 100. 전력·가스·제조 中 연 25,000 tCO2e 초과 대상. 2026년 첫 징수(2025 배출 기준). 出처=環境部 2024.10 공고."
       }
     },
+    "sim_cost_track_2025": {
+      "unit": "KRW/kWh",
+      "year": 2025,
+      "electricity": 152,
+      "gas": 65,
+      "district_heating": 95,
+      "district_cooling": 110,
+      "oil": 110,
+      "track": "simulation_cost_evaluation",
+      "rule_ko": "시뮬 비용 평가 트랙 — 전력 = 한전 일반용 시간별 요금의 시간 가중평균(2025), 가스 = 도시가스 도매가(2025), 지역난방·지역냉방·유류 = 소매 환산 평균(2025). 정책·요금 트랙(unit_prices 전력 120·가스 80, electricity_tariff TOU)과 정의가 다른 값이다 — 인용 시 트랙을 밝힌다(ENERGY_SSOT §4.D-01)",
+      "source": "8.simulation/_shared/energy_accounting.TARIFFS_KRW_KWH(2026-09-28 O5 이관 — 손 리터럴이던 자리)",
+      "classification": "assumed"
+    },
     "retail_reference_2026": {
       "basis_date": "2026-09-01",
       "vat": "excluded",

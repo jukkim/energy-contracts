@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "energy-contracts/building_usage_map.json",
   "title": "Building Usage Map SSOT (Phase J-7)",
-  "description": "건축물대장 용도 코드 ↔ archetype ↔ 에너지 사용패턴 매핑. 한국(740만 건물) + 인도네시아 BEMS(12.5M ASEAN 건물). v1.1 (2026-09-28): usage_archetype = 건축물대장 주용도 → 원형(Bxx) **정본 한 표**. 사본 8벌(EC 2·be-3d 2·AIROS 2·Studio 2)이 업무시설을 대형/중형 사무소로 갈라 답했다. usages[*].archetype 은 이 표와 같아야 한다(validate_ssot).",
+  "description": "건축물대장 용도 코드 ↔ archetype ↔ 에너지 사용패턴 매핑. 한국(740만 건물) + 인도네시아 BEMS(12.5M ASEAN 건물). v1.1 (2026-09-28): usage_archetype = 건축물대장 주용도 → 원형(Bxx) **정본 한 표**. 사본 8벌(EC 2·be-3d 2·AIROS 2·Studio 2)이 업무시설을 대형/중형 사무소로 갈라 답했다. usages[*] 는 registry_usage 로 이 표를 가리키고 원형은 생성기가 파생한다(v1.2).",
   "_usage": "codegen",
   "_consumers": [
     "edge-agent",
@@ -11,8 +11,9 @@
     "agentleague",
     "eduarena"
   ],
-  "version": "1.1",
+  "version": "1.2",
   "updated": "2026-09-28",
+  "$comment": "v1.2(2026-09-28 최종 라운드 X2): 용도 표 두 벌(usages[*].archetype 손 값 ↔ usage_archetype.rows)을 하나로 — 정본 = usage_archetype.rows. usages[*] 는 archetype 을 손으로 적지 않고 registry_usage(rows 키)만 적는다. 생성본 BUILDING_USAGES 의 archetype(영문명)·archetype_code 는 gen_constants 가 rows 에서 파생한다. 편의점 = B11(사용자 결정 2026-09-28 22:35 — 자산 용도를 알 때; 대장 주용도 근린생활 B03 은 용도를 모를 때만). 공동주택 층수 규칙(apartment_by_floors: 지상 5층 이하 중층 B16 · 초과 고층 B17 · 층수 미상 B16) 추가. 확장 용도 행(노유자·수련·문화및집회·운동·운수·자동차관련·위험물·방송통신) = 가장 가까운 원형의 선언 가정(classification assumed) 또는 이름 있는 결손(방송통신 = DOE 원형 없음).",
   "$defs": {
     "UsageEntry": {
       "type": "object",
@@ -20,7 +21,7 @@
         "code",
         "name_kr",
         "name_en",
-        "archetype"
+        "registry_usage"
       ],
       "properties": {
         "code": {
@@ -33,9 +34,12 @@
         "name_en": {
           "type": "string"
         },
-        "archetype": {
-          "type": "string",
-          "description": "EnergyPlus archetype 매핑"
+        "registry_usage": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "description": "usage_archetype.rows 의 키(또는 usage_aliases 키) — 원형은 그 행에서 파생한다(손으로 적지 않는다). null = 원형 없음(기타 등 — 기본 원형으로 채우지 않는다)."
         },
         "default_eui_kwh_m2": {
           "type": "number"
@@ -76,11 +80,27 @@
         },
         "rule": {
           "enum": [
-            "office_by_gross_floor_area"
+            "office_by_gross_floor_area",
+            "apartment_by_floors"
           ]
         },
         "basis": {
           "type": "string"
+        },
+        "classification": {
+          "enum": [
+            "declared",
+            "assumed"
+          ],
+          "description": "assumed = 가장 가까운 원형의 선언 가정(확장 용도)"
+        },
+        "absence": {
+          "type": "string",
+          "description": "archetype 이 null 인 행의 결손 이름(예 no_doe_archetype)"
+        },
+        "detail_of": {
+          "type": "string",
+          "description": "세부 용도 행이 속한 대장 주용도(예 편의점 → 제1종근린생활시설). 세부 용도를 알면 이 행이 주용도 행보다 앞선다"
         }
       },
       "oneOf": [
@@ -104,7 +124,7 @@
         "code": "02001",
         "name_kr": "아파트",
         "name_en": "Apartment",
-        "archetype": "MidRiseApartment",
+        "registry_usage": "공동주택",
         "default_eui_kwh_m2": 120,
         "energy_pattern": {
           "heating": 0.45,
@@ -118,7 +138,7 @@
         "code": "01000",
         "name_kr": "단독주택",
         "name_en": "Detached House",
-        "archetype": "DetachedHouse",
+        "registry_usage": "단독주택",
         "default_eui_kwh_m2": 150,
         "energy_pattern": {
           "heating": 0.5,
@@ -132,7 +152,7 @@
         "code": "14000",
         "name_kr": "업무시설",
         "name_en": "Office",
-        "archetype": "MediumOffice",
+        "registry_usage": "업무시설",
         "default_eui_kwh_m2": 180,
         "energy_pattern": {
           "heating": 0.25,
@@ -146,7 +166,7 @@
         "code": "07000",
         "name_kr": "판매시설",
         "name_en": "Retail",
-        "archetype": "StandaloneRetail",
+        "registry_usage": "판매시설",
         "default_eui_kwh_m2": 220,
         "energy_pattern": {
           "heating": 0.2,
@@ -160,7 +180,7 @@
         "code": "07100",
         "name_kr": "편의점",
         "name_en": "Convenience",
-        "archetype": "QuickServiceRestaurant",
+        "registry_usage": "편의점",
         "default_eui_kwh_m2": 380,
         "energy_pattern": {
           "heating": 0.1,
@@ -174,7 +194,7 @@
         "code": "10000",
         "name_kr": "교육연구시설",
         "name_en": "Education",
-        "archetype": "PrimarySchool",
+        "registry_usage": "교육연구시설",
         "default_eui_kwh_m2": 140,
         "energy_pattern": {
           "heating": 0.4,
@@ -188,7 +208,7 @@
         "code": "09000",
         "name_kr": "의료시설",
         "name_en": "Hospital",
-        "archetype": "Hospital",
+        "registry_usage": "의료시설",
         "default_eui_kwh_m2": 350,
         "energy_pattern": {
           "heating": 0.25,
@@ -202,7 +222,7 @@
         "code": "15000",
         "name_kr": "숙박시설",
         "name_en": "Hotel",
-        "archetype": "SmallHotel",
+        "registry_usage": "숙박시설",
         "default_eui_kwh_m2": 250,
         "energy_pattern": {
           "heating": 0.3,
@@ -216,7 +236,7 @@
         "code": "17000",
         "name_kr": "공장",
         "name_en": "Factory",
-        "archetype": "Warehouse",
+        "registry_usage": "공장",
         "default_eui_kwh_m2": 200,
         "energy_pattern": {
           "heating": 0.2,
@@ -230,7 +250,7 @@
         "code": "18000",
         "name_kr": "창고",
         "name_en": "Warehouse",
-        "archetype": "Warehouse",
+        "registry_usage": "창고시설",
         "default_eui_kwh_m2": 80,
         "energy_pattern": {
           "heating": 0.3,
@@ -244,7 +264,7 @@
         "code": "99999",
         "name_kr": "기타",
         "name_en": "Other",
-        "archetype": "MediumOffice",
+        "registry_usage": null,
         "default_eui_kwh_m2": 150,
         "energy_pattern": {
           "heating": 0.35,
@@ -287,8 +307,8 @@
           "basis": "be-3d policy_savings.USAGE_TO_ARCHETYPE(정책 절감 지도·F14 공용, 2026-09-25) 이관"
         },
         "공동주택": {
-          "archetype": "B16",
-          "basis": "be-3d policy_savings.USAGE_TO_ARCHETYPE(정책 절감 지도·F14 공용, 2026-09-25) 이관"
+          "rule": "apartment_by_floors",
+          "basis": "be-3d policy_savings.USAGE_TO_ARCHETYPE(정책 절감 지도·F14 공용, 2026-09-25) 이관 · 층수 규칙 = be-3d simulation/archetypes._MIDRISE_MAX_FLOORS(지상 5층 이하 중층) 이관(2026-09-28 X2)"
         },
         "숙박시설": {
           "archetype": "B14",
@@ -305,11 +325,83 @@
         "창고시설": {
           "archetype": "B04",
           "basis": "be-3d policy_savings.USAGE_TO_ARCHETYPE(정책 절감 지도·F14 공용, 2026-09-25) 이관"
+        },
+        "편의점": {
+          "archetype": "B11",
+          "detail_of": "제1종근린생활시설",
+          "classification": "declared",
+          "basis": "사용자 결정 2026-09-28 22:35 — 편의점 원형 = B11(QuickServiceRestaurant). 자산 용도가 편의점이면 이 행, 대장 주용도(제1종근린생활시설 → B03)는 용도를 모를 때만"
+        },
+        "노유자시설": {
+          "archetype": "B12",
+          "classification": "assumed",
+          "basis": "확장 용도(2026-09-28 X2) — 24시간 거주 돌봄 시설, 가장 가까운 원형 병원(be-3d archetypes._USAGE_KR_TO_EN 노유자→hospital 과 같음)"
+        },
+        "수련시설": {
+          "archetype": "B07",
+          "classification": "assumed",
+          "basis": "확장 용도(2026-09-28 X2) — be-3d 수련시설→education 과 같음"
+        },
+        "문화및집회시설": {
+          "archetype": "B05",
+          "classification": "assumed",
+          "basis": "확장 용도(2026-09-28 X2) — 넓은 단일 공간·주간 운영, be-3d cultural→retail 유사와 같음"
+        },
+        "운동시설": {
+          "archetype": "B14",
+          "classification": "assumed",
+          "basis": "확장 용도(2026-09-28 X2) — be-3d 운동시설→mixed_use(hotel 유사)와 같음"
+        },
+        "운수시설": {
+          "archetype": "B04",
+          "classification": "assumed",
+          "basis": "확장 용도(2026-09-28 X2) — be-3d 운수시설→warehouse 와 같음"
+        },
+        "자동차관련시설": {
+          "archetype": "B04",
+          "classification": "assumed",
+          "basis": "확장 용도(2026-09-28 X2) — be-3d 자동차관련시설→warehouse 와 같음"
+        },
+        "위험물저장및처리시설": {
+          "archetype": "B04",
+          "classification": "assumed",
+          "basis": "확장 용도(2026-09-28 X2) — be-3d 위험물→warehouse 와 같음"
+        },
+        "방송통신시설": {
+          "archetype": null,
+          "absence": "no_doe_archetype",
+          "basis": "확장 용도(2026-09-28 X2) — 데이터센터·통신시설은 DOE 원형이 없다(be-3d 는 창고로 근사) — 원형을 지어내지 않고 이름 있는 결손"
         }
       },
       "usage_aliases": {
         "아파트": "공동주택",
-        "창고": "창고시설"
+        "연립주택": "공동주택",
+        "다세대주택": "공동주택",
+        "지역난방공동주택": "공동주택",
+        "지역난방아파트": "공동주택",
+        "다가구주택": "단독주택",
+        "다중주택": "단독주택",
+        "사무소": "업무시설",
+        "병원": "의료시설",
+        "학교": "교육연구시설",
+        "창고": "창고시설",
+        "문화 및 집회시설": "문화및집회시설",
+        "데이터센터": "방송통신시설",
+        "정보통신시설": "방송통신시설",
+        "전산센터": "방송통신시설",
+        "통신시설": "방송통신시설"
+      },
+      "apartment_by_floors": {
+        "midrise_max_floors_inclusive": 5,
+        "midrise_archetype": "B16",
+        "highrise_archetype": "B17",
+        "unknown_floors": {
+          "archetype": "B16",
+          "flag": null,
+          "label_ko": "층수 미상 — 중층 원형"
+        },
+        "source": "be-3d src/simulation/archetypes._MIDRISE_MAX_FLOORS(지상 5층 이하 = 중층) — Korean_BB 적재 규칙과 같은 경계",
+        "rule_ko": "공동주택 = 지상 층수 5층 이하 중층 아파트(B16) · 6층 이상 고층 아파트(B17). 층수를 모르면 중층(B16, 기존 값). ⛔ 층수로 용도를 바꾸지 않는다(20층 공동주택은 업무시설이 아니라 고층 아파트)"
       },
       "office_by_gross_floor_area": {
         "unit": "m2",
@@ -345,6 +437,10 @@
         "usage_not_in_archetype_table": {
           "absence_kind": "missing",
           "label_ko": "시뮬 유형표에 없는 용도"
+        },
+        "no_doe_archetype": {
+          "absence_kind": "not_applicable",
+          "label_ko": "이 용도에 맞는 시뮬 원형이 없음(데이터센터 등)"
         }
       }
     }
@@ -361,6 +457,9 @@
           }
         },
         "office_by_gross_floor_area": {
+          "type": "object"
+        },
+        "apartment_by_floors": {
           "type": "object"
         },
         "absence": {

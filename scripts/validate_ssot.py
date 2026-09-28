@@ -80,7 +80,7 @@ def scan_legacy_strategies(paths: list[Path]) -> list[tuple[Path, int, str]]:
             # 라이브러리/빌드 산출물 스킵
             if any(part in fp.parts for part in
                    ("node_modules", "dist", ".git", ".venv", "venv", "env",
-                    "__pycache__", "build", "site-packages", ".next", "out")):
+                    "__pycache__", "build", "site-packages", ".next", "out", ".benchmarks")):
                 continue
             try:
                 text = fp.read_text(encoding="utf-8", errors="replace")
@@ -226,7 +226,7 @@ def scan_stale_canonical_values(paths: list[Path]) -> list[tuple[Path, int, str]
                 continue
             if any(part in fp.parts for part in
                    ("node_modules", "dist", ".git", ".venv", "venv", "env",
-                    "__pycache__", "build", "site-packages", ".next", "out")):
+                    "__pycache__", "build", "site-packages", ".next", "out", ".benchmarks")):
                 continue
             try:
                 text = fp.read_text(encoding="utf-8", errors="replace")
@@ -777,18 +777,37 @@ def check_usage_archetype(schemas_dir: Path | None = None) -> list[str]:
     band_codes = [b.get("archetype") for b in bands]
     unknown = (office.get("unknown_area") or {}).get("archetype")
 
+    apt = ua.get("apartment_by_floors") or {}
+
     def of(usage: str) -> str | None:
         row = rows.get(usage) or {}
         if row.get("rule") == "office_by_gross_floor_area":
             return unknown
+        if row.get("rule") == "apartment_by_floors":
+            return (apt.get("unknown_floors") or {}).get("archetype")
         return row.get("archetype")
 
     for usage, row in rows.items():
         if "rule" in row:
-            if row["rule"] != "office_by_gross_floor_area":
+            if row["rule"] not in ("office_by_gross_floor_area", "apartment_by_floors"):
                 v.append(f"usage_archetype.rows[{usage}].rule={row['rule']!r} 는 선언된 규칙이 아니다")
+            if row["rule"] == "apartment_by_floors":
+                for k in ("midrise_archetype", "highrise_archetype"):
+                    if apt.get(k) not in docs:
+                        v.append(f"apartment_by_floors.{k}={apt.get(k)!r} 가 doe_buildings 에 없다")
+                if (apt.get("unknown_floors") or {}).get("archetype") not in docs:
+                    v.append("apartment_by_floors.unknown_floors.archetype 가 doe_buildings 에 없다")
+                if not isinstance(apt.get("midrise_max_floors_inclusive"), int):
+                    v.append("apartment_by_floors.midrise_max_floors_inclusive 가 정수가 아니다")
+        elif row.get("archetype") is None:
+            # 원형 없음을 선언한 행(예 방송통신시설) — 이름 있는 결손이 있어야 한다(조용한 None 금지)
+            if not row.get("absence") or row["absence"] not in (ua.get("absence") or {}):
+                v.append(f"usage_archetype.rows[{usage}] 가 원형 없음인데 absence 가 absence 표에 없다: {row.get('absence')!r}")
         elif row.get("archetype") not in docs:
             v.append(f"usage_archetype.rows[{usage}].archetype={row.get('archetype')!r} 가 doe_buildings 에 없다")
+    for alias, target in (ua.get("usage_aliases") or {}).items():
+        if target not in rows:
+            v.append(f"usage_aliases[{alias}]={target!r} 가 rows 에 없다")
     for code in band_codes + [unknown]:
         if code not in docs:
             v.append(f"office_by_gross_floor_area 원형 {code!r} 가 doe_buildings 에 없다")
@@ -810,19 +829,88 @@ def check_usage_archetype(schemas_dir: Path | None = None) -> list[str]:
         elif to_bw.get(code) != bw:
             v.append(f"usage_to_buildwise[{usage}]={bw!r} != archetype_to_buildwise[{code}]={to_bw.get(code)!r} "
                      "— usage_to_buildwise 는 정본 용도표의 투영이다")
+    # v1.2(2026-09-28 X2): usages 는 원형을 손으로 적지 않는다 — registry_usage 가 rows(또는 별칭)를 가리키는지만 본다.
     aliases = ua.get("usage_aliases") or {}
     checked = 0
     for key, u in (um.get("usages") or {}).items():
-        usage = aliases.get(u.get("name_kr"), u.get("name_kr"))
-        code = of(usage)
-        if code is None:
+        if "archetype" in u:
+            v.append(f"building_usage_map usages[{key}] 에 손으로 적은 archetype 이 있다 — registry_usage 로 가리킨다(v1.2)")
+        reg = u.get("registry_usage", "__missing__")
+        if reg == "__missing__":
+            v.append(f"building_usage_map usages[{key}] 에 registry_usage 가 없다")
+            continue
+        if reg is None:
             continue
         checked += 1
-        if u.get("archetype") != docs.get(code, {}).get("name_en"):
-            v.append(f"building_usage_map usages[{key}].archetype={u.get('archetype')!r} 가 정본 "
-                     f"{usage}→{code}({docs.get(code, {}).get('name_en')}) 와 다르다")
+        if aliases.get(reg, reg) not in rows:
+            v.append(f"building_usage_map usages[{key}].registry_usage={reg!r} 가 usage_archetype.rows·별칭에 없다")
     if checked == 0:
-        v.append("usages[*] 중 정본 용도표와 대조한 행이 0건 — 대조가 돌지 않았다")
+        v.append("usages[*] 중 정본 용도표를 가리킨 행이 0건 — 대조가 돌지 않았다")
+    return v
+
+
+def check_emission_factor_copies(schemas_dir: Path | None = None) -> list[str]:
+    """배출계수가 두 스키마에 있다(D40) — energy_units.emission_factors_kr(연료별 per-kWh·부피 단위) ↔ emission_factors.json KR.
+
+    정본 = emission_factors.json. 겹치는 세 값(전력·도시가스·지역난방)이 같아야 한다. 검사 3건 미만이면 실패(대조가 안 돈 것).
+    ⚠ 한 스키마로 합치는($ref) 일은 직접 JSON 을 읽는 소비처(axes.carbon_kg · be-3d · 게이트웨이)를 함께 바꿔야 해 이 대조로 대신한다."""
+    sd = schemas_dir or SCHEMAS_DIR
+    try:
+        units = json.loads((sd / "energy_units.json").read_text(encoding="utf-8"))["default"]["emission_factors_kr"]
+        kr = json.loads((sd / "emission_factors.json").read_text(encoding="utf-8"))["default"]["co2_kgco2eq_per_kwh"]["KR"]
+    except (OSError, KeyError, TypeError, ValueError) as exc:
+        return [f"배출계수 스키마 로드 실패 — {exc}"]
+    pairs = {"electricity_kg_co2_per_kwh": "electricity", "city_gas_kg_co2_per_kwh": "gas",
+             "district_heating_kg_co2_per_kwh": "district_heat"}
+    v: list[str] = []
+    checked = 0
+    for ukey, ekey in pairs.items():
+        if ukey in units and ekey in kr:
+            checked += 1
+            if float(units[ukey]) != float(kr[ekey]):
+                v.append(f"energy_units.emission_factors_kr.{ukey}={units[ukey]} != emission_factors KR.{ekey}={kr[ekey]}")
+    if checked < len(pairs):
+        v.append(f"배출계수 대조 {checked}/{len(pairs)}건 — 칸 이름이 바뀌어 대조가 돌지 않았다")
+    # 2026-09-28: 연료 사상표(fuel_vocabulary)의 목적지는 모두 kWh 당 계수가 있는 연료여야 한다(사본이 어긋나면 조용히 틀린다)
+    try:
+        fv = json.loads((sd / "energy_units.json").read_text(encoding="utf-8"))["default"].get("fuel_vocabulary") or {}
+    except (OSError, ValueError) as exc:
+        return v + [f"연료 사상표 로드 실패 — {exc}"]
+    aliases = fv.get("aliases") or {}
+    if not aliases:
+        v.append("energy_units.fuel_vocabulary.aliases 가 비었다 — 검사 0건은 통과가 아니다")
+    for alias, fuel in aliases.items():
+        if f"{fuel}_kg_co2_per_kwh" not in units:
+            v.append(f"fuel_vocabulary.aliases[{alias}]={fuel!r} 에 kWh 당 배출계수가 없다")
+    for fuel in (fv.get("label_ko") or {}):
+        if f"{fuel}_kg_co2_per_kwh" not in units:
+            v.append(f"fuel_vocabulary.label_ko[{fuel}] 가 EC 연료 이름이 아니다")
+    for key in (fv.get("kbep_keys") or []) + (fv.get("site_keys") or []):
+        if key not in aliases:
+            v.append(f"fuel_vocabulary 키 {key!r} 가 aliases 에 없다")
+    return v
+
+
+def check_archetype_representative_hvac(schemas_dir: Path | None = None) -> list[str]:
+    """원형마다 대표 설비(representative_hvac)가 있고 그 원형의 hvac_types 안에 있는가 · area_m2 가 양수인가.
+
+    검사 0건은 통과가 아니다(원형표가 비면 실패)."""
+    sd = schemas_dir or SCHEMAS_DIR
+    try:
+        docs = json.loads((sd / "building_archetypes.json").read_text(encoding="utf-8"))["default"]["doe_buildings"]
+    except (OSError, KeyError, TypeError, ValueError) as exc:
+        return [f"원형표 로드 실패 — {exc}"]
+    if not docs:
+        return ["doe_buildings 가 비었다 — 검사 0건은 통과가 아니다"]
+    v: list[str] = []
+    for code, row in docs.items():
+        rep = row.get("representative_hvac")
+        if rep is None:
+            v.append(f"doe_buildings[{code}] 에 representative_hvac 가 없다")
+        elif rep not in (row.get("hvac_types") or []):
+            v.append(f"doe_buildings[{code}].representative_hvac={rep!r} 가 hvac_types {row.get('hvac_types')} 밖이다")
+        if not isinstance(row.get("area_m2"), (int, float)) or row["area_m2"] <= 0:
+            v.append(f"doe_buildings[{code}].area_m2={row.get('area_m2')!r} 가 양수가 아니다")
     return v
 
 
@@ -886,6 +974,28 @@ def check_replay_policy_source(schemas_dir: Path | None = None) -> list[str]:
         src = json.loads((sd / "airos_replay_anomaly_policy.json").read_text(encoding="utf-8"))["default"]["source"]
     except (OSError, KeyError, TypeError, ValueError) as exc:
         return [f"재생 정책 원천 로드 실패 — {exc}"]
+    if src.get("kind") == "canonical_self":
+        # 2026-09-28 최종 라운드: 원천 = 정본 자신(퇴역 하네스 파일을 가리키던 자리). 값 지문 = default 에서 source 를 뺀 값.
+        full = json.loads((sd / "airos_replay_anomaly_policy.json").read_text(encoding="utf-8"))["default"]
+        vals = {k: v for k, v in full.items() if k != "source"}
+        got = hashlib.sha256(json.dumps(vals, sort_keys=True, ensure_ascii=False,
+                                        separators=(",", ":")).encode("utf-8")).hexdigest()
+        v: list[str] = []
+        if got != src.get("sha256"):
+            v.append(f"airos_replay_anomaly_policy 값 지문 {str(src.get('sha256'))[:12]}… ≠ 지금 값 {got[:12]}… — 값을 바꿨으면 "
+                     "적용 코드(applied_by)를 확인한 뒤 지문을 재발급한다")
+        checked = 0
+        for rel in src.get("applied_by") or []:
+            fp = WORKSPACE_ROOT / rel
+            if not fp.exists():
+                print(f"[SSOT] 못 잼(통과 아님): 재생 정책 적용 코드 {rel} 가 이 작업공간에 없다")
+                continue
+            checked += 1
+            if "airos_replay_anomaly_policy" not in fp.read_text(encoding="utf-8", errors="replace"):
+                v.append(f"재생 정책 적용 코드 {rel} 가 정본(airos_replay_anomaly_policy)을 읽지 않는다")
+        if not src.get("applied_by"):
+            v.append("재생 정책 applied_by 가 비었다 — 적용 자리를 적는다")
+        return v
     fp = WORKSPACE_ROOT / src["path"]
     if not fp.exists():
         print(f"[SSOT] 못 잼(통과 아님): 재생 정책 원천 {src['path']} 가 이 작업공간에 없다")
@@ -1460,6 +1570,8 @@ def main() -> int:
         v += check_hvac_display_names()            # 2026-09-15 — 공조 방식 이름 정본 하나 + 매트릭스 행 대응
         v += check_strategy_list_projection()      # 2026-09-28 G0 — 전략 목록 정본 하나(common 21 ↔ ems 23)
         v += check_usage_archetype()               # 2026-09-28 G1 — 용도→원형 정본 한 표 + 투영 두 곳
+        v += check_archetype_representative_hvac()  # 2026-09-28 최종 라운드 — 대표 설비·v4 면적
+        v += check_emission_factor_copies()         # 2026-09-28 O5·D40 — 배출계수 두 스키마 대조
         v += check_hvac_canonical_rows()           # 2026-09-28 G1 — 호환표 정본 행 선언 = 규칙
         v += check_axis_tables()                   # 2026-09-28 G1 — 축 어휘 별칭 충돌·KBEP 정수 축
         v += check_replay_policy_source()          # 2026-09-28 G0 — 재생 정책 원천 해시

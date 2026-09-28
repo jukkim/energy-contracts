@@ -15,7 +15,7 @@
     "energy-decision-studio",
     "building-energy-3d-lab"
   ],
-  "version": "1.4",
+  "version": "1.5",
   "updated": "2026-09-28",
   "$defs": {
     "Scope": {
@@ -307,6 +307,17 @@
       "unknown_role": "deny",
       "unknown_action": "deny",
       "execution_authorized": false,
+      "f14_persona_of_role": {
+        "home_owner": "household",
+        "portfolio_manager": "building_owner",
+        "building_manager": "facility_manager",
+        "analyst": "facility_manager",
+        "policy_official": "govt",
+        "platform_admin": "admin",
+        "unmapped": "deny",
+        "rule_ko": "아이로스 세션 역할 → F14 관점(persona). 세션이 있으면 호출자가 persona 를 주장하지 못하고 이 표가 정한다(다르면 거절). 표에 없는 역할은 거절. analyst = building_manager 와 권한 집합이 같다(read:asset·analyze:asset, 승인·쓰기 없음) → 같은 관점 facility_manager(권한 동치 규칙).",
+        "source": "게이트웨이 serving/asker_scope.F14_PERSONA_OF_ROLE(2026-09-28 W6) 이관 — F14 persona 어휘 = serving/schemas/policy_vector.PersonaRole(household·building_owner·facility_manager·govt·admin)"
+      },
       "roles": {
         "analyst": {
           "permissions": [

@@ -85,6 +85,15 @@
         "source": "ASHRAE 90.1 Appendix G 미충족 300 h — 8.simulation _shared/setpoint_compliance.SETPOINT_LIMIT_H(계산은 그 모듈)"
       }
     },
+    "display_bands": {
+      "policy_savings_pct": {
+        "thresholds": [-0.5, 0.5, 3.0, 6.0, 10.0],
+        "colors": ["#d73027", "#9aa0a6", "#d9ef8b", "#66bd63", "#1a9850", "#00441b"],
+        "labels_ko": ["역효과(에너지 늘어남)", "거의 변화 없음", "절감 0.5~3%", "절감 3~6%", "절감 6~10%", "절감 10% 이상"],
+        "rule": "band = 첫 번째로 v < threshold 인 칸의 번호(없으면 마지막 칸) — 값 = 정책 절감 추정 %(+ 절감, − 역효과)",
+        "source": "be-3d visualization/policy_savings.POLICY_THRESHOLDS·POLICY_COLORS·POLICY_BAND_LABELS(2026-09-25) 이관 — KBEP 덧표 생성기 BAND_EDGES [0.5,3,6,10] 은 −0.5 경계가 빠진 사본이었다(O3)"
+      }
+    },
     "data_quality": {
       "eui_plausible_kwh_m2": {
         "min": 10.0,

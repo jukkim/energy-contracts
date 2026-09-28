@@ -1,0 +1,100 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "energy-contracts/declared_assumptions.json",
+  "title": "Declared Assumptions",
+  "description": "선언 가정 상수 정본(2026-09-28 경진대회 최종 라운드 N32). 질문이 값을 말하지 않을 때 쓰는 **선언 가정**(합의된 운영 기준·실측이 아님)을 한 곳에 둔다 — 게이트웨이 여러 모듈이 손 리터럴로 들던 값(폭염 33℃·한파 −12℃·노후 30년·조치 적용 문턱·가상 ESS 왕복효율·기본 용도 분해). 값마다 classification(declared=공공 기준 인용 · assumed=우리 선언)과 출처를 싣는다. 답에는 규칙 문장(rule_ko)을 함께 싣고, 질문이 값을 말하면 질문이 먼저다.",
+  "_usage": "codegen",
+  "_consumers": [
+    "8sim-shared",
+    "ems_transformer (serving general_ops/cohort · internal_query_tools · asset_inputs/_virtual · measure_economics · simulation_pack_analysis)"
+  ],
+  "version": "1.0",
+  "updated": "2026-09-28",
+  "type": "object",
+  "default": {
+    "hazard_days": {
+      "heat": {
+        "threshold_c": 33.0,
+        "comparison": "daily_max_ge",
+        "months": [6, 9],
+        "rule_ko": "폭염일 = 일 최고기온 33℃ 이상(기상청 폭염 기준 인용)",
+        "classification": "declared",
+        "source": "기상청 폭염특보 기준(일 최고기온 33℃ 이상) 인용 — 게이트웨이 general_ops/cohort.HAZARD_DEFAULTS · internal_query_tools complaint_causes heatwave_c 기본"
+      },
+      "cold": {
+        "threshold_c": -12.0,
+        "comparison": "daily_min_le",
+        "months": [12, 2],
+        "rule_ko": "한파일 = 일 최저기온 -12℃ 이하(기상청 한파주의보 기준 인용)",
+        "classification": "declared",
+        "source": "기상청 한파주의보 기준(아침 최저기온 -12℃ 이하) 인용 — 게이트웨이 general_ops/cohort.HAZARD_DEFAULTS"
+      }
+    },
+    "complaint_temperature": {
+      "warm_c": {
+        "value": 30.0,
+        "rule_ko": "더운 시간 = 바깥 기온 30℃ 이상(민원 원인 가르기의 선언 가정 — 폭염 문턱보다 낮은 단계)",
+        "classification": "assumed",
+        "source": "게이트웨이 internal_query_tools store_operations_brief complaint_causes warm_c 기본"
+      }
+    },
+    "coldwave_design_days": {
+      "value": 5,
+      "rule_ko": "한파 조건 = 난방기 운영일 중 가장 추운 5일(표준연도 — 다음 겨울 예보 아님)",
+      "classification": "assumed",
+      "source": "게이트웨이 asset_inputs/simulation_pack_analysis.COLDWAVE_DAYS"
+    },
+    "aging_years_default": {
+      "value": 30,
+      "rule_ko": "노후 = 준공 30년 이상(질문이 햇수를 말하지 않았을 때)",
+      "classification": "assumed",
+      "source": "게이트웨이 general_ops/cohort.AGING_YEARS_DEFAULT"
+    },
+    "measure_applicability": {
+      "id": "airo-measure-applicability-assumed-v1",
+      "classification": "assumed",
+      "rules": {
+        "RCX": ["all", null],
+        "LED": ["all", null],
+        "SHAD": ["all", null],
+        "BEMS": ["area_min", 3000.0],
+        "VSD": ["area_min", 3000.0],
+        "CHIL": ["area_min", 5000.0],
+        "ERV": ["area_min", 1000.0],
+        "COND": ["gas", null],
+        "HP": ["gas", null],
+        "SEAL": ["built_before", 2001],
+        "INS": ["built_before", 2001],
+        "WIN": ["built_before", 2001]
+      },
+      "rule_ko": "적용 가정: 전 건물 RCX·LED·SHAD · 연면적 1,000㎡↑ ERV · 3,000㎡↑ BEMS·VSD · 5,000㎡↑ CHIL · 가스 사용 COND·HP · 2001년 이전 준공 SEAL·INS·WIN (정본 조치 목록에 적용 조건이 없어 선언)",
+      "source": "게이트웨이 general_ops/cohort.APPLICABILITY"
+    },
+    "public_use_codes": {
+      "id": "airo-public-use-codes-assumed-v1",
+      "classification": "assumed",
+      "codes": ["14100", "03100", "Z9000"],
+      "rule_ko": "공공 건물 = 건축물대장 주용도 공공업무시설(14100)·공공용 근린생활(03100)·기타 공공(Z9000) — 소유 칸이 없어 용도로 판정",
+      "source": "게이트웨이 general_ops/cohort.PUBLIC_USE_CODES"
+    },
+    "virtual_storage": {
+      "round_trip_efficiency": 0.9,
+      "rule_ko": "가상 저장장치 왕복효율 0.9(선언 가정 — 설치 설비 아님, 정본 DR 가정 M18 에는 출력·시간만 있다)",
+      "classification": "assumed",
+      "source": "게이트웨이 asset_inputs/_virtual.ESS_ROUND_TRIP_EFFICIENCY"
+    },
+    "end_use_split_default": {
+      "shares": {
+        "heating_gas": 0.25,
+        "cooling_elec": 0.22,
+        "lighting_elec": 0.18,
+        "fanpump_elec": 0.12,
+        "plug_elec": 0.18,
+        "vent_elec": 0.05
+      },
+      "rule_ko": "용도별 에너지 분해 = 전형 오피스 가정(합 1) — 요청이 분해를 주지 않았을 때",
+      "classification": "assumed",
+      "source": "게이트웨이 measure_economics._DEFAULT_END_USE_SPLIT"
+    }
+  }
+}

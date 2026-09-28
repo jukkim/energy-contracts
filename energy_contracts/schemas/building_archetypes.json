@@ -11,7 +11,8 @@
     "reverse-ems (usecase_iv_coldstart _DEFAULT_ANNUAL_BASELINE_KWH = M00 EUI × doe area, manual sync)",
     "gen_constants → AXIS_ARCHETYPES·USAGE_ARCHETYPE (building-energy-3d·8sim-shared·agentleague)"
   ],
-  "version": "2.1",
+  "version": "2.2",
+  "$comment": "v2.2(2026-09-28 최종 라운드 O2·대표 설비): area_m2 = v4 정본 연면적(B16 1,457→3,134.61 · B17 3,135→7,836.48 등 — KBEP 결함 탐지 EUI 분모가 2.2~2.5배 틀렸다) · representative_hvac 신설(be-3d·Studio 손 표 이관).",
   "type": "object",
   "properties": {
     "doe_buildings": {
@@ -24,13 +25,19 @@
             "type": "string"
           },
           "area_m2": {
-            "type": "number"
+            "type": "number",
+            "description": "원형 연면적 ㎡ — v4 정본(8.simulation docs/_ssot/template_floor_area_v4.json, _shared/floor_area_ssot.area_for)과 같은 값(2026-09-28 O2 정정: B02 4,982→12,000 · B04 4,835→4,598.25 · B16 1,457→3,134.61 · B17 3,135→7,836.48 등). EUI 분모가 이 값이다"
           },
           "hvac_types": {
             "type": "array",
             "items": {
               "type": "string"
             }
+          },
+          "representative_hvac": {
+            "type": "string",
+            "pattern": "^H[A-G]$",
+            "description": "원형의 대표 냉난방(설비 조합을 모를 때 하나를 고르는 규칙 — hvac_types 중 하나). 2026-09-28 최종 라운드: be-3d policy_savings._HVAC_REPRESENTATIVE 손 표를 이관. 한국 실정 = 중층 아파트 개별 가스보일러 온돌(HE) · 고층 아파트 지역난방(HG) · 단독주택 HE — hvac_types 의 첫 값이 대표가 아니다(B16 첫 값 HD · B17 첫 값 HE). 모르는 원형은 기본값 없음(이름 있는 결손)"
           },
           "kbep_id": {
             "type": "integer",
@@ -132,18 +139,25 @@
     }
   },
   "default": {
+    "sim_axes": {
+      "scenarios": ["baseline", "ssp245_2050", "ssp585_2050", "ssp585_2080"],
+      "setpoints": ["c24h18", "c24h20", "c26h18", "c26h20", "c26h22", "c28h18", "c28h20", "c28h22"],
+      "rule_ko": "시뮬 셀 축 — 순서가 곧 KBEP 정수(Scenario_id 0~3 · Setpoint_id 0~7)이고 셀 id 코드(VAR V00~ · IDX L001~)다. 설정온도 cXXhYY = 냉방 XX℃·난방 YY℃",
+      "source": "8.simulation/_shared/sim_id.SCENARIOS·SETPOINTS(2026-09-28 화이트박스 D23 — sim_campaign_2026 run_sca_setpoint_expansion · 디스크 실측 2026-08-31) 이관(O3)"
+    },
     "doe_buildings": {
       "B01": {
         "name_en": "LargeOffice",
         "name_kr": "대형 사무소",
         "snake": "large_office",
         "kbep_id": 0,
-        "area_m2": 46320,
+        "area_m2": 46320.38,
         "hvac_types": [
           "HA",
           "HB",
           "HG"
         ],
+        "representative_hvac": "HA",
         "aliases": [
           "LO"
         ]
@@ -153,12 +167,13 @@
         "name_kr": "중형 사무소",
         "snake": "medium_office",
         "kbep_id": 1,
-        "area_m2": 4982,
+        "area_m2": 12000,
         "hvac_types": [
           "HC",
           "HD",
           "HF"
         ],
+        "representative_hvac": "HC",
         "aliases": [
           "MO"
         ]
@@ -168,11 +183,12 @@
         "name_kr": "소형 사무소",
         "snake": "small_office",
         "kbep_id": 2,
-        "area_m2": 511,
+        "area_m2": 511.16,
         "hvac_types": [
           "HC",
           "HE"
         ],
+        "representative_hvac": "HC",
         "aliases": [
           "SO"
         ]
@@ -182,10 +198,11 @@
         "name_kr": "창고",
         "snake": "warehouse",
         "kbep_id": 3,
-        "area_m2": 4835,
+        "area_m2": 4598.25,
         "hvac_types": [
           "HC"
         ],
+        "representative_hvac": "HC",
         "aliases": []
       },
       "B05": {
@@ -193,10 +210,11 @@
         "name_kr": "독립 판매점",
         "snake": "standalone_retail",
         "kbep_id": 4,
-        "area_m2": 2294,
+        "area_m2": 2293.99,
         "hvac_types": [
           "HC"
         ],
+        "representative_hvac": "HC",
         "aliases": [
           "SR"
         ]
@@ -206,10 +224,11 @@
         "name_kr": "상가(스트립몰)",
         "snake": "strip_mall",
         "kbep_id": 5,
-        "area_m2": 2090,
+        "area_m2": 2090.32,
         "hvac_types": [
           "HC"
         ],
+        "representative_hvac": "HC",
         "aliases": [
           "RetailStripmall"
         ]
@@ -224,6 +243,7 @@
           "HA",
           "HF"
         ],
+        "representative_hvac": "HA",
         "aliases": [
           "PS"
         ]
@@ -239,6 +259,7 @@
           "HB",
           "HF"
         ],
+        "representative_hvac": "HA",
         "aliases": []
       },
       "B09": {
@@ -246,10 +267,11 @@
         "name_kr": "슈퍼마켓",
         "snake": "supermarket",
         "kbep_id": 8,
-        "area_m2": 4181,
+        "area_m2": 4180.79,
         "hvac_types": [
           "HC"
         ],
+        "representative_hvac": "HC",
         "aliases": []
       },
       "B10": {
@@ -257,10 +279,11 @@
         "name_kr": "일반 음식점",
         "snake": "full_service_restaurant",
         "kbep_id": 9,
-        "area_m2": 511,
+        "area_m2": 511.15,
         "hvac_types": [
           "HC"
         ],
+        "representative_hvac": "HC",
         "aliases": []
       },
       "B11": {
@@ -268,11 +291,12 @@
         "name_kr": "패스트푸드점",
         "snake": "quick_service_restaurant",
         "kbep_id": 10,
-        "area_m2": 232,
+        "area_m2": 232.34,
         "hvac_types": [
           "HC",
           "HE"
         ],
+        "representative_hvac": "HC",
         "aliases": []
       },
       "B12": {
@@ -280,10 +304,11 @@
         "name_kr": "병원",
         "snake": "hospital",
         "kbep_id": 11,
-        "area_m2": 22422,
+        "area_m2": 22436.18,
         "hvac_types": [
           "HA"
         ],
+        "representative_hvac": "HA",
         "aliases": []
       },
       "B13": {
@@ -291,11 +316,12 @@
         "name_kr": "외래 진료시설",
         "snake": "outpatient_healthcare",
         "kbep_id": 12,
-        "area_m2": 3804,
+        "area_m2": 3804.01,
         "hvac_types": [
           "HC",
           "HD"
         ],
+        "representative_hvac": "HC",
         "aliases": []
       },
       "B14": {
@@ -303,11 +329,12 @@
         "name_kr": "소형 호텔",
         "snake": "small_hotel",
         "kbep_id": 13,
-        "area_m2": 4013,
+        "area_m2": 4013.58,
         "hvac_types": [
           "HC",
           "HD"
         ],
+        "representative_hvac": "HC",
         "aliases": []
       },
       "B15": {
@@ -315,11 +342,12 @@
         "name_kr": "대형 호텔",
         "snake": "large_hotel",
         "kbep_id": 14,
-        "area_m2": 11345,
+        "area_m2": 11345.29,
         "hvac_types": [
           "HA",
           "HD"
         ],
+        "representative_hvac": "HA",
         "aliases": []
       },
       "B16": {
@@ -327,12 +355,13 @@
         "name_kr": "중층 아파트",
         "snake": "midrise_apartment",
         "kbep_id": 15,
-        "area_m2": 1457,
+        "area_m2": 3134.61,
         "hvac_types": [
           "HD",
           "HE",
           "HG"
         ],
+        "representative_hvac": "HE",
         "aliases": [
           "midrise_apt"
         ]
@@ -342,11 +371,12 @@
         "name_kr": "고층 아파트",
         "snake": "highrise_apartment",
         "kbep_id": 16,
-        "area_m2": 3135,
+        "area_m2": 7836.48,
         "hvac_types": [
           "HE",
           "HG"
         ],
+        "representative_hvac": "HG",
         "aliases": [
           "highrise_apt"
         ]
@@ -356,10 +386,11 @@
         "name_kr": "단독주택",
         "snake": "detached_house",
         "kbep_id": 17,
-        "area_m2": 85.0,
+        "area_m2": 85,
         "hvac_types": [
           "HE"
         ],
+        "representative_hvac": "HE",
         "aliases": [],
         "source": "8.simulation _shared/building_areas.py B18 (E+ eio 실측 85.00 m²) · B18_DETACHED_HOUSE_ONBOARDING_2026-09-13 §0 결정 4(H_E 하나)"
       }

@@ -91,6 +91,20 @@
           "staging_m03": {
             "type": "boolean"
           },
+          "heating_fuel": {
+            "type": ["string", "null"],
+            "enum": ["electricity", "gas", "district_heat", null],
+            "description": "주 난방 설비의 연료 — 배출계수 어휘(emission_factors.json KR 키). 근거 = IDF 객체 전수(fuel_basis). null = 원형마다 달라 한 값으로 적지 않음(결정 필요)"
+          },
+          "cooling_fuel": {
+            "type": ["string", "null"],
+            "enum": ["electricity", "gas", "district_heat", null],
+            "description": "주 냉방 설비의 연료 — 배출계수 어휘"
+          },
+          "fuel_basis": {
+            "type": "string",
+            "description": "연료 칸의 근거(IDF 객체·원형 목록)"
+          },
           "economizer_m02": {
             "type": "boolean"
           },
@@ -423,7 +437,10 @@
         "heating": "Boiler",
         "staging_m03": true,
         "economizer_m02": true,
-        "kbep_id": 0
+        "kbep_id": 0,
+        "heating_fuel": "gas",
+        "cooling_fuel": "electricity",
+        "fuel_basis": "주 난방 설비 = Boiler:HotWater 연료 NATURALGAS(B01·B07·B08·B12·B15 전부) · 냉방 = Chiller:Electric·DX(전기) — IDF 객체 전수(8.simulation/mpc_model/energy_predictor/idf_templates/buildings/*/H_x.idf, 2026-09-28 W1 파싱). B01·B12 말단 전기 재열·B07·B08 공조기 가스 코일은 보조"
       },
       "H_B": {
         "sim_id": "HB",
@@ -437,7 +454,10 @@
         "heating": "전기 재열 (Coil:Heating:Electric)",
         "staging_m03": false,
         "economizer_m02": true,
-        "kbep_id": 1
+        "kbep_id": 1,
+        "heating_fuel": "electricity",
+        "cooling_fuel": "electricity",
+        "fuel_basis": "난방 = Coil:Heating:Electric 만 · 냉방 = Coil:Cooling:DX:TwoSpeed — IDF 객체 전수(8.simulation/mpc_model/energy_predictor/idf_templates/buildings/*/H_x.idf, 2026-09-28 W1 파싱)"
       },
       "H_C": {
         "sim_id": "HC",
@@ -451,7 +471,10 @@
         "heating": "내장 HP",
         "staging_m03": false,
         "economizer_m02": true,
-        "kbep_id": 2
+        "kbep_id": 2,
+        "heating_fuel": null,
+        "cooling_fuel": "electricity",
+        "fuel_basis": "냉방 = DX·HP(전기) 전부. 난방은 원형마다 다르다 — B02·B03 공기열 HP(전기)+가스 보조 코일 · B04~B11·B14 Coil:Heating:Fuel NATURALGAS · B13 보일러(가스)+전기 · B14 PTAC 전기 — 한 값으로 적지 않는다(결정 필요) — IDF 객체 전수(8.simulation/mpc_model/energy_predictor/idf_templates/buildings/*/H_x.idf, 2026-09-28 W1 파싱)"
       },
       "H_D": {
         "sim_id": "HD",
@@ -465,7 +488,10 @@
         "heating": "내장 HP",
         "staging_m03": false,
         "economizer_m02": false,
-        "kbep_id": 3
+        "kbep_id": 3,
+        "heating_fuel": "electricity",
+        "cooling_fuel": "electricity",
+        "fuel_basis": "냉난방 = AirConditioner:VariableRefrigerantFlow + VRF DX 코일(전기)만 — IDF 객체 전수(8.simulation/mpc_model/energy_predictor/idf_templates/buildings/*/H_x.idf, 2026-09-28 W1 파싱)"
       },
       "H_E": {
         "sim_id": "HE",
@@ -479,7 +505,10 @@
         "heating": "온돌 바닥복사(중앙 가스보일러 1대)",
         "staging_m03": false,
         "economizer_m02": false,
-        "kbep_id": 4
+        "kbep_id": 4,
+        "heating_fuel": "gas",
+        "cooling_fuel": "electricity",
+        "fuel_basis": "주 난방 = Boiler:HotWater NATURALGAS(9개 원형 전부, 온돌·방열기) · 냉방 = PTAC DX(전기). PTAC 의 전기 난방 코일은 보조 — IDF 객체 전수(8.simulation/mpc_model/energy_predictor/idf_templates/buildings/*/H_x.idf, 2026-09-28 W1 파싱)"
       },
       "H_F": {
         "sim_id": "HF",
@@ -493,7 +522,10 @@
         "heating": "가스보일러",
         "staging_m03": false,
         "economizer_m02": false,
-        "kbep_id": 5
+        "kbep_id": 5,
+        "heating_fuel": "gas",
+        "cooling_fuel": "electricity",
+        "fuel_basis": "주 난방 설비 = Boiler:HotWater NATURALGAS(5개 원형 전부) · 냉방 = VRF(전기). ⚠ VRF 난방 코일(Coil:Heating:DX:VRF)도 객체로 있다 — 운전 여부는 스케줄로 확인 전(주 설비 규칙으로 gas) — IDF 객체 전수(8.simulation/mpc_model/energy_predictor/idf_templates/buildings/*/H_x.idf, 2026-09-28 W1 파싱)"
       },
       "H_G": {
         "sim_id": "HG",
@@ -507,11 +539,16 @@
         "heating": "DistrictHeating:Water",
         "staging_m03": false,
         "economizer_m02": false,
-        "kbep_id": 6
+        "kbep_id": 6,
+        "heating_fuel": "district_heat",
+        "cooling_fuel": "electricity",
+        "fuel_basis": "주 난방 = DistrictHeating:Water(6개 원형 전부) · 냉방 = 원형 설비 유지(냉동기·DX·PTAC — 전기). 일부 전기 재열·가스 코일은 보조 — IDF 객체 전수(8.simulation/mpc_model/energy_predictor/idf_templates/buildings/*/H_x.idf, 2026-09-28 W1 파싱)"
       }
     },
     "admin_succession": {
       "rule": "aggregate_sigungu_code(be-3d src/shared/parcel_code.py) 와 같은 순서: ① 시도 접두 교체(sido_successor) ② 1:1 폐지 시군구(sigungu_successor) ③ split 시군구는 동(10자리)을 알아야 정한다 — 동을 모르면 옛 코드 그대로(추측 금지). 25자리 건물번호 → 19자리 필지는 앞 19자리의 시도 접두만 교체한다([:19] 리터럴만 쓰지 않는다).",
+      "sido_current_names": {"11": {"name": "서울특별시", "short": "서울", "status": "live"}, "12": {"name": "전남광주통합특별시", "short": "전남광주", "status": "name_only"}, "26": {"name": "부산광역시", "short": "부산", "status": "live"}, "27": {"name": "대구광역시", "short": "대구", "status": "live"}, "28": {"name": "인천광역시", "short": "인천", "status": "live"}, "29": {"name": "광주광역시", "short": "광주", "status": "live"}, "30": {"name": "대전광역시", "short": "대전", "status": "live"}, "31": {"name": "울산광역시", "short": "울산", "status": "live"}, "36": {"name": "세종특별자치시", "short": "세종", "status": "live"}, "41": {"name": "경기도", "short": "경기", "status": "live"}, "43": {"name": "충청북도", "short": "충북", "status": "live"}, "44": {"name": "충청남도", "short": "충남", "status": "live"}, "46": {"name": "전라남도", "short": "전남", "status": "live"}, "47": {"name": "경상북도", "short": "경북", "status": "live"}, "48": {"name": "경상남도", "short": "경남", "status": "live"}, "50": {"name": "제주특별자치도", "short": "제주", "status": "live"}, "51": {"name": "강원특별자치도", "short": "강원", "status": "live"}, "52": {"name": "전북특별자치도", "short": "전북", "status": "live"}},
+      "sido_merged": {"12": {"name": "전남광주통합특별시", "short": "전남광주", "members": ["29", "46"], "status": "name_only", "rule_ko": "'전남광주'(12)로 물으면 광주광역시(29)+전라남도(46) 두 시도를 함께 가리킨다 — 자료 코드는 29·46 그대로 둔다(접두 교체가 아니다: sido_successor 와 겹치지 않게 따로 둔다). 12 코드로 된 자료 행은 없다(name_only)", "source": "building-energy-3d src/visualization/data/region_resolver_table.json#sido.12 (status name_only)"}},
       "sido_successor": {
         "42": "51",
         "45": "52"

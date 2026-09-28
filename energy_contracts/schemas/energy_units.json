@@ -42,14 +42,74 @@
       "kerosene": 1.1,
       "_comment": "한국 에너지효율등급 인증제도 1차 에너지 환산계수. ~/.claude/ENERGY_SSOT.md §3.2"
     },
+    "fuel_vocabulary": {
+      "aliases": {
+        "elec": "electricity",
+        "electric": "electricity",
+        "electricity": "electricity",
+        "power": "electricity",
+        "전력": "electricity",
+        "전기": "electricity",
+        "gas": "city_gas",
+        "city_gas": "city_gas",
+        "도시가스": "city_gas",
+        "가스": "city_gas",
+        "dh": "district_heating",
+        "district_heat": "district_heating",
+        "district_heating": "district_heating",
+        "지역난방": "district_heating",
+        "dc": "district_cooling",
+        "district_cooling": "district_cooling",
+        "지역냉방": "district_cooling",
+        "oil": "oil",
+        "kerosene": "oil",
+        "등유": "oil",
+        "유류": "oil"
+      },
+      "label_ko": {
+        "electricity": "전기",
+        "city_gas": "가스",
+        "district_heating": "지역난방",
+        "district_cooling": "지역냉방",
+        "oil": "유류"
+      },
+      "kbep_keys": [
+        "elec",
+        "gas",
+        "dh",
+        "dc"
+      ],
+      "kbep_reported_keys": [
+        "elec",
+        "gas",
+        "dh"
+      ],
+      "site_keys": [
+        "electricity",
+        "gas",
+        "district_heating",
+        "district_cooling",
+        "oil"
+      ],
+      "simulation_carrier_keys": [
+        "electricity",
+        "gas",
+        "district_heating",
+        "district_cooling"
+      ],
+      "rule_ko": "연료 이름 정본 = emission_factors_kr 의 '<연료>_kg_co2_per_kwh' 접두(electricity·city_gas·district_heating·district_cooling·oil). 결과 칸 키(KBEP elec/gas/dh/dc · 시뮬·회계 electricity/gas/district_heating/…)와 E+ 계량 키·한국어는 aliases 로 정본 이름에 옮긴다. 모르는 키는 거절(전기로 짐작하지 않는다). kbep_reported_keys 에서 dc 가 빠진 것은 지역냉방 계수가 이중 계상 방지용 0(가정)이라 금액·탄소 문장에서 뺀다는 뜻",
+      "source": "게이트웨이 serving/energy_carrier.ALIASES·LABEL_KO·KBEP_KEYS·KBEP_REPORTED_KEYS·SITE_KEYS·SIMULATION_CARRIER_KEYS(2026-09-28) 이관 — AgentLeague carbon.FUEL_ALIASES 사본을 대체"
+    },
     "emission_factors_kr": {
       "electricity_kg_co2_per_kwh": 0.4173,
       "city_gas_kg_co2_per_nm3": 2.176,
       "city_gas_kg_co2_per_kwh": 0.2036,
       "district_heating_kg_co2_per_kwh": 0.126,
+      "district_cooling_kg_co2_per_kwh": 0.0,
+      "oil_kg_co2_per_kwh": 0.264,
       "diesel_kg_co2_per_l": 2.681,
       "lpg_kg_co2_per_kg": 3.0,
-      "_comment": "정본 = emission_factors.json (전력 0.4173 2023확정 / 도시가스 0.2036 / 지역난방 0.126 수도권2024). 이중 SSOT 충돌 정정 2026-06-13 (구 KEA 0.4594/0.202/0.115 폐기)"
+      "_comment": "정본 = emission_factors.json (전력 0.4173 2023확정 / 도시가스 0.2036 / 지역난방 0.126 수도권2024). 이중 SSOT 충돌 정정 2026-06-13 (구 KEA 0.4594/0.202/0.115 폐기). 2026-09-28 O5: district_cooling 0.0(전기 기반 냉수 — 소비단 전력으로 따로 잡으므로 이중 계상 방지용 0, 가정) · oil 0.264(유류 per-kWh 환산, 8.simulation _shared/energy_accounting 모듈 로컬값 이관 — 가정) 등재. 전력·가스·지역난방 세 값은 emission_factors.json KR 과 같아야 한다(validate_ssot check_emission_factor_copies)."
     },
     "zeb_thresholds_kwh_m2_yr": {
       "1+": 0,

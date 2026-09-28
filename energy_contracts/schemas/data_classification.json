@@ -11,9 +11,9 @@
     "agentleague",
     "eduarena"
   ],
-  "version": "1.2",
-  "updated": "2026-09-10",
-  "$comment": "myjob/docs/MODES_AND_DATA_RESEARCH.md §2.3 산출물. | v1.1(2026-09-03): DataSource와 AbsenceKind 분리. | v1.2(2026-09-10): Query500에서 쓰던 estimated/mixed/forecast/reference를 DataSource에 넣지 않고 EvidenceDisplayClass라는 별도 표시 축으로 정본화. DataSource 9종은 불변.",
+  "version": "1.3",
+  "updated": "2026-09-28",
+  "$comment": "myjob/docs/MODES_AND_DATA_RESEARCH.md §2.3 산출물. | v1.1(2026-09-03): DataSource와 AbsenceKind 분리. | v1.2(2026-09-10): Query500에서 쓰던 estimated/mixed/forecast/reference를 DataSource에 넣지 않고 EvidenceDisplayClass라는 별도 표시 축으로 정본화. DataSource 9종은 불변. | v1.3(2026-09-28 경진대회 최종 라운드 ② 분류 어휘): DataSource 에 virtual(경진대회 가상 채움 — 전역 규칙 competition-virtual-data, 사람 대면 표시 '가상')을 정식 추가. EvidenceDisplayClass 에 virtual·unknown 추가. 결과 분류 낱말 어휘(ClassificationWord)와 합성 규칙(default.classification)을 정본화 — 게이트웨이에 퍼진 낱말(measured_with_imputed·virtual·declared·assumed…)을 한 표로 두고, 옛 낱말은 aliases 로 정본 낱말에 잇는다. 분류가 없으면 unknown(못 잼) — measured 로 올리지 않는다. 합성 코드 = energy_contracts/rules_pure.py ec_classification_*(생성본에 원문 그대로).",
   "$defs": {
     "DataSource": {
       "type": "string",
@@ -26,9 +26,10 @@
         "synthetic",
         "mock",
         "calibrated",
-        "imputed"
+        "imputed",
+        "virtual"
       ],
-      "description": "출처 축. measured=실 계량, certified=공식 인증, simulated=시뮬 산출, predicted=ML 예측, external=외부 벤더, synthetic=합성/생성기, mock=의도적 모킹 calibrated=실측에 맞춰 보정(실측 아님), imputed=우리가 채운 값(method 필수). ⚠ 이 축은 **값이 있을 때만** 쓴다. 값이 없는 이유는 AbsenceKind 로 적는다."
+      "description": "출처 축. measured=실 계량, certified=공식 인증, simulated=시뮬 산출, predicted=ML 예측, external=외부 벤더, synthetic=합성/생성기, mock=의도적 모킹 calibrated=실측에 맞춰 보정(실측 아님), imputed=우리가 채운 값(method 필수), virtual=경진대회 가상 채움(자료가 없어 생성기·규칙으로 만든 값 — 생성 규칙·근거·생성기 이름 필수, 사람 대면 표시 '가상', 실측이 생기면 실측이 먼저). ⚠ 이 축은 **값이 있을 때만** 쓴다. 값이 없는 이유는 AbsenceKind 로 적는다."
     },
     "EvidenceDisplayClass": {
       "type": "string",
@@ -38,9 +39,34 @@
         "estimated",
         "reference",
         "synthetic",
-        "mixed"
+        "mixed",
+        "virtual",
+        "unknown"
       ],
-      "description": "여러 Evidence를 하나의 답변·화면에 표시할 때 쓰는 합성 라벨. 원천 출처가 아니며 DataSource를 대체하지 않는다. 실제 원천은 data_sources[]에 DataSource 9종으로 별도 보존한다."
+      "description": "여러 Evidence를 하나의 답변·화면에 표시할 때 쓰는 합성 라벨. 원천 출처가 아니며 DataSource를 대체하지 않는다. 실제 원천은 data_sources[]에 DataSource로 별도 보존한다. virtual=경진대회 가상 채움('가상' 배지), unknown=분류를 모른다('분류 미표시' — 실측으로 올리지 않는다)."
+    },
+    "ClassificationWord": {
+      "type": "string",
+      "enum": [
+        "measured",
+        "measured_with_imputed",
+        "calibrated",
+        "certified",
+        "simulated",
+        "predicted",
+        "estimated",
+        "imputed",
+        "external",
+        "reference",
+        "declared",
+        "assumed",
+        "virtual",
+        "synthetic",
+        "mock",
+        "mixed",
+        "unknown"
+      ],
+      "description": "결과·결속 출처의 **분류 낱말**(값 하나 또는 결과 전체가 무엇으로 만들어졌나). 낱말마다 출처(DataSource)·표시 등급(EvidenceDisplayClass)·한글 라벨이 default.classification.words 에 있다. 옛 낱말은 default.classification.aliases 로 이 낱말에 잇는다. 여러 출처를 합칠 때는 default.classification.composite 규칙(코드 = rules_pure.ec_classification_combine)."
     },
     "DataTier": {
       "type": "integer",
@@ -188,6 +214,66 @@
         "description": "우리가 채운 값(method 필수)",
         "example": "sido_month_profile_v1, building_year_scale_v1",
         "is_runtime": true
+      },
+      "virtual": {
+        "source": "virtual",
+        "description": "경진대회 가상 채움 — 자료가 없어 생성기·규칙으로 만든 값(생성 규칙·근거·생성기 이름 필수, 표시 '가상'). 실측이 생기면 실측이 먼저다",
+        "example": "ems_transformer serving/asset_inputs/_virtual.py 생성기(대표 기상년 기온·가상 운영 일정·가상 ESS)",
+        "is_runtime": true
+      }
+    },
+    "classification": {
+      "unknown_word": "unknown",
+      "rule_ko": "분류 낱말은 값을 만드는 곳에서 정한다. 분류가 없거나 표에 없는 낱말이면 unknown(분류 미표시) — measured 로 올리지 않는다. 가상·추정·혼합은 사람 대면 표시(label_ko)를 늘 함께 싣는다.",
+      "words": {
+        "measured": {"source": "measured", "display_class": "measured", "label_ko": "실측", "virtual": false, "measured_basis": true},
+        "measured_with_imputed": {"source": "measured", "also": ["imputed"], "display_class": "mixed", "label_ko": "실측(빈 시간 일부 추정 채움)", "virtual": false, "measured_basis": true, "meaning": "실측 계열 + 빈 시간을 같은 자산 실측 평균으로 채움. ⛔ 실측 부하 + 가상 기상처럼 가상 입력이 섞이면 이 낱말이 아니라 mixed 다"},
+        "calibrated": {"source": "calibrated", "display_class": "estimated", "label_ko": "보정 모델(실측 아님)", "virtual": false, "measured_basis": false},
+        "certified": {"source": "certified", "display_class": "reference", "label_ko": "공식 인증·등록 값", "virtual": false, "measured_basis": false},
+        "simulated": {"source": "simulated", "display_class": "estimated", "label_ko": "시뮬레이션", "virtual": false, "measured_basis": false},
+        "predicted": {"source": "predicted", "display_class": "forecast", "label_ko": "예측", "virtual": false, "measured_basis": false},
+        "estimated": {"source": null, "display_class": "estimated", "label_ko": "추정", "virtual": false, "measured_basis": false, "meaning": "모형·보간 추정(출처를 알면 simulated·predicted·imputed 를 쓴다)"},
+        "imputed": {"source": "imputed", "display_class": "estimated", "label_ko": "추정(채움)", "virtual": false, "measured_basis": false},
+        "external": {"source": "external", "display_class": "reference", "label_ko": "외부 자료", "virtual": false, "measured_basis": false},
+        "reference": {"source": null, "display_class": "reference", "label_ko": "참조", "virtual": false, "measured_basis": false, "meaning": "정본·공공 기준표(값이 아니라 기준)"},
+        "declared": {"source": null, "display_class": "reference", "label_ko": "선언(질문·사용자가 제시한 값)", "virtual": false, "measured_basis": false},
+        "assumed": {"source": null, "display_class": "reference", "label_ko": "가정(선언 규칙)", "virtual": false, "measured_basis": false, "meaning": "합의된 운영 기준이 아닌 선언 가정(문턱·일정·적용 규칙)"},
+        "virtual": {"source": "virtual", "display_class": "virtual", "label_ko": "가상(추정) — 실측 아님", "virtual": true, "measured_basis": false},
+        "synthetic": {"source": "synthetic", "display_class": "synthetic", "label_ko": "가상(합성) — 실측 아님", "virtual": true, "measured_basis": false},
+        "mock": {"source": "mock", "display_class": "synthetic", "label_ko": "모의(시험용) — 실측 아님", "virtual": true, "measured_basis": false},
+        "mixed": {"source": null, "display_class": "mixed", "label_ko": "혼합(실측 + 가상·추정 — 표시 참조)", "virtual": null, "measured_basis": null},
+        "unknown": {"source": null, "display_class": "unknown", "label_ko": "분류 미표시", "virtual": null, "measured_basis": null}
+      },
+      "aliases": {
+        "measured_with_estimated_hours": "measured_with_imputed",
+        "measured_with_virtual_assumptions": "mixed",
+        "measured_with_assumptions": "mixed",
+        "measured_with_question_policy": "mixed",
+        "mixed_measured_estimated": "mixed",
+        "measured_calibrated": "calibrated",
+        "measured_uncalibrated": "simulated",
+        "drawing_archetype": "simulated",
+        "drawing_dedicated_model": "simulated",
+        "measured_with_virtual_members": "mixed",
+        "measured_with_synthetic_members": "mixed",
+        "synthetic_virtual_series": "virtual",
+        "virtual_pack": "virtual",
+        "demo": "virtual",
+        "forecast": "predicted",
+        "observed": "measured",
+        "metered": "measured",
+        "public_registered_monthly_energy": "measured",
+        "simulation": "simulated",
+        "energyplus": "simulated",
+        "question": "declared",
+        "registered": "certified",
+        "unclassified": "unknown",
+        "undeclared": "unknown"
+      },
+      "composite": {
+        "rule_ko": "여러 출처 → 한 낱말: ① 각 낱말을 정본 낱말로(별칭·빈칸·표 밖 → unknown) ② 하나라도 unknown 이면 unknown(모르는 칸이 섞이면 합성도 모른다) ③ 한 종류면 그 낱말 ④ measured·measured_with_imputed·imputed 만이면 measured_with_imputed ⑤ virtual·synthetic·mock 만이면 virtual ⑥ 그 밖은 mixed",
+        "imputed_family": ["measured", "measured_with_imputed", "imputed"],
+        "virtual_family": ["virtual", "synthetic", "mock"]
       }
     },
     "tier_mapping": {

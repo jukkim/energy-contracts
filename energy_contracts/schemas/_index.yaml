@@ -27,6 +27,7 @@ components:
     TargetVocabulary:         {$ref: 'target_vocabulary.json'}
     CalendarConventions:      {$ref: 'calendar_conventions.json'}
     JudgementThresholds:      {$ref: 'judgement_thresholds.json'}
+    DeclaredAssumptions:      {$ref: 'declared_assumptions.json'}
     OperationManifest:        {$ref: 'operation_manifest.json'}
     AiroRequest:              {$ref: 'airo_request.json'}
     AnomalyResponse:          {$ref: 'anomaly_response.json'}

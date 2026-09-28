@@ -47,8 +47,8 @@ def usage_archetype_table() -> dict:
     return load_schema("building_usage_map")["default"]["usage_archetype"]
 
 
-def usage_to_archetype(usage: object, gross_floor_area_m2: object = None) -> dict:
-    return ec_usage_to_archetype(usage, gross_floor_area_m2, usage_archetype_table())
+def usage_to_archetype(usage: object, gross_floor_area_m2: object = None, floors_above: object = None) -> dict:
+    return ec_usage_to_archetype(usage, gross_floor_area_m2, usage_archetype_table(), floors_above)
 
 
 def percentile(values, q: float):

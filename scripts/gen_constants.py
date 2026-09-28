@@ -199,6 +199,8 @@ PROJECT_TARGETS: dict[str, dict] = {
                 "DR_MANDATORY_SIGNAL_LEVELS",
                 # 공조 방식 표시 이름 (region_codes.json, 2026-09-15) — policy picker·정책 평가 화면
                 "HVAC_NAME_KR",
+                # 2026-09-28 최종 라운드(f7): 분류 라벨 한 곳 — Lab/be-3d evidence_panel 이 여기서 라벨을 만든다
+                "DATA_CLASSIFICATION_VOCAB", "EVIDENCE_DISPLAY_CLASSES",
             ],
         },
     },
@@ -220,6 +222,12 @@ PROJECT_TARGETS: dict[str, dict] = {
                 # 2026-09-28 일반화 G2 — 토론 경제성의 기본 EUI·할인율·용도→원형을 생성본에서 읽는다
                 "USAGE_ARCHETYPE", "AXIS_ARCHETYPES", "DISCOUNT_RATE_DEFAULT", "DISCOUNT_RATE_SOURCE",
                 "JUDGEMENT_THRESHOLDS", "ID_PATTERNS",
+                # 2026-09-28 최종 라운드(f7 AL C2·C1): 전력 단가 172.7(market_prices.retail_reference_2026 일반용 평균판매단가)을
+                #  load_schema 원본 대신 생성본에서 · 분류 어휘 · 선언 가정(가상 연료 구성의 대표 설비는 AXIS_ARCHETYPES.representative_hvac)
+                "MARKET_PRICES", "DATA_CLASSIFICATION_VOCAB", "EVIDENCE_DISPLAY_CLASSES", "DECLARED_ASSUMPTIONS",
+                "AIR_ASSET_KINDS", "ELECTRICITY_PRICE_CLASSES",
+                # 2026-09-28: 연료 사상(carbon.FUEL_ALIASES 사본 대체)
+                "FUEL_VOCABULARY",
             ],
         },
     },
@@ -266,6 +274,29 @@ PROJECT_TARGETS: dict[str, dict] = {
                 "AXIS_ARCHETYPES", "AXIS_CITIES", "AXIS_HVAC", "AXIS_STRATEGIES", "AXIS_ALIAS_INDEX", "AXIS_KBEP_IDS",
                 "ARCHETYPE_TO_BUILDWISE", "USAGE_TO_BUILDWISE", "DEFAULT_BUILDWISE_TYPE", "USAGE_ARCHETYPE",
                 "HVAC_EMS_COMPAT", "CALENDAR_CONVENTIONS", "JUDGEMENT_THRESHOLDS",
+                "DISCOUNT_RATE_DEFAULT", "DISCOUNT_RATE_SOURCE",
+                # 2026-09-28 최종 라운드 ② 분류 어휘(data_classification 1.3) · N32 선언 가정 상수
+                #  — 게이트웨이 serving/classification.py 가 여기서 읽는다(낱말표·라벨표 손 사본 금지)
+                "EVIDENCE_DISPLAY_CLASSES", "DATA_CLASSIFICATION_VOCAB", "DECLARED_ASSUMPTIONS",
+                "ELECTRICITY_PRICE_CLASSES", "FUEL_VOCABULARY",
+                # 2026-09-28 O3·O5 — 시뮬 셀 축 · 시뮬 비용 트랙 단가(market_prices.sim_cost_track_2025)
+                "AXIS_SCENARIOS", "AXIS_SETPOINTS", "MARKET_PRICES", "BUILDING_USAGES",
+            ],
+        },
+    },
+    # airos-energy-decision (2026-09-28 최종 라운드, f7 요청) — usage_archetype.py 등 손 사본을 생성본 import 로 바꾸기 위한 대상.
+    #   ⚠ AIROS 는 스키마를 커밋 핀(contracts_client.defaults)으로도 읽는다 — 생성본은 순수 규칙 원문(rules_pure)과 표를 싣고,
+    #   핀 대조는 그쪽 저장소 규칙 그대로. 새 소비처 CI(ssot-drift.yml) 추가는 그 저장소 담당(SSOT_COMPLIANCE §4).
+    "airos-energy-decision": {
+        "python": "projects/airos-energy-decision/src/airos_energy_decision/_generated_constants.py",
+        "exports": {
+            "python": [
+                "USAGE_ARCHETYPE", "BUILDING_USAGES", "AXIS_ARCHETYPES", "AXIS_ALIAS_INDEX", "AXIS_CITIES", "AXIS_HVAC",
+                "ARCHETYPE_TO_BUILDWISE", "USAGE_TO_BUILDWISE", "DEFAULT_BUILDWISE_TYPE",
+                "AIR_ASSET_KINDS", "TARGET_KIND_ID", "ID_PATTERNS", "ADMIN_SUCCESSION", "ELECTRICITY_PRICE_CLASSES",
+                "CALENDAR_CONVENTIONS", "JUDGEMENT_THRESHOLDS", "DECLARED_ASSUMPTIONS",
+                "DATA_CLASSIFICATION_VOCAB", "EVIDENCE_DISPLAY_CLASSES", "DATA_SOURCE_LABELS", "ABSENCE_KINDS",
+                "ABSENCE_KIND_META", "ABSENCE_IN_DENOMINATOR", "EMISSION_FACTORS_KR", "FUEL_VOCABULARY", "MARKET_PRICES",
                 "DISCOUNT_RATE_DEFAULT", "DISCOUNT_RATE_SOURCE",
             ],
         },
@@ -359,8 +390,11 @@ def load_schemas() -> dict:
     calendar = _load("calendar_conventions.json")
     thresholds = _load("judgement_thresholds.json")
     cost_catalog = _load("measure_cost_catalog.json")
+    # 선언 가정 상수(2026-09-28 N32) — 폭염·한파·노후·조치 적용 문턱·가상 ESS 효율·기본 용도 분해
+    declared = _load("declared_assumptions.json")
     return {"archetypes": archetypes, "hvac_matrix": hvac_matrix, "target_vocab": target_vocab,
             "calendar": calendar, "thresholds": thresholds, "cost_catalog": cost_catalog,
+            "declared": declared,
         "edge_cap": edge_cap, "household_consent": household_consent, "region": region, "kbs": kbs,
         "ems": ems, "ports": ports, "common": common,
             "agents": agents, "intents": intents,
@@ -624,6 +658,13 @@ def gen_python(schemas: dict) -> str:
             _den = tuple(k for k, v in (dataclass.get("absence") or {}).items()
                          if v.get("in_denominator"))
             lines.append(f"ABSENCE_IN_DENOMINATOR: tuple[str, ...] = {_den!r}")
+        #: v1.3(2026-09-28) — 표시 축 · 결과 분류 낱말 어휘와 합성 규칙. 규칙 코드는 rules_pure.ec_classification_*
+        #  (아래 순수 규칙 원문)이 이 표를 전역에서 읽는다 — 소비처가 낱말표·라벨표를 따로 들지 않게.
+        _dc = _defs_enum(schemas, "EvidenceDisplayClass")
+        if _dc:
+            lines.append(f"EVIDENCE_DISPLAY_CLASSES: tuple[str, ...] = {tuple(_dc)!r}")
+        if dataclass.get("classification"):
+            lines.append(f"DATA_CLASSIFICATION_VOCAB: dict = {dataclass['classification']!r}")
         lines.append("")
 
     # Phase G — Test Classification
@@ -723,9 +764,10 @@ def gen_python(schemas: dict) -> str:
         lines.append('    return f"http://localhost:{port}"')
         lines.append("")
 
-    usage = schemas.get("usage", {}).get("default", {}).get("usages", {})
+    usage = building_usages_resolved(schemas)
     if usage:
         lines.append("# ─ Building Usage Map (Phase J-7 SSOT) ──────────────────────")
+        #: v1.2(2026-09-28 X2): archetype(영문명)·archetype_code 는 usage_archetype.rows 에서 **파생**(손 값 없음)
         lines.append(f"BUILDING_USAGES: dict[str, dict] = {usage!r}")
         lines.append("")
 
@@ -772,6 +814,9 @@ def gen_python(schemas: dict) -> str:
     units = schemas.get("units", {}).get("default", {})
     if units:
         lines.append("# ─ Energy Units (Phase J-12 SSOT) ───────────────────────────")
+        #: 2026-09-28 — 연료 이름 사상(결과 칸 키·계량 키·한국어 → EC 연료 이름)·한국어 라벨(게이트웨이 energy_carrier 이관)
+        if units.get("fuel_vocabulary"):
+            lines.append(f"FUEL_VOCABULARY: dict = {units['fuel_vocabulary']!r}")
         lines.append(f"ENERGY_BASE_UNITS: dict[str, str] = "
                      f"{units.get('base_units', {})!r}")
         lines.append(f"ENERGY_CONVERSIONS: dict[str, float] = "
@@ -898,6 +943,35 @@ RULES_PURE_PATH = CONTRACTS_ROOT / "energy_contracts" / "rules_pure.py"
 _RULES_MARK = "# --- BEGIN PURE RULES ---"
 
 
+def building_usages_resolved(schemas: dict) -> dict:
+    """building_usage_map.usages + 파생 원형(2026-09-28 X2 — 용도 표 한 벌).
+
+    각 항목의 ``registry_usage``(usage_archetype.rows 키·별칭)를 정본 규칙(rules_pure.ec_usage_to_archetype —
+    면적·층수 미상 기본)으로 풀어 ``archetype``(DOE 영문명, 예전 칸 이름 그대로 — 소비처 호환)·``archetype_code``(Bxx)
+    를 싣는다. registry_usage 가 null 이거나 원형이 없으면 둘 다 None + ``archetype_absence``(기본 원형으로 채우지 않는다)."""
+    um = (schemas.get("usage") or {}).get("default") or {}
+    usages = um.get("usages") or {}
+    if not usages:
+        return {}
+    table = um.get("usage_archetype") or {}
+    docs = ((schemas.get("archetypes") or {}).get("default") or {}).get("doe_buildings") or {}
+    resolve = _rules_namespace()["ec_usage_to_archetype"]
+    out: dict = {}
+    for key, u in usages.items():
+        row = dict(u)
+        reg = u.get("registry_usage")
+        r = resolve(reg, None, table) if reg else {"archetype": None, "absence": "usage_unknown"}
+        code = r.get("archetype")
+        if code is not None and code not in docs:
+            raise ValueError(f"usages[{key}] 의 파생 원형 {code} 가 doe_buildings 에 없다")
+        row["archetype"] = docs[code]["name_en"] if code else None
+        row["archetype_code"] = code
+        if code is None:
+            row["archetype_absence"] = r.get("absence")
+        out[key] = row
+    return out
+
+
 def rules_pure_source() -> str:
     """energy_contracts/rules_pure.py 의 표시 아래 본문 — 생성본에 **그대로** 싣는 규칙 원문(한 벌)."""
     text = RULES_PURE_PATH.read_text(encoding="utf-8").replace("\r\n", "\n")
@@ -959,6 +1033,9 @@ def _generalization_python(schemas: dict) -> list[str]:
         out.append("# ─ 대상 어휘 (target_vocabulary.json — AIR 자산 종류표·대상 종류 → 식별자) ───")
         out.append(f"AIR_ASSET_KINDS: dict[str, dict] = {tv.get('air_asset_kinds', {})!r}")
         out.append(f"TARGET_KIND_ID: dict[str, str] = {tv.get('target_kind_id', {})!r}")
+        #: 2026-09-28 — 자산 종류 → 요금 종별 선택 규칙(게이트웨이 _financial 이관). 행별 종별 = AIR_ASSET_KINDS[*].electricity_price_class
+        if tv.get("electricity_price_classes"):
+            out.append(f"ELECTRICITY_PRICE_CLASSES: dict = {tv['electricity_price_classes']!r}")
         out.append("")
     if region.get("admin_succession"):
         out.append("# ─ 폐지·개편 행정구역 승계 (region_codes.json#admin_succession) ─────────")
@@ -973,6 +1050,11 @@ def _generalization_python(schemas: dict) -> list[str]:
         out.append(f"AXIS_STRATEGIES: dict[str, dict] = {axes['strategies']!r}")
         out.append(f"AXIS_ALIAS_INDEX: dict[str, dict[str, str]] = {axes['index']!r}")
         out.append(f"AXIS_KBEP_IDS: dict[str, dict[str, int]] = {axes['kbep']!r}")
+        #: 2026-09-28 O3 — 시뮬 셀 축(시나리오·설정온도). 순서 = KBEP 정수 = 셀 id 코드(8.simulation _shared/sim_id 가 파생)
+        _sim_axes = ((schemas.get("archetypes") or {}).get("default") or {}).get("sim_axes") or {}
+        if _sim_axes:
+            out.append(f"AXIS_SCENARIOS: tuple[str, ...] = {tuple(_sim_axes['scenarios'])!r}")
+            out.append(f"AXIS_SETPOINTS: tuple[str, ...] = {tuple(_sim_axes['setpoints'])!r}")
         out.append("")
         out.append("# ─ 원형 → BuildWise EUI 표 유형 · 용도 → BuildWise(투영) ──────────────────")
         out.append(f"ARCHETYPE_TO_BUILDWISE: dict[str, str] = {ba.get('archetype_to_buildwise', {})!r}")
@@ -996,6 +1078,11 @@ def _generalization_python(schemas: dict) -> list[str]:
     if thr:
         out.append("# ─ 판정 문턱 (judgement_thresholds.json — 개념별·맥락 이름) ───────────────────")
         out.append(f"JUDGEMENT_THRESHOLDS: dict = {thr!r}")
+        out.append("")
+    decl = (schemas.get("declared") or {}).get("default")
+    if decl:
+        out.append("# ─ 선언 가정 상수 (declared_assumptions.json — 폭염·한파·노후·적용 문턱·가상 ESS·기본 용도 분해) ─────")
+        out.append(f"DECLARED_ASSUMPTIONS: dict = {decl!r}")
         out.append("")
     method = ((schemas.get("cost_catalog") or {}).get("default") or {}).get("method") or {}
     if method.get("discount_rate_default") is not None:
@@ -1178,6 +1265,13 @@ def gen_typescript(schemas: dict) -> str:
             lines.append("export type AbsenceKind = (typeof ABSENCE_KINDS)[number];")
             lines.append(f"export const ABSENCE_KIND_META = "
                          f"{json.dumps(dataclass.get('absence', {}), ensure_ascii=False)} as const;")
+        #: v1.3(2026-09-28) — 표시 등급·분류 낱말 어휘(라벨·가상 여부·별칭·합성 규칙). 화면이 라벨표를 손으로 들지 않게
+        _dc = _defs_enum(schemas, "EvidenceDisplayClass")
+        if _dc:
+            lines.append(f"export const EVIDENCE_DISPLAY_CLASSES = {json.dumps(_dc, ensure_ascii=False)} as const;")
+        if dataclass.get("classification"):
+            lines.append(f"export const DATA_CLASSIFICATION_VOCAB = "
+                         f"{json.dumps(dataclass['classification'], ensure_ascii=False)} as const;")
         lines.append("")
 
     # Phase G
@@ -1257,7 +1351,9 @@ def gen_typescript(schemas: dict) -> str:
                          f"{json.dumps(node, ensure_ascii=False)} as const;")
 
     _ts_dump("cmpprof",    "COMPUTER_PROFILES",   ["machines"])
-    _ts_dump("usage",      "BUILDING_USAGES",     ["usages"])
+    _bu = building_usages_resolved(schemas)       # v1.2 X2 — py 와 같은 파생(원형은 정본 용도표에서)
+    if _bu:
+        lines.append(f"export const BUILDING_USAGES = {json.dumps(_bu, ensure_ascii=False)} as const;")
     _ts_dump("i18n",       "I18N_KEYS",           ["keys"])
     _ts_dump("i18n",       "I18N_FALLBACK_LANG",  ["fallback_lang"])
     _ts_dump("tenant_reg", "TENANT_REGIONS",      ["regions"])
@@ -1268,6 +1364,7 @@ def gen_typescript(schemas: dict) -> str:
     _ts_dump("units",      "ENERGY_CONVERSIONS",  ["conversions"])
     _ts_dump("units",      "PRIMARY_ENERGY_FACTORS", ["primary_energy_factors"])
     _ts_dump("units",      "EMISSION_FACTORS_KR", ["emission_factors_kr"])
+    _ts_dump("units",      "FUEL_VOCABULARY",     ["fuel_vocabulary"])
     _ts_dump("emissions",  "EMISSION_FACTORS",    ["co2_kgco2eq_per_kwh"])
     _ts_dump("units",      "ZEB_THRESHOLDS",      ["zeb_thresholds_kwh_m2_yr"])
     _ts_dump("market",     "MARKET_PRICES")

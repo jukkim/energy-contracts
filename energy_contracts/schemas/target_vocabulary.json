@@ -64,8 +64,19 @@
   },
   "type": "object",
   "default": {
+    "electricity_price_classes": {
+      "general_low_voltage": {"label_ko": "일반용(갑)Ⅰ 저압 계절 전력량요금", "market_prices_ref": "retail_reference_2026.electricity_energy_charge_general_low_voltage_2026", "needs_month": true},
+      "general": {"label_ko": "일반용 평균판매단가", "market_prices_ref": "retail_reference_2026.electricity_avg_sales_price.general", "needs_month": false},
+      "industrial": {"label_ko": "산업용 평균판매단가", "market_prices_ref": "retail_reference_2026.electricity_avg_sales_price.industrial", "needs_month": false},
+      "residential": {"label_ko": "주택용 평균판매단가", "market_prices_ref": "retail_reference_2026.electricity_avg_sales_price.residential", "needs_month": false},
+      "education_2024": {"label_ko": "교육용 평균판매단가(2024)", "market_prices_ref": "retail_reference_2026.electricity_avg_sales_price.education_2024", "needs_month": false},
+      "education_use_types": ["school", "education"],
+      "rule_ko": "자산 종류 → 요금 종별(air_asset_kinds[*].electricity_price_class): 점포 = 저압 계절 단가 · 건물 = 일반용 · 공장 = 산업용 · 가정 = 주택용. 용도가 교육(education_use_types)이면 교육용이 먼저. 모르는 종류는 종별 없음(참조 단가 unit_prices 를 쓰고 표시) — 계약 요금이 아니다",
+      "source": "게이트웨이 general_ops/_financial.PRICE_CLASS_BY_KIND·EDUCATION_USE_TYPES·PRICE_CLASS_KO(2026-09-28 W5 선택 규칙) 이관"
+    },
     "air_asset_kinds": {
       "BLD": {
+        "electricity_price_class": "general",
         "label_ko": "건물",
         "target_kind": "asset",
         "subject_field": "building_ids",
@@ -74,6 +85,7 @@
         "archetype_source": "record"
       },
       "FAC": {
+        "electricity_price_class": "industrial",
         "label_ko": "공장",
         "target_kind": "asset",
         "subject_field": "building_ids",
@@ -82,6 +94,7 @@
         "archetype_source": "record"
       },
       "HOM": {
+        "electricity_price_class": "residential",
         "label_ko": "가정",
         "target_kind": "asset",
         "subject_field": "home_ids",
@@ -90,6 +103,7 @@
         "archetype_source": "registry_usage"
       },
       "RET": {
+        "electricity_price_class": "general_low_voltage",
         "label_ko": "점포",
         "target_kind": "asset",
         "subject_field": "building_ids",
@@ -98,6 +112,7 @@
         "archetype_source": "record"
       },
       "PRT": {
+        "electricity_price_class": null,
         "label_ko": "포트폴리오",
         "target_kind": "portfolio",
         "subject_field": "portfolio_ids",

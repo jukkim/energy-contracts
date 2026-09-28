@@ -4,6 +4,32 @@
 
 ---
 
+## 분류 어휘 1.3 · 선언 가정 상수 (2026-09-28 최종 라운드 ②·N32, unreleased)
+
+- `data_classification.json` 1.3: `DataSource` += `virtual`(경진대회 가상 채움, 표시 '가상') · `EvidenceDisplayClass` += `virtual`·`unknown` ·
+  `$defs.ClassificationWord`(결과 분류 낱말 17) · `default.classification`(낱말 → 출처·표시 등급·한글 라벨·가상 여부 · 옛 낱말 별칭 · 합성 규칙).
+  분류가 없으면 `unknown` — `measured` 로 올리지 않는다. `measured_with_imputed` 는 "실측 + 빈 시간 실측 평균 채움" 한 뜻(가상 입력이 섞이면 `mixed`).
+- `rules_pure.py`: `ec_classification_normalize/combine/meta` — 생성본에 원문 그대로(게이트웨이 `serving/classification.py` 가 읽는다).
+- `declared_assumptions.json` 1.0(새): 폭염 33℃·한파 −12℃(기상청 기준 인용) · 민원 더운 시간 30℃ · 한파 설계일 5일 · 노후 30년 ·
+  조치 적용 문턱 · 공공 용도 코드 · 가상 ESS 왕복효율 0.9 · 기본 용도 분해 — 게이트웨이 손 리터럴을 옮김.
+- 온전한 달·창 문턱 0.99 = `calendar_conventions.json#complete_month`(W4 등재) 한 곳 — 같은 값을 judgement_thresholds 에 두 번 적지 않는다.
+- 용도 표 한 벌(`building_usage_map` 1.2 X2): 정본 = `usage_archetype.rows`, `usages[*]` 는 `registry_usage` 만(원형은 생성기가 파생 — `BUILDING_USAGES[*].archetype·archetype_code`).
+  편의점 = B11(사용자 결정 22:35) · 공동주택 층수 규칙(`apartment_by_floors`: 5층 이하 B16 · 6층 이상 B17 · 미상 B16) · 확장 용도 행(assumed) · 방송통신시설 = 이름 있는 결손(`no_doe_archetype`) · 세부 용도 별칭. `rules_pure.ec_usage_to_archetype(…, floors_above)`.
+- `building_archetypes.json` 2.2: `area_m2` = v4 정본(O2 — B16 1,457→3,134.61 · B17 3,135→7,836.48 · B02 4,982→12,000 …) · `representative_hvac`(be-3d 손 표 이관, B16 HE · B17 HG) · `sim_axes`(시나리오 4 · 설정온도 8 — O3, 생성본 `AXIS_SCENARIOS`·`AXIS_SETPOINTS`).
+- `judgement_thresholds.display_bands.policy_savings_pct`(O3 — be-3d 정책 색 띠 이관) · `market_prices.sim_cost_track_2025`(O5 — 152 시뮬 비용 트랙) · `energy_units.emission_factors_kr` 에 지역냉방 0.0·유류 0.264(O5, 가정).
+- `auth_scopes.json` 1.5: `resource_authorization.f14_persona_of_role`(아이로스 역할 → F14 관점, 게이트웨이 asker_scope 손 표 이관 · analyst = building_manager 와 권한 동치 → facility_manager).
+- `airo_request.json` 2.2: 지역 대상 코드 4자리(구가 있는 시) 허용 · `Period.basis` += `declared_replay_period`·`calendar_relative_to_today`(W8 Studio 이관).
+- `region_codes.json`: `admin_succession.sido_current_names`(현행 시도 이름표 — be-3d region_resolver_table 이관) · `admin_succession.sido_merged`(12 전남광주 = 29+46 이름 통합, 접두 교체 아님) ·
+  `hvac_types[H_x].heating_fuel·cooling_fuel·fuel_basis`(배출계수 어휘 — IDF 객체 전수 근거. H_C 난방은 원형마다 달라 null).
+- `target_vocabulary.json`: `air_asset_kinds[*].electricity_price_class` + `electricity_price_classes`(자산 종류 → 요금 종별 선택 규칙 — 게이트웨이 _financial 이관, 생성본 `ELECTRICITY_PRICE_CLASSES`) ·
+  `calendar_conventions.season_systems.heating_season`(난방기 11~3월 — 한전 겨울과 다른 이름) · 분류 별칭 += 자기 표 근거 등급 4(measured_calibrated → calibrated · measured_uncalibrated·drawing_* → simulated) ·
+  `rules_pure`: `ec_competition_ranks`·`ec_average_ranks`·`ec_tukey_fences`(게이트웨이 stats 이관 — 다른 저장소 공유).
+- `energy_units.fuel_vocabulary`(연료 사상 — 결과 칸 키·계량 키·한국어 → EC 연료 이름, 한국어 라벨, KBEP·시뮬 키 목록; 게이트웨이 energy_carrier 이관) → 생성본 `FUEL_VOCABULARY`(py·ts).
+- `airos_replay_anomaly_policy.source` = 정본 자신(`kind: canonical_self`, 값 지문 + 적용 코드 목록) — 퇴역 하네스 파일을 가리키지 않는다.
+- 생성 대상: `airos-energy-decision`(python, 새) · be-3d TS += `DATA_CLASSIFICATION_VOCAB`·`EVIDENCE_DISPLAY_CLASSES` · agentleague += `FUEL_VOCABULARY`.
+- validate_ssot: `check_archetype_representative_hvac` · `check_emission_factor_copies`(D40 — 두 스키마 대조) · usage 검사 v1.2(손 archetype 금지·registry_usage 대조·층수 규칙·결손 행).
+- 생성기: `EVIDENCE_DISPLAY_CLASSES` · `DATA_CLASSIFICATION_VOCAB` · `DECLARED_ASSUMPTIONS`(8sim-shared 내보내기). pydantic 재생성 = data_classification · agent_contracts · declared_assumptions.
+
 ## Query100 정본값 등재 — NDC 부문별·탄소가격 범위·DR 가정·전략별 설치비 (2026-09-28, unreleased)
 
 - `energy_constants.json` 2.1: `ndc_targets` 신설 — `national_2030`(국가 전체 40%, 436.6백만t) · `building_2030`(건물 52.1→35.0백만t, 32.8%) · `building_2035`(건물 53.6~56.2%, 2025-11 확정). 기본 목표 = 건물부문 2030. 국가 전체 값은 대체하지 않고 다른 키로 둔다. 항목마다 출처 URL·발표일(`data_source=external`).

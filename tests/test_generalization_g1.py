@@ -60,13 +60,20 @@ def test_b18_is_an_archetype_with_kbep_id_17():
 
 
 def test_replay_policy_source_hash_matches_source_and_stale_hash_is_caught(tmp_schemas: Path):
+    # 2026-09-28 최종 라운드: 원천 = 정본 자신(canonical_self) — 퇴역 하네스 파일을 가리키지 않는다. 반례 양쪽:
+    #   막을 것(옛 지문 · 값만 바뀜) / 통과할 것(지금 정본). 적용 코드가 작업공간에 있으면 대조가 돈다.
     src = json.loads((SCHEMAS / "airos_replay_anomaly_policy.json").read_text(encoding="utf-8"))["default"]["source"]
-    if not (vs.WORKSPACE_ROOT / src["path"]).exists():
-        pytest.skip("원천이 이 작업공간에 없다 — 못 잼")
+    assert src["kind"] == "canonical_self" and src["applied_by"]
     assert vs.check_replay_policy_source() == []
     _edit(tmp_schemas, "airos_replay_anomaly_policy.json",
           lambda d: d["default"]["source"].__setitem__("sha256", "682d4091a9ffef2133531080bac9a0bdaeba49ccb8613d0402ce80b87622a4e5"))
     assert vs.check_replay_policy_source(tmp_schemas), "옛 해시를 못 잡았다"
+
+
+def test_replay_policy_value_change_without_new_fingerprint_is_caught(tmp_schemas: Path):
+    _edit(tmp_schemas, "airos_replay_anomaly_policy.json",
+          lambda d: d["default"].__setitem__("residual_z_threshold", 2.5))
+    assert vs.check_replay_policy_source(tmp_schemas), "값만 바꾼 정책을 못 잡았다"
 
 
 # ── G1: 용도 → 원형 한 표 (결정 D1) ─────────────────────────────────────────────
