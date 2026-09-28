@@ -8,9 +8,9 @@
     "executor_keys": "projects\\energy-decision-studio\\lib\\actions\\executor_keys.ts"
   },
   "counts": {
-    "opcodes": 105,
+    "opcodes": 107,
     "opA": 8,
-    "opB": 86,
+    "opB": 88,
     "opC": 11,
     "routerClasses": 43,
     "executors": 7,
@@ -462,11 +462,25 @@
       "summary": "VEN 목록 조회 — GridBridge GET /venues: 등록된 EdgeAgent 목록. kind 필터(telemetry=관측형/disp"
     },
     {
+      "api": "highlightBuildingsByRef",
+      "name": "insight.buildingRefs",
+      "ns": "insight",
+      "consumerClass": "B",
+      "summary": "Outline the verified result's buildings named only by opaque scene_ref tokens: b"
+    },
+    {
       "api": "mountFlowLines",
       "name": "insight.flowLines",
       "ns": "insight",
       "consumerClass": "B",
       "summary": "근거 패널 결과의 흐름 행(flowsKey, 예 flow_rows: from_node·to_node·value_key·label·tone)을 앵"
+    },
+    {
+      "api": "cycleEvidenceScenes",
+      "name": "insight.sceneCycle",
+      "ns": "insight",
+      "consumerClass": "B",
+      "summary": "Play the verified result's declared scene_states in order (sceneKeys; a key may "
     },
     {
       "api": "setEvidenceScene",
@@ -2556,6 +2570,7 @@
         "clearRoutingCache",
         "clearSelection",
         "clearV68Features",
+        "cycleEvidenceScenes",
         "driveKakaoRoute",
         "driveNaverRoute",
         "driveOsrmRoute",
@@ -2563,6 +2578,7 @@
         "driveTmapRoute",
         "flyCameraPath",
         "flyCameraShot",
+        "highlightBuildingsByRef",
         "mountFlowLines",
         "mountValueMarkers",
         "mountZoneHighlights",
@@ -2581,11 +2597,13 @@
         "unmountReverseCascade",
         "unmountSeoulChoropleth"
       ],
-      "nlTarget": 60,
+      "nlTarget": 62,
       "nlCovered": 53,
       "nlUncovered": [
+        "cycleEvidenceScenes",
         "flyCameraPath",
         "flyCameraShot",
+        "highlightBuildingsByRef",
         "mountFlowLines",
         "mountValueMarkers",
         "mountZoneHighlights",
