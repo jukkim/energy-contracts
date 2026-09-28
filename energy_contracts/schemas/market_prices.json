@@ -7,7 +7,7 @@
   "_consumers": [
     "gridbridge"
   ],
-  "version": "2.1",
+  "version": "2.2",
   "type": "object",
   "properties": {
     "kau": {
@@ -23,6 +23,23 @@
         },
         "refresh_cycle": {
           "type": "string"
+        },
+        "fallback_source": {
+          "type": "string",
+          "description": "폴백 시장가(fallback_krw_per_tco2)의 근거. 경제성 계산의 기본 탄소가격은 이 값이다."
+        },
+        "phase4_2030_outlook_krw_per_tco2": {
+          "type": "object",
+          "description": "K-ETS 4기(2026~2030) 2030년 전망가 범위(원/tCO2). 보도 전망치 — 시장가가 아니다. 민감도·정책 상향 범위로만 쓰고 기본값을 대체하지 않는다.",
+          "required": ["min", "max", "source", "source_urls", "as_of"],
+          "properties": {
+            "min": {"type": "number"},
+            "max": {"type": "number"},
+            "source": {"type": "string"},
+            "source_urls": {"type": "array", "items": {"type": "string"}},
+            "as_of": {"type": "string", "format": "date"},
+            "data_source": {"type": "string", "description": "data_classification.json#DataSource — 외부 보도 전망 = external."}
+          }
         }
       }
     },
@@ -177,7 +194,19 @@
     "kau": {
       "fallback_krw_per_tco2": 20000,
       "reference_date": "2026-06-22",
-      "refresh_cycle": "quarterly"
+      "refresh_cycle": "quarterly",
+      "fallback_source": "KRX ETS KAU25 시세(2026-05-29 종가 24,550원 연중 최대 → 6월 중순 19,600~21,000원) 기준 폴백, ENERGY_SSOT.md v1.13 §4 (2026-06-22 웹 검증). 변동 큼 → KRX(ets.krx.co.kr) 분기 재확인.",
+      "phase4_2030_outlook_krw_per_tco2": {
+        "min": 40000,
+        "max": 61000,
+        "source": "K-ETS 4기 2030년 전망가 보도(이투뉴스·그리니엄, ICAP 4기 할당계획과 정합). 환경부 4기 할당계획은 가격을 명시하지 않는다. 검증 기록 = 8.simulation/ems_transformer/docs/K_ETS_SHADOW_PRICE_SOURCE.md (2026-06-06).",
+        "source_urls": [
+          "http://www.e2news.com/news/articleView.html?idxno=323181",
+          "https://greenium.kr/news/63056/"
+        ],
+        "as_of": "2026-06-06",
+        "data_source": "external"
+      }
     },
     "smp": {
       "fallback_mainland_krw": 120,

@@ -7,7 +7,7 @@
   "_consumers": [
     "building-energy-3d"
   ],
-  "version": "2.0",
+  "version": "2.1",
   "type": "object",
   "properties": {
     "pe_factors": {
@@ -144,6 +144,42 @@
           "type": "number"
         }
       }
+    },
+    "ndc_targets": {
+      "type": "object",
+      "description": "국가 온실가스 감축목표(NDC) — 국가 전체와 부문별을 **다른 키**로 둔다(2026-09-28 추가). 국가 전체 −40% 는 국가 전체 맥락에서만, 건물 한 동·건물군·시군구 건물 배출의 목표는 건물부문 값을 쓴다. 두 값을 섞지 않는다. 값은 외부 공식 발표(data_source=external)이며 출처·발표일을 항목마다 싣는다.",
+      "required": ["default_target", "targets"],
+      "properties": {
+        "default_target": {
+          "type": "string",
+          "description": "건물 배출 맥락의 기본 목표 키(targets 의 키). 국가 전체 질문은 national_2030 을 명시해 고른다."
+        },
+        "targets": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "object",
+            "required": ["scope", "base_year", "target_year", "label_ko", "data_source", "source_title", "source_url", "source_date"],
+            "properties": {
+              "scope": {"type": "string", "enum": ["national", "building"], "description": "national=국가 전체 순배출 / building=건물부문."},
+              "base_year": {"type": "integer"},
+              "target_year": {"type": "integer"},
+              "label_ko": {"type": "string", "description": "사람 대면 표기(출처 칸에 그대로 쓴다)."},
+              "reduction_rate": {"type": "number", "minimum": 0, "maximum": 1, "description": "기준연도 대비 감축률(0~1, 양수=감축). 범위 목표면 비우고 min/max 를 쓴다."},
+              "reduction_rate_min": {"type": "number", "minimum": 0, "maximum": 1},
+              "reduction_rate_max": {"type": "number", "minimum": 0, "maximum": 1},
+              "base_emissions_mtco2eq": {"type": "number", "description": "기준연도 배출량(백만 tCO2eq). 발표에 있을 때만."},
+              "target_emissions_mtco2eq": {"type": "number", "description": "목표연도 배출량(백만 tCO2eq). 발표에 있을 때만."},
+              "status": {"type": "string", "description": "확정 단계(예: 국무회의 확정)."},
+              "data_source": {"type": "string", "description": "data_classification.json#DataSource — 공식 발표 = external."},
+              "source_title": {"type": "string"},
+              "source_url": {"type": "string"},
+              "source_date": {"type": "string", "format": "date", "description": "발표·확정일."},
+              "retrieved": {"type": "string", "format": "date", "description": "EC 등재 시 원문 확인일."},
+              "note": {"type": "string"}
+            }
+          }
+        }
+      }
     }
   },
   "default": {
@@ -231,6 +267,57 @@
       "pv_efficiency_pct": 20,
       "pv_performance_ratio": 0.85,
       "rooftop_utilization": 0.65
+    },
+    "ndc_targets": {
+      "default_target": "building_2030",
+      "targets": {
+        "national_2030": {
+          "scope": "national",
+          "base_year": 2018,
+          "target_year": 2030,
+          "label_ko": "2030 국가 온실가스 감축목표(NDC) 국가 전체 2018년 대비 40% 감축",
+          "reduction_rate": 0.40,
+          "target_emissions_mtco2eq": 436.6,
+          "status": "2021-10 상향안 확정 · 2023-04 국가 탄소중립·녹색성장 기본계획 유지",
+          "data_source": "external",
+          "source_title": "기후행동 정책포털 — 2030 국가 온실가스 감축목표 NDC",
+          "source_url": "https://www.gihoo.or.kr/gallery.es?mid=a30202000000&bid=0010&act=view&list_no=552",
+          "source_date": "2021-10-18",
+          "retrieved": "2026-09-28",
+          "note": "포털 본문 문장은 법정 하한 '2018년 대비 35% 이상'(탄소중립기본법 제8조)이고, 목표 배출량 436.6백만t 이 NDC 40% 에 해당한다. 국가 전체 맥락에서만 쓴다 — 건물 배출 목표로 쓰지 않는다."
+        },
+        "building_2030": {
+          "scope": "building",
+          "base_year": 2018,
+          "target_year": 2030,
+          "label_ko": "2030 NDC 건물부문 2018년 52.1백만t → 2030년 35.0백만t (32.8% 감축)",
+          "reduction_rate": 0.328,
+          "base_emissions_mtco2eq": 52.1,
+          "target_emissions_mtco2eq": 35.0,
+          "status": "2030 NDC 부문별 목표(2021-10 상향안)",
+          "data_source": "external",
+          "source_title": "기후행동 정책포털 — 2030 국가 온실가스 감축목표 NDC 부문별 감축목표 표(건물)",
+          "source_url": "https://www.gihoo.or.kr/gallery.es?mid=a30202000000&bid=0010&act=view&list_no=552",
+          "source_date": "2021-10-18",
+          "retrieved": "2026-09-28",
+          "note": "1 − 35.0/52.1 = 0.3282 → 발표 32.8% 와 일치(tests/test_ndc_targets.py 가 대조)."
+        },
+        "building_2035": {
+          "scope": "building",
+          "base_year": 2018,
+          "target_year": 2035,
+          "label_ko": "2035 NDC 건물부문 2018년 대비 53.6~56.2% 감축",
+          "reduction_rate_min": 0.536,
+          "reduction_rate_max": 0.562,
+          "status": "2025-11-10 2050 탄소중립녹색성장위원회 의결 · 2025-11-11 국무회의 확정",
+          "data_source": "external",
+          "source_title": "대한민국 정책브리핑 — 탄소중립위, 2035년까지 '온실가스 53~61% 감축안' 의결",
+          "source_url": "https://www.korea.kr/news/policyNewsView.do?newsId=148954505",
+          "source_date": "2025-11-10",
+          "retrieved": "2026-09-28",
+          "note": "원문: '건물 부문은 … 2018년, 2024년 대비 53.6%~56.2%, 44.5%~47.7% 감축한다.' 국무회의 확정 보도 = https://www.korea.kr/news/policyNewsView.do?newsId=148954548 (국가 전체 53~61%, 부문 수치는 이 보도에 없음). 범위 목표라 단일 감축률이 없다 — 계산은 min·max 둘 다 낸다."
+        }
+      }
     }
   }
 }

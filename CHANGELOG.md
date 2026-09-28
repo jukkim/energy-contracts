@@ -4,6 +4,14 @@
 
 ---
 
+## Query100 정본값 등재 — NDC 부문별·탄소가격 범위·DR 가정·전략별 설치비 (2026-09-28, unreleased)
+
+- `energy_constants.json` 2.1: `ndc_targets` 신설 — `national_2030`(국가 전체 40%, 436.6백만t) · `building_2030`(건물 52.1→35.0백만t, 32.8%) · `building_2035`(건물 53.6~56.2%, 2025-11 확정). 기본 목표 = 건물부문 2030. 국가 전체 값은 대체하지 않고 다른 키로 둔다. 항목마다 출처 URL·발표일(`data_source=external`).
+- `market_prices.json` 2.2: `kau.fallback_source`(20,000원 근거) + `kau.phase4_2030_outlook_krw_per_tco2`(40,000~61,000원, K-ETS 4기 2030 전망 보도). 기본값 20,000 은 그대로다.
+- `ems_strategies.json` 3.3: `dr_assumptions` 신설(가정 등급, imputed) — M16 정본 산식 = 이벤트∧야간 창 HVAC 감축(이름과 일치), 연중 셋백 심화·매일 야간 감축은 변형으로 기록. M17~M20 감축 분율 0.30·ESS 15%×2h, 기본 이벤트 창 평일 17~20시(7~8월). M19 HVAC 대리 분율은 근거 없음(`missing`).
+- `measure_cost_catalog.json` 1.2: `ems_strategy_capex_assumption` — BEMS 단가 × 제어점 비율의 가정식(출처='가정'). 식은 `energy_contracts/measure_capex.py` 한 곳.
+- 생성기: `NDC_TARGETS`(py·ts) · `DR_ASSUMPTIONS`(py). 소비처 내보내기 = building-energy-3d(둘 다) · edge-agent(`DR_ASSUMPTIONS`). 시험 `tests/test_ndc_targets.py` · `tests/test_measure_capex.py`(반례 포함).
+
 ## 공통 사용자·자산 권한 계약 (2026-09-27, unreleased)
 
 - `auth_scopes.json` 1.1: AIROS 사용자 역할 6종은 전역 RBAC 역할과 분리하고 현재 배정 자산의 `read:asset` / `analyze:asset` 역량만 정의한다. 미정 승인·실행 조건은 거절하며 관리 자산 배정이 필수다.

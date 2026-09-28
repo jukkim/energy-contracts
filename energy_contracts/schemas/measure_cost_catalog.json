@@ -10,8 +10,8 @@
     "ems_transformer",
     "building-energy-3d"
   ],
-  "version": "1.1",
-  "updated": "2026-07-16",
+  "version": "1.2",
+  "updated": "2026-09-28",
   "$defs": {
     "MeasureClass": {
       "type": "string",
@@ -74,6 +74,92 @@
         }
       }
     },
+    "ems_strategy_capex_assumption": {
+      "type": "object",
+      "description": "EMS 전략(M00~M22)별 **가정 설치비**(원/㎡) — 전략 사이 '1억 원당 감축' 비교(D10: M04 대 M05 등)용. measures.BEMS 가 M00~M20 을 한 줄로 두어 전략별 단가가 없다. 근거 단가가 없으므로 BEMS 단가 × 제어점 비율의 **명시된 가정식**이다(출처='가정', data_source=imputed). 계산은 energy_contracts.measure_capex 한 곳에서만 한다 — 소비처가 식을 다시 적지 않는다. 설비 자체(ESS 배터리·축열조·PV·ERV 본체)는 포함하지 않고 hardware_excluded 에 적는다.",
+      "required": [
+        "evidence_grade",
+        "data_source",
+        "source",
+        "method",
+        "as_of",
+        "bems_measure_ref",
+        "point_universe",
+        "single_strategy_points",
+        "hardware_excluded"
+      ],
+      "properties": {
+        "evidence_grade": {
+          "type": "string",
+          "const": "assumption"
+        },
+        "data_source": {
+          "type": "string",
+          "const": "imputed"
+        },
+        "source": {
+          "type": "string",
+          "const": "가정"
+        },
+        "method": {
+          "type": "string"
+        },
+        "as_of": {
+          "type": "string",
+          "format": "date"
+        },
+        "bems_measure_ref": {
+          "type": "string",
+          "description": "measures 의 키. 이 조치의 capex_krw_per_m2 가 전체 제어점(point_universe)을 다 쓰는 BEMS 단가다."
+        },
+        "point_universe": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "uniqueItems": true,
+          "minItems": 1,
+          "description": "BEMS 제어점 어휘(edge-agent src/strategies.py LEGACY_KEYS + EXTENDED_POINTS 와 같은 이름)."
+        },
+        "single_strategy_points": {
+          "type": "object",
+          "description": "단일(single) 전략이 실제로 만지는 제어점. 복합(combined) 전략은 ems_strategies.json strategies.components 의 합집합으로 **파생**한다(여기 적지 않는다).",
+          "additionalProperties": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "uniqueItems": true
+          }
+        },
+        "hardware_excluded": {
+          "type": "object",
+          "description": "제어비에 포함하지 않은 설비. capex_ref=measures 의 키(있을 때) / absence=data_classification AbsenceKind(단가 없음).",
+          "additionalProperties": {
+            "type": "object",
+            "required": [
+              "what"
+            ],
+            "properties": {
+              "what": {
+                "type": "string"
+              },
+              "capex_ref": {
+                "type": "string"
+              },
+              "absence": {
+                "type": "string",
+                "enum": [
+                  "not_applicable",
+                  "missing",
+                  "unknown"
+                ]
+              }
+            }
+          }
+        }
+      }
+    },
     "measures": {
       "type": "object",
       "description": "조치 경제성 카탈로그. 키=조치 코드(경제-축, 대문자). measure_ref 로 policy_measures/ems_strategies/equipment 네임스페이스 참조.",
@@ -123,6 +209,98 @@
       "market": {"ref": "market_prices.json#/default/kau/fallback_krw_per_tco2"},
       "policy_upside_krw_per_tco2": 50000,
       "social_cost_krw_per_tco2": 250000
+    },
+    "ems_strategy_capex_assumption": {
+      "evidence_grade": "assumption",
+      "data_source": "imputed",
+      "source": "가정",
+      "method": "capex_krw_per_m2(M) = measures[bems_measure_ref].capex_krw_per_m2 × |points(M)| / |point_universe|. points(combined) = 구성 전략 points 의 합집합. 전략마다 제어점 하나를 BEMS 에 붙이는 비용이 같다는 가정이다 — 현장 견적이 생기면 교체한다.",
+      "as_of": "2026-09-28",
+      "bems_measure_ref": "BEMS",
+      "point_universe": [
+        "hvac_setpoint",
+        "lighting_pct",
+        "ess_discharge",
+        "oa_damper_pct",
+        "erv_enable",
+        "night_cycle_enable",
+        "chiller_stage_pct",
+        "schedule_shift_min",
+        "thermal_storage_kw",
+        "pv_curtail_pct"
+      ],
+      "single_strategy_points": {
+        "M00": [],
+        "M01": [
+          "schedule_shift_min"
+        ],
+        "M02": [
+          "oa_damper_pct"
+        ],
+        "M03": [
+          "chiller_stage_pct"
+        ],
+        "M04": [
+          "hvac_setpoint"
+        ],
+        "M05": [
+          "hvac_setpoint"
+        ],
+        "M06": [
+          "night_cycle_enable"
+        ],
+        "M07": [
+          "oa_damper_pct"
+        ],
+        "M08": [
+          "erv_enable"
+        ],
+        "M09": [
+          "hvac_setpoint"
+        ],
+        "M10": [
+          "hvac_setpoint",
+          "lighting_pct"
+        ],
+        "M16": [
+          "hvac_setpoint"
+        ],
+        "M17": [
+          "lighting_pct"
+        ],
+        "M18": [
+          "ess_discharge"
+        ],
+        "M21": [
+          "chiller_stage_pct",
+          "thermal_storage_kw"
+        ],
+        "M22": [
+          "pv_curtail_pct"
+        ]
+      },
+      "hardware_excluded": {
+        "M08": {
+          "what": "전열교환기 본체",
+          "capex_ref": "ERV"
+        },
+        "M17": {
+          "what": "디밍 가능한 조명기구(비디밍 기구면 교체 필요)",
+          "capex_ref": "LED"
+        },
+        "M18": {
+          "what": "ESS 배터리·PCS",
+          "absence": "missing"
+        },
+        "M21": {
+          "what": "빙축열·수축열 조",
+          "absence": "missing"
+        },
+        "M22": {
+          "what": "태양광 설비",
+          "absence": "missing"
+        }
+      }
     },
     "measures": {
       "RCX": {

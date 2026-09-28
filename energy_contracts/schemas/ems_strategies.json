@@ -11,7 +11,7 @@
     "agentleague",
     "eduarena"
   ],
-  "version": "3.2",
+  "version": "3.3",
   "$defs": {
     "StrategyCode": {
       "type": "string",
@@ -252,6 +252,232 @@
         }
       },
       "additionalProperties": false
+    },
+    "dr_assumptions": {
+      "type": "object",
+      "description": "수요반응(DR) 계열 M16~M20 의 **정본 산식과 가정값**(2026-09-28 등재). 가정 등급 — 실측·시뮬 근거가 아니다(data_source=imputed, display_class=estimated). kW 절감 = 감축 분율 × 대상 부하(kW) 를 이벤트 구간에서만 적용한다. 서빙 수치를 낼 때는 가정임을 응답에 싣는다. M16 은 이름(DR 야간 셋백·능동 부하감축)에 맞는 이벤트형 산식이 정본이고, 같은 코드로 불리던 다른 두 산식은 variants 에 '변형'으로 기록한다.",
+      "required": [
+        "evidence_grade",
+        "data_source",
+        "display_class",
+        "method",
+        "as_of",
+        "event_window_default",
+        "night_window_default",
+        "strategies"
+      ],
+      "properties": {
+        "evidence_grade": {
+          "type": "string",
+          "const": "assumption"
+        },
+        "data_source": {
+          "type": "string",
+          "description": "data_classification.json#DataSource — 우리가 채운 가정 = imputed."
+        },
+        "display_class": {
+          "type": "string",
+          "description": "data_classification.json#EvidenceDisplayClass — estimated."
+        },
+        "method": {
+          "type": "string",
+          "description": "imputed 값의 산정 방법(DataSource=imputed 는 method 필수)."
+        },
+        "as_of": {
+          "type": "string",
+          "format": "date"
+        },
+        "event_window_default": {
+          "type": "object",
+          "description": "질의가 시간대를 주지 않을 때 쓰는 DR 이벤트 기본 구간(현지 시각).",
+          "required": [
+            "weekdays_only",
+            "months",
+            "start",
+            "end",
+            "source"
+          ],
+          "properties": {
+            "weekdays_only": {
+              "type": "boolean"
+            },
+            "months": {
+              "type": "array",
+              "items": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 12
+              }
+            },
+            "start": {
+              "type": "string",
+              "pattern": "^([01][0-9]|2[0-3]):[0-5][0-9]$"
+            },
+            "end": {
+              "type": "string",
+              "pattern": "^([01][0-9]|2[0-3]):[0-5][0-9]$"
+            },
+            "source": {
+              "type": "string"
+            },
+            "source_url": {
+              "type": "string"
+            },
+            "source_date": {
+              "type": "string",
+              "format": "date"
+            }
+          }
+        },
+        "night_window_default": {
+          "type": "object",
+          "description": "M16 의 야간 창 기본값(현지 시각, 자정 넘김 허용).",
+          "required": [
+            "start",
+            "end",
+            "source"
+          ],
+          "properties": {
+            "start": {
+              "type": "string",
+              "pattern": "^([01][0-9]|2[0-3]):[0-5][0-9]$"
+            },
+            "end": {
+              "type": "string",
+              "pattern": "^([01][0-9]|2[0-3]):[0-5][0-9]$"
+            },
+            "source": {
+              "type": "string"
+            }
+          }
+        },
+        "strategies": {
+          "type": "object",
+          "propertyNames": {
+            "enum": [
+              "M16",
+              "M17",
+              "M18",
+              "M19",
+              "M20"
+            ]
+          },
+          "additionalProperties": {
+            "type": "object",
+            "required": [
+              "formula_id",
+              "formula",
+              "controlled_load",
+              "source"
+            ],
+            "properties": {
+              "formula_id": {
+                "type": "string"
+              },
+              "formula": {
+                "type": "string"
+              },
+              "controlled_load": {
+                "type": "string",
+                "enum": [
+                  "hvac",
+                  "lights",
+                  "hvac+lights",
+                  "ess",
+                  "hvac_proxy+lights+ess"
+                ]
+              },
+              "depth": {
+                "type": "number",
+                "minimum": 0,
+                "maximum": 1,
+                "description": "대상 부하 감축 분율(0~1)."
+              },
+              "lighting_depth": {
+                "type": "number",
+                "minimum": 0,
+                "maximum": 1
+              },
+              "hvac_proxy_depth": {
+                "type": [
+                  "number",
+                  "null"
+                ],
+                "minimum": 0,
+                "maximum": 1
+              },
+              "hvac_proxy_depth_absence": {
+                "type": "string",
+                "description": "data_classification.json#AbsenceKind — 값이 없을 때 그 이유."
+              },
+              "ess_power_frac_of_annual_peak": {
+                "type": "number",
+                "minimum": 0,
+                "maximum": 1
+              },
+              "ess_duration_h": {
+                "type": "number",
+                "minimum": 0
+              },
+              "comfort_sign": {
+                "type": "integer",
+                "enum": [
+                  -1,
+                  0,
+                  1
+                ],
+                "description": "재실 쾌적 영향 부호(−1=악화)."
+              },
+              "requires": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "source": {
+                "type": "string"
+              },
+              "variants": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "required": [
+                    "id",
+                    "where",
+                    "formula",
+                    "status"
+                  ],
+                  "properties": {
+                    "id": {
+                      "type": "string"
+                    },
+                    "where": {
+                      "type": "string"
+                    },
+                    "formula": {
+                      "type": "string"
+                    },
+                    "used_by": {
+                      "type": "string"
+                    },
+                    "status": {
+                      "type": "string",
+                      "const": "variant"
+                    }
+                  }
+                }
+              },
+              "note": {
+                "type": "string"
+              }
+            }
+          }
+        },
+        "reconciliation_note": {
+          "type": "string",
+          "description": "등재 시 대조한 다른 자리의 값과 차이(기록)."
+        }
+      }
     },
     "legacy_mapping": {
       "type": "object",
@@ -510,6 +736,115 @@
       "weekend": "M00",
       "peak": "M20",
       "emergency": "M20"
+    },
+    "dr_assumptions": {
+      "evidence_grade": "assumption",
+      "data_source": "imputed",
+      "display_class": "estimated",
+      "method": "E+ 시간별(또는 계량) 부하에 결정론적 감축 분율을 이벤트 구간에서만 적용한다. 분율은 8.simulation/ems_transformer/scripts/policy_measure_calibration/dr_peak_model.py 의 보수적 표준 가정(0.30)을 채택했다. 실측 DR 결과가 생기면 교체한다.",
+      "as_of": "2026-09-28",
+      "event_window_default": {
+        "weekdays_only": true,
+        "months": [
+          7,
+          8
+        ],
+        "start": "17:00",
+        "end": "20:00",
+        "source": "한전 2026 에너지캐시백 저녁시간대 추가 캐시백 시범(평일 17~20시, 7~8월) — 주택용 제도의 시간대를 질의 기본값으로 차용한다(건물 DR 발령 시간이 아니다). 요금 최대부하 시간대 15~21시(market_prices.electricity_tariff.peak_hours)와 다르다.",
+        "source_url": "https://www.energydaily.co.kr/news/articleView.html?idxno=200881",
+        "source_date": "2026-06-29"
+      },
+      "night_window_default": {
+        "start": "22:00",
+        "end": "06:00",
+        "source": "8.simulation/ems_transformer/scripts/policy_measure_calibration/dr_peak_model.py NIGHT_HOURS(22~05시 시작 시간대 = 22:00~06:00)"
+      },
+      "strategies": {
+        "M16": {
+          "formula_id": "event_night_hvac_shed",
+          "formula": "shed_kW(t) = depth × hvac_kW(t) × [t ∈ DR 이벤트] × [t ∈ 야간 창]",
+          "controlled_load": "hvac",
+          "depth": 0.3,
+          "comfort_sign": 0,
+          "requires": [
+            "hvac_kW 시계열",
+            "DR 이벤트 구간",
+            "야간 창",
+            "보호부하 제외 확인"
+          ],
+          "source": "정본 = 8.simulation/ems_transformer/src/validation/dr_event_model.py(M16: 이벤트∧야간 창의 HVAC × depth). depth 0.30 = dr_peak_model SETBACK.",
+          "variants": [
+            {
+              "id": "annual_setback_deepening",
+              "where": "캠페인 scratch/scenario_completion/generic_strategy.py apply() (M16: 기존 셋백 온도 난방 −5℃·냉방 +4℃)",
+              "formula": "연중 야간 셋백 온도를 더 깊게 한 E+ 연간 런. 이벤트 개념이 없다.",
+              "used_by": "8.simulation/ems_transformer/scratch/measured_building_savings.json 자기 표의 M16 행(도면·실측 40동) — 이 값은 '상시 야간 셋백 심화' 로 표기한다",
+              "status": "variant"
+            },
+            {
+              "id": "nightly_hvac_shed",
+              "where": "8.simulation/ems_transformer/scripts/policy_measure_calibration/dr_peak_model.py",
+              "formula": "매일 22~06시 HVAC × (1 − 0.30), 이벤트 무관(7월 프로파일)",
+              "used_by": "dr_signs.json 피크 부호 산출",
+              "status": "variant"
+            }
+          ],
+          "note": "야간 감축이라 주간 피크 감축은 ≈0 이다. 자기 표 변형(annual_setback_deepening)은 일부 건물에서 피크를 올렸다(아침 회복 부하로 추정, 확인 전)."
+        },
+        "M17": {
+          "formula_id": "event_lighting_dim",
+          "formula": "shed_kW(t) = depth × lights_kW(t) × [t ∈ DR 이벤트]",
+          "controlled_load": "lights",
+          "depth": 0.3,
+          "comfort_sign": 0,
+          "requires": [
+            "lights_kW 시계열",
+            "DR 이벤트 구간",
+            "보호부하 제외 확인"
+          ],
+          "source": "8.simulation/ems_transformer/src/validation/dr_event_model.py(M17) · depth 0.30 = dr_peak_model LIGHT_DEPTH"
+        },
+        "M18": {
+          "formula_id": "ess_greedy_peak_shave",
+          "formula": "P_ess = frac × 연간 피크 kW, E_ess = duration × P_ess; 이벤트 구간에서 목표 계통 kW 초과분을 SOC 한도 안에서 방전",
+          "controlled_load": "ess",
+          "ess_power_frac_of_annual_peak": 0.15,
+          "ess_duration_h": 2.0,
+          "comfort_sign": 0,
+          "requires": [
+            "설치 ESS 용량(kWh)·출력(kW)·SOC — ESS 가 없는 건물은 not_applicable"
+          ],
+          "source": "dr_peak_model ESS_P_FRAC 0.15 · ESS_HOURS 2.0(가상 배터리 사이징 가정). 8.simulation/ems_transformer/src/validation/dr_event_model.py 는 실제 ESS 사양을 요구한다."
+        },
+        "M19": {
+          "formula_id": "event_integrated",
+          "formula": "shed_kW(t) = [hvac_proxy_depth × hvac_kW(t) + lighting_depth × lights_kW(t)] × [t ∈ DR 이벤트] 뒤 M18 ESS 방전",
+          "controlled_load": "hvac_proxy+lights+ess",
+          "lighting_depth": 0.3,
+          "hvac_proxy_depth": null,
+          "hvac_proxy_depth_absence": "missing",
+          "ess_power_frac_of_annual_peak": 0.15,
+          "ess_duration_h": 2.0,
+          "comfort_sign": 0,
+          "source": "구성 = strategies.M19.components(M02·M04·M17·M18). 8.simulation/ems_transformer/src/validation/dr_event_model.py 는 M02/M04 HVAC 대리 분율을 명시 입력으로 요구한다.",
+          "note": "M02/M04 HVAC 대리 분율의 근거가 없다(missing) — 값을 지어내지 않는다. dr_peak_model 의 M19 는 M16 야간 셋백+M17+M18 로 계산해 EC 구성(M02·M04)과 다르다(변형)."
+        },
+        "M20": {
+          "formula_id": "event_emergency_shed",
+          "formula": "shed_kW(t) = depth × (hvac_kW(t) + lights_kW(t)) × [t ∈ DR 이벤트]",
+          "controlled_load": "hvac+lights",
+          "depth": 0.3,
+          "comfort_sign": -1,
+          "requires": [
+            "hvac_kW·lights_kW 시계열",
+            "DR 이벤트 구간",
+            "보호부하 제외 확인"
+          ],
+          "source": "8.simulation/ems_transformer/src/validation/dr_event_model.py(M20) · depth 0.30 = dr_peak_model SHED_DEPTH"
+        }
+      },
+      "reconciliation_note": "2026-09-28 대조: edge-agent src/strategies.py 의 M16~M20 은 제어 설정값(설정온도 28/24/24/26/28℃·조명 50/60/100/70/40%)이라 kW 감축 분율이 아니다. edge-agent src/agentleague/subscriber.py _STUB_REDUCTION(M16 0.05 · M17 0.05 · M18 0.15 · M19 0.20 · M20 0.25)은 연간 kWh 스텁(Phase B 교체 예정)이라 이벤트 kW 분율과 다른 양이다 — 이 표로 바꾸지 않았다."
     },
     "legacy_mapping": {
       "ems_simulation": {

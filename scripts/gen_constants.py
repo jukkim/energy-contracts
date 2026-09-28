@@ -108,7 +108,7 @@ PROJECT_TARGETS: dict[str, dict] = {
                 "ABSENCE_KIND_META", "ABSENCE_IN_DENOMINATOR", "DB_MIGRATIONS",
                 "EMISSION_FACTORS_KR", "ENERGY_CONVERSIONS",
                 "DEVICE_ACTIONS", "DEVICE_ACTION_VALUE_SPEC",
-                "DISPATCH_SOURCES", "DISPATCH_STATUSES",
+                "DISPATCH_SOURCES", "DISPATCH_STATUSES", "DR_ASSUMPTIONS",
                 "EQUIPMENT_CAPABILITIES", "EQUIPMENT_KINDS",
                 "ERROR_CODES", "GRIDBRIDGE_URL_COMPUTER_A",
                 "HOUSEHOLD_CONSENT_PRESETS", "HOUSEHOLD_CONSENT_PRESET_IDS",
@@ -177,6 +177,8 @@ PROJECT_TARGETS: dict[str, dict] = {
                 "STRATEGIES", "STRATEGY_CODES", "TENANT_REGIONS", "TESTS_SHARED",
                 "TEST_GROUPS", "TEST_STAGES", "TEST_TIERS",
                 "ZEB_BASELINE_KWH_M2_YR", "ZEB_GRADES", "ZEB_THRESHOLDS",
+                # 2026-09-28 — 탄소예산/NDC 격차 도구의 목표 선택 · DR 가정값
+                "NDC_TARGETS", "DR_ASSUMPTIONS",
             ],
             "ts": [
                 "EMISSION_FACTORS_KR", "EMISSION_FACTORS", "PRIMARY_ENERGY_FACTORS",
@@ -450,6 +452,12 @@ def gen_python(schemas: dict) -> str:
             lines.append(f"OP_MODES: list[str] = {op_modes!r}")
         if "opmode_strategy_map" in ems:
             lines.append(f"OPMODE_STRATEGY_MAP: dict[str, str] = {ems['opmode_strategy_map']!r}")
+        lines.append("")
+
+    # DR(M16~M20) 정본 산식·가정값(2026-09-28) — 가정 등급. 소비처는 손 리터럴(0.30·17~20시) 대신 이것을 읽는다.
+    if "dr_assumptions" in ems:
+        lines.append("# ─ DR 가정값 (M16~M20 정본 산식·감축 분율, evidence_grade=assumption) ─")
+        lines.append(f"DR_ASSUMPTIONS: dict = {ems['dr_assumptions']!r}")
         lines.append("")
 
     # 설비 taxonomy — EquipmentKind · DeviceAction · capability 매트릭스 · value 스펙
@@ -770,6 +778,13 @@ def gen_python(schemas: dict) -> str:
         lines.append(f"ZEB_BASELINE_KWH_M2_YR: float = "
                      f"{zeb.get('baseline_kwh_m2_yr')!r}")
         lines.append(f"ZEB_GRADES: dict[str, dict] = {zeb.get('grades', {})!r}")
+        lines.append("")
+
+    # NDC 감축목표(2026-09-28) — 국가 전체와 건물부문을 다른 키로. 기본 = 건물부문 2030.
+    ndc = enconst.get("ndc_targets")
+    if ndc:
+        lines.append("# ─ NDC 감축목표 (국가 전체 ↔ 건물부문 분리, 출처 포함) ─────────")
+        lines.append(f"NDC_TARGETS: dict = {ndc!r}")
         lines.append("")
 
     # ── Phase K 신규 (6개) ──────────────────────────────────────────────────
@@ -1110,6 +1125,7 @@ def gen_typescript(schemas: dict) -> str:
     _ts_dump("units",      "ZEB_THRESHOLDS",      ["zeb_thresholds_kwh_m2_yr"])
     _ts_dump("market",     "MARKET_PRICES")
     _ts_dump("enconst",    "ZEB_GRADES",          ["zeb", "grades"])
+    _ts_dump("enconst",    "NDC_TARGETS",         ["ndc_targets"])
     # ZEB baseline 은 스칼라 — _ts_dump(dict only) 미적용, 직접 emit
     _zeb = schemas.get("enconst", {}).get("default", {}).get("zeb", {})
     if _zeb.get("baseline_kwh_m2_yr") is not None:
