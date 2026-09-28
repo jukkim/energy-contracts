@@ -15,8 +15,8 @@
     "energy-decision-studio",
     "building-energy-3d-lab"
   ],
-  "version": "1.2",
-  "updated": "2026-09-27",
+  "version": "1.3",
+  "updated": "2026-09-28",
   "$defs": {
     "Scope": {
       "type": "string",
@@ -34,6 +34,102 @@
       "type": "string",
       "pattern": "^(read|write|delete|exec):[a-z_]+$",
       "description": "verb:resource (예: write:portfolio, read:telemetry)"
+    },
+    "ResourceActionRule": {
+      "type": "object",
+      "required": [
+        "effect"
+      ],
+      "properties": {
+        "effect": {
+          "type": "string",
+          "enum": [
+            "allow_with_assignment",
+            "allow_with_assignment_and_conditions",
+            "deny"
+          ],
+          "description": "allow_with_assignment = 역할 권한 + 배정 자산이면 허용. allow_with_assignment_and_conditions = 거기에 conditions 를 모두 평가해 통과해야 허용 — 조건을 평가하지 못하는 소비처는 이 값을 allow_with_assignment 와 다르게 보므로 거부한다(판정 모듈 energy_contracts._utils.resource_authorization). deny = 항상 거부."
+        },
+        "reason_code": {
+          "type": "string",
+          "pattern": "^[A-Z][A-Z0-9_]+$",
+          "description": "effect 가 allow_with_assignment 가 아닐 때 조건을 평가하지 못하는 소비처가 돌려줄 거절 이름."
+        },
+        "required_asset_class": {
+          "type": "string"
+        },
+        "contract_ref": {
+          "type": "string"
+        },
+        "basis": {
+          "type": "string"
+        },
+        "decided": {
+          "type": "string",
+          "format": "date"
+        },
+        "grants_execution": {
+          "const": false,
+          "description": "승인은 실행이 아니다. 실행(exec:dispatch)은 별도 행동이다."
+        },
+        "conditions": {
+          "type": "object",
+          "minProperties": 1,
+          "additionalProperties": false,
+          "description": "모든 조건을 평가해 통과해야 허용. 알려지지 않은 조건 키는 판정 모듈이 거부한다(AUTHORIZATION_CONDITIONS_UNEVALUATED).",
+          "properties": {
+            "action_kind": {
+              "type": "object",
+              "required": [
+                "vocabulary_ref",
+                "match"
+              ],
+              "additionalProperties": false,
+              "properties": {
+                "vocabulary_ref": {
+                  "type": "string",
+                  "const": "measure_cost_catalog.json#/default/measures",
+                  "description": "승인 대상 조치 종류의 어휘. 절감 조치 = 조치 경제성 카탈로그(MACC)의 조치 코드."
+                },
+                "match": {
+                  "const": "key"
+                }
+              }
+            }
+          }
+        }
+      },
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "effect": {
+                "const": "allow_with_assignment_and_conditions"
+              }
+            }
+          },
+          "then": {
+            "required": [
+              "conditions",
+              "reason_code"
+            ]
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "effect": {
+                "const": "deny"
+              }
+            }
+          },
+          "then": {
+            "required": [
+              "reason_code"
+            ]
+          }
+        }
+      ]
     }
   },
   "type": "object",
@@ -49,7 +145,15 @@
     },
     "resource_authorization": {
       "type": "object",
-      "description": "Verified AIROS identity capabilities intersected with the current assigned asset snapshot; never inherits global RBAC roles."
+      "description": "Verified AIROS identity capabilities intersected with the current assigned asset snapshot; never inherits global RBAC roles.",
+      "properties": {
+        "actions": {
+          "type": "object",
+          "additionalProperties": {
+            "$ref": "#/$defs/ResourceActionRule"
+          }
+        }
+      }
     }
   },
   "default": {
@@ -188,7 +292,7 @@
       "scope": "guest"
     },
     "resource_authorization": {
-      "version": "1.1",
+      "version": "1.2",
       "identity_authority": "airos",
       "scope": "assigned_assets_only",
       "unknown_role": "deny",
@@ -237,7 +341,8 @@
         "portfolio_manager": {
           "permissions": [
             "read:asset",
-            "analyze:asset"
+            "analyze:asset",
+            "approve:action"
           ],
           "inherits": []
         }
@@ -250,8 +355,17 @@
           "effect": "allow_with_assignment"
         },
         "approve:action": {
-          "effect": "deny",
-          "reason_code": "AUTHORIZATION_CONDITIONS_UNDEFINED"
+          "effect": "allow_with_assignment_and_conditions",
+          "reason_code": "AUTHORIZATION_CONDITIONS_UNEVALUATED",
+          "conditions": {
+            "action_kind": {
+              "vocabulary_ref": "measure_cost_catalog.json#/default/measures",
+              "match": "key"
+            }
+          },
+          "grants_execution": false,
+          "decided": "2026-09-28",
+          "basis": "User decision 2026-09-28 16:39: a portfolio_manager may approve savings measures (measure_cost_catalog.json measure codes) on assets currently assigned to them. Approval is not execution: exec:dispatch stays denied for every role, and any action that is not a registered savings measure (control, contract, data changes) is denied. A consumer that cannot evaluate every listed condition must deny."
         },
         "exec:dispatch": {
           "effect": "deny",
@@ -280,7 +394,7 @@
           "basis": "The registered household owner selects, withdraws or changes protection for their own household. This does not authorize dispatch or approval."
         }
       },
-      "description": "Current assigned-resource capabilities. AIROS roles are independent of global admin/operator roles. Home participation/protection belongs to the assigned home_owner; platform_admin asset metadata writes preserve existing route authority. No approval, dispatch or broader write grant is implied. Service credentials and declared personas are not user identity."
+      "description": "Current assigned-resource capabilities. AIROS roles are independent of global admin/operator roles. Home participation/protection belongs to the assigned home_owner; platform_admin asset metadata writes preserve existing route authority. Only portfolio_manager may approve, and only registered savings measures on assigned assets (2026-09-28 user decision); approval never authorizes dispatch, and no broader write grant is implied. Service credentials and declared personas are not user identity."
     }
   }
 }
