@@ -257,6 +257,8 @@
         "measured_with_virtual_members": "mixed",
         "measured_with_synthetic_members": "mixed",
         "synthetic_virtual_series": "virtual",
+        "synthetic_not_measured": "synthetic",
+        "simulated_not_measured": "simulated",
         "virtual_pack": "virtual",
         "demo": "virtual",
         "forecast": "predicted",
