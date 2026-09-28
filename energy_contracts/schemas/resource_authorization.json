@@ -1,0 +1,195 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "energy-contracts/resource_authorization.json",
+  "title": "Verified User Resource Authorization",
+  "description": "Server-derived context and action decision. Consumers must validate provenance through the authority service; matching JSON alone never authenticates a caller. Secret credentials are prohibited in receipts. Unknown actions must be representable as denied decisions.",
+  "_usage": "runtime-validate",
+  "_consumers": [
+    "airos-energy-decision",
+    "ems-transformer",
+    "agentleague",
+    "energy-decision-studio",
+    "building-energy-3d",
+    "building-energy-3d-lab"
+  ],
+  "version": "1.0",
+  "updated": "2026-09-27",
+  "$defs": {
+    "Context": {
+      "type": "object",
+      "required": [
+        "assignment_revision",
+        "policy_version",
+        "policy_sha256",
+        "execution_authorized",
+        "schema",
+        "profile",
+        "assets",
+        "permissions"
+      ],
+      "properties": {
+        "assignment_revision": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        "policy_version": {
+          "type": "string",
+          "minLength": 1
+        },
+        "policy_sha256": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        "execution_authorized": {
+          "const": false
+        },
+        "schema": {
+          "const": "airo-authorization-context/v1"
+        },
+        "profile": {
+          "type": "object",
+          "required": [
+            "login_id",
+            "role"
+          ],
+          "properties": {
+            "login_id": {
+              "type": "string",
+              "minLength": 1
+            },
+            "role": {
+              "type": "string",
+              "minLength": 1
+            }
+          }
+        },
+        "assets": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": [
+              "asset_id"
+            ],
+            "properties": {
+              "asset_id": {
+                "type": "string",
+                "minLength": 1
+              }
+            }
+          }
+        },
+        "permissions": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          },
+          "uniqueItems": true
+        }
+      },
+      "additionalProperties": false
+    },
+    "Decision": {
+      "type": "object",
+      "required": [
+        "assignment_revision",
+        "policy_version",
+        "policy_sha256",
+        "execution_authorized",
+        "schema",
+        "login_id",
+        "role",
+        "action",
+        "asset_ids",
+        "allowed",
+        "reason_code"
+      ],
+      "properties": {
+        "assignment_revision": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        "policy_version": {
+          "type": "string",
+          "minLength": 1
+        },
+        "policy_sha256": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        "execution_authorized": {
+          "const": false
+        },
+        "schema": {
+          "const": "airo-authorization-decision/v1"
+        },
+        "login_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "role": {
+          "type": "string",
+          "minLength": 1
+        },
+        "action": {
+          "type": "string",
+          "minLength": 1
+        },
+        "asset_ids": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          },
+          "uniqueItems": true
+        },
+        "allowed": {
+          "type": "boolean"
+        },
+        "reason_code": {
+          "type": "string",
+          "minLength": 1
+        }
+      },
+      "additionalProperties": false,
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "allowed": {
+                "const": true
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "reason_code": {
+                "const": "AUTHORIZED"
+              },
+              "asset_ids": {
+                "minItems": 1
+              }
+            }
+          },
+          "else": {
+            "properties": {
+              "reason_code": {
+                "not": {
+                  "const": "AUTHORIZED"
+                }
+              }
+            }
+          }
+        }
+      ]
+    }
+  },
+  "oneOf": [
+    {
+      "$ref": "#/$defs/Context"
+    },
+    {
+      "$ref": "#/$defs/Decision"
+    }
+  ]
+}

@@ -60,6 +60,10 @@ def _defs_enum(schemas: dict, name: str) -> list:
 
 
 PROJECT_TARGETS: dict[str, dict] = {
+    "smartbuilding": {
+        "python": "projects/smartbuilding/api/constants/_generated_constants.py",
+        "exports": {"python": ["AUTH_JWT_POLICY"]},
+    },
     # ⚠ **2026-08-02 추가** — sejong 의 `_generated_constants.py` 는 "AUTO-GENERATED …
     # gen_constants.py 로 재생성" 이라고 **스스로 밝히는데** 이 표에 없어서 `--all` 이
     # 한 번도 건드리지 않았다. 한 번 생성되고 고아가 된 상태였다.
@@ -76,7 +80,7 @@ PROJECT_TARGETS: dict[str, dict] = {
             "ts": ["I18N_KEYS", "I18N_FALLBACK_LANG"],
             "python": [
                 "AGENT_REGISTRY", "AI_MODELS", "AUTH_JWT_POLICY",
-                "AUTH_PERMISSIONS", "AUTH_PROJECT_DEFAULT_SCOPES", "AUTH_SCOPES",
+                "AUTH_PERMISSIONS", "AUTH_PROJECT_DEFAULT_SCOPES", "AUTH_RESOURCE_AUTHORIZATION", "AUTH_SCOPES",
                 "BUILDING_USAGES", "COMPUTER_PROFILES", "DATA_SOURCES",
                 "DATA_SOURCE_LABELS", "ABSENCE_KINDS",
                 "ABSENCE_KIND_META", "ABSENCE_IN_DENOMINATOR", "DB_MIGRATIONS", "EMISSION_FACTORS_KR",
@@ -126,7 +130,7 @@ PROJECT_TARGETS: dict[str, dict] = {
         "python": "projects/gridbridge/src/_generated_constants.py",
         "exports": {
             "python": [
-                "AI_MODELS", "AUTH_JWT_POLICY", "AUTH_SCOPES",
+                "AI_MODELS", "AUTH_JWT_POLICY", "AUTH_RESOURCE_AUTHORIZATION", "AUTH_SCOPES",
                 "BID_STRATEGIES", "COMPUTER_PROFILES",
                 "DATA_SOURCES", "DATA_SOURCE_LABELS", "ABSENCE_KINDS",
                 "ABSENCE_KIND_META", "ABSENCE_IN_DENOMINATOR", "DB_MIGRATIONS",
@@ -150,7 +154,7 @@ PROJECT_TARGETS: dict[str, dict] = {
         "exports": {
             "python": [
                 "AGENT_REGISTRY", "AI_MODELS", "AUTH_JWT_POLICY", "AUTH_PERMISSIONS",
-                "AUTH_PROJECT_DEFAULT_SCOPES", "AUTH_SCOPES",
+                "AUTH_PROJECT_DEFAULT_SCOPES", "AUTH_RESOURCE_AUTHORIZATION", "AUTH_SCOPES",
                 "BID_STRATEGIES", "BUILDING_USAGES",
                 "COMPUTER_PROFILES", "DATA_SOURCES", "DATA_SOURCE_LABELS", "ABSENCE_KINDS",
                 "ABSENCE_KIND_META", "ABSENCE_IN_DENOMINATOR",
@@ -195,7 +199,7 @@ PROJECT_TARGETS: dict[str, dict] = {
         "exports": {
             "python": [
                 "AI_MODELS", "AUTH_JWT_POLICY", "AUTH_PROJECT_DEFAULT_SCOPES",
-                "AUTH_SCOPES", "BUILDING_USAGES", "COMPUTER_PROFILES",
+                "AUTH_RESOURCE_AUTHORIZATION", "AUTH_SCOPES", "BUILDING_USAGES", "COMPUTER_PROFILES",
                 "DATA_SOURCE_LABELS", "ABSENCE_KINDS",
                 "ABSENCE_KIND_META", "ABSENCE_IN_DENOMINATOR", "EMISSION_FACTORS_KR",
                 "ENERGY_CONVERSIONS", "ERROR_CODES",
@@ -213,7 +217,7 @@ PROJECT_TARGETS: dict[str, dict] = {
         "exports": {
             "python": [
                 "AI_MODELS", "AUTH_JWT_POLICY", "AUTH_PROJECT_DEFAULT_SCOPES",
-                "AUTH_SCOPES", "BUILDING_USAGES", "COMPUTER_PROFILES",
+                "AUTH_RESOURCE_AUTHORIZATION", "AUTH_SCOPES", "BUILDING_USAGES", "COMPUTER_PROFILES",
                 "DATA_SOURCE_LABELS", "ABSENCE_KINDS",
                 "ABSENCE_KIND_META", "ABSENCE_IN_DENOMINATOR", "EMISSION_FACTORS_KR",
                 "ENERGY_CONVERSIONS", "ERROR_CODES",
@@ -608,6 +612,7 @@ def gen_python(schemas: dict) -> str:
     auth = schemas.get("auth", {}).get("default", {})
     if auth:
         lines.append("# ─ Auth Scopes (Phase I-2 SSOT) ─────────────────────────────")
+        lines.append(f"AUTH_RESOURCE_AUTHORIZATION: dict = {auth.get('resource_authorization', {})!r}")
         lines.append(f"AUTH_SCOPES: dict[str, dict] = {auth.get('scopes', {})!r}")
         lines.append(f"AUTH_PERMISSIONS: dict[str, list[str]] = "
                      f"{auth.get('permissions', {})!r}")
@@ -1037,6 +1042,8 @@ def gen_typescript(schemas: dict) -> str:
     auth = schemas.get("auth", {}).get("default", {})
     if auth:
         lines.append("// ─ Auth Scopes (Phase I-2) ──────────────────────────────")
+        lines.append(f"export const AUTH_RESOURCE_AUTHORIZATION = "
+                     f"{json.dumps(auth.get('resource_authorization', {}), ensure_ascii=False)} as const;")
         lines.append(f"export const AUTH_SCOPES = "
                      f"{json.dumps(auth.get('scopes', {}), ensure_ascii=False)} as const;")
         lines.append(f"export const AUTH_PERMISSIONS = "

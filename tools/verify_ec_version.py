@@ -55,7 +55,9 @@ def installed() -> tuple[str | None, str | None, str | None]:
         import energy_contracts
         return (getattr(energy_contracts, "__version__", None),
                 energy_contracts.__file__, meta_ver)
-    except Exception:                                   # noqa: BLE001
+    except ModuleNotFoundError as exc:
+        if exc.name != "energy_contracts":
+            raise  # dependency missing inside an installed package is a broken install
         return None, None, meta_ver
 
 
@@ -69,8 +71,12 @@ def main(argv: list[str] | None = None) -> int:
         print("FAIL — 저장소 pyproject.toml 에서 version 을 못 읽었다(구조 손상).")
         return 2
 
-    got, where, meta_ver = installed()
-    if got is None and meta_ver is None:
+    try:
+        got, where, meta_ver = installed()
+    except Exception as exc:
+        print(f"ERROR — energy-contracts import failed: {type(exc).__name__}: {exc}")
+        return 2
+    if got is None and meta_ver is None and where is None:
         if not args.quiet:
             print(f"SKIP — energy-contracts 미설치. (저장소 SSOT = {want})")
             print("       이 repo 가 계약을 쓰지 않는다면 정상이다.")
