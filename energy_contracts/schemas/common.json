@@ -11,7 +11,7 @@
     "agentleague",
     "eduarena"
   ],
-  "version": "2.0",
+  "version": "2.1",
   "$defs": {
     "Strategy": {
       "type": "string",
@@ -36,9 +36,11 @@
         "M17",
         "M18",
         "M19",
-        "M20"
+        "M20",
+        "M21",
+        "M22"
       ],
-      "description": "통일 EMS 전략 코드 (21종, M00~M20). M00=Baseline, M01=ScheduleOpt, M02=Economizer, M03=Staging, M04=PMV±0.5, M05=PMV±0.7, M06=NightCycle, M07=DCV, M08=HeatRecovery, M09=Precooling, M10=DemandResponse, M11~M15=Combined. M16~M20=DR 제어 액션(M16=DR_NightSetback, M17=LightingControl, M18=ESSPeakShaving, M19=DR_Integrated, M20=DR_EmergencyCurtail). 상세: ems_strategies.json."
+      "description": "통일 EMS 전략 코드 (23종, M00~M22). ⛔ 손으로 적지 않는다 — ems_strategies.json#default.strategies 의 키 목록을 gen_constants.py --all 이 여기와 ems_strategies $defs.StrategyCode 에 투영한다(validate_ssot check_strategy_list_projection). 2026-09-28 전에는 이 목록이 21종(M00~M20)에 멈춰 정본(23종)과 갈려 있었다. 뜻·이름: ems_strategies.json."
     },
     "StrategyPattern": {
       "type": "string",
@@ -121,6 +123,77 @@
     "Interlock": {
       "type": "string",
       "description": "안전 인터록 발동 메시지. 예: 'HVAC 상한 제한: 28°C', 'ESS SOC 10% 하한 도달'."
+    },
+    "BuildingMgmtNo": {
+      "type": "string",
+      "pattern": "^[0-9]{25}$",
+      "description": "건물관리번호 25자리(도로명주소 건물 관리번호·footprint). 공공 건물 대상의 식별자."
+    },
+    "ParcelId": {
+      "type": "string",
+      "pattern": "^[0-9]{19}$",
+      "description": "필지번호(PNU) 19자리 = 시군구 5 + 법정동 5 + 대지구분 1 + 본번 4 + 부번 4. 필지 화면의 조회 열쇠 — 건물 대상을 필지로 바꿔 넣지 않는다."
+    },
+    "SidoCode": {
+      "type": "string",
+      "pattern": "^[0-9]{2}$",
+      "description": "시도 2자리. 폐지 코드(42·45)의 승계 = region_codes.json#default.admin_succession.sido_successor."
+    },
+    "SigunguCode": {
+      "type": "string",
+      "pattern": "^[0-9]{5}$",
+      "description": "시군구 5자리. 폐지·개편 승계 = region_codes.json#default.admin_succession."
+    },
+    "LegalDongCode": {
+      "type": "string",
+      "pattern": "^[0-9]{10}$",
+      "description": "법정동 10자리."
+    },
+    "RegionId": {
+      "type": "string",
+      "pattern": "^region:([0-9]{2}|[0-9]{5}|[0-9]{10}|kr)$",
+      "description": "대상 칸의 지역 id — 시도·시군구·법정동·전국."
+    },
+    "AirAssetKind": {
+      "type": "string",
+      "enum": [
+        "BLD",
+        "FAC",
+        "HOM",
+        "RET",
+        "PRT"
+      ],
+      "description": "AIR 자산 종류. 종류별 대상 칸·건물번호·시계열 = target_vocabulary.json#default.air_asset_kinds."
+    },
+    "AirAssetId": {
+      "type": "string",
+      "pattern": "^AIR-(BLD|FAC|HOM|RET)-[0-9]{3,4}$",
+      "description": "AIR 단일 자산 번호(포트폴리오 제외). 3자리·4자리 모두 받는다 — 3자리 전용 패턴 금지(점포·4자리 번호가 거절됐다)."
+    },
+    "AirPortfolioId": {
+      "type": "string",
+      "pattern": "^AIR-PRT-[0-9]{3,4}$",
+      "description": "AIR 포트폴리오 번호."
+    },
+    "ArchetypeCode": {
+      "type": "string",
+      "pattern": "^B(0[1-9]|1[0-8])$",
+      "description": "원형 코드 B01~B18 = building_archetypes.json#default.doe_buildings 키."
+    },
+    "HvacCode": {
+      "type": "string",
+      "pattern": "^H_[A-G]$",
+      "description": "공조 방식 정본 코드 H_A~H_G = region_codes.json#default.hvac_types 키."
+    },
+    "CityCode": {
+      "type": "string",
+      "pattern": "^C(0[1-9]|1[0-8])$",
+      "description": "시뮬 기후 도시 C01~C18 = region_codes.json#default.simulation_cities 키."
+    },
+    "MeasurementSetId": {
+      "type": "string",
+      "pattern": "^ms-[0-9a-f]{24}$",
+      "description": "측정 묶음 id(AIROS 레코드, 원천 매장코드의 대체). 밖으로 나가는 산출물에 넣지 않는다."
     }
   }
 }

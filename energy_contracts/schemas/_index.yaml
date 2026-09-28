@@ -24,6 +24,7 @@ components:
     AgentContracts:           {$ref: 'agent_contracts.json'}
     AiModelRegistry:          {$ref: 'ai_model_registry.json'}
     AirosReplayAnomalyPolicy: {$ref: 'airos_replay_anomaly_policy.json'}
+    TargetVocabulary:         {$ref: 'target_vocabulary.json'}
     AiroRequest:              {$ref: 'airo_request.json'}
     AnomalyResponse:          {$ref: 'anomaly_response.json'}
     AuthPolicy:               {$ref: 'auth_policy.json'}

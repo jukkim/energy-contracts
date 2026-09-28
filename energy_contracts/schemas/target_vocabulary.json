@@ -1,0 +1,120 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "energy-contracts/target_vocabulary.json",
+  "title": "Target Vocabulary",
+  "description": "대상(누구의 무엇을 묻나) 어휘 정본(2026-09-28 일반화 G1). AIR 자산 종류마다 어느 대상 칸으로 가는지·건물번호를 갖는지·시계열을 갖는지를 한 표로 둔다 — 같은 사실을 게이트웨이 두 목록(BUILDING_ASSET=BLD·FAC·RET ↔ ASSET_WITH_SERIES=BLD·FAC·HOM·RET)이 다르게 말해 확인된 가정 15곳이 공공 건물 도구에서 거절됐다. 식별자 정규식은 common.json $defs(BuildingMgmtNo·ParcelId·AirAssetId …) 한 곳이다.",
+  "_usage": "codegen",
+  "_consumers": [
+    "ems_transformer (G3 대상 해석기)",
+    "airos-energy-decision",
+    "energy-decision-studio",
+    "building-energy-3d",
+    "agentleague"
+  ],
+  "version": "1.0",
+  "updated": "2026-09-28",
+  "$defs": {
+    "AirAssetKindEntry": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "label_ko",
+        "target_kind",
+        "subject_field",
+        "building_number",
+        "has_series"
+      ],
+      "properties": {
+        "label_ko": {
+          "type": "string"
+        },
+        "target_kind": {
+          "enum": [
+            "asset",
+            "portfolio"
+          ]
+        },
+        "subject_field": {
+          "enum": [
+            "building_ids",
+            "home_ids",
+            "portfolio_ids"
+          ]
+        },
+        "building_number": {
+          "enum": [
+            "registry_confirmed",
+            "not_applicable"
+          ],
+          "description": "registry_confirmed = 원장에 확인된 25자리 번호가 있을 때만 쓴다(없으면 이름 있는 거절 — 필지로 대체 금지)"
+        },
+        "has_series": {
+          "type": "boolean",
+          "description": "자산 자체의 계측 시계열이 있는가(포트폴리오는 구성원 계열)"
+        },
+        "archetype_source": {
+          "enum": [
+            "record",
+            "registry_usage",
+            "members"
+          ]
+        }
+      }
+    }
+  },
+  "type": "object",
+  "default": {
+    "air_asset_kinds": {
+      "BLD": {
+        "label_ko": "건물",
+        "target_kind": "asset",
+        "subject_field": "building_ids",
+        "building_number": "registry_confirmed",
+        "has_series": true,
+        "archetype_source": "record"
+      },
+      "FAC": {
+        "label_ko": "공장",
+        "target_kind": "asset",
+        "subject_field": "building_ids",
+        "building_number": "registry_confirmed",
+        "has_series": true,
+        "archetype_source": "record"
+      },
+      "HOM": {
+        "label_ko": "가정",
+        "target_kind": "asset",
+        "subject_field": "home_ids",
+        "building_number": "registry_confirmed",
+        "has_series": true,
+        "archetype_source": "registry_usage"
+      },
+      "RET": {
+        "label_ko": "점포",
+        "target_kind": "asset",
+        "subject_field": "building_ids",
+        "building_number": "registry_confirmed",
+        "has_series": true,
+        "archetype_source": "record"
+      },
+      "PRT": {
+        "label_ko": "포트폴리오",
+        "target_kind": "portfolio",
+        "subject_field": "portfolio_ids",
+        "building_number": "not_applicable",
+        "has_series": false,
+        "archetype_source": "members"
+      }
+    },
+    "target_kind_id": {
+      "asset": "AirAssetId",
+      "portfolio": "AirPortfolioId",
+      "building": "BuildingMgmtNo",
+      "region": "RegionId",
+      "archetype": "ArchetypeCode"
+    },
+    "sources": {
+      "air_asset_kinds": "게이트웨이 airo_request_v2._ASSET_FIELD · query_airos_identity._CLASSES_BY_FIELD · airos_store_bridge.ASSET_WITH_SERIES 대조(2026-09-28). HOM 의 건물번호 = 확인된 가정 15곳(B18 결속)."
+    }
+  }
+}

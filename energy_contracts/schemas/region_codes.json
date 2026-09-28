@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "energy-contracts/region_codes.json",
   "title": "Region Codes",
-  "description": "도시·기후구역·일사량 SSOT. NAMING_UNIFICATION.md §4 + ENERGY_SSOT.md §6 기반. v2.1 (2026-07-11): KEP C12-C18 도시확장 반영 (KEP_C12C18_CAMPAIGN_2026-07-05.md) — 18도시 + kbep_city_id(0~17) 신설. C12~C18 의 climate_zone/solar 는 권위값 미확보로 의도적 미등재 (캠페인 엔진 = 전 도시 중부2 baked envelope + 도시별 EPW). v2.2 (2026-09-15): hvac_types.*.name_kr 를 공조 방식 **한국어 표시 이름의 유일한 정본**으로 지정하고 aliases(A~G·HA~HG) 를 더했다. H_B 를 IDF 실측(패키지형 VAV·DX·전기 재열)으로 정정. v2.3 (2026-09-17): C12~C18 climate_zone 을 건축물의 에너지절약설계기준(고시 제2026-360호) [별표 1] 비고로 등재하고 전 도시에 admin_region·climate_zone_source 를 붙였다(판정 근거 = 광역·시군 → 비고의 지역 목록). 전주 = 전북특별자치도 = 중부2. ⚠ '캠페인 엔진 = 전 도시 중부2 baked envelope' 은 결함으로 확인됐다 — 외피는 셀 주입 때 도시 지역별 U 로 옮긴다(8.simulation K-27).",
+  "description": "도시·기후구역·일사량 SSOT. NAMING_UNIFICATION.md §4 + ENERGY_SSOT.md §6 기반. v2.1 (2026-07-11): KEP C12-C18 도시확장 반영 (KEP_C12C18_CAMPAIGN_2026-07-05.md) — 18도시 + kbep_city_id(0~17) 신설. C12~C18 의 climate_zone/solar 는 권위값 미확보로 의도적 미등재 (캠페인 엔진 = 전 도시 중부2 baked envelope + 도시별 EPW). v2.2 (2026-09-15): hvac_types.*.name_kr 를 공조 방식 **한국어 표시 이름의 유일한 정본**으로 지정하고 aliases(A~G·HA~HG) 를 더했다. H_B 를 IDF 실측(패키지형 VAV·DX·전기 재열)으로 정정. v2.3 (2026-09-17): C12~C18 climate_zone 을 건축물의 에너지절약설계기준(고시 제2026-360호) [별표 1] 비고로 등재하고 전 도시에 admin_region·climate_zone_source 를 붙였다(판정 근거 = 광역·시군 → 비고의 지역 목록). 전주 = 전북특별자치도 = 중부2. ⚠ '캠페인 엔진 = 전 도시 중부2 baked envelope' 은 결함으로 확인됐다 — 외피는 셀 주입 때 도시 지역별 U 로 옮긴다(8.simulation K-27). v2.4 (2026-09-28 일반화 G1): simulation_cities.*.aliases(한글·영문·행정 이름) · hvac_types.*.kbep_id 추가 — KBEP 인코더 5벌(도시 한 곳을 8가지로 부름)이 이 표에서 파생된다(gen_constants AXIS_CITIES·AXIS_HVAC).",
   "_usage": "hybrid",
   "_consumers": [
     "building-energy-3d (gen_constants → HVAC_NAME_KR)",
@@ -10,7 +10,7 @@
     "energy-decision-canvas (guarded mirror lib/labels.ts HVAC_LABEL — verify_mirror_sync.py)",
     "8.simulation (sim_campaign_2026 generate_climate_qa.py HVAC_KR 로드)"
   ],
-  "version": "2.3",
+  "version": "2.4",
   "type": "object",
   "properties": {
     "simulation_cities": {
@@ -103,6 +103,10 @@
           }
         }
       }
+    },
+    "admin_succession": {
+      "type": "object",
+      "description": "폐지·개편 행정구역 코드 → 현행(승계) 코드. 시도 접두 교체(42→51·45→52) → 1:1 폐지 시군구 → 동에 따라 갈리는 시군구(split) 순."
     }
   },
   "default": {
@@ -117,7 +121,12 @@
           "province": "서울특별시",
           "municipality": null
         },
-        "climate_zone_source": "korean_building_standards.sources.esdc_2026_360 [별표 1] 비고 (2026-09-17 원문 대조)"
+        "climate_zone_source": "korean_building_standards.sources.esdc_2026_360 [별표 1] 비고 (2026-09-17 원문 대조)",
+        "aliases": [
+          "서울",
+          "Seoul",
+          "서울특별시"
+        ]
       },
       "C02": {
         "name_en": "Busan",
@@ -129,7 +138,12 @@
           "province": "부산광역시",
           "municipality": null
         },
-        "climate_zone_source": "korean_building_standards.sources.esdc_2026_360 [별표 1] 비고 (2026-09-17 원문 대조)"
+        "climate_zone_source": "korean_building_standards.sources.esdc_2026_360 [별표 1] 비고 (2026-09-17 원문 대조)",
+        "aliases": [
+          "부산",
+          "Busan",
+          "부산광역시"
+        ]
       },
       "C03": {
         "name_en": "Daegu",
@@ -141,7 +155,11 @@
           "province": "대구광역시",
           "municipality": "군위 외"
         },
-        "climate_zone_source": "korean_building_standards.sources.esdc_2026_360 [별표 1] 비고 (2026-09-17 원문 대조)"
+        "climate_zone_source": "korean_building_standards.sources.esdc_2026_360 [별표 1] 비고 (2026-09-17 원문 대조)",
+        "aliases": [
+          "대구",
+          "Daegu"
+        ]
       },
       "C04": {
         "name_en": "Incheon",
@@ -153,7 +171,12 @@
           "province": "인천광역시",
           "municipality": null
         },
-        "climate_zone_source": "korean_building_standards.sources.esdc_2026_360 [별표 1] 비고 (2026-09-17 원문 대조)"
+        "climate_zone_source": "korean_building_standards.sources.esdc_2026_360 [별표 1] 비고 (2026-09-17 원문 대조)",
+        "aliases": [
+          "인천",
+          "Incheon",
+          "인천광역시"
+        ]
       },
       "C05": {
         "name_en": "Gwangju",
@@ -165,7 +188,12 @@
           "province": "광주광역시",
           "municipality": null
         },
-        "climate_zone_source": "korean_building_standards.sources.esdc_2026_360 [별표 1] 비고 (2026-09-17 원문 대조)"
+        "climate_zone_source": "korean_building_standards.sources.esdc_2026_360 [별표 1] 비고 (2026-09-17 원문 대조)",
+        "aliases": [
+          "광주",
+          "Gwangju",
+          "광주광역시"
+        ]
       },
       "C06": {
         "name_en": "Daejeon",
@@ -177,7 +205,12 @@
           "province": "대전광역시",
           "municipality": null
         },
-        "climate_zone_source": "korean_building_standards.sources.esdc_2026_360 [별표 1] 비고 (2026-09-17 원문 대조)"
+        "climate_zone_source": "korean_building_standards.sources.esdc_2026_360 [별표 1] 비고 (2026-09-17 원문 대조)",
+        "aliases": [
+          "대전",
+          "Daejeon",
+          "대전광역시"
+        ]
       },
       "C07": {
         "name_en": "Ulsan",
@@ -189,7 +222,12 @@
           "province": "울산광역시",
           "municipality": null
         },
-        "climate_zone_source": "korean_building_standards.sources.esdc_2026_360 [별표 1] 비고 (2026-09-17 원문 대조)"
+        "climate_zone_source": "korean_building_standards.sources.esdc_2026_360 [별표 1] 비고 (2026-09-17 원문 대조)",
+        "aliases": [
+          "울산",
+          "Ulsan",
+          "울산광역시"
+        ]
       },
       "C08": {
         "name_en": "Gangneung",
@@ -201,7 +239,12 @@
           "province": "강원특별자치도",
           "municipality": "강릉"
         },
-        "climate_zone_source": "korean_building_standards.sources.esdc_2026_360 [별표 1] 비고 (2026-09-17 원문 대조)"
+        "climate_zone_source": "korean_building_standards.sources.esdc_2026_360 [별표 1] 비고 (2026-09-17 원문 대조)",
+        "aliases": [
+          "강릉",
+          "Gangneung",
+          "강릉시"
+        ]
       },
       "C09": {
         "name_en": "Jeju",
@@ -213,7 +256,12 @@
           "province": "제주특별자치도",
           "municipality": null
         },
-        "climate_zone_source": "korean_building_standards.sources.esdc_2026_360 [별표 1] 비고 (2026-09-17 원문 대조)"
+        "climate_zone_source": "korean_building_standards.sources.esdc_2026_360 [별표 1] 비고 (2026-09-17 원문 대조)",
+        "aliases": [
+          "제주",
+          "Jeju",
+          "제주특별자치도"
+        ]
       },
       "C10": {
         "name_en": "Cheongju",
@@ -225,7 +273,12 @@
           "province": "충청북도",
           "municipality": "청주"
         },
-        "climate_zone_source": "korean_building_standards.sources.esdc_2026_360 [별표 1] 비고 (2026-09-17 원문 대조)"
+        "climate_zone_source": "korean_building_standards.sources.esdc_2026_360 [별표 1] 비고 (2026-09-17 원문 대조)",
+        "aliases": [
+          "청주",
+          "Cheongju",
+          "청주시"
+        ]
       },
       "C11": {
         "name_en": "Chuncheon",
@@ -237,7 +290,12 @@
           "province": "강원특별자치도",
           "municipality": "춘천"
         },
-        "climate_zone_source": "korean_building_standards.sources.esdc_2026_360 [별표 1] 비고 (2026-09-17 원문 대조)"
+        "climate_zone_source": "korean_building_standards.sources.esdc_2026_360 [별표 1] 비고 (2026-09-17 원문 대조)",
+        "aliases": [
+          "춘천",
+          "Chuncheon",
+          "춘천시"
+        ]
       },
       "C12": {
         "name_en": "Suwon",
@@ -248,7 +306,12 @@
           "province": "경기도",
           "municipality": "수원"
         },
-        "climate_zone_source": "korean_building_standards.sources.esdc_2026_360 [별표 1] 비고 (2026-09-17 원문 대조)"
+        "climate_zone_source": "korean_building_standards.sources.esdc_2026_360 [별표 1] 비고 (2026-09-17 원문 대조)",
+        "aliases": [
+          "수원",
+          "Suwon",
+          "수원시"
+        ]
       },
       "C13": {
         "name_en": "Jeonju",
@@ -259,7 +322,12 @@
           "province": "전북특별자치도",
           "municipality": "전주"
         },
-        "climate_zone_source": "korean_building_standards.sources.esdc_2026_360 [별표 1] 비고 (2026-09-17 원문 대조)"
+        "climate_zone_source": "korean_building_standards.sources.esdc_2026_360 [별표 1] 비고 (2026-09-17 원문 대조)",
+        "aliases": [
+          "전주",
+          "Jeonju",
+          "전주시"
+        ]
       },
       "C14": {
         "name_en": "Pohang",
@@ -270,7 +338,12 @@
           "province": "경상북도",
           "municipality": "포항"
         },
-        "climate_zone_source": "korean_building_standards.sources.esdc_2026_360 [별표 1] 비고 (2026-09-17 원문 대조)"
+        "climate_zone_source": "korean_building_standards.sources.esdc_2026_360 [별표 1] 비고 (2026-09-17 원문 대조)",
+        "aliases": [
+          "포항",
+          "Pohang",
+          "포항시"
+        ]
       },
       "C15": {
         "name_en": "Changwon",
@@ -281,7 +354,12 @@
           "province": "경상남도",
           "municipality": "창원"
         },
-        "climate_zone_source": "korean_building_standards.sources.esdc_2026_360 [별표 1] 비고 (2026-09-17 원문 대조)"
+        "climate_zone_source": "korean_building_standards.sources.esdc_2026_360 [별표 1] 비고 (2026-09-17 원문 대조)",
+        "aliases": [
+          "창원",
+          "Changwon",
+          "창원시"
+        ]
       },
       "C16": {
         "name_en": "Andong",
@@ -292,7 +370,12 @@
           "province": "경상북도",
           "municipality": "안동"
         },
-        "climate_zone_source": "korean_building_standards.sources.esdc_2026_360 [별표 1] 비고 (2026-09-17 원문 대조)"
+        "climate_zone_source": "korean_building_standards.sources.esdc_2026_360 [별표 1] 비고 (2026-09-17 원문 대조)",
+        "aliases": [
+          "안동",
+          "Andong",
+          "안동시"
+        ]
       },
       "C17": {
         "name_en": "Cheorwon",
@@ -303,7 +386,12 @@
           "province": "강원특별자치도",
           "municipality": "철원"
         },
-        "climate_zone_source": "korean_building_standards.sources.esdc_2026_360 [별표 1] 비고 (2026-09-17 원문 대조)"
+        "climate_zone_source": "korean_building_standards.sources.esdc_2026_360 [별표 1] 비고 (2026-09-17 원문 대조)",
+        "aliases": [
+          "철원",
+          "Cheorwon",
+          "철원군"
+        ]
       },
       "C18": {
         "name_en": "Mokpo",
@@ -314,7 +402,12 @@
           "province": "전라남도",
           "municipality": "목포"
         },
-        "climate_zone_source": "korean_building_standards.sources.esdc_2026_360 [별표 1] 비고 (2026-09-17 원문 대조)"
+        "climate_zone_source": "korean_building_standards.sources.esdc_2026_360 [별표 1] 비고 (2026-09-17 원문 대조)",
+        "aliases": [
+          "목포",
+          "Mokpo",
+          "목포시"
+        ]
       }
     },
     "hvac_types": {
@@ -329,7 +422,8 @@
         "cooling": "Chiller x2+",
         "heating": "Boiler",
         "staging_m03": true,
-        "economizer_m02": true
+        "economizer_m02": true,
+        "kbep_id": 0
       },
       "H_B": {
         "sim_id": "HB",
@@ -342,7 +436,8 @@
         "cooling": "DX 2단 (Coil:Cooling:DX:TwoSpeed)",
         "heating": "전기 재열 (Coil:Heating:Electric)",
         "staging_m03": false,
-        "economizer_m02": true
+        "economizer_m02": true,
+        "kbep_id": 1
       },
       "H_C": {
         "sim_id": "HC",
@@ -355,7 +450,8 @@
         "cooling": "DX/HP xN",
         "heating": "내장 HP",
         "staging_m03": false,
-        "economizer_m02": true
+        "economizer_m02": true,
+        "kbep_id": 2
       },
       "H_D": {
         "sim_id": "HD",
@@ -368,7 +464,8 @@
         "cooling": "실외기",
         "heating": "내장 HP",
         "staging_m03": false,
-        "economizer_m02": false
+        "economizer_m02": false,
+        "kbep_id": 3
       },
       "H_E": {
         "sim_id": "HE",
@@ -381,7 +478,8 @@
         "cooling": "벽걸이 스플릿 (PTAC)",
         "heating": "온돌 바닥복사(중앙 가스보일러 1대)",
         "staging_m03": false,
-        "economizer_m02": false
+        "economizer_m02": false,
+        "kbep_id": 4
       },
       "H_F": {
         "sim_id": "HF",
@@ -394,7 +492,8 @@
         "cooling": "천장 카세트 VRF",
         "heating": "가스보일러",
         "staging_m03": false,
-        "economizer_m02": false
+        "economizer_m02": false,
+        "kbep_id": 5
       },
       "H_G": {
         "sim_id": "HG",
@@ -407,7 +506,92 @@
         "cooling": "건물별 냉방 (원형 설비 유지: 냉동기 VAV · DX VAV · PTAC)",
         "heating": "DistrictHeating:Water",
         "staging_m03": false,
-        "economizer_m02": false
+        "economizer_m02": false,
+        "kbep_id": 6
+      }
+    },
+    "admin_succession": {
+      "rule": "aggregate_sigungu_code(be-3d src/shared/parcel_code.py) 와 같은 순서: ① 시도 접두 교체(sido_successor) ② 1:1 폐지 시군구(sigungu_successor) ③ split 시군구는 동(10자리)을 알아야 정한다 — 동을 모르면 옛 코드 그대로(추측 금지). 25자리 건물번호 → 19자리 필지는 앞 19자리의 시도 접두만 교체한다([:19] 리터럴만 쓰지 않는다).",
+      "sido_successor": {
+        "42": "51",
+        "45": "52"
+      },
+      "sido_retired_names": {
+        "강원도": "51",
+        "광주직할시": "29",
+        "대구직할시": "27",
+        "대전직할시": "30",
+        "부산직할시": "26",
+        "인천직할시": "28",
+        "전라북도": "52",
+        "제주도": "50"
+      },
+      "sigungu_successor": {
+        "41195": "41192",
+        "41197": "41194",
+        "41199": "41196",
+        "41730": "41670",
+        "42110": "51110",
+        "42130": "51130",
+        "42150": "51150",
+        "42170": "51170",
+        "42190": "51190",
+        "42210": "51210",
+        "42230": "51230",
+        "42720": "51720",
+        "42730": "51730",
+        "42750": "51750",
+        "42760": "51760",
+        "42770": "51770",
+        "42780": "51780",
+        "42790": "51790",
+        "42800": "51800",
+        "42810": "51810",
+        "42820": "51820",
+        "42830": "51830",
+        "44730": "36110",
+        "44830": "44270",
+        "45110": "52110",
+        "45111": "52111",
+        "45113": "52113",
+        "45130": "52130",
+        "45140": "52140",
+        "45180": "52180",
+        "45190": "52190",
+        "45210": "52210",
+        "45710": "52710",
+        "45720": "52720",
+        "45730": "52730",
+        "45740": "52740",
+        "45750": "52750",
+        "45770": "52770",
+        "45790": "52790",
+        "45800": "52800",
+        "47720": "27720"
+      },
+      "sigungu_split": {
+        "28170": [
+          "28177",
+          "28185"
+        ],
+        "41190": [
+          "41192",
+          "41194",
+          "41196"
+        ],
+        "43710": [
+          "43111",
+          "43112",
+          "43113",
+          "43114",
+          "36110"
+        ]
+      },
+      "source": {
+        "table": "building-energy-3d src/visualization/data/region_resolver_table.json (schema region-resolver-table-v1)",
+        "sha256": "4fb8422f2963c4819a5f5598bc15c3e0f8178600b4843dc60c3ade92aaff648b",
+        "generator": "building-energy-3d scripts/gen_region_resolver_table.py — 법정동 코드 전체자료의 폐지 코드 전부에 aggregate_sigungu_code 적용 + ABOLISHED_SIGUNGU_SUCCESSOR",
+        "dong_split_detail": "building-energy-3d data/bjd/abolished_dong_successor.json (동별 승계, 생성기 scripts/gen_abolished_dong_successor.py)"
       }
     }
   }

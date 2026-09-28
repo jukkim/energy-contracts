@@ -11,8 +11,8 @@
     "energy-decision-studio",
     "building-energy-3d"
   ],
-  "version": "2.0",
-  "updated": "2026-09-22",
+  "version": "2.1",
+  "updated": "2026-09-28",
   "type": "object",
   "additionalProperties": false,
   "required": [
@@ -324,6 +324,174 @@
         }
       },
       "description": "서버의 단일 파서가 text 를 start·end_exclusive·grain·basis 로 정규화한다. LLM 은 정규화 값을 직접 주지 않는다(날짜를 지어내지 않게)."
+    },
+    "TargetContext": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "kind",
+        "ids",
+        "source"
+      ],
+      "description": "응답에 싣는 대상 문맥(2026-09-28 일반화 G1). 요청 Target 의 kind·ids·source 를 **그대로** 되돌리고(출처를 'request' 로 뭉치지 않는다), 서버가 끌어낸 속성과 그 속성의 출처를 싣는다. 못 끌어낸 속성은 null + attribute_sources 에 absence_kind. 기본값을 쓰면 출처 'default'.",
+      "properties": {
+        "kind": {
+          "enum": [
+            "asset",
+            "portfolio",
+            "building",
+            "region",
+            "archetype"
+          ]
+        },
+        "ids": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 50,
+          "items": {
+            "type": "string"
+          }
+        },
+        "source": {
+          "enum": [
+            "query",
+            "selection",
+            "previous",
+            "user_default",
+            "login_assignment",
+            "auto_first",
+            "chain_step"
+          ]
+        },
+        "label": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "maxLength": 60
+        },
+        "resolved": {
+          "type": "boolean",
+          "description": "서버가 대상을 식별자까지 풀었는가"
+        },
+        "attributes": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "sido": {
+              "type": [
+                "string",
+                "null"
+              ],
+              "pattern": "^[0-9]{2}$"
+            },
+            "sigungu": {
+              "type": [
+                "string",
+                "null"
+              ],
+              "pattern": "^[0-9]{5}$"
+            },
+            "climate_city": {
+              "type": [
+                "string",
+                "null"
+              ],
+              "pattern": "^C(0[1-9]|1[0-8])$"
+            },
+            "archetype": {
+              "type": [
+                "string",
+                "null"
+              ],
+              "pattern": "^B(0[1-9]|1[0-8])$"
+            },
+            "hvac": {
+              "type": [
+                "string",
+                "null"
+              ],
+              "pattern": "^H_[A-G]$"
+            },
+            "usage": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "gross_floor_area_m2": {
+              "type": [
+                "number",
+                "null"
+              ]
+            },
+            "building_mgmt_no": {
+              "type": [
+                "string",
+                "null"
+              ],
+              "pattern": "^[0-9]{25}$"
+            },
+            "parcel_id": {
+              "type": [
+                "string",
+                "null"
+              ],
+              "pattern": "^[0-9]{19}$"
+            },
+            "identity_status": {
+              "type": [
+                "string",
+                "null"
+              ]
+            }
+          }
+        },
+        "attribute_sources": {
+          "type": "object",
+          "description": "속성 이름 → {source: record|registry|derived|default|question, absence_kind?, flag?}",
+          "additionalProperties": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "source"
+            ],
+            "properties": {
+              "source": {
+                "enum": [
+                  "record",
+                  "registry",
+                  "derived",
+                  "question",
+                  "default",
+                  "none"
+                ]
+              },
+              "absence_kind": {
+                "enum": [
+                  "missing",
+                  "not_applicable",
+                  "unknown",
+                  null
+                ]
+              },
+              "flag": {
+                "type": [
+                  "string",
+                  "null"
+                ],
+                "description": "예: area_unverified(D1 면적 미확인)"
+              },
+              "basis": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              }
+            }
+          }
+        }
+      }
     }
   }
 }

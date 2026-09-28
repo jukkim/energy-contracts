@@ -494,6 +494,13 @@
           "type": "object"
         }
       }
+    },
+    "kbep_fast_path": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "KBEP 대리모형이 학습한 전략(정수 id = M 번호). 그 밖(M16~M22)은 fast-path 값이 없다 — 게이트웨이 DR 가드와 같은 선."
     }
   },
   "default": {
@@ -887,6 +894,24 @@
         "C4": "M12",
         "C6": "M14"
       }
-    }
+    },
+    "kbep_fast_path": [
+      "M00",
+      "M01",
+      "M02",
+      "M03",
+      "M04",
+      "M05",
+      "M06",
+      "M07",
+      "M08",
+      "M09",
+      "M10",
+      "M11",
+      "M12",
+      "M13",
+      "M14",
+      "M15"
+    ]
   }
 }

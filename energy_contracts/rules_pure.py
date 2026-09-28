@@ -1,0 +1,139 @@
+"""순수 규칙 함수 — 정본 원문 한 벌 (2026-09-28 일반화 G1).
+
+이 파일의 ``BEGIN PURE RULES`` 아래 본문은 ``scripts/gen_constants.py`` 가 **그대로** 각 소비 저장소의
+``_generated_constants.py`` 에 싣는다(바이트 동일 — EC ``tests/test_generalization_g1.py`` 가 대조). 그래서 규칙이
+두 곳에 따로 적히지 않는다(용도→원형 8벌·백분위수 2방식·별칭 대조 5벌이 갈렸던 자리).
+
+제약(생성본에 실리므로):
+  * import 금지 — 표준 내장만 쓴다.
+  * 표는 인자로 받거나, 인자가 없으면 모듈 전역(생성본의 USAGE_ARCHETYPE·AXIS_ALIAS_INDEX)에서 찾는다.
+    그 전역이 없는 생성본에서 부르면 LookupError(이름 있는 실패) — 빈 표로 조용히 통과하지 않는다.
+"""
+from __future__ import annotations
+
+# --- BEGIN PURE RULES ---
+
+
+def ec_axis_key(token: object) -> str:
+    """축 별칭 대조 열쇠 — 공백·밑줄·하이픈·가운뎃점·탭을 빼고 casefold."""
+    return "".join(ch for ch in str(token) if ch not in " _-·\t").casefold()
+
+
+def ec_axis_tables(doe_buildings: dict, simulation_cities: dict, hvac_types: dict, strategies: dict,
+                   kbep_fast_path: list) -> dict:
+    """축 어휘 네 표 → {strategies, index, kbep}. 별칭 하나가 두 코드를 가리키면 ValueError(조용히 고르지 않는다).
+
+    index[kind][ec_axis_key(토큰)] = 정본 코드. 토큰 = 코드·KBEP 정수·영문·snake·한글·별칭.
+    kbep[kind][코드] = KBEP 정수(전략은 fast-path 안만)."""
+    fast = set(kbep_fast_path or [])
+    strat = {code: {"name_en": m.get("name_en"), "name_kr": m.get("name_kr"),
+                    "kbep_id": int(code[1:]) if code in fast else None}
+             for code, m in strategies.items()}
+    index: dict = {"archetype": {}, "city": {}, "hvac": {}, "strategy": {}}
+
+    def put(kind: str, tok: object, code: str) -> None:
+        if tok is None or tok == "":
+            return
+        k = ec_axis_key(tok)
+        if index[kind].get(k, code) != code:
+            raise ValueError(f"축 별칭 충돌: {kind} {tok!r} → {index[kind][k]} 와 {code}")
+        index[kind][k] = code
+
+    for code, m in doe_buildings.items():
+        for tok in [code, m.get("kbep_id"), m.get("name_en"), m.get("snake"), m.get("name_kr"), *(m.get("aliases") or [])]:
+            put("archetype", tok, code)
+    for code, m in simulation_cities.items():
+        for tok in [code, m.get("kbep_city_id"), m.get("name_en"), m.get("name_kr"), *(m.get("aliases") or [])]:
+            put("city", tok, code)
+    for code, m in hvac_types.items():
+        for tok in [code, m.get("kbep_id"), m.get("sim_id"), *(m.get("aliases") or [])]:
+            put("hvac", tok, code)
+    for code, m in strat.items():
+        for tok in [code, int(code[1:]), m.get("name_en")]:
+            put("strategy", tok, code)
+    kbep = {"archetype": {c: m["kbep_id"] for c, m in doe_buildings.items() if m.get("kbep_id") is not None},
+            "city": {c: m["kbep_city_id"] for c, m in simulation_cities.items() if m.get("kbep_city_id") is not None},
+            "hvac": {c: m["kbep_id"] for c, m in hvac_types.items() if m.get("kbep_id") is not None},
+            "strategy": {c: m["kbep_id"] for c, m in strat.items() if m["kbep_id"] is not None}}
+    return {"strategies": strat, "index": {k: dict(sorted(v.items())) for k, v in index.items()}, "kbep": kbep}
+
+
+def ec_axis_encode(kind: str, token: object, index: dict | None = None) -> str:
+    """축 토큰(코드·영문·한글·snake·KBEP 정수·별칭) → 정본 코드(Bxx·Cxx·H_x·Mxx).
+
+    모르는 토큰은 KeyError('AXIS_TOKEN_UNKNOWN …') — 기본값으로 채우지 않는다(모르는 도시를 서울로 두던 자리)."""
+    idx = index if index is not None else globals().get("AXIS_ALIAS_INDEX")
+    if idx is None:
+        raise LookupError("AXIS_ALIAS_INDEX 가 이 생성본에 없다 — gen_constants exports 에 넣는다")
+    table = idx.get(kind)
+    if table is None:
+        raise KeyError(f"AXIS_KIND_UNKNOWN: {kind!r} (있는 것: {sorted(idx)})")
+    code = table.get(ec_axis_key(token)) if token is not None else None
+    if code is None:
+        raise KeyError(f"AXIS_TOKEN_UNKNOWN: {kind} {token!r}")
+    return code
+
+
+def ec_usage_to_archetype(usage: object, gross_floor_area_m2: object = None, table: dict | None = None) -> dict:
+    """건축물대장 주용도(+연면적) → 원형. 결과 = {archetype, flag, absence, basis}.
+
+    * 업무시설 = 연면적 구간(결정 D1). 연면적이 없거나 0 이하이면 면적 미상 원형 + flag='area_unverified'.
+    * 표에 없는 용도·용도 미상 = archetype None + absence(usage_not_in_archetype_table·usage_unknown) — 기본 원형 없음.
+    * 도면으로 확인된 원형은 호출자가 이 결과보다 앞세운다(표의 precedence).
+    """
+    t = table if table is not None else globals().get("USAGE_ARCHETYPE")
+    if t is None:
+        raise LookupError("USAGE_ARCHETYPE 가 이 생성본에 없다 — gen_constants exports 에 넣는다")
+    name = str(usage).strip() if usage is not None else ""
+    if not name:
+        return {"archetype": None, "flag": None, "absence": "usage_unknown", "basis": None}
+    name = (t.get("usage_aliases") or {}).get(name, name)
+    row = (t.get("rows") or {}).get(name)
+    if row is None:
+        return {"archetype": None, "flag": None, "absence": "usage_not_in_archetype_table", "basis": None}
+    if row.get("rule") == "office_by_gross_floor_area":
+        rule = t["office_by_gross_floor_area"]
+        try:
+            area = float(gross_floor_area_m2) if gross_floor_area_m2 is not None else None
+        except (TypeError, ValueError):
+            area = None
+        if area is None or area != area or area <= 0:
+            unk = rule["unknown_area"]
+            return {"archetype": unk["archetype"], "flag": unk["flag"], "absence": None,
+                    "basis": "office_by_gross_floor_area:unknown_area"}
+        for band in rule["bands"]:
+            lo, hi = band.get("min_m2_exclusive"), band.get("max_m2_inclusive")
+            if (lo is None or area > lo) and (hi is None or area <= hi):
+                return {"archetype": band["archetype"], "flag": None, "absence": None,
+                        "basis": "office_by_gross_floor_area"}
+        raise ValueError(f"업무시설 면적 구간이 {area} m² 를 덮지 않는다 — 표 결함")
+    return {"archetype": row["archetype"], "flag": None, "absence": None, "basis": row.get("basis")}
+
+
+def ec_percentile(values, q: float):
+    """백분위수 — 선형 보간(numpy 'linear'·Excel PERCENTILE.INC), q∈[0,1]. 빈 입력·None 만 있으면 None
+    (못 잼을 0 으로 올리지 않는다). q 가 [0,1] 밖이면 ValueError — 0~100 척도를 넣지 않는다."""
+    if not 0.0 <= float(q) <= 1.0:
+        raise ValueError(f"q 는 [0,1] 이다(받은 값 {q!r})")
+    xs = sorted(float(v) for v in values if v is not None)
+    if not xs:
+        return None
+    pos = (len(xs) - 1) * float(q)
+    lo = int(pos)
+    hi = min(lo + 1, len(xs) - 1)
+    return xs[lo] + (xs[hi] - xs[lo]) * (pos - lo)
+
+
+def ec_carbon_kg(fuel_kwh: dict, factors: dict | None = None) -> float:
+    """연료별 kWh → kgCO2e. 계수 = EMISSION_FACTORS_KR(`<연료>_kg_co2_per_kwh`). 모르는 연료는 KeyError
+    — 혼합 계수·전력 계수로 대신 곱하지 않는다(모든 절감 kWh 에 전력 계수를 곱하던 자리)."""
+    f = factors if factors is not None else globals().get("EMISSION_FACTORS_KR")
+    if f is None:
+        raise LookupError("EMISSION_FACTORS_KR 가 이 생성본에 없다")
+    total = 0.0
+    for fuel, kwh in fuel_kwh.items():
+        key = f"{fuel}_kg_co2_per_kwh"
+        if key not in f:
+            raise KeyError(f"CARBON_FUEL_UNKNOWN: {fuel!r} (계수 {sorted(f)})")
+        total += float(kwh) * float(f[key])
+    return total

@@ -728,6 +728,214 @@ def check_hvac_display_names(schemas_dir: Path | None = None) -> list[str]:
     return violations
 
 
+# ── 일반화 G0·G1 (2026-09-28) — 정본 한 곳 + 투영이 맞는가 ─────────────────────────────
+
+def _gen_constants_module():
+    here = str(Path(__file__).resolve().parent)
+    if here not in sys.path:
+        sys.path.insert(0, here)
+    import gen_constants  # noqa: PLC0415
+    return gen_constants
+
+
+def check_strategy_list_projection(schemas_dir: Path | None = None) -> list[str]:
+    """전략 코드 목록 = ems_strategies.default.strategies 키 하나. common.Strategy·StrategyCode enum 은 투영이다.
+
+    2026-09-28 전에는 common.json 이 21종(M00~M20)에 멈춰 정본 23종과 갈렸다(검사가 없었다).
+    """
+    try:
+        want, have = _gen_constants_module().strategy_list_targets(schemas_dir)
+    except (OSError, KeyError, ValueError) as exc:
+        return [f"전략 목록 투영 검사 로드 실패 — {exc}"]
+    if not want:
+        return ["ems_strategies.json#default.strategies 가 비었다 — 검사 0건은 통과가 아니다"]
+    return [f"{where} = {got} 가 정본 목록 {want} 과 다르다 — python scripts/gen_constants.py --all"
+            for where, got in have.items() if got != want]
+
+
+def check_usage_archetype(schemas_dir: Path | None = None) -> list[str]:
+    """용도→원형 정본 한 표(building_usage_map#usage_archetype)와 그 투영 두 곳이 맞는가.
+
+    1. 행의 원형 코드가 building_archetypes.doe_buildings 에 있다 · 규칙 행은 선언된 규칙만.
+    2. 업무시설 면적 구간이 빈틈·겹침 없이 이어지고 면적 미상 원형이 구간 원형 중 하나다.
+    3. usage_to_buildwise[u] == archetype_to_buildwise[usage_archetype(u)] (있는 키 전부).
+    4. usages[*].archetype(영문명) 이 같은 용도의 정본 원형과 같다(용도 별칭 포함).
+    """
+    sd = schemas_dir or SCHEMAS_DIR
+    try:
+        um = json.loads((sd / "building_usage_map.json").read_text(encoding="utf-8"))["default"]
+        ba = json.loads((sd / "building_archetypes.json").read_text(encoding="utf-8"))["default"]
+        ua = um["usage_archetype"]
+        rows, office = ua["rows"], ua["office_by_gross_floor_area"]
+        docs = ba["doe_buildings"]
+    except (OSError, KeyError, TypeError, ValueError) as exc:
+        return [f"용도→원형 정본 로드 실패 — {exc}"]
+    v: list[str] = []
+    if not rows:
+        return ["usage_archetype.rows 가 비었다 — 검사 0건은 통과가 아니다"]
+    bands = office.get("bands") or []
+    band_codes = [b.get("archetype") for b in bands]
+    unknown = (office.get("unknown_area") or {}).get("archetype")
+
+    def of(usage: str) -> str | None:
+        row = rows.get(usage) or {}
+        if row.get("rule") == "office_by_gross_floor_area":
+            return unknown
+        return row.get("archetype")
+
+    for usage, row in rows.items():
+        if "rule" in row:
+            if row["rule"] != "office_by_gross_floor_area":
+                v.append(f"usage_archetype.rows[{usage}].rule={row['rule']!r} 는 선언된 규칙이 아니다")
+        elif row.get("archetype") not in docs:
+            v.append(f"usage_archetype.rows[{usage}].archetype={row.get('archetype')!r} 가 doe_buildings 에 없다")
+    for code in band_codes + [unknown]:
+        if code not in docs:
+            v.append(f"office_by_gross_floor_area 원형 {code!r} 가 doe_buildings 에 없다")
+    if unknown not in band_codes:
+        v.append(f"면적 미상 원형 {unknown!r} 가 면적 구간 원형 {band_codes} 중 하나가 아니다")
+    for a, b in zip(bands, bands[1:]):
+        if a.get("max_m2_inclusive") is None or a.get("max_m2_inclusive") != b.get("min_m2_exclusive"):
+            v.append(f"업무시설 면적 구간이 이어지지 않는다: {a} → {b}")
+    if bands and ("min_m2_exclusive" in bands[0] or "max_m2_inclusive" in bands[-1]):
+        v.append("업무시설 면적 구간 양 끝이 열려 있지 않다(첫 구간 하한·마지막 구간 상한 없음이어야 한다)")
+    to_bw = ba.get("archetype_to_buildwise") or {}
+    missing_bw = sorted(set(docs) - set(to_bw))
+    if missing_bw:
+        v.append(f"archetype_to_buildwise 에 원형 {missing_bw} 가 없다")
+    for usage, bw in (ba.get("usage_to_buildwise") or {}).items():
+        code = of(usage)
+        if code is None:
+            v.append(f"usage_to_buildwise[{usage}] 의 용도가 usage_archetype.rows 에 없다")
+        elif to_bw.get(code) != bw:
+            v.append(f"usage_to_buildwise[{usage}]={bw!r} != archetype_to_buildwise[{code}]={to_bw.get(code)!r} "
+                     "— usage_to_buildwise 는 정본 용도표의 투영이다")
+    aliases = ua.get("usage_aliases") or {}
+    checked = 0
+    for key, u in (um.get("usages") or {}).items():
+        usage = aliases.get(u.get("name_kr"), u.get("name_kr"))
+        code = of(usage)
+        if code is None:
+            continue
+        checked += 1
+        if u.get("archetype") != docs.get(code, {}).get("name_en"):
+            v.append(f"building_usage_map usages[{key}].archetype={u.get('archetype')!r} 가 정본 "
+                     f"{usage}→{code}({docs.get(code, {}).get('name_en')}) 와 다르다")
+    if checked == 0:
+        v.append("usages[*] 중 정본 용도표와 대조한 행이 0건 — 대조가 돌지 않았다")
+    return v
+
+
+def check_hvac_canonical_rows(schemas_dir: Path | None = None) -> list[str]:
+    """hvac_ems_matrix#default.canonical_rows 가 규칙(행→정본 코드 선언의 역 ∩ 행렬, 여럿이면 sim_id 행)과 같은가."""
+    sd = schemas_dir or SCHEMAS_DIR
+    try:
+        hm = json.loads((sd / "hvac_ems_matrix.json").read_text(encoding="utf-8"))
+        region = json.loads((sd / "region_codes.json").read_text(encoding="utf-8"))["default"]["hvac_types"]
+        declared = hm["properties"]["hvac_types"]["properties"]
+        matrix = hm["default"]["matrix"]
+        rows = hm["default"]["canonical_rows"]
+    except (OSError, KeyError, TypeError, ValueError) as exc:
+        return [f"호환표 정본 행 로드 실패 — {exc}"]
+    v: list[str] = []
+    by_code: dict[str, list[str]] = defaultdict(list)
+    for row, spec in declared.items():
+        if row in matrix:
+            by_code[spec.get("const")].append(row)
+    for code, meta in region.items():
+        cands = by_code.get(code) or []
+        want = meta.get("sim_id") if meta.get("sim_id") in cands else (cands[0] if len(cands) == 1 else None)
+        if want is None:
+            v.append(f"{code}: 판정 행을 규칙으로 정할 수 없다(후보 {cands})")
+        elif rows.get(code) != want:
+            v.append(f"canonical_rows[{code}]={rows.get(code)!r} — 규칙상 {want!r}")
+    extra = sorted(set(rows) - set(region))
+    if extra:
+        v.append(f"canonical_rows 에 정본에 없는 코드 {extra}")
+    return v
+
+
+def check_axis_tables(schemas_dir: Path | None = None) -> list[str]:
+    """축 어휘: 별칭 충돌 없음 · KBEP 정수 축이 0..n-1 로 빠짐·중복 없이 이어진다."""
+    gc = _gen_constants_module()
+    try:
+        schemas = gc.load_schemas() if schemas_dir is None else None
+        axes = gc.axis_tables(schemas)
+    except ValueError as exc:
+        return [str(exc)]
+    except (OSError, KeyError, TypeError) as exc:
+        return [f"축 어휘 로드 실패 — {exc}"]
+    v: list[str] = []
+    for kind, table, field in (("archetype", axes["archetypes"], "kbep_id"), ("city", axes["cities"], "kbep_city_id"),
+                               ("hvac", axes["hvac"], "kbep_id")):
+        ids = sorted(m.get(field) for m in table.values() if m.get(field) is not None)
+        if ids != list(range(len(table))):
+            v.append(f"{kind} 의 KBEP 정수 축 {ids} 가 0..{len(table) - 1} 로 이어지지 않는다")
+    if not all(axes["index"].values()):
+        v.append("축 별칭 색인이 빈 칸을 낸다 — 검사 0건은 통과가 아니다")
+    return v
+
+
+def check_replay_policy_source(schemas_dir: Path | None = None) -> list[str]:
+    """재생 정책이 인용한 원천 파일의 sha256 이 지금 파일과 같은가(2026-09-28 G0 — 옛 판 682d… 를 가리키고 있었다).
+
+    원천이 이 작업공간에 없으면 **못 잼**(경고만, 통과로 세지 않는다)."""
+    sd = schemas_dir or SCHEMAS_DIR
+    import hashlib
+    try:
+        src = json.loads((sd / "airos_replay_anomaly_policy.json").read_text(encoding="utf-8"))["default"]["source"]
+    except (OSError, KeyError, TypeError, ValueError) as exc:
+        return [f"재생 정책 원천 로드 실패 — {exc}"]
+    fp = WORKSPACE_ROOT / src["path"]
+    if not fp.exists():
+        print(f"[SSOT] 못 잼(통과 아님): 재생 정책 원천 {src['path']} 가 이 작업공간에 없다")
+        return []
+    got = hashlib.sha256(fp.read_bytes()).hexdigest()
+    if got != src["sha256"]:
+        return [f"airos_replay_anomaly_policy.source.sha256={src['sha256'][:12]}… 가 지금 원천 {got[:12]}… 와 다르다 "
+                "— 정책 값이 원천과 같은지 확인한 뒤 해시를 재발급한다"]
+    return []
+
+
+def check_admin_succession(schemas_dir: Path | None = None) -> list[str]:
+    """승계표 모양: 시도 2자리·시군구 5자리 · 승계 코드가 다시 승계되지 않는다(한 번에 현행) ·
+    시도 접두 교체만으로 되는 짝은 sido_successor 와 맞는다. be-3d 원천 표와 다르면 경고(형제 소관)."""
+    sd = schemas_dir or SCHEMAS_DIR
+    try:
+        s = json.loads((sd / "region_codes.json").read_text(encoding="utf-8"))["default"]["admin_succession"]
+    except (OSError, KeyError, TypeError, ValueError) as exc:
+        return [f"행정구역 승계표 로드 실패 — {exc}"]
+    v: list[str] = []
+    sido, sgg, split = s.get("sido_successor") or {}, s.get("sigungu_successor") or {}, s.get("sigungu_split") or {}
+    if not sido or not sgg:
+        return ["admin_succession 의 sido_successor·sigungu_successor 가 비었다 — 검사 0건은 통과가 아니다"]
+    for a, b in sido.items():
+        if not (re.fullmatch(r"[0-9]{2}", a) and re.fullmatch(r"[0-9]{2}", b)):
+            v.append(f"sido_successor {a}→{b} 모양이 2자리가 아니다")
+    for a, b in sgg.items():
+        if not (re.fullmatch(r"[0-9]{5}", a) and re.fullmatch(r"[0-9]{5}", b)):
+            v.append(f"sigungu_successor {a}→{b} 모양이 5자리가 아니다")
+        if b in sgg:
+            v.append(f"sigungu_successor {a}→{b} 의 승계 코드가 다시 승계된다({b}→{sgg[b]}) — 한 번에 현행이어야 한다")
+        if a[:2] in sido and b[:2] == sido[a[:2]] and a[2:] != b[2:]:
+            v.append(f"sigungu_successor {a}→{b}: 시도 접두 교체 짝인데 뒷자리가 다르다")
+    for a, bs in split.items():
+        if a in sgg:
+            v.append(f"{a} 가 1:1 승계와 split 에 동시에 있다")
+        if not bs:
+            v.append(f"sigungu_split[{a}] 가 비었다")
+    rrt = WORKSPACE_ROOT / "projects" / "building-energy-3d" / "src" / "visualization" / "data" / "region_resolver_table.json"
+    if rrt.exists():
+        try:
+            be = json.loads(rrt.read_text(encoding="utf-8"))
+            if (be.get("sido_successor"), be.get("sigungu_successor"), be.get("sigungu_split")) != (sido, sgg, split):
+                print("[SSOT] 경고(차단 안 함): be-3d region_resolver_table 의 승계표가 EC admin_succession 과 다르다 — "
+                      "be-3d 쪽이 EC 생성본을 읽도록 바뀌기 전의 형제 drift")
+        except (OSError, ValueError):
+            pass
+    return v
+
+
 def check_mirror_core_keywords() -> list[str]:
     """20 BASE CORE_KEYWORDS 로컬 검증 가드 (Deferred D-3, 사냥꾼 LOW).
 
@@ -1189,6 +1397,12 @@ def main() -> int:
         v += check_legacy_code_consistency()       # Deferred D-2 (M7) — E→M 정본 하나 + 투영 (2026-09-15 재작성)
         v += check_e_code_emitter_coverage(scope=scope)  # 2026-09-15 — 파이프라인이 내보내는 E-code 전부 정본에 있는가
         v += check_hvac_display_names()            # 2026-09-15 — 공조 방식 이름 정본 하나 + 매트릭스 행 대응
+        v += check_strategy_list_projection()      # 2026-09-28 G0 — 전략 목록 정본 하나(common 21 ↔ ems 23)
+        v += check_usage_archetype()               # 2026-09-28 G1 — 용도→원형 정본 한 표 + 투영 두 곳
+        v += check_hvac_canonical_rows()           # 2026-09-28 G1 — 호환표 정본 행 선언 = 규칙
+        v += check_axis_tables()                   # 2026-09-28 G1 — 축 어휘 별칭 충돌·KBEP 정수 축
+        v += check_replay_policy_source()          # 2026-09-28 G0 — 재생 정책 원천 해시
+        v += check_admin_succession()              # 2026-09-28 G1 — 행정구역 승계표 모양
         v += check_mirror_core_keywords()          # Deferred D-3 — 20 BASE CORE_KEYWORDS 로컬 검증
         v += check_local_mirror_drift(scope)       # P3 (2026-06-17) — 커밋 repo CLAUDE.md REVERSE 키워드 로컬 가드
         if v:

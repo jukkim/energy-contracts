@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "energy-contracts/building_usage_map.json",
   "title": "Building Usage Map SSOT (Phase J-7)",
-  "description": "건축물대장 용도 코드 ↔ archetype ↔ 에너지 사용패턴 매핑. 한국(740만 건물) + 인도네시아 BEMS(12.5M ASEAN 건물).",
+  "description": "건축물대장 용도 코드 ↔ archetype ↔ 에너지 사용패턴 매핑. 한국(740만 건물) + 인도네시아 BEMS(12.5M ASEAN 건물). v1.1 (2026-09-28): usage_archetype = 건축물대장 주용도 → 원형(Bxx) **정본 한 표**. 사본 8벌(EC 2·be-3d 2·AIROS 2·Studio 2)이 업무시설을 대형/중형 사무소로 갈라 답했다. usages[*].archetype 은 이 표와 같아야 한다(validate_ssot).",
   "_usage": "codegen",
   "_consumers": [
     "edge-agent",
@@ -11,8 +11,8 @@
     "agentleague",
     "eduarena"
   ],
-  "version": "1.0",
-  "updated": "2026-05-17",
+  "version": "1.1",
+  "updated": "2026-09-28",
   "$defs": {
     "UsageEntry": {
       "type": "object",
@@ -62,6 +62,39 @@
           }
         }
       }
+    },
+    "UsageArchetypeRow": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "archetype": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "pattern": "^B(0[1-9]|1[0-8])$"
+        },
+        "rule": {
+          "enum": [
+            "office_by_gross_floor_area"
+          ]
+        },
+        "basis": {
+          "type": "string"
+        }
+      },
+      "oneOf": [
+        {
+          "required": [
+            "archetype"
+          ]
+        },
+        {
+          "required": [
+            "rule"
+          ]
+        }
+      ]
     }
   },
   "type": "object",
@@ -71,7 +104,7 @@
         "code": "02001",
         "name_kr": "아파트",
         "name_en": "Apartment",
-        "archetype": "MidriseApartment",
+        "archetype": "MidRiseApartment",
         "default_eui_kwh_m2": 120,
         "energy_pattern": {
           "heating": 0.45,
@@ -85,7 +118,7 @@
         "code": "01000",
         "name_kr": "단독주택",
         "name_en": "Detached House",
-        "archetype": "SmallHotel",
+        "archetype": "DetachedHouse",
         "default_eui_kwh_m2": 150,
         "energy_pattern": {
           "heating": 0.5,
@@ -113,7 +146,7 @@
         "code": "07000",
         "name_kr": "판매시설",
         "name_en": "Retail",
-        "archetype": "RetailStripmall",
+        "archetype": "StandaloneRetail",
         "default_eui_kwh_m2": 220,
         "energy_pattern": {
           "heating": 0.2,
@@ -141,7 +174,7 @@
         "code": "10000",
         "name_kr": "교육연구시설",
         "name_en": "Education",
-        "archetype": "SecondarySchool",
+        "archetype": "PrimarySchool",
         "default_eui_kwh_m2": 140,
         "energy_pattern": {
           "heating": 0.4,
@@ -169,7 +202,7 @@
         "code": "15000",
         "name_kr": "숙박시설",
         "name_en": "Hotel",
-        "archetype": "LargeHotel",
+        "archetype": "SmallHotel",
         "default_eui_kwh_m2": 250,
         "energy_pattern": {
           "heating": 0.3,
@@ -219,6 +252,129 @@
           "hot_water": 0.18,
           "lighting": 0.16,
           "ventilation": 0.13
+        }
+      }
+    },
+    "usage_archetype": {
+      "decision": "사용자 결정 D1(2026-09-28): 업무시설은 연면적으로 소형/중형/대형 사무소를 가른다. 연면적이 없으면 중형 사무소 + '면적 미확인' 표시.",
+      "rows": {
+        "업무시설": {
+          "rule": "office_by_gross_floor_area",
+          "basis": "D1"
+        },
+        "근린생활시설": {
+          "archetype": "B03",
+          "basis": "be-3d policy_savings.USAGE_TO_ARCHETYPE(정책 절감 지도·F14 공용, 2026-09-25) 이관"
+        },
+        "제1종근린생활시설": {
+          "archetype": "B03",
+          "basis": "be-3d policy_savings.USAGE_TO_ARCHETYPE(정책 절감 지도·F14 공용, 2026-09-25) 이관"
+        },
+        "제2종근린생활시설": {
+          "archetype": "B03",
+          "basis": "be-3d policy_savings.USAGE_TO_ARCHETYPE(정책 절감 지도·F14 공용, 2026-09-25) 이관"
+        },
+        "판매시설": {
+          "archetype": "B05",
+          "basis": "be-3d policy_savings.USAGE_TO_ARCHETYPE(정책 절감 지도·F14 공용, 2026-09-25) 이관"
+        },
+        "교육연구시설": {
+          "archetype": "B07",
+          "basis": "be-3d policy_savings.USAGE_TO_ARCHETYPE(정책 절감 지도·F14 공용, 2026-09-25) 이관"
+        },
+        "의료시설": {
+          "archetype": "B12",
+          "basis": "be-3d policy_savings.USAGE_TO_ARCHETYPE(정책 절감 지도·F14 공용, 2026-09-25) 이관"
+        },
+        "공동주택": {
+          "archetype": "B16",
+          "basis": "be-3d policy_savings.USAGE_TO_ARCHETYPE(정책 절감 지도·F14 공용, 2026-09-25) 이관"
+        },
+        "숙박시설": {
+          "archetype": "B14",
+          "basis": "be-3d policy_savings.USAGE_TO_ARCHETYPE(정책 절감 지도·F14 공용, 2026-09-25) 이관"
+        },
+        "단독주택": {
+          "archetype": "B18",
+          "basis": "be-3d policy_savings.USAGE_TO_ARCHETYPE(정책 절감 지도·F14 공용, 2026-09-25) 이관 · B18 단독주택 원형(2026-09-13)"
+        },
+        "공장": {
+          "archetype": "B04",
+          "basis": "be-3d policy_savings.USAGE_TO_ARCHETYPE(정책 절감 지도·F14 공용, 2026-09-25) 이관"
+        },
+        "창고시설": {
+          "archetype": "B04",
+          "basis": "be-3d policy_savings.USAGE_TO_ARCHETYPE(정책 절감 지도·F14 공용, 2026-09-25) 이관"
+        }
+      },
+      "usage_aliases": {
+        "아파트": "공동주택",
+        "창고": "창고시설"
+      },
+      "office_by_gross_floor_area": {
+        "unit": "m2",
+        "bands": [
+          {
+            "archetype": "B03",
+            "max_m2_inclusive": 2322.576
+          },
+          {
+            "archetype": "B02",
+            "min_m2_exclusive": 2322.576,
+            "max_m2_inclusive": 13935.456
+          },
+          {
+            "archetype": "B01",
+            "min_m2_exclusive": 13935.456
+          }
+        ],
+        "unknown_area": {
+          "archetype": "B02",
+          "flag": "area_unverified",
+          "label_ko": "면적 미확인"
+        },
+        "source": "DOE Commercial Reference Buildings 의 사무소 규모 구간 — 소형 ≤ 25,000 ft² · 중형 25,000~150,000 ft² · 대형 > 150,000 ft²(Deru et al. 2011, NREL/TP-5500-46861, CBECS 규모 대응). 1 ft² = 0.09290304 m². 원형 자체 면적(B03 511 · B02 4,982 · B01 46,320 m²)은 각 구간 안에 든다.",
+        "source_verification": "구간 경계는 보고서 원문 쪽수와 아직 대조하지 않았다(인용 기억 기반) — 원문 대조 시 이 칸을 갱신한다.",
+        "precedence": "도면으로 확인된 원형이 있으면 도면이 면적 규칙보다 앞선다(사용자 결정 2026-09-25)."
+      },
+      "absence": {
+        "usage_unknown": {
+          "absence_kind": "missing",
+          "label_ko": "용도 미상"
+        },
+        "usage_not_in_archetype_table": {
+          "absence_kind": "missing",
+          "label_ko": "시뮬 유형표에 없는 용도"
+        }
+      }
+    }
+  },
+  "properties": {
+    "usage_archetype": {
+      "type": "object",
+      "description": "주용도 → 원형 정본. 표에 없는 용도·용도 미상은 원형 없음(기본 원형으로 채우지 않는다) — 결손 종류는 absence 칸.",
+      "properties": {
+        "rows": {
+          "type": "object",
+          "additionalProperties": {
+            "$ref": "#/$defs/UsageArchetypeRow"
+          }
+        },
+        "office_by_gross_floor_area": {
+          "type": "object"
+        },
+        "absence": {
+          "type": "object"
+        },
+        "decision": {
+          "type": "string"
+        },
+        "usage_aliases": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "string"
+          },
+          "description": "세부 용도·옛 이름 → 주용도(rows 키)."
         }
       }
     }

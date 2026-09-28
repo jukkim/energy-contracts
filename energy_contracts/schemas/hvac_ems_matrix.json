@@ -3,17 +3,18 @@
   "$id": "energy-contracts/hvac_ems_matrix.json",
   "title": "HvacEmsCompatibilityMatrix",
   "description": "HVAC type × EMS strategy 호환성 매트릭스 SSOT. F14 Policy Evaluation 의 G-PE1 validation 단계에서 infeasible 조합 차단에 사용. KOREAN_HVAC.md §13 + EMS_STRATEGY.md §21 EXPECTED_SKIP + SPEC_HVAC_SYSTEMS.md §3 통합.",
-  "_usage": "runtime-validate",
+  "_usage": "hybrid",
   "_consumers": [
     "ems_transformer",
     "mgcc",
     "mpc_model",
     "reverse",
-    "sim_campaign_2026"
+    "sim_campaign_2026",
+    "gen_constants → HVAC_EMS_COMPAT (KBEP inference/ood.py·building-energy-3d)"
   ],
-  "version": "1.2.0",
-  "updated": "2026-09-15",
-  "$comment": "Phase 1.3 산출. SPEC_POLICY_VECTOR.md §2.2 가 본 매트릭스를 import. cell 값 의미: compatible (정상 적용) / marginal (적용 가능 but 절감 < 5%, warn) / infeasible (G-PE1 422 STRATEGY_INFEASIBLE_FOR_HVAC) / expected_skip (EMS_STRATEGY §21, infeasible 의 subset). | 2026-08-03: mgcc 소비자 등재. MGCC 가 그룹 발령 전 **원형 × 전략 적합성**을 판정한다(중앙 공조기 없는 건물에 M01·M02 를 걸고 '적용됨'이라 하지 않기 위해). ⚠ 이 매트릭스는 **원형 축**이고 캠페인 `expected_silent_skip.yaml` 은 **건물×원형 축**(34셀)이라 해상도가 다르다 — 34셀은 원형-보편이 아니다(실측: HD 5동 중 3동 · HE 8동 중 5동 · HF 5동 중 3동 · HG 6동 중 1동 · HA 5동 중 2동). 둘을 합치거나 한쪽으로 덮어쓰면 안 된다. | 2026-09-15 v1.1.0: hvac_types 의 설명 상수(ASHRAE 원형 문장)가 서빙 인코더와 다른 설비를 가리키고 있었다(예: HG='gas-fired boiler + radiator' 인데 인코더·시뮬은 지역난방). 이름을 여기 따로 두지 않고 행 키가 가리키는 정본 코드(region_codes.json#hvac_types)만 적는다. ⚠ A~E 행의 셀 주석은 ASHRAE 원형 기준으로 작성돼 있다(예: E×M02 'DOAS 외기 활용') — 셀 값 재검토는 별건. | 2026-09-28 v1.2.0: H_E 중복 행 통합 — E 행 삭제·HE 정본·row_aliases{E:HE}. 두 행은 2026-05-29 첫 커밋부터 같은 날 함께 들어왔고(M19 는 06-16 동시 추가) 이력으로는 가를 수 없어 근거(region_codes 설비 정의·캠페인 시뮬 범위)로 골랐다.",
+  "version": "1.3.0",
+  "updated": "2026-09-28",
+  "$comment": "Phase 1.3 산출. SPEC_POLICY_VECTOR.md §2.2 가 본 매트릭스를 import. cell 값 의미: compatible (정상 적용) / marginal (적용 가능 but 절감 < 5%, warn) / infeasible (G-PE1 422 STRATEGY_INFEASIBLE_FOR_HVAC) / expected_skip (EMS_STRATEGY §21, infeasible 의 subset). | 2026-08-03: mgcc 소비자 등재. MGCC 가 그룹 발령 전 **원형 × 전략 적합성**을 판정한다(중앙 공조기 없는 건물에 M01·M02 를 걸고 '적용됨'이라 하지 않기 위해). ⚠ 이 매트릭스는 **원형 축**이고 캠페인 `expected_silent_skip.yaml` 은 **건물×원형 축**(34셀)이라 해상도가 다르다 — 34셀은 원형-보편이 아니다(실측: HD 5동 중 3동 · HE 8동 중 5동 · HF 5동 중 3동 · HG 6동 중 1동 · HA 5동 중 2동). 둘을 합치거나 한쪽으로 덮어쓰면 안 된다. | 2026-09-15 v1.1.0: hvac_types 의 설명 상수(ASHRAE 원형 문장)가 서빙 인코더와 다른 설비를 가리키고 있었다(예: HG='gas-fired boiler + radiator' 인데 인코더·시뮬은 지역난방). 이름을 여기 따로 두지 않고 행 키가 가리키는 정본 코드(region_codes.json#hvac_types)만 적는다. ⚠ A~E 행의 셀 주석은 ASHRAE 원형 기준으로 작성돼 있다(예: E×M02 'DOAS 외기 활용') — 셀 값 재검토는 별건. | 2026-09-28 v1.2.0: H_E 중복 행 통합 — E 행 삭제·HE 정본·row_aliases{E:HE}. 두 행은 2026-05-29 첫 커밋부터 같은 날 함께 들어왔고(M19 는 06-16 동시 추가) 이력으로는 가를 수 없어 근거(region_codes 설비 정의·캠페인 시뮬 범위)로 골랐다. | 2026-09-28 v1.3.0: canonical_rows(H_A~H_G → 행 키) 직접 선언 — 게이트웨이가 런타임에 역산하던 규칙(행→정본 코드의 역 ∩ sim_id 행 우선)을 표로 적었다. 생성본 HVAC_EMS_COMPAT 은 이 대응으로 H_* 키 표를 낸다(M00~M22 전부). KBEP ood.py 손 사본(M00~M15, 112칸 중 19칸 불일치)이 이것으로 바뀐다.",
   "type": "object",
   "_comment_required": "사냥꾼 라운드 LOW (2026-06-08): hvac_types/ems_strategies 는 차원 정의 메타데이터(const map + 코드 참조)이며 data instance 의 payload 가 아니다 → required 에서 제외해 default(matrix-only) 가 자체 유효하도록 정정.",
   "required": [
@@ -100,6 +101,43 @@
           "const": "HE"
         }
       }
+    },
+    "canonical_rows": {
+      "type": "object",
+      "description": "정본 HVAC 코드(region_codes.json#hvac_types) → 그 코드의 판정 행 키. 규칙 = hvac_types 역대응 중 region_codes sim_id 행 우선.",
+      "additionalProperties": false,
+      "properties": {
+        "H_A": {
+          "type": "string"
+        },
+        "H_B": {
+          "type": "string"
+        },
+        "H_C": {
+          "type": "string"
+        },
+        "H_D": {
+          "type": "string"
+        },
+        "H_E": {
+          "type": "string"
+        },
+        "H_F": {
+          "type": "string"
+        },
+        "H_G": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "H_A",
+        "H_B",
+        "H_C",
+        "H_D",
+        "H_E",
+        "H_F",
+        "H_G"
+      ]
     }
   },
   "$defs": {
@@ -1062,6 +1100,15 @@
     },
     "row_aliases": {
       "E": "HE"
+    },
+    "canonical_rows": {
+      "H_A": "A",
+      "H_B": "B",
+      "H_C": "C",
+      "H_D": "HD",
+      "H_E": "HE",
+      "H_F": "HF",
+      "H_G": "HG"
     }
   }
 }

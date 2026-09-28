@@ -2,20 +2,21 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "energy-contracts/building_archetypes.json",
   "title": "Building Archetypes",
-  "description": "건물 유형·용도 매핑·BUILDWISE EUI SSOT. NAMING_UNIFICATION.md §2 + constants.py 기반.",
-  "_usage": "reference-only",
+  "description": "건물 유형·용도 매핑·BUILDWISE EUI SSOT. NAMING_UNIFICATION.md §2 + constants.py 기반. v2.1 (2026-09-28 일반화 G0·G1): B18 단독주택(한국 자산 KR_DetachedHouse, DOE 원형 아님) 추가 — 게이트웨이·KBEP·Studio 는 이미 17번으로 쓰고 있었다. 원형마다 축 어휘 칸(kbep_id·name_kr·snake·aliases)을 더해 KBEP 인코더 사본들이 이 표에서 파생되게 했다. usage_to_buildwise 는 building_usage_map.usage_archetype (용도→원형 정본 한 표)과 archetype_to_buildwise 에서 파생된 투영이다(validate_ssot 가 대조).",
+  "_usage": "hybrid",
   "_consumers": [
     "building-energy-3d",
     "energy-decision-studio (buildwise_eui_seoul[type].M00 → ARCHETYPES.siteEui guarded mirror, verify_mirror_sync.mjs)",
     "energy-decision-canvas (siteEui ARCHETYPES + FALLBACK_SITE_EUI guarded mirror, verify_mirror_sync.py)",
-    "reverse-ems (usecase_iv_coldstart _DEFAULT_ANNUAL_BASELINE_KWH = M00 EUI × doe area, manual sync)"
+    "reverse-ems (usecase_iv_coldstart _DEFAULT_ANNUAL_BASELINE_KWH = M00 EUI × doe area, manual sync)",
+    "gen_constants → AXIS_ARCHETYPES·USAGE_ARCHETYPE (building-energy-3d·8sim-shared·agentleague)"
   ],
-  "version": "2.0",
+  "version": "2.1",
   "type": "object",
   "properties": {
     "doe_buildings": {
       "type": "object",
-      "description": "DOE Reference Building B01~B17",
+      "description": "원형 B01~B18. B01~B17 = DOE Commercial Reference Building, B18 = 한국 단독주택 자산(KR_DetachedHouse 1존 85 m², 8.simulation docs/B18_DETACHED_HOUSE_ONBOARDING_2026-09-13.md). kbep_id = KBEP 정수 축(B01=0 … B18=17).",
       "additionalProperties": {
         "type": "object",
         "properties": {
@@ -30,6 +31,28 @@
             "items": {
               "type": "string"
             }
+          },
+          "kbep_id": {
+            "type": "integer",
+            "minimum": 0,
+            "description": "KBEP building_type 정수(B01=0…B18=17)"
+          },
+          "name_kr": {
+            "type": "string"
+          },
+          "snake": {
+            "type": "string",
+            "description": "snake_case 표기(게이트웨이 kbep_client 키)"
+          },
+          "aliases": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "그 밖에 들어오는 표기(짧은 코드 LO/MO 등·옛 철자). 코드·영문·snake·한글·정수는 생성기가 붙인다"
+          },
+          "source": {
+            "type": "string"
           }
         }
       }
@@ -99,147 +122,250 @@
           }
         }
       }
+    },
+    "archetype_to_buildwise": {
+      "type": "object",
+      "description": "원형(Bxx) → BuildWise EUI 표의 유형. 표에 그 유형이 없으면 대리 유형(주거·숙박 → medium_office). usage_to_buildwise 는 usage_archetype 과 이 표의 합성이다.",
+      "additionalProperties": {
+        "type": "string"
+      }
     }
   },
   "default": {
     "doe_buildings": {
       "B01": {
         "name_en": "LargeOffice",
+        "name_kr": "대형 사무소",
+        "snake": "large_office",
+        "kbep_id": 0,
         "area_m2": 46320,
         "hvac_types": [
           "HA",
           "HB",
           "HG"
+        ],
+        "aliases": [
+          "LO"
         ]
       },
       "B02": {
         "name_en": "MediumOffice",
+        "name_kr": "중형 사무소",
+        "snake": "medium_office",
+        "kbep_id": 1,
         "area_m2": 4982,
         "hvac_types": [
           "HC",
           "HD",
           "HF"
+        ],
+        "aliases": [
+          "MO"
         ]
       },
       "B03": {
         "name_en": "SmallOffice",
+        "name_kr": "소형 사무소",
+        "snake": "small_office",
+        "kbep_id": 2,
         "area_m2": 511,
         "hvac_types": [
           "HC",
           "HE"
+        ],
+        "aliases": [
+          "SO"
         ]
       },
       "B04": {
         "name_en": "Warehouse",
+        "name_kr": "창고",
+        "snake": "warehouse",
+        "kbep_id": 3,
         "area_m2": 4835,
         "hvac_types": [
           "HC"
-        ]
+        ],
+        "aliases": []
       },
       "B05": {
         "name_en": "StandaloneRetail",
+        "name_kr": "독립 판매점",
+        "snake": "standalone_retail",
+        "kbep_id": 4,
         "area_m2": 2294,
         "hvac_types": [
           "HC"
+        ],
+        "aliases": [
+          "SR"
         ]
       },
       "B06": {
         "name_en": "StripMall",
+        "name_kr": "상가(스트립몰)",
+        "snake": "strip_mall",
+        "kbep_id": 5,
         "area_m2": 2090,
         "hvac_types": [
           "HC"
+        ],
+        "aliases": [
+          "RetailStripmall"
         ]
       },
       "B07": {
         "name_en": "PrimarySchool",
+        "name_kr": "초등학교",
+        "snake": "primary_school",
+        "kbep_id": 6,
         "area_m2": 6871,
         "hvac_types": [
           "HA",
           "HF"
+        ],
+        "aliases": [
+          "PS"
         ]
       },
       "B08": {
         "name_en": "SecondarySchool",
+        "name_kr": "중·고등학교",
+        "snake": "secondary_school",
+        "kbep_id": 7,
         "area_m2": 19592,
         "hvac_types": [
           "HA",
           "HB",
           "HF"
-        ]
+        ],
+        "aliases": []
       },
       "B09": {
         "name_en": "Supermarket",
+        "name_kr": "슈퍼마켓",
+        "snake": "supermarket",
+        "kbep_id": 8,
         "area_m2": 4181,
         "hvac_types": [
           "HC"
-        ]
+        ],
+        "aliases": []
       },
       "B10": {
         "name_en": "FullServiceRestaurant",
+        "name_kr": "일반 음식점",
+        "snake": "full_service_restaurant",
+        "kbep_id": 9,
         "area_m2": 511,
         "hvac_types": [
           "HC"
-        ]
+        ],
+        "aliases": []
       },
       "B11": {
         "name_en": "QuickServiceRestaurant",
+        "name_kr": "패스트푸드점",
+        "snake": "quick_service_restaurant",
+        "kbep_id": 10,
         "area_m2": 232,
         "hvac_types": [
           "HC",
           "HE"
-        ]
+        ],
+        "aliases": []
       },
       "B12": {
         "name_en": "Hospital",
+        "name_kr": "병원",
+        "snake": "hospital",
+        "kbep_id": 11,
         "area_m2": 22422,
         "hvac_types": [
           "HA"
-        ]
+        ],
+        "aliases": []
       },
       "B13": {
         "name_en": "OutpatientHealthcare",
+        "name_kr": "외래 진료시설",
+        "snake": "outpatient_healthcare",
+        "kbep_id": 12,
         "area_m2": 3804,
         "hvac_types": [
           "HC",
           "HD"
-        ]
+        ],
+        "aliases": []
       },
       "B14": {
         "name_en": "SmallHotel",
+        "name_kr": "소형 호텔",
+        "snake": "small_hotel",
+        "kbep_id": 13,
         "area_m2": 4013,
         "hvac_types": [
           "HC",
           "HD"
-        ]
+        ],
+        "aliases": []
       },
       "B15": {
         "name_en": "LargeHotel",
+        "name_kr": "대형 호텔",
+        "snake": "large_hotel",
+        "kbep_id": 14,
         "area_m2": 11345,
         "hvac_types": [
           "HA",
           "HD"
-        ]
+        ],
+        "aliases": []
       },
       "B16": {
         "name_en": "MidRiseApartment",
+        "name_kr": "중층 아파트",
+        "snake": "midrise_apartment",
+        "kbep_id": 15,
         "area_m2": 1457,
         "hvac_types": [
           "HD",
           "HE",
           "HG"
+        ],
+        "aliases": [
+          "midrise_apt"
         ]
       },
       "B17": {
         "name_en": "HighRiseApartment",
+        "name_kr": "고층 아파트",
+        "snake": "highrise_apartment",
+        "kbep_id": 16,
         "area_m2": 3135,
         "hvac_types": [
           "HE",
           "HG"
+        ],
+        "aliases": [
+          "highrise_apt"
         ]
+      },
+      "B18": {
+        "name_en": "DetachedHouse",
+        "name_kr": "단독주택",
+        "snake": "detached_house",
+        "kbep_id": 17,
+        "area_m2": 85.0,
+        "hvac_types": [
+          "HE"
+        ],
+        "aliases": [],
+        "source": "8.simulation _shared/building_areas.py B18 (E+ eio 실측 85.00 m²) · B18_DETACHED_HOUSE_ONBOARDING_2026-09-13 §0 결정 4(H_E 하나)"
       }
     },
     "usage_to_buildwise": {
-      "업무시설": "large_office",
+      "업무시설": "medium_office",
       "근린생활시설": "small_office",
       "제1종근린생활시설": "small_office",
       "제2종근린생활시설": "small_office",
@@ -401,6 +527,27 @@
         "gas": 0.35,
         "district_heat": 0.0
       }
+    },
+    "archetype_to_buildwise": {
+      "B01": "large_office",
+      "B02": "medium_office",
+      "B03": "small_office",
+      "B05": "standalone_retail",
+      "B06": "standalone_retail",
+      "B09": "standalone_retail",
+      "B07": "primary_school",
+      "B08": "primary_school",
+      "B12": "hospital",
+      "B13": "hospital",
+      "B14": "medium_office",
+      "B15": "medium_office",
+      "B16": "medium_office",
+      "B17": "medium_office",
+      "B18": "medium_office",
+      "B04": "small_office",
+      "B10": "small_office",
+      "B11": "small_office"
     }
-  }
+  },
+  "updated": "2026-09-28"
 }

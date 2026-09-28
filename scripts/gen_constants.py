@@ -179,6 +179,12 @@ PROJECT_TARGETS: dict[str, dict] = {
                 "ZEB_BASELINE_KWH_M2_YR", "ZEB_GRADES", "ZEB_THRESHOLDS",
                 # 2026-09-28 — 탄소예산/NDC 격차 도구의 목표 선택 · DR 가정값
                 "NDC_TARGETS", "DR_ASSUMPTIONS",
+                # 2026-09-28 일반화 G1 — 축 어휘·용도→원형·식별자·대상 어휘·승계표·호환표·달력·문턱·할인율
+                "ID_PATTERNS", "AIR_ASSET_KINDS", "TARGET_KIND_ID", "ADMIN_SUCCESSION",
+                "AXIS_ARCHETYPES", "AXIS_CITIES", "AXIS_HVAC", "AXIS_STRATEGIES", "AXIS_ALIAS_INDEX", "AXIS_KBEP_IDS",
+                "ARCHETYPE_TO_BUILDWISE", "USAGE_TO_BUILDWISE", "DEFAULT_BUILDWISE_TYPE", "USAGE_ARCHETYPE",
+                "HVAC_EMS_COMPAT", "CALENDAR_CONVENTIONS", "JUDGEMENT_THRESHOLDS",
+                "DISCOUNT_RATE_DEFAULT", "DISCOUNT_RATE_SOURCE",
             ],
             "ts": [
                 "EMISSION_FACTORS_KR", "EMISSION_FACTORS", "PRIMARY_ENERGY_FACTORS",
@@ -211,6 +217,9 @@ PROJECT_TARGETS: dict[str, dict] = {
                 "RUN_MODE_BEHAVIOR", "SECURITY_CORS", "SECURITY_HEADERS",
                 "STRATEGIES", "STRATEGY_CODES", "STRATEGY_PATTERN",
                 "TENANT_REGIONS", "TESTS_SHARED", "TEST_STAGES", "TEST_TIERS",
+                # 2026-09-28 일반화 G2 — 토론 경제성의 기본 EUI·할인율·용도→원형을 생성본에서 읽는다
+                "USAGE_ARCHETYPE", "AXIS_ARCHETYPES", "DISCOUNT_RATE_DEFAULT", "DISCOUNT_RATE_SOURCE",
+                "JUDGEMENT_THRESHOLDS", "ID_PATTERNS",
             ],
         },
     },
@@ -252,6 +261,12 @@ PROJECT_TARGETS: dict[str, dict] = {
                 "KR_VENTILATION", "KR_ASSESSMENT_CONDITIONS", "KR_DESIGN_INDOOR_CONDITIONS",
                 "KR_USAGE_PROFILES", "KR_ENVELOPE_SURFACE_RULES", "KR_SURFACE_RESISTANCES",
                 "KR_AIR_LAYER_RESISTANCES", "KR_CALCULATION_RULES",
+                # 2026-09-28 일반화 G1 — 축 어휘·용도→원형·식별자·대상 어휘·승계표·호환표·달력·문턱·할인율
+                "ID_PATTERNS", "AIR_ASSET_KINDS", "TARGET_KIND_ID", "ADMIN_SUCCESSION",
+                "AXIS_ARCHETYPES", "AXIS_CITIES", "AXIS_HVAC", "AXIS_STRATEGIES", "AXIS_ALIAS_INDEX", "AXIS_KBEP_IDS",
+                "ARCHETYPE_TO_BUILDWISE", "USAGE_TO_BUILDWISE", "DEFAULT_BUILDWISE_TYPE", "USAGE_ARCHETYPE",
+                "HVAC_EMS_COMPAT", "CALENDAR_CONVENTIONS", "JUDGEMENT_THRESHOLDS",
+                "DISCOUNT_RATE_DEFAULT", "DISCOUNT_RATE_SOURCE",
             ],
         },
     },
@@ -336,7 +351,13 @@ def load_schemas() -> dict:
     #   값마다 law.go.kr 원문(시행일·별표·파일 해시)에 묶인다. 소비처는 KR_* 생성본만 쓴다 —
     #   손으로 적은 표가 세 벌(korean_standards.py · simulation_scenarios.ko_envelope_uvalue · 문서)이었고 셋 다 원문과 달랐다.
     kbs = _load("korean_building_standards.json")
-    return {"edge_cap": edge_cap, "household_consent": household_consent, "region": region, "kbs": kbs,
+    # 일반화 G1(2026-09-28) — 축 어휘(원형·도시·설비·전략)·용도→원형 한 표·식별자·대상 어휘·호환표 정본 행.
+    #   표면마다 인코더·용도표·정규식을 따로 들던 것(KBEP 인코더 5벌·용도→원형 8벌·AIR 정규식 15곳)을 여기서 파생한다.
+    archetypes = _load("building_archetypes.json")
+    hvac_matrix = _load("hvac_ems_matrix.json")
+    target_vocab = _load("target_vocabulary.json")
+    return {"archetypes": archetypes, "hvac_matrix": hvac_matrix, "target_vocab": target_vocab,
+        "edge_cap": edge_cap, "household_consent": household_consent, "region": region, "kbs": kbs,
         "ems": ems, "ports": ports, "common": common,
             "agents": agents, "intents": intents,
             "modes": modes, "dataclass": dataclass, "tests": tests,
@@ -372,6 +393,9 @@ def schemas_hash(data: dict) -> str:
     h.update(blob)
     h.update(b"\x00gen_constants_self\x00")
     h.update(self_bytes)
+    # 생성본에 원문째 실리는 순수 규칙(2026-09-28) — 바뀌면 해시도 바뀐다(위장 통과 방지).
+    h.update(b"\x00rules_pure\x00")
+    h.update(rules_pure_source().encode("utf-8"))
     return h.hexdigest()[:16]
 
 
@@ -860,7 +884,110 @@ def gen_python(schemas: dict) -> str:
         lines.append(f"LINT_CONFIG: dict = {lintfmt!r}")
         lines.append("")
 
+    lines.extend(_generalization_python(schemas))
     return "\n".join(lines) + "\n"
+
+
+# ── 일반화 G1 (2026-09-28) — 축 어휘·용도→원형·식별자·대상 어휘·호환표 ───────────────────────
+
+RULES_PURE_PATH = CONTRACTS_ROOT / "energy_contracts" / "rules_pure.py"
+_RULES_MARK = "# --- BEGIN PURE RULES ---"
+
+
+def rules_pure_source() -> str:
+    """energy_contracts/rules_pure.py 의 표시 아래 본문 — 생성본에 **그대로** 싣는 규칙 원문(한 벌)."""
+    text = RULES_PURE_PATH.read_text(encoding="utf-8").replace("\r\n", "\n")
+    if _RULES_MARK not in text:
+        raise ValueError(f"{RULES_PURE_PATH} 에 {_RULES_MARK!r} 표시가 없다")
+    return text.split(_RULES_MARK, 1)[1].strip("\n") + "\n"
+
+
+def _rules_namespace() -> dict:
+    ns: dict = {}
+    exec(compile(rules_pure_source(), str(RULES_PURE_PATH), "exec"), ns)  # noqa: S102 — 저장소 안 원문
+    return ns
+
+
+def axis_key(token: object) -> str:
+    """별칭 대조 열쇠 — rules_pure.ec_axis_key 그 자체(생성기와 생성본이 같은 원문을 쓴다)."""
+    return _rules_namespace()["ec_axis_key"](token)
+
+
+def axis_tables(schemas: dict) -> dict:
+    """축 어휘 표 넷 + 별칭 색인 + KBEP 정수 축. 규칙 본문 = rules_pure.ec_axis_tables(생성본·EC axes.py 와 같은 원문)."""
+    docs = (schemas.get("archetypes") or {}).get("default", {}).get("doe_buildings", {})
+    region = (schemas.get("region") or {}).get("default", {})
+    ems = (schemas.get("ems") or {}).get("default", {})
+    built = _rules_namespace()["ec_axis_tables"](
+        docs, region.get("simulation_cities", {}), region.get("hvac_types", {}),
+        ems.get("strategies") or {}, ems.get("kbep_fast_path") or [])
+    return {"archetypes": docs, "cities": region.get("simulation_cities", {}), "hvac": region.get("hvac_types", {}),
+            "strategies": built["strategies"], "index": built["index"], "kbep": built["kbep"]}
+
+
+def hvac_ems_compat(schemas: dict) -> dict[str, dict[str, str]]:
+    """정본 코드(H_A~H_G) → 전략 → 판정. 행 대응은 hvac_ems_matrix#default.canonical_rows(선언) 만 쓴다."""
+    d = (schemas.get("hvac_matrix") or {}).get("default", {})
+    matrix, rows = d.get("matrix") or {}, d.get("canonical_rows") or {}
+    out: dict[str, dict[str, str]] = {}
+    for code, row in sorted(rows.items()):
+        if row not in matrix:
+            raise ValueError(f"hvac_ems_matrix canonical_rows[{code}]={row!r} 행이 없다")
+        out[code] = {m: cell["compatibility"] for m, cell in sorted(matrix[row].items())}
+    return out
+
+
+
+
+def _generalization_python(schemas: dict) -> list[str]:
+    out: list[str] = []
+    common_defs = (schemas.get("common") or {}).get("$defs", {})
+    id_patterns = {k: v["pattern"] for k, v in common_defs.items() if isinstance(v, dict) and v.get("pattern")}
+    tv = (schemas.get("target_vocab") or {}).get("default", {})
+    region = (schemas.get("region") or {}).get("default", {})
+    ba = (schemas.get("archetypes") or {}).get("default", {})
+    usage_map = (schemas.get("usage") or {}).get("default", {})
+    if id_patterns:
+        out.append("# ─ 식별자 정규식 (common.json $defs — 한 곳. 3자리 전용·[:19] 리터럴 사본 금지) ─")
+        out.append(f"ID_PATTERNS: dict[str, str] = {id_patterns!r}")
+        out.append("")
+    if tv:
+        out.append("# ─ 대상 어휘 (target_vocabulary.json — AIR 자산 종류표·대상 종류 → 식별자) ───")
+        out.append(f"AIR_ASSET_KINDS: dict[str, dict] = {tv.get('air_asset_kinds', {})!r}")
+        out.append(f"TARGET_KIND_ID: dict[str, str] = {tv.get('target_kind_id', {})!r}")
+        out.append("")
+    if region.get("admin_succession"):
+        out.append("# ─ 폐지·개편 행정구역 승계 (region_codes.json#admin_succession) ─────────")
+        out.append(f"ADMIN_SUCCESSION: dict = {region['admin_succession']!r}")
+        out.append("")
+    if ba.get("doe_buildings"):
+        axes = axis_tables(schemas)
+        out.append("# ─ 축 어휘 (원형·도시·설비·전략 — KBEP 정수 축 포함, 별칭 색인은 ec_axis_key 로 찾는다) ─")
+        out.append(f"AXIS_ARCHETYPES: dict[str, dict] = {axes['archetypes']!r}")
+        out.append(f"AXIS_CITIES: dict[str, dict] = {axes['cities']!r}")
+        out.append(f"AXIS_HVAC: dict[str, dict] = {axes['hvac']!r}")
+        out.append(f"AXIS_STRATEGIES: dict[str, dict] = {axes['strategies']!r}")
+        out.append(f"AXIS_ALIAS_INDEX: dict[str, dict[str, str]] = {axes['index']!r}")
+        out.append(f"AXIS_KBEP_IDS: dict[str, dict[str, int]] = {axes['kbep']!r}")
+        out.append("")
+        out.append("# ─ 원형 → BuildWise EUI 표 유형 · 용도 → BuildWise(투영) ──────────────────")
+        out.append(f"ARCHETYPE_TO_BUILDWISE: dict[str, str] = {ba.get('archetype_to_buildwise', {})!r}")
+        out.append(f"USAGE_TO_BUILDWISE: dict[str, str] = {ba.get('usage_to_buildwise', {})!r}")
+        out.append(f"DEFAULT_BUILDWISE_TYPE: str = {ba.get('default_buildwise_type')!r}")
+        out.append("")
+    if usage_map.get("usage_archetype"):
+        out.append("# ─ 용도 → 원형 정본 한 표 (building_usage_map.json#usage_archetype, 결정 D1) ─")
+        out.append(f"USAGE_ARCHETYPE: dict = {usage_map['usage_archetype']!r}")
+        out.append("")
+    if (schemas.get("hvac_matrix") or {}).get("default", {}).get("canonical_rows"):
+        out.append("# ─ 설비 × 전략 호환 (hvac_ems_matrix.json — 정본 행, M00~M22 전부) ───────")
+        out.append(f"HVAC_EMS_COMPAT: dict[str, dict[str, str]] = {hvac_ems_compat(schemas)!r}")
+        out.append("")
+    out.append("")
+    out.append("# ─ 순수 규칙 함수 (energy_contracts/rules_pure.py 원문 그대로 — 별칭 대조·용도→원형·백분위수·탄소) ─")
+    out.append(rules_pure_source().rstrip("\n"))
+    out.append("")
+    return out
 
 
 # ── TypeScript 생성 ─────────────────────────────────────────────────────────
@@ -1376,6 +1503,34 @@ def write_target(content: str, out_path: Path) -> bool:
     return True
 
 
+def strategy_list_targets(schemas_dir: Path | None = None) -> tuple[list[str], dict[str, list[str]]]:
+    """(정본 전략 목록, {투영 자리: 지금 값}). 정본 = ems_strategies.json#default.strategies 의 키 순서."""
+    sd = schemas_dir or SCHEMAS_DIR
+    ems = json.loads((sd / "ems_strategies.json").read_text(encoding="utf-8"))
+    common = json.loads((sd / "common.json").read_text(encoding="utf-8"))
+    want = list(ems["default"]["strategies"])
+    have = {
+        "ems_strategies.json#/$defs/StrategyCode/enum": list(ems["$defs"]["StrategyCode"]["enum"]),
+        "common.json#/$defs/Strategy/enum": list(common["$defs"]["Strategy"]["enum"]),
+    }
+    return want, have
+
+
+def sync_strategy_projection(check_only: bool, schemas_dir: Path | None = None) -> list[str]:
+    """전략 코드 목록을 정본 하나에서 두 enum 으로 투영한다(2026-09-28 — common 21종 ↔ ems 23종이 갈려 있었다).
+    반환 = 어긋나 있던 자리. check_only 면 쓰지 않는다."""
+    sd = schemas_dir or SCHEMAS_DIR
+    want, have = strategy_list_targets(sd)
+    drift = [where for where, got in have.items() if got != want]
+    if drift and not check_only:
+        for name, path in (("ems_strategies.json", ("StrategyCode",)), ("common.json", ("Strategy",))):
+            fp = sd / name
+            d = json.loads(fp.read_text(encoding="utf-8"))
+            d["$defs"][path[0]]["enum"] = want
+            fp.write_text(json.dumps(d, indent=2, ensure_ascii=False) + "\n", encoding="utf-8", newline="\n")
+    return drift
+
+
 def regenerate_all(check_only: bool = False) -> int:
     # gcs_e_codes 는 정본(legacy_ems_code_mapping.json)의 투영이다 — 스키마 로드(해시) 전에 맞춘다.
     projection_drift = legacy_e_codes.sync_projection(check_only)
@@ -1383,6 +1538,11 @@ def regenerate_all(check_only: bool = False) -> int:
         tag = "DRIFT:" if check_only else "WROTE"
         print(f"[gen_constants] {tag} energy_contracts/schemas/ems_strategies.json"
               "#default.legacy_mapping.gcs_e_codes (정본 투영)")
+    # 전략 코드 목록도 투영이다(정본 = ems_strategies.default.strategies 키) — 스키마 로드 전에 맞춘다.
+    strategy_drift = sync_strategy_projection(check_only)
+    for where in strategy_drift:
+        print(f"[gen_constants] {'DRIFT:' if check_only else 'WROTE'} {where} (전략 목록 투영)")
+    projection_drift = projection_drift or bool(strategy_drift)
     schemas = load_schemas()
     drift = 1 if (check_only and projection_drift) else 0
     for proj, project_cfg in PROJECT_TARGETS.items():
