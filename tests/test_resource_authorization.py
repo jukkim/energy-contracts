@@ -34,6 +34,26 @@ def test_portfolio_manager_approves_savings_measure_on_assigned_asset(kind):
                     assigned_asset_ids=["AIR-A"], verified=True, action_kind=kind) == (True, "AUTHORIZED")
 
 
+@pytest.mark.parametrize("kind", ["check_action", "schedule_change"])
+def test_operational_kinds_decided_as_savings_measures(kind):
+    # 2026-09-28 16:56 user decision: allowed on assigned assets, portfolio_manager only.
+    ok = dict(role="portfolio_manager", action="approve:action", asset_ids=["AIR-A"],
+              assigned_asset_ids=["AIR-A"], verified=True, action_kind=kind)
+    assert evaluate(**ok) == (True, "AUTHORIZED")
+    assert evaluate(**dict(ok, asset_ids=["AIR-B"])) == (False, "AIROS_TARGET_NOT_ASSIGNED")
+    assert evaluate(**dict(ok, role="building_manager")) == (False, "AUTHORIZATION_ACTION_DENIED")
+    assert evaluate(**dict(ok, action="exec:dispatch"))[0] is False
+    assert evaluate(**dict(ok, action_kind=kind.upper())) == (False, "AUTHORIZATION_ACTION_KIND_DENIED")
+
+
+def test_allowed_kinds_are_catalog_plus_two_decided_operational_kinds():
+    from energy_contracts._utils.resource_authorization import allowed_action_kinds
+    spec = policy()["actions"]["approve:action"]["conditions"]["action_kind"]
+    assert allowed_action_kinds(spec) == frozenset(SAVINGS_CODES) | {"check_action", "schedule_change"}
+    assert len(allowed_action_kinds(spec)) == 14
+    assert "setpoint_change" not in allowed_action_kinds(spec)
+
+
 def test_approval_denied_outside_scope():
     ok = dict(role="portfolio_manager", action="approve:action", asset_ids=["AIR-A"],
               assigned_asset_ids=["AIR-A"], verified=True, action_kind="LED")
@@ -75,7 +95,9 @@ def test_unknown_or_empty_condition_denies(monkeypatch):
     for conditions in [{"action_kind": base["actions"]["approve:action"]["conditions"]["action_kind"],
                         "max_cost_krw": {"limit": 1}}, {}, None,
                        {"action_kind": {"vocabulary_ref": "measure_cost_catalog.json#/default/measures",
-                                        "match": "prefix"}}]:
+                                        "match": "prefix"}},
+                       {"action_kind": {"vocabulary_ref": "measure_cost_catalog.json#/default/measures",
+                                        "match": "key", "additional_kinds": "check_action"}}]:
         patched = deepcopy(base)
         patched["actions"]["approve:action"]["conditions"] = conditions
         monkeypatch.setattr(ra, "policy", lambda patched=patched: patched)

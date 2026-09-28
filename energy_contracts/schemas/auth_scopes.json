@@ -15,7 +15,7 @@
     "energy-decision-studio",
     "building-energy-3d-lab"
   ],
-  "version": "1.3",
+  "version": "1.4",
   "updated": "2026-09-28",
   "$defs": {
     "Scope": {
@@ -93,6 +93,15 @@
                 },
                 "match": {
                   "const": "key"
+                },
+                "additional_kinds": {
+                  "type": "array",
+                  "uniqueItems": true,
+                  "items": {
+                    "type": "string",
+                    "pattern": "^[a-z][a-z_]*$"
+                  },
+                  "description": "카탈로그 밖에서 절감 조치로 인정한 운영 조치 종류(사용자 결정). 허용 목록 = vocabulary_ref 의 키 ∪ 이 목록 — 판정 모듈 allowed_action_kinds() 한 곳에서만 합친다."
                 }
               }
             }
@@ -292,7 +301,7 @@
       "scope": "guest"
     },
     "resource_authorization": {
-      "version": "1.2",
+      "version": "1.3",
       "identity_authority": "airos",
       "scope": "assigned_assets_only",
       "unknown_role": "deny",
@@ -360,12 +369,16 @@
           "conditions": {
             "action_kind": {
               "vocabulary_ref": "measure_cost_catalog.json#/default/measures",
-              "match": "key"
+              "match": "key",
+              "additional_kinds": [
+                "check_action",
+                "schedule_change"
+              ]
             }
           },
           "grants_execution": false,
           "decided": "2026-09-28",
-          "basis": "User decision 2026-09-28 16:39: a portfolio_manager may approve savings measures (measure_cost_catalog.json measure codes) on assets currently assigned to them. Approval is not execution: exec:dispatch stays denied for every role, and any action that is not a registered savings measure (control, contract, data changes) is denied. A consumer that cannot evaluate every listed condition must deny."
+          "basis": "User decision 2026-09-28 16:39: a portfolio_manager may approve savings measures (measure_cost_catalog.json measure codes) on assets currently assigned to them. User decision 2026-09-28 16:56: the portfolio operational action kinds check_action and schedule_change also count as savings measures; setpoint_change stays denied (no setpoint limit was decided). Approval is not execution: exec:dispatch stays denied for every role, and any action that is not a registered savings measure (control, contract, data changes) is denied. A consumer that cannot evaluate every listed condition must deny."
         },
         "exec:dispatch": {
           "effect": "deny",

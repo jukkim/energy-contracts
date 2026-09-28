@@ -27,10 +27,21 @@ def _vocabulary(ref: str) -> set[str]:
     return set(node)
 
 
+def allowed_action_kinds(spec: dict) -> frozenset[str]:
+    """The one place the allowed kinds are assembled: vocabulary keys + additional_kinds."""
+    extra = spec.get("additional_kinds", [])
+    if (spec.get("match") != "key" or not isinstance(spec.get("vocabulary_ref"), str)
+            or not isinstance(extra, list) or not all(isinstance(k, str) and k for k in extra)):
+        raise ValueError("unevaluable action_kind condition")
+    return frozenset(_vocabulary(spec["vocabulary_ref"]) | set(extra))
+
+
 def _condition_action_kind(spec: dict, action_kind: object) -> str | None:
-    if spec.get("match") != "key" or not isinstance(spec.get("vocabulary_ref"), str):
+    try:
+        allowed = allowed_action_kinds(spec)
+    except (ValueError, KeyError, TypeError):
         return "AUTHORIZATION_CONDITIONS_UNEVALUATED"
-    if not isinstance(action_kind, str) or action_kind not in _vocabulary(spec["vocabulary_ref"]):
+    if not isinstance(action_kind, str) or action_kind not in allowed:
         return "AUTHORIZATION_ACTION_KIND_DENIED"
     return None
 
