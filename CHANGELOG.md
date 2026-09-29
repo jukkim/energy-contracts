@@ -4,10 +4,12 @@
 
 ---
 
-## 0.3.63 (unreleased, 2026-09-29) — 요청 해석 입구 모양
+## 0.3.63 (2026-09-29, 태그 v0.3.63) — 요청 해석 입구 모양 · 연간 EUI 규칙 하나
 
 - `interface_types.json` 1.2: `RequestResolution` 추가 — 게이트웨이 `POST /v1/request-resolution` 응답(`contract="request-resolution/v1"` · question_frame · target_context · period · place_decision · refusal?). 도구·LLM 없이 질문 틀과 대상 결정만 돌려주는 입구다. be-3d 장면 경로가 대상을 게이트웨이 결정 하나에서 받는다(묶음 3 S1).
-- 생성 상수 영향 없음(`gen_constants --check` drift 0) → 태그·소비처 핀은 다음 발행 때.
+- `rules_pure.ec_annual_eui`(f7 c090cba): 연간 EUI 규칙 하나(달력 12개월 합 · 상한 = judgement_thresholds). be-3d canonical 3,000건 차이 0.
+- 발행 이유(22:2x): c090cba 가 SOURCE_HASH 를 바꿔 소비처 로컬 pre-commit 이 모두 drift 로 막혔다. 생성본만 다시 만들면 CI 가 핀(v0.3.62)과 어긋난다 → 태그 + `bump_ec_pin` 으로 핀·생성본·AIROS 잠금을 함께 올린다.
+- resolve_region 통합·폭염 문턱 → 0.3.64.
 
 ## 0.3.62 (2026-09-29, 태그 v0.3.62) — RV-B 계약 일관성
 
