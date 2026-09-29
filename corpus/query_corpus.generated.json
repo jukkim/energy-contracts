@@ -207,7 +207,7 @@
       "name": "demo.mountMetricTimeline",
       "ns": "demo",
       "consumerClass": "A",
-      "summary": "다년·다시각 시계열 choropleth 재생(temporal op) — region+metric+years[] 를 기존 GET /api/v1/m"
+      "summary": "다년·다시각 시계열 choropleth 재생(temporal op) — region+metric+years[](연도) 또는 months[](YY"
     },
     {
       "api": "mountNationalChoropleth",
