@@ -350,3 +350,59 @@ def ec_meter_jump_indices(values, first_local_hour: int, granularity: str, limit
             hits.append(k)
     return hits, {"rule": "isolated_neighbour_jump", "neighbour_jump_multiple": j_mult,
                   "same_hour_median_multiple": h_mult, "series_positive_median_kwh": floor}
+
+
+def ec_annual_eui(monthly_by_carrier: dict, area_m2, year=None, judgement_thresholds: dict | None = None) -> dict:
+    """건물-연도 연간 EUI 의 정본 규칙(2026-09-29 M5 · 결정 B' — be-3d `canonical_annual_eui` 와 같은 뜻, 한 곳).
+
+    입력: ``{연료: {"YYYY-MM"|"YYYYMM": kWh 또는 None}}`` · 연면적 ㎡(None 가능) · 해(없으면 가장 최근 온전한 해).
+    규칙: 달력 연도(1~12월) 합 ÷ 면적 — 외삽·이동창 없음 · **보유 연료**(한 달이라도 값이 있는 연료)가 그해 모두 12개월일
+    때만 · 연료별 원단위를 0.1 로 반올림해 더함 · 합 ≤ 0 은 값 아님 · 상한 = ``judgement_thresholds.data_quality
+    .eui_plausible_kwh_m2.max``(손 사본 금지). 값이 없으면 ``absence_kind``(missing = 대상인데 자료가 모자람 · unknown = 값이
+    뜻을 잃음)와 이름 있는 ``code``. 대표월 ×12 외삽 값은 입력이 될 수 없다(12개월 합만 받는다)."""
+    jt = judgement_thresholds if judgement_thresholds is not None else globals().get("JUDGEMENT_THRESHOLDS")
+    if jt is None:
+        raise LookupError("ec_annual_eui: JUDGEMENT_THRESHOLDS 가 없다(생성본 밖에서는 인자로)")
+    cap = float(jt["data_quality"]["eui_plausible_kwh_m2"]["max"])
+
+    def out(value=None, months=0, basis=None, absence=None, code=None, extra=None):
+        return {"value_kwh_m2_yr": value, "months_used": months, "basis": basis, "absence_kind": absence,
+                "code": code, **(extra or {})}
+
+    if not isinstance(area_m2, (int, float)) or area_m2 != area_m2 or area_m2 <= 0:
+        return out(absence="missing", code="EUI_AREA_MISSING")
+    slots: dict = {}
+    for carrier, months in (monthly_by_carrier or {}).items():
+        per_year: dict = {}
+        for ym, v in (months or {}).items():
+            if v is None or not isinstance(v, (int, float)) or v != v or v < 0:
+                continue
+            y = int(str(ym).replace("-", "")[:4])
+            slot = per_year.setdefault(y, {"kwh": 0.0, "months": 0})
+            slot["kwh"] += float(v)
+            slot["months"] += 1
+        if per_year:
+            slots[carrier] = per_year
+    if not slots:
+        return out(absence="missing", code="EUI_NO_MONTHS")
+    years = sorted({y for per in slots.values() for y in per})
+    complete = [y for y in years if all((per.get(y) or {}).get("months", 0) >= 12 for per in slots.values())]
+    candidates = [year] if year is not None else sorted(complete, reverse=True)
+    if year is not None and year not in complete:
+        got = {c: (slots[c].get(year) or {}).get("months", 0) for c in sorted(slots)}
+        return out(absence="missing", code="EUI_YEAR_INCOMPLETE", extra={"year": year, "months_by_carrier": got})
+    if not candidates:
+        return out(absence="missing", code="EUI_NO_COMPLETE_YEAR")
+    last = None
+    for y in candidates:
+        by = {c: round(slots[c][y]["kwh"] / float(area_m2), 1) for c in sorted(slots)}
+        total = round(sum(by.values()), 1)
+        info = {"year": y, "eui_by_carrier": by}
+        if total <= 0:
+            last = out(months=12, absence="unknown", code="EUI_TOTAL_NOT_POSITIVE", extra=info)
+            continue
+        if total > cap:
+            last = out(months=12, absence="unknown", code="EUI_IMPLAUSIBLE", extra={**info, "cap_kwh_m2_yr": cap})
+            continue
+        return out(value=total, months=12, basis="calendar_year_12_month_sum", extra=info)
+    return last

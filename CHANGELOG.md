@@ -56,6 +56,8 @@
 
 ### 대기 — 연간 EUI 규칙(f7 가 규칙 함수를 낸다, 이 판에는 없음)
 
+> **2026-09-29 22:4x 전달(f7, 0.3.63 초안)**: `rules_pure.ec_annual_eui(monthly_by_carrier, area_m2, year=None, judgement_thresholds=None)` — 위 인터페이스 그대로 · be-3d `collect_building_energy.canonical_annual_eui` 와 무작위 입력 3,000건 일치(차이 0, 상한 3,000 동일) · 시험 `tests/test_rules_pure_annual_eui.py`(반례 양쪽). 소비처 전환(be-3d 수집기·AIROS·게이트웨이)은 생성본 반영 뒤.
+
 연간 EUI 계산이 7벌(1개월 ×12 외삽 · 상한 5000 손 사본 3곳)이라 같은 이름이 다른 값을 낸다(M5 (f) · 결정 B'). 규칙은 `rules_pure.py` 한 곳에 둔다. 합의한 인터페이스:
 - 입력: 월별 사용량(`YYYY-MM` → kWh, 빈 달은 None) · 연면적 ㎡(None 가능) · 채널(전기·가스 등).
 - 출력: `{value_kwh_m2_yr | None, months_used, basis, absence_kind, code}` — 값이 없으면 `absence_kind`(`data_classification.AbsenceKind`)와 이름 있는 코드를 싣는다.
