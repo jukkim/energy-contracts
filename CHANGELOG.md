@@ -4,6 +4,13 @@
 
 ---
 
+## 0.3.64 (2026-09-30, 태그 v0.3.64) — 지명 해석 하나(regions) · 폭염 출처 문구
+
+- `energy_contracts.regions`(f7 T1 ①): be-3d region_resolver 의 규칙·표를 그대로 옮긴 순수 모듈 — `resolve(query, context=<시도>)` · `find_region_mention` · `resolve_code`. 표 = package data `data/region_resolver_table.json`.
+  대조(f7): resolve 64,710건(입력 21,570 × 문맥 3) + Query100 지명 = 차이 0 · 표 sha 동일 · 순수 시험 17 이관.
+- `declared_assumptions.hazard_days.heat` source 문구 정정: '폭염일수 통계 정의(일 최고기온 33℃ 이상)'(특보 기준은 체감온도) — 값·규칙 불변.
+- 소비처: 게이트웨이 `place_resolution` 은 EC 위 어댑터(질의자 배정·직전 대상 문맥은 요청 개념이라 게이트웨이에 둔다) · be-3d region_resolver 는 EC import 얇은 층(f7 T1 ②). 표 생성기 이관(④)은 0.3.65.
+
 ## 0.3.63 (2026-09-29, 태그 v0.3.63) — 요청 해석 입구 모양 · 연간 EUI 규칙 하나
 
 - `interface_types.json` 1.2: `RequestResolution` 추가 — 게이트웨이 `POST /v1/request-resolution` 응답(`contract="request-resolution/v1"` · question_frame · target_context · period · place_decision · refusal?). 도구·LLM 없이 질문 틀과 대상 결정만 돌려주는 입구다. be-3d 장면 경로가 대상을 게이트웨이 결정 하나에서 받는다(묶음 3 S1).
