@@ -434,9 +434,20 @@ def _with_children_prefix(r: RegionResolution) -> RegionResolution:
     return r
 
 
+#: EC 대상 id 의 지역 접두 — ``airo_request.json`` ``$defs.Target`` 의 region ids pattern(``^region:[0-9]{2}([0-9]{2,3})?$``).
+#: 표면·게이트웨이 장면 조리법은 지역을 이 형식으로 싣는다(2026-09-30 Query100 F07: be-3d 선택이 ``region:11680`` 을 지명으로
+#: 읽어 0동 — 처리기마다 접두를 벗기던 사본 둘이 이미 있었다). 해석기 입구 한 곳에서 떼고 숫자 경로(코드 모양 판정)로 보낸다.
+TARGET_ID_PREFIX = "region:"
+
+
 def _resolve(query: Optional[str], *, context: Optional[str], sido_head: bool) -> RegionResolution:
     sha = table_sha256()
     q = (query or "").strip()
+    if q.startswith(TARGET_ID_PREFIX):
+        code = q[len(TARGET_ID_PREFIX):].strip()
+        if not code.isdigit():                                   # 'region:' · 'region:abc' — 이름 있는 거절(지명으로 읽지 않는다)
+            return RegionResolution(STATUS_UNRESOLVED, q, reason=REASON_BAD_CODE, table_sha256=sha)
+        q = code
     if not q or q in NATION_WORDS:
         return _from_code(q, "", "nation")
     if q.isdigit():
