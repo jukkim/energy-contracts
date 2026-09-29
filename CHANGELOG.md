@@ -4,6 +4,25 @@
 
 ---
 
+## 0.3.62 (2026-09-29, 태그 v0.3.62) — RV-B 계약 일관성
+
+근거: 공모전 `docs/REVIEW_FIX_PLAN_2026-09-29.md` §B · `scratch/review_0929/R3_CONSISTENCY.md`(H3·M1·M2·M4·M10·T).
+게이트웨이가 실제로 싣는 모양을 선언하고, 게이트웨이 모듈 상수로 남아 있던 선언 가정을 옮겼다. 모두 **가산**(이전 판에서 유효한 봉투·문맥은 유효).
+- 확정 절차(3b 조정자, 19:10): pydantic 모델 재생성(4 스키마) · `gen_constants.py --all`(12 소비처, drift 0 · 한국화 세션 합의 — 봉인 검사는 매니페스트 CSV 바이트만 대조) · `validate_ssot.py` 통과 · 코퍼스 재생성(변화 없음) · EC 시험 587 통과 · pyproject 0.3.62.
+
+- `airo_request.json` 2.4: TargetContext += contract·chain_steps·final_target_source·choices, '대상 없음' 모양(resolved=false → kind·source null · ids [])
+  · Period += source(Target.source 낱말)·basis_ko·why·generator·contract, basis += forecast_relative_to_today
+  · 원형 미지정 대상(ids=[archetype:all])은 archetype 객체 없이 허용 · TargetExpansion.rule_id 예시 = 게이트웨이 전개 규칙 이름
+  · 봉투 += tool_input_mode(v1 같은 칸) · as_of(요청 기준 시각) · Continuation = requested_tool 또는 prior_request_id(되묻기 둘째 턴)
+- `airo_result.json` 1.1: $defs += ToolCall{name, arguments, step_id?, member?} · ToolResult{tool, step_id?, member?, result | rejected_result}
+  · Assumption.basis 설명 = 선언 기본값 표식(`declared_default:energy-contracts/<스키마>#<키>`) · result_hash_scheme 예시 = 게이트웨이 이름
+- `interface_types.json` 1.1: QuantityUnit += score
+- `declared_assumptions.json` 1.2: 단위 = QuantityUnit(top_share '%'→pct · 햇수 yr) · += scenario_vacancy_default · switchable_cut_share_default ·
+  control_priority_default · assumption_search_ranges · ranked_rows_top_n_default(값은 게이트웨이 리터럴 그대로 옮김)
+- 시험: `tests/test_interface_contracts_0362.py`(반례 양쪽)
+- 소비처 재생성: `gen_constants.py --all`(DECLARED_ASSUMPTIONS 사전이 바뀐다 — 생성본 `_shared/_generated_constants.py` 등) ·
+  질의 코퍼스 재생성(airo_request 봉투 칸 추가) · 게이트웨이 CI 핀(pyproject `v0.3.55`)을 0.3.62 로 — 게이트웨이는 새 키를 import 시점에 읽는다.
+
 ## 0.3.61 (unreleased, 2026-09-29) — M3 인터페이스 표준 · 봉투 2.3 · 결과 봉투 · 거절 봉투 · 상위 비율 기본값
 
 근거: 공모전 `docs/ARCHITECTURE_MIGRATION_M1_M6_2026-09-29.md` §2·§6·M3/M4 결정(f7 합의) · `scratch/expert_0929/INTERFACES.md` §4.2.

@@ -11,9 +11,9 @@
     "energy-decision-studio",
     "building-energy-3d"
   ],
-  "version": "2.3",
+  "version": "2.4",
   "updated": "2026-09-29",
-  "$comment": "2.3(2026-09-29 M3, f7 합의): ① target 생략 허용(게이트웨이 질문 틀이 정한다) ② continuation(되묻기 답·계획 실행의 이어가기) ③ intent 'plan'(쓰기 = 계획 경로) ④ intent 'debate'(AgentLeague) · Target/TargetContext 에 asset_kind·members·expansion(서버가 채움) · Period.basis += coverage_of_needs. 모두 가산 — 2.2 에서 유효한 봉투는 2.3 에서도 유효하다.",
+  "$comment": "2.4(2026-09-29 RV-B1 초안, 0.3.62): 응답 칸이 실제로 싣는 모양을 선언 — TargetContext 에 contract·chain_steps·final_target_source·choices 와 '대상 없음' 모양(resolved=false → kind·source null, ids 빈 목록) · Period 에 source·basis_ko·why·generator·contract 와 basis += forecast_relative_to_today · 원형 미지정(ids=[archetype:all]) 대상은 archetype 객체 없이 허용 · TargetExpansion.rule_id 예시를 게이트웨이 전개 규칙 이름으로 · 봉투 최상위 tool_input_mode(v1 같은 칸 그대로 — v1 입구를 닫기 전 준비) · 봉투 최상위 as_of(요청의 기준 시각) · Continuation 은 requested_tool 또는 prior_request_id 중 하나(되묻기 답의 둘째 턴은 도구가 아직 없다). 모두 가산 — 2.3 에서 유효한 봉투·문맥은 2.4 에서도 유효하다. 2.3(2026-09-29 M3, f7 합의): ① target 생략 허용(게이트웨이 질문 틀이 정한다) ② continuation(되묻기 답·계획 실행의 이어가기) ③ intent 'plan'(쓰기 = 계획 경로) ④ intent 'debate'(AgentLeague) · Target/TargetContext 에 asset_kind·members·expansion(서버가 채움) · Period.basis += coverage_of_needs. 모두 가산 — 2.2 에서 유효한 봉투는 2.3 에서도 유효하다.",
   "type": "object",
   "additionalProperties": false,
   "required": [
@@ -61,6 +61,28 @@
     },
     "continuation": {
       "$ref": "#/$defs/Continuation"
+    },
+    "as_of": {
+      "type": "string",
+      "anyOf": [
+        {
+          "format": "date"
+        },
+        {
+          "format": "date-time"
+        }
+      ],
+      "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}([T ].*)?$",
+      "description": "2.4(0.3.62 초안 · RV-A7/B): 요청의 기준 시각('오늘') — '지난달·이번 주·최근 N' 같은 상대 기간과 예측 구간을 이 날짜 기준으로 푼다. 없으면 게이트웨이가 입구에서 한 번 읽은 벽시계(KST). 게이트웨이는 이 값을 기준 시각 한 곳(serving/request_resolution.request_today)에 넘긴다 — 결속기·질문 틀·기간 해석이 같은 시각을 쓴다. 재현·시험·지난 시점 재생용이며 자료 끝을 바꾸지 않는다."
+    },
+    "tool_input_mode": {
+      "type": "string",
+      "enum": [
+        "literal-v1",
+        "evidence-bound-v1"
+      ],
+      "default": "literal-v1",
+      "description": "2.4(0.3.62 초안): v1 요청의 같은 칸(게이트웨이 query_orchestrator.QueryExecutionRequest.tool_input_mode — Literal['literal-v1', 'evidence-bound-v1'], 기본 literal-v1) 그대로. literal-v1 = 도구 인자를 글자 그대로 쓴다 · evidence-bound-v1 = 도구 인자를 호출자가 준 근거 묶음의 값에서 결속한다(serving/query_input_binding.bind_tool_inputs — 근거 묶음·인자 결속표·대상·기간이 없으면 이름 있는 거절). 없으면 v1 기본값과 같다(요청 바이트에 싣지 않는다). v1 입구를 닫기(M6 뒤) 전에 봉투가 같은 뜻을 싣게 한다."
     },
     "query": {
       "type": "string",
@@ -307,8 +329,22 @@
             }
           },
           "then": {
-            "required": [
-              "archetype"
+            "anyOf": [
+              {
+                "required": [
+                  "archetype"
+                ]
+              },
+              {
+                "properties": {
+                  "ids": {
+                    "const": [
+                      "archetype:all"
+                    ]
+                  }
+                },
+                "description": "2.4: 원형 미지정(질문이 원형을 말하지 않은 원형 대상) = 전체 표지 하나 — 원형 전개(expansion.rule_id=archetype_all)가 구성원을 정한다"
+              }
             ],
             "properties": {
               "ids": {
@@ -353,7 +389,7 @@
           "type": "string",
           "minLength": 1,
           "maxLength": 160,
-          "description": "전개 규칙 이름(예: portfolio_members · region_children_prefix · region_to_archetypes). 규칙은 한 전개기가 가진다"
+          "description": "전개 규칙 이름 — 게이트웨이 전개기(asset_inputs/_expand.RULES)의 이름 그대로(예: portfolio_all_members · portfolio_top_n_usage · region_cohort_top_n · region_cohort_all · archetype_all). 규칙은 한 전개기가 가진다"
         },
         "rule_ko": {
           "type": [
@@ -390,9 +426,19 @@
     "Continuation": {
       "type": "object",
       "additionalProperties": false,
-      "required": [
-        "requested_tool"
+      "anyOf": [
+        {
+          "required": [
+            "requested_tool"
+          ]
+        },
+        {
+          "required": [
+            "prior_request_id"
+          ]
+        }
       ],
+      "$comment": "2.4(RV-B2): 되묻기 답의 둘째 턴은 부를 도구가 아직 정해지지 않았다(되묻기 단계는 도구를 고르지 않는다) — requested_tool 없이 앞 요청(prior_request_id)만 가리킬 수 있다. 둘 다 없으면 이어갈 것이 없다(검사에 걸린다). 2.3 에서 유효한 이어가기(requested_tool 있음)는 그대로 유효하다.",
       "properties": {
         "requested_tool": {
           "type": "string",
@@ -492,9 +538,49 @@
             "declared_replay_period",
             "calendar_relative_to_today",
             "coverage_of_needs",
+            "forecast_relative_to_today",
             null
           ],
-          "description": "기간 근거. declared_replay_period = 선언된 재생 분석 기간(자료 끝이 아니라 등록된 재생 창) · calendar_relative_to_today = 오늘 기준 달력 상대 기간(예 '지난달') — 2026-09-28 W8(Studio S42) 이관 · coverage_of_needs = 질문이 기간을 말하지 않았을 때 도구가 필요로 하는 채널이 모두 덮는 창(operation_manifest default_period 한 규칙 — 2.3 M3/M4)"
+          "description": "기간 근거. declared_replay_period = 선언된 재생 분석 기간(자료 끝이 아니라 등록된 재생 창) · calendar_relative_to_today = 오늘 기준 달력 상대 기간(예 '지난달') — 2026-09-28 W8(Studio S42) 이관 · coverage_of_needs = 질문이 기간을 말하지 않았을 때 도구가 필요로 하는 채널이 모두 덮는 창(operation_manifest default_period 한 규칙 — 2.3 M3/M4) · forecast_relative_to_today = 오늘 기준 **앞으로의** 상대 기간(예 '다음 주 예측' — 게이트웨이 general_ops/periods 예측 구간, 2.4)"
+        },
+        "source": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Target/properties/source"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "2.4: 기간을 누가 정했나 — 대상 출처와 같은 낱말(query = 질문 원문 · selection = 요청이 준 경계 …). 질문의 기간을 'question' 같은 별도 낱말로 적지 않는다"
+        },
+        "basis_ko": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "maxLength": 400,
+          "description": "2.4: 사람이 읽는 근거 한 줄 — basis 칸에서 만든다(글자 앞머리로 근거 종류를 되읽지 않는다)"
+        },
+        "why": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "maxLength": 400,
+          "description": "2.4: 창을 정하지 못했을 때의 사유(말하지 않았음 · 자료 끝이 있어야 풀림 · 못 읽음). 창이 있으면 싣지 않는다"
+        },
+        "generator": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "maxLength": 160,
+          "description": "2.4: 기간을 푼 코드(예 serving/general_ops/periods.py)"
+        },
+        "contract": {
+          "const": "airo-period/v1",
+          "description": "2.4: 응답 칸 표지(validation.period) — 표지 칸 이름은 contract 하나"
         }
       },
       "description": "서버의 단일 파서가 text 를 start·end_exclusive·grain·basis 로 정규화한다. LLM 은 정규화 값을 직접 주지 않는다(날짜를 지어내지 않게)."
@@ -507,20 +593,64 @@
         "ids",
         "source"
       ],
-      "description": "응답에 싣는 대상 문맥(2026-09-28 일반화 G1). 요청 Target 의 kind·ids·source 를 **그대로** 되돌리고(출처를 'request' 로 뭉치지 않는다), 서버가 끌어낸 속성과 그 속성의 출처를 싣는다. 못 끌어낸 속성은 null + attribute_sources 에 absence_kind. 기본값을 쓰면 출처 'default'.",
+      "description": "응답에 싣는 대상 문맥(2026-09-28 일반화 G1). 요청 Target 의 kind·ids·source 를 **그대로** 되돌리고(출처를 'request' 로 뭉치지 않는다), 서버가 끌어낸 속성과 그 속성의 출처를 싣는다. 못 끌어낸 속성은 null + attribute_sources 에 absence_kind. 기본값을 쓰면 출처 'default'. 2.4: 대상이 없으면(resolved=false) kind·source 는 null, ids 는 빈 목록이다(대상을 지어내지 않는다 — '없음' 을 별도 출처 낱말로 적지 않는다). v1 요청이 대상을 실어 보냈으면 출처는 selection(호출자가 고른 대상)이다.",
+      "allOf": [
+        {
+          "if": {
+            "required": [
+              "resolved"
+            ],
+            "properties": {
+              "resolved": {
+                "const": false
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "kind": {
+                "type": "null"
+              },
+              "ids": {
+                "maxItems": 0
+              },
+              "source": {
+                "type": "null"
+              }
+            }
+          },
+          "else": {
+            "properties": {
+              "kind": {
+                "type": "string"
+              },
+              "ids": {
+                "minItems": 1
+              },
+              "source": {
+                "type": "string"
+              }
+            }
+          }
+        }
+      ],
       "properties": {
+        "contract": {
+          "const": "airo-target-context/v1",
+          "description": "2.4: 응답 칸 표지 — 표지 칸 이름은 contract 하나"
+        },
         "kind": {
           "enum": [
             "asset",
             "portfolio",
             "building",
             "region",
-            "archetype"
+            "archetype",
+            null
           ]
         },
         "ids": {
           "type": "array",
-          "minItems": 1,
           "maxItems": 50,
           "items": {
             "type": "string"
@@ -534,8 +664,31 @@
             "user_default",
             "login_assignment",
             "auto_first",
-            "chain_step"
+            "chain_step",
+            null
           ]
+        },
+        "chain_steps": {
+          "type": "array",
+          "maxItems": 50,
+          "items": {
+            "type": "string",
+            "minLength": 1
+          },
+          "description": "2.4: 연쇄 실행이면 단계 도구 이름(순서대로). 연쇄가 아니면 칸이 없다"
+        },
+        "final_target_source": {
+          "$ref": "#/$defs/Target/properties/source",
+          "description": "2.4: 연쇄의 마지막 단계 대상이 어디서 왔나(앞 단계 결과 = chain_step). 요청 대상 출처(source)와 가른다"
+        },
+        "choices": {
+          "type": "array",
+          "maxItems": 50,
+          "items": {
+            "type": "string",
+            "minLength": 1
+          },
+          "description": "2.4: 대상을 정하지 못했을 때 고를 수 있는 후보 id(로그인 배정의 최상위 단위들)"
         },
         "label": {
           "type": [

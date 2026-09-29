@@ -11,9 +11,9 @@
     "energy-decision-studio",
     "building-energy-3d"
   ],
-  "version": "1.0",
+  "version": "1.1",
   "updated": "2026-09-29",
-  "$comment": "파일 밖 $ref(interface_types.json · data_classification.json · error_response.json · airo_request.json)는 $id 기준 상대 경로다. 검사하는 쪽은 EC schemas/*.json 전부를 한 레지스트리에 올려 읽는다(tests/test_interface_contracts.py 본보기).",
+  "$comment": "1.1(2026-09-29 RV-B5 초안, 0.3.62): 질의 응답의 도구 호출·결과 목록 모양 ToolCall{name, arguments, step_id?, member?} · ToolResult{tool, step_id?, member?, result | rejected_result} 을 $defs 에 선언(게이트웨이 QueryExecutionResult.tool_calls·tool_results — 만드는 곳은 이미 이 모양, 읽는 쪽이 'name or tool' 로 짐작하던 것을 끊는다). 호출은 name, 결과는 tool — 이름을 하나로 합칠지는 결과 봉투 어댑터(M3)에서 정한다. Assumption.basis 예시를 게이트웨이 선언 기본값 표식으로 맞춤. 가산 — 1.0 에서 유효한 결과는 1.1 에서도 유효하다. 파일 밖 $ref(interface_types.json · data_classification.json · error_response.json · airo_request.json)는 $id 기준 상대 경로다. 검사하는 쪽은 EC schemas/*.json 전부를 한 레지스트리에 올려 읽는다(tests/test_interface_contracts.py 본보기).",
   "type": "object",
   "additionalProperties": false,
   "required": [
@@ -165,7 +165,7 @@
         "null"
       ],
       "maxLength": 80,
-      "description": "지문 계산 방식 이름(예 sha256-canonical-json-v1)"
+      "description": "지문 계산 방식 이름(예 gateway-canonical-json-sha256/v1 — 게이트웨이 serving/result_hash.py)"
     }
   },
   "allOf": [
@@ -413,6 +413,102 @@
       },
       "description": "결과 전체의 분류 — 정본 17 낱말 하나. 분류가 없으면 unknown(measured 로 올리지 않는다)"
     },
+    "ToolCall": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "name",
+        "arguments"
+      ],
+      "properties": {
+        "name": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 120,
+          "description": "부른 도구 이름(OpenAI function-call 모양의 name). 'tool' 칸은 없다 — 결과 쪽(ToolResult.tool)과 칸 이름이 다르다"
+        },
+        "arguments": {
+          "type": "object",
+          "description": "도구에 실제로 넘긴 인자(결속·검사를 거친 값)"
+        },
+        "step_id": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "maxLength": 120,
+          "description": "연쇄 단계 번호(연쇄 실행일 때만)"
+        },
+        "member": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 120,
+          "description": "구성원 전개로 부른 호출이면 그 구성원 id"
+        }
+      },
+      "description": "1.1: 질의 응답 tool_calls[] 한 항목(게이트웨이 query_orchestrator 가 만드는 모양 그대로). 읽는 쪽은 name 만 읽는다(tool 로 짐작하지 않는다)"
+    },
+    "ToolResult": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "tool"
+      ],
+      "properties": {
+        "tool": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 120,
+          "description": "결과를 낸 도구 이름 — 같은 순서의 ToolCall.name 과 같다(query_record_provenance 불변식)"
+        },
+        "step_id": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "maxLength": 120
+        },
+        "member": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 120
+        },
+        "result": {
+          "type": "object",
+          "description": "엄격 JSON 으로 검사를 넘은 도구 결과"
+        },
+        "rejected_result": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "type",
+            "issues"
+          ],
+          "properties": {
+            "type": {
+              "type": "string"
+            },
+            "issues": {
+              "type": "array"
+            }
+          },
+          "description": "엄격 JSON 검사를 넘지 못한 결과(값은 싣지 않고 종류·문제만)"
+        }
+      },
+      "oneOf": [
+        {
+          "required": [
+            "result"
+          ]
+        },
+        {
+          "required": [
+            "rejected_result"
+          ]
+        }
+      ],
+      "description": "1.1: 질의 응답 tool_results[] 한 항목(게이트웨이 query_orchestrator 가 만드는 모양 그대로)"
+    },
     "Assumption": {
       "type": "object",
       "additionalProperties": false,
@@ -446,7 +542,7 @@
           "type": "string",
           "minLength": 1,
           "maxLength": 300,
-          "description": "근거 출처 id — 예 energy-contracts/declared_assumptions#aging_years_default"
+          "description": "근거 출처 id — EC 값이면 energy-contracts/<스키마>#<키>(예 energy-contracts/declared_assumptions#aging_years_default). 선언 기본값 표식은 앞에 'declared_default:' 를 붙인다(게이트웨이 general_ops/_declared.declared_basis 한 함수 — be-3d compose_scene_intent 가 이 접두로 조건을 가른다)"
         },
         "rule_ko": {
           "type": [

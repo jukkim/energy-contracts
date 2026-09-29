@@ -8,8 +8,9 @@
     "8sim-shared",
     "ems_transformer (serving general_ops/cohort · internal_query_tools · asset_inputs/_virtual · measure_economics · simulation_pack_analysis)"
   ],
-  "version": "1.1",
+  "version": "1.2",
   "updated": "2026-09-29",
+  "$comment": "1.2(2026-09-29 RV-B3 초안, 0.3.62): 단위를 interface_types.QuantityUnit 낱말로(top_share '%'→pct · 햇수 yr) · 게이트웨이 모듈 상수로 남아 있던 선언 기본값을 옮김 — scenario_defaults(공실률·시나리오 공실률·끌 수 있는 부하 절감 몫·우선순위) · _assumption_ranges(가정 탐색 범위 5개) · measured_portfolio(순위 행 기본 개수). 값은 옮기기만 했다(동작 변경 없음). 모든 항목의 분류 = assumed(선언 가정) — 사람 대면 라벨은 data_classification 의 assumed label_ko 에서 파생한다.",
   "type": "object",
   "default": {
     "hazard_days": {
@@ -46,6 +47,7 @@
     },
     "aging_years_default": {
       "value": 30,
+      "unit": "yr",
       "rule_ko": "노후 = 준공 30년 이상(질문이 햇수를 말하지 않았을 때)",
       "classification": "assumed",
       "source": "게이트웨이 general_ops/cohort.AGING_YEARS_DEFAULT"
@@ -61,16 +63,57 @@
     },
     "quick_payback_max_yr_default": {
       "value": 3.0,
+      "unit": "yr",
       "rule_ko": "빠른 회수 = 단순 회수기간 3년 이내(질문이 회수 문턱을 말하지 않았을 때)",
       "classification": "assumed",
       "source": "선언 가정(2026-09-29 N6-X1) — 정본 조치 카탈로그 measure_cost_catalog 의 운영·저비용 조치 참고 회수기간(simple_payback_yr_ref: RCX 1.1~1.7년 · LED 1.5~3년 · VSD 1~3년)의 상한. 소비처 = 게이트웨이 retrofit_economics quick_payback_carbon_gap"
     },
     "top_share_pct_default": {
       "value": 25.0,
-      "unit": "%",
+      "unit": "pct",
       "rule_ko": "상위·하위 비율 = 25%(질문이 '상위/하위 몇 %'를 말하지 않았을 때) — 상위 = 비교 집단 분위 0.75 이상 · 하위 = 분위 0.25 이하",
       "classification": "assumed",
       "source": "선언 가정(2026-09-29 M1-g/M12) — 게이트웨이 serving/general_ops/cohort.py 형평 규칙의 코드 리터럴 '고원단위 = 코호트 EUI 상위 25%'(_stats.percentile(…, 0.75))를 옮김. 소비처 = 게이트웨이 serving/general_ops/clarify.selection_basis(rank_top·rank_bottom 선언 기본값, 표식 declared_default:energy-contracts/declared_assumptions#top_share_pct_default). cohort.py 의 0.75 리터럴을 이 값에서 파생하도록 바꾸는 것은 게이트웨이 몫(이 값 등재와 별개)"
+    },
+    "scenario_vacancy_default": {
+      "current_pct": 10.0,
+      "scenario_pcts": [0.0, 20.0, 40.0],
+      "unit": "pct",
+      "rule_ko": "공실률 민감도 가정 = 지금 공실률 10% · 비교 시나리오 공실률 0%·20%·40%(질문이 공실률을 말하지 않았을 때 — 실제 공실률이 아니라 가정할 시나리오)",
+      "classification": "assumed",
+      "source": "선언 가정(2026-09-29 N8·H2) — 게이트웨이 serving/general_ops/scenario_defaults.DEFAULT_CURRENT_VACANCY_PCT·DEFAULT_SCENARIO_VACANCY_PCTS 를 옮김(RV-B3)"
+    },
+    "switchable_cut_share_default": {
+      "value": 0.5,
+      "unit": "ratio",
+      "rule_ko": "충돌 제어안의 해소 감축 = 끌 수 있는 부하 몫의 절반(0.5)(질문이 감축 몫을 말하지 않았을 때)",
+      "classification": "assumed",
+      "source": "선언 가정(2026-09-29 N8·H2) — 게이트웨이 serving/general_ops/scenario_defaults.DEFAULT_CUT_SHARE_OF_SWITCHABLE 를 옮김(RV-B3)"
+    },
+    "control_priority_default": {
+      "order": ["safety", "comfort", "cost"],
+      "rule_ko": "제어 충돌의 우선순위 = 안전 > 쾌적 > 비용(질문·현장 규정이 순서를 말하지 않았을 때)",
+      "classification": "assumed",
+      "source": "선언 가정(2026-09-29 N8·H2) — 게이트웨이 serving/general_ops/scenario_defaults.DEFAULT_PRIORITY 를 옮김(RV-B3)"
+    },
+    "assumption_search_ranges": {
+      "ranges": {
+        "energy_price_multiplier": {"low": 0.25, "high": 3.0, "scale": "multiplier", "label_ko": "에너지 단가 배수"},
+        "savings_realization": {"low": 0.05, "high": 1.0, "scale": "absolute", "label_ko": "절감 실현률"},
+        "capex_multiplier": {"low": 0.25, "high": 4.0, "scale": "multiplier", "label_ko": "투자비 배수"},
+        "discount_rate": {"low": 0.0, "high": 0.3, "scale": "absolute", "label_ko": "할인율"},
+        "lifetime_multiplier": {"low": 0.25, "high": 2.0, "scale": "multiplier", "label_ko": "수명 배수"}
+      },
+      "rule_ko": "결론·NPV 부호가 뒤집히는지 볼 때의 가정 탐색 범위(끝값 둘) — 질문이 범위의 수를 말하지 않았을 때. 순서가 곧 탐색 순서다. scale: multiplier = 기준 × 배수 · absolute = 값 그대로",
+      "classification": "assumed",
+      "source": "선언 가정(2026-09-12 assumption_flip_scan 도입 때의 값 그대로) — 게이트웨이 serving/general_ops/_assumption_ranges.DEFAULT_ASSUMPTION_RANGES 를 옮김(RV-B3)"
+    },
+    "ranked_rows_top_n_default": {
+      "value": 10,
+      "unit": "count",
+      "rule_ko": "순위 목록의 기본 개수 = 10(질문이 개수를 말하지 않았을 때 — 예: 포트폴리오 코호트 피크 날 상위 N)",
+      "classification": "assumed",
+      "source": "선언 가정 — 게이트웨이 serving/general_ops/measured_portfolio.measured_cohort_peak 의 top_n 기본 10 을 옮김(RV-B3)"
     },
     "measure_applicability": {
       "id": "airo-measure-applicability-assumed-v1",
