@@ -9,8 +9,8 @@
   },
   "counts": {
     "opcodes": 108,
-    "opA": 9,
-    "opB": 88,
+    "opA": 8,
+    "opB": 89,
     "opC": 11,
     "routerClasses": 43,
     "executors": 7,
@@ -122,7 +122,7 @@
       "api": "mountUhiGrid",
       "name": "data.uhiGrid",
       "ns": "data",
-      "consumerClass": "A",
+      "consumerClass": "B",
       "summary": "지표온도(열섬) 격자를 지면 사각형으로 — 한 출처(여름 합성 실측이 있으면 그것, 없으면 더미 = 추정 배지), 칸 크기는 서버 값. 게이트웨"
     },
     {
@@ -2509,9 +2509,7 @@
       "showAnalysis",
       "selectBuildings"
     ],
-    "acMissing": [
-      "mountUhiGrid"
-    ],
+    "acMissing": [],
     "bop": {
       "emittedTokens": 15,
       "covered": [
@@ -2589,6 +2587,7 @@
         "flyCameraShot",
         "highlightBuildingsByRef",
         "mountFlowLines",
+        "mountUhiGrid",
         "mountValueMarkers",
         "mountZoneHighlights",
         "placeVehicleAlongRoute",
@@ -2606,7 +2605,7 @@
         "unmountReverseCascade",
         "unmountSeoulChoropleth"
       ],
-      "nlTarget": 62,
+      "nlTarget": 63,
       "nlCovered": 53,
       "nlUncovered": [
         "cycleEvidenceScenes",
@@ -2614,6 +2613,7 @@
         "flyCameraShot",
         "highlightBuildingsByRef",
         "mountFlowLines",
+        "mountUhiGrid",
         "mountValueMarkers",
         "mountZoneHighlights",
         "playEvidenceTimeline",
