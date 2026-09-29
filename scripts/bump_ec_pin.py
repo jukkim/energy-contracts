@@ -6,6 +6,8 @@
 
   1) 전 consumer pyproject.toml 의 energy-contracts pin 을 target 태그로 통일
   2) 전 consumer .github/workflows/ssot-drift.yml 의 EC checkout `ref:` 를 동일 태그로 통일
+  2b) 소비자 잠금 파일 `contracts/energy_contracts.lock.json`(airos-energy-decision)의 commit 을 태그 커밋으로,
+      스키마 해시를 그 소비자의 `contracts_client.pin_hash` 로 다시 계산 (`_consumer_lock.py`, 2026-09-29)
   3) gen_constants.py --all 로 _generated_constants 전부 regen
   4) validate_ssot.py --check generated 로 pin↔regen lockstep 재검증 (P1 게이트)
   5) mirror 키워드 cascade 안내 (CORE_KEYWORDS 변경 시 sibling CLAUDE.md 헤더 갱신 필요)
@@ -28,6 +30,10 @@ import re
 import subprocess
 import sys
 from pathlib import Path
+
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+import _consumer_lock  # noqa: E402
+from _pin_hash_check import check as _pin_hash_ok  # noqa: E402
 
 CONTRACTS_ROOT = Path(__file__).resolve().parents[1]
 WORKSPACE_ROOT = CONTRACTS_ROOT.parents[1]
@@ -225,14 +231,21 @@ def main() -> int:
         #   커밋된 생성상수는 master(스키마 33 종) 해시였고 v0.3.39 엔 그 스키마가
         #   없다. CI 가 pin 대로 checkout 하면 전 소비자 DRIFT.
         #   **핀이 서로 같은 것과 핀이 옳은 것은 다른 질문이다.**
-        import sys as _sys
-        _sys.path.insert(0, str(Path(__file__).resolve().parent))
-        from _pin_hash_check import check as _pin_hash_ok
-
-        if _pin_hash_ok(CONTRACTS_ROOT, PROJECTS, CONSUMERS,
-                        next(iter(distinct)) if len(distinct) == 1 else None):
+        target = args.target or (next(iter(distinct)) if len(distinct) == 1 else None)
+        # ⚠ 잠금 파일(contracts/energy_contracts.lock.json)로 EC 를 고정하는 소비자(airos-energy-decision)는
+        #   pyproject 핀이 없어 위 검사에 전혀 안 걸렸다. 2026-09-29: v0.3.62 bump 뒤 잠금만 v0.3.60 에 남아
+        #   AIROS SSOT Drift Check 가 빨갛게 됐다. 잠금의 commit·스키마 해시가 태그와 맞는지 여기서 본다.
+        print("\n[bump_ec_pin] 소비자 잠금 파일:")
+        n_locks, bad_locks = _consumer_lock.check(CONTRACTS_ROOT, PROJECTS, target)
+        print(f"  잠금 검사 {n_locks}건 · 위반 {bad_locks}")
+        if bad_locks:
             return 1
-        print("\n[bump_ec_pin] ✓ pin lockstep OK (ssot-drift ref + 태그↔해시 재현)")
+        # 잠금 소비자도 생성 상수를 커밋해 둔다 — SOURCE_HASH 재현 검사에 함께 넣는다.
+        hash_repos = CONSUMERS + tuple(p.parents[1].name for p in _consumer_lock.consumer_locks(PROJECTS)
+                                       if p.parents[1].name not in CONSUMERS)
+        if _pin_hash_ok(CONTRACTS_ROOT, PROJECTS, hash_repos, target):
+            return 1
+        print("\n[bump_ec_pin] ✓ pin lockstep OK (ssot-drift ref + 잠금 파일 + 태그↔해시 재현)")
         return 0
 
     if not args.target:
@@ -249,6 +262,12 @@ def main() -> int:
     print(f"  ssot-drift ref 변경: {changed_wf or '없음(이미 동일)'}")
     changed_ci = bump_ci_pins(args.target)
     print(f"  CI 워크플로 pip 핀 변경: {changed_ci or '없음(이미 동일)'}")
+    try:
+        changed_locks = _consumer_lock.bump(CONTRACTS_ROOT, PROJECTS, args.target)
+    except _consumer_lock.LockError as exc:
+        print(f"[bump_ec_pin] ✗ 잠금 파일 갱신 실패: {exc}")
+        return 1
+    print(f"  잠금 파일(commit·스키마 해시) 변경: {changed_locks or '없음(이미 동일)'}")
 
     print("\n[bump_ec_pin] regen (gen_constants.py --all):")
     if run([sys.executable, "scripts/gen_constants.py", "--all"]) != 0:
