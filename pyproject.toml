@@ -26,7 +26,7 @@ exclude = ["tests*", "scripts*", "scratch*", "reviews*"]
 
 # JSON 스키마 파일을 wheel package data 로 포함.
 [tool.setuptools.package-data]
-"energy_contracts" = ["schemas/*.json", "schemas/*.yaml"]
+"energy_contracts" = ["schemas/*.json", "schemas/*.yaml", "data/*.json"]   # data = 지역 해석 표(T1)
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
