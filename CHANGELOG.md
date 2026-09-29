@@ -4,6 +4,12 @@
 
 ---
 
+## 0.3.60 (2026-09-29) — 질문 틀 1단계 별칭 · 소비처 pin 일괄
+
+- `building_archetypes.json`: `doe_buildings` 별칭 += 대형/중형/소형 오피스(B01~B03) · 소매점(B05) — 질문 속 원형 이름을 대상 종류로 푼다.
+- `building_usage_map.json`: `usage_aliases` += 오피스·청사 → 업무시설.
+- 소비처 6곳 pin·ssot-drift ref 를 v0.3.60 으로 일괄(`bump_ec_pin.py`) — 0.3.59 는 be-3d 만 올라가 lockstep 위반이었다.
+
 ## 0.3.59 (2026-09-29) — 계량 물리 한계 · 빠른 회수 기본값 · 건물부문 NDC 기준 · 태그 재발행
 
 - 태그 `v0.3.58` 이후 들어온 스키마(예: `airo_request.json`)가 태그 판에 없어, 태그로 설치하는 소비처(be-3d)가 `load_schema("airo_request")`

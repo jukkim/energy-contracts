@@ -159,7 +159,8 @@
         ],
         "representative_hvac": "HA",
         "aliases": [
-          "LO"
+          "LO",
+          "대형 오피스"
         ]
       },
       "B02": {
@@ -175,7 +176,8 @@
         ],
         "representative_hvac": "HC",
         "aliases": [
-          "MO"
+          "MO",
+          "중형 오피스"
         ]
       },
       "B03": {
@@ -190,7 +192,8 @@
         ],
         "representative_hvac": "HC",
         "aliases": [
-          "SO"
+          "SO",
+          "소형 오피스"
         ]
       },
       "B04": {
@@ -216,7 +219,8 @@
         ],
         "representative_hvac": "HC",
         "aliases": [
-          "SR"
+          "SR",
+          "소매점"
         ]
       },
       "B06": {
