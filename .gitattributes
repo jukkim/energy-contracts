@@ -1,0 +1,2 @@
+# 표 지문(regions.table_sha256)이 체크아웃마다 갈리지 않게 — 생성 표는 LF 고정(2026-09-30 v0.3.66)
+energy_contracts/data/*.json text eol=lf

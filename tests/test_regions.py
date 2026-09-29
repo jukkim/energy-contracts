@@ -9,7 +9,7 @@ import pytest
 from energy_contracts import regions as rr
 
 def test_table_hash_is_the_file_hash():
-    assert rr.table_sha256() == hashlib.sha256(rr.TABLE_PATH.read_bytes()).hexdigest()
+    assert rr.table_sha256() == hashlib.sha256(rr.TABLE_PATH.read_bytes().replace(b"\r\n", b"\n")).hexdigest()
     assert rr.resolve("부산 중구").table_sha256 == rr.table_sha256()
 
 def test_every_district_round_trips_with_its_province():
@@ -152,3 +152,17 @@ def test_target_id_form_resolves_like_the_bare_code():
 def test_target_id_form_without_digits_is_a_named_refusal(bad):
     r = rr.resolve(bad)
     assert not r.ok and r.reason == rr.REASON_BAD_CODE
+
+
+# 2026-09-30 v0.3.66 — 표 지문은 줄끝(CRLF·LF)에 따라 갈리지 않고, 내용이 다르면 갈린다(양쪽 반례)
+def test_table_fingerprint_ignores_line_endings_only():
+    lf = b'{\n  "a": 1\n}\n'
+    crlf = lf.replace(b"\n", b"\r\n")
+    assert rr.canonical_table_bytes(crlf) == rr.canonical_table_bytes(lf) == lf
+    other = b'{\n  "a": 2\n}\n'
+    assert hashlib.sha256(rr.canonical_table_bytes(other)).hexdigest() != hashlib.sha256(rr.canonical_table_bytes(lf)).hexdigest()
+
+
+def test_gitattributes_pins_data_json_to_lf():
+    attrs = (Path(rr.__file__).resolve().parents[1] / ".gitattributes").read_text(encoding="utf-8")
+    assert "energy_contracts/data/*.json" in attrs and "eol=lf" in attrs

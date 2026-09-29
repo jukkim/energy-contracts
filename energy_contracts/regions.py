@@ -145,9 +145,15 @@ def table() -> dict[str, Any]:
     return doc
 
 
+def canonical_table_bytes(raw: bytes) -> bytes:
+    """지문용 표 바이트 — 줄끝을 LF 로 맞춘다(2026-09-30 v0.3.66). 같은 표가 git 체크아웃(core.autocrlf)에 따라 CRLF 로
+    풀려 체크아웃마다 다른 지문이 됐다(메인 01c72d7d… ↔ wheel a86590aa…). 줄끝 말고는 바꾸지 않는다(내용이 다르면 다른 지문)."""
+    return raw.replace(b"\r\n", b"\n")
+
+
 def table_sha256() -> str:
-    """표 바이트 해시 — 두 소비처가 같은 표를 읽는지 대조하는 값."""
-    return hashlib.sha256(_raw_bytes()).hexdigest()
+    """표 지문 — 두 소비처가 같은 표를 읽는지 대조하는 값(줄끝 정규화 바이트의 해시 · ``canonical_table_bytes``)."""
+    return hashlib.sha256(canonical_table_bytes(_raw_bytes())).hexdigest()
 
 
 def _leaf(name: str) -> str:
