@@ -135,3 +135,20 @@ def test_umbrella_city_carries_children_prefix_only_when_the_table_has_children(
     assert rr.resolve("11").children_prefix is None                   # 시도
     assert "children_prefix" in rr.resolve("수원시").to_dict()
 
+
+
+# 2026-09-30 Query100 F07 — EC 대상 id 형식(region:<코드>)은 코드와 같은 결과, 숫자가 아니면 이름 있는 거절(양쪽 반례)
+def test_target_id_form_resolves_like_the_bare_code():
+    schema = json.loads((Path(rr.__file__).parent / "schemas" / "airo_request.json").read_text(encoding="utf-8"))
+    pattern = next(r["then"]["properties"]["ids"]["items"]["pattern"] for r in schema["$defs"]["Target"]["allOf"]
+                   if r["if"]["properties"]["kind"].get("const") == "region")
+    assert pattern.startswith("^" + rr.TARGET_ID_PREFIX)        # 접두는 계약의 것(가정을 시험으로)
+    for code in ("11", "4111", "11680"):
+        a, b = rr.resolve(rr.TARGET_ID_PREFIX + code), rr.resolve(code)
+        assert a.ok and (a.code, a.level, a.label) == (b.code, b.level, b.label)
+
+
+@pytest.mark.parametrize("bad", ["region:", "region:abc", "region:강남구"])
+def test_target_id_form_without_digits_is_a_named_refusal(bad):
+    r = rr.resolve(bad)
+    assert not r.ok and r.reason == rr.REASON_BAD_CODE
