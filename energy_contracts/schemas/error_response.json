@@ -11,9 +11,9 @@
     "agentleague",
     "eduarena"
   ],
-  "version": "1.0",
-  "updated": "2026-05-17",
-  "$comment": "RFC 7807: https://www.rfc-editor.org/rfc/rfc7807",
+  "version": "1.1",
+  "updated": "2026-09-29",
+  "$comment": "RFC 7807: https://www.rfc-editor.org/rfc/rfc7807 · 1.1(2026-09-29 M3): 거절 봉투 Refusal 신설 + Problem 에 같은 칸(kind·field·expected·got·message_ko·next_ko·retry·legacy_code)을 선택 칸으로 추가 — 가산, 1.0 에서 유효한 Problem 은 그대로 유효하다.",
   "$defs": {
     "Problem": {
       "type": "object",
@@ -56,9 +56,106 @@
             "type": "object"
           },
           "description": "validation 다중 필드 에러용"
+        },
+        "kind": {
+          "$ref": "#/$defs/Refusal/properties/kind"
+        },
+        "field": {
+          "$ref": "#/$defs/Refusal/properties/field"
+        },
+        "expected": {
+          "$ref": "#/$defs/Refusal/properties/expected"
+        },
+        "got": {
+          "$ref": "#/$defs/Refusal/properties/got"
+        },
+        "message_ko": {
+          "$ref": "#/$defs/Refusal/properties/message_ko"
+        },
+        "next_ko": {
+          "$ref": "#/$defs/Refusal/properties/next_ko"
+        },
+        "retry": {
+          "$ref": "#/$defs/Refusal/properties/retry"
+        },
+        "legacy_code": {
+          "$ref": "#/$defs/Refusal/properties/legacy_code"
         }
       },
       "additionalProperties": false
+    },
+    "Refusal": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "code",
+        "kind",
+        "message_ko",
+        "retry"
+      ],
+      "description": "거절 봉투(1.1 M3 — INTERFACES §4.2④). 도구·결속기·게이트웨이가 거절을 싣는 모양 6가지(code · 예외 문장 · error 문자열 · 중첩 error/detail/refusal · refusal_code · status+reason)를 이 하나로 모은다. 코드는 뜻 단위로 짓고 어느 칸인지는 field 로 싣는다(칸마다 '<칸>_REQUIRED' 새 이름을 만들지 않는다). 옛 코드(거절 사전 1,370개)는 legacy_code 로 이어 응답 바이트 해석을 깨지 않는다. airo-result/v1 의 refusal 칸과 Problem 의 확장 칸이 이 정의를 가리킨다.",
+      "properties": {
+        "code": {
+          "type": "string",
+          "pattern": "^[A-Z][A-Z0-9_]+$",
+          "description": "뜻 단위 거절 코드(UPPER_SNAKE) — 예 INPUT_REQUIRED · TARGET_KIND_UNSUPPORTED · PERIOD_NOT_COVERED · PLACE_AMBIGUOUS"
+        },
+        "kind": {
+          "type": "string",
+          "enum": [
+            "question",
+            "data",
+            "permission",
+            "internal"
+          ],
+          "description": "거절 갈래 — question=질문이 정해야 할 것이 빠졌거나 모호(되묻기) · data=자료가 없거나 덮지 못함 · permission=권한·배정 밖 · internal=우리 결함. 거절 사전의 갈래(질문·자료·권한·내부)와 같다. 자료/질문/결함을 가르지 않으면 고칠 곳을 못 찾는다."
+        },
+        "field": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "maxLength": 200,
+          "description": "무엇이 문제인 칸(예 target · period · params.top_share · place). 뜻은 code, 칸은 field"
+        },
+        "expected": {
+          "description": "그 칸이 받아야 했던 것(값·모양·종류 목록). 형식 자유"
+        },
+        "got": {
+          "description": "실제로 받은 것(비식별 값만 — 좌표·주소·원천 코드 금지). 형식 자유"
+        },
+        "message_ko": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 1000,
+          "description": "사람이 읽는 거절 사유(한국어). 원인을 가리지 않는다"
+        },
+        "next_ko": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "maxLength": 1000,
+          "description": "사용자가 다음에 할 일(예 '지역을 하나 골라 주세요')"
+        },
+        "retry": {
+          "type": "string",
+          "enum": [
+            "ask",
+            "fill",
+            "none"
+          ],
+          "description": "ask=사용자에게 되묻는다 · fill=서버가 채울 수 있다(가상·추정 채움 + 출처 표시, 또는 자료 적재 뒤) · none=같은 요청을 다시 보내도 같은 답"
+        },
+        "legacy_code": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "pattern": "^[A-Z][A-Z0-9_]+$",
+          "description": "옛 거절 코드(게이트웨이 refusal_dictionary). 별칭표로 뜻 단위 code 에 잇는다 — 판정 원장이 읽는 옛 이름을 끊지 않는다"
+        }
+      }
     }
   },
   "type": "object",

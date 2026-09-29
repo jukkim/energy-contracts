@@ -4,6 +4,41 @@
 
 ---
 
+## 0.3.61 (unreleased, 2026-09-29) — M3 인터페이스 표준 · 봉투 2.3 · 결과 봉투 · 거절 봉투 · 상위 비율 기본값
+
+근거: 공모전 `docs/ARCHITECTURE_MIGRATION_M1_M6_2026-09-29.md` §2·§6·M3/M4 결정(f7 합의) · `scratch/expert_0929/INTERFACES.md` §4.2.
+모두 **가산**이다 — 기존 필드·값·상수는 그대로이고, 이전 판에서 유효한 봉투·Problem 은 이 판에서도 유효하다.
+
+- `airo_request.json` 2.3(`airo-request/v2` 그대로):
+  ① `target` 생략 허용 — 없으면 게이트웨이 질문 틀이 정하고 응답 `TargetContext` 에 싣는다 ·
+  ② `continuation{requested_tool, tool_arguments, prior_request_id}`(v1 에만 있던 이어가기) ·
+  ③ `intent: "plan"`(계획 경로 = v1 `task_mode plan_action` + `permissions.plan`, `continuation` 필수) ·
+  ④ `intent: "debate"`(AgentLeague) ·
+  `Target`·`TargetContext` += `asset_kind`(BLD·FAC·HOM·RET·PRT — v2→v1 에서 잃던 종류) · `members` · `expansion{rule_id, rule_ko, from_kind, to_kind, member_count}`(서버가 채움) ·
+  `Period.basis` += `coverage_of_needs`. 게이트웨이가 이 파일 하나로 검사하므로 파일 밖 `$ref` 는 두지 않는다(`AssetKind` 목록 = `common.AirAssetKind`, 시험이 지킨다).
+- `interface_types.json` 1.0(새, runtime-validate): `TargetRef`·`TargetContextRef`·`PeriodRef` = `airo_request` 정의를 가리킨다(사본 없음) ·
+  `ClassificationWordRef`·`AbsenceKindRef` = `data_classification` 정본 · `Quantity{value, unit, text}` + `QuantityUnit`(에너지 단위 표기 = `energy_units.base_units`).
+- `airo_result.json` 1.0(새, `airo-result/v1`): status(ok·partial·needs_input·refused·unavailable·unsupported) · target_context · period_used · row_kind(ranked·card·series·table·scalar) ·
+  columns[] · rows[] · population · summary · absences[] · classification(정본 17 낱말) · honesty_label · assumptions · source_ids · ec_version · refusal? · result_hash.
+  규칙: ok 가 아닌 거절 상태는 `refusal` 필수 · ok 는 `refusal` 금지 · 행이 없는 ok/partial(스칼라 제외)과 ranked 는 `population` 필수(빈 목록을 통과로 세지 않는다).
+- `error_response.json` 1.1: `$defs.Refusal{code, kind(question·data·permission·internal), field, expected, got, message_ko, next_ko, retry(ask·fill·none), legacy_code}` ·
+  `Problem` 에 같은 칸을 선택 칸으로(Refusal 정의를 `$ref`). `ERROR_CODES` 등 기존 값 불변.
+- `declared_assumptions.json` 1.1: `top_share_pct_default` 25%(assumed) — 게이트웨이 `general_ops/cohort.py` 형평 규칙의 '코호트 EUI 상위 25%'(`percentile(…, 0.75)`) 리터럴을 옮김.
+  소비처 = 게이트웨이 `general_ops/clarify.selection_basis`(rank_top·rank_bottom 이 `unfiltered_all` → `declared_default`).
+- `_index.yaml`: `AiroResult`·`InterfaceTypes` 등재.
+- 시험 `tests/test_interface_contracts.py`: 새·바뀐 스키마 2020-12 검사 · 봉투 2.3 반례 양쪽(받을 것 7 · 막을 것 7) · 결과 봉투 반례 양쪽(4 · 7) ·
+  Problem 확장 가산 · 봉투 단일 파일 · `AssetKind`=`common.AirAssetKind` · 단위 ⊇ base_units · 파일 밖 `$ref` 는 레지스트리로 푼다.
+- 생성본 영향: `SOURCE_HASH` 와 `DECLARED_ASSUMPTIONS` 한 줄(키 하나 추가, 기존 키 값 동일)만 바뀐다 — 그 줄을 싣는 소비처 = agentleague · 8sim-shared · airos-energy-decision.
+
+### 대기 — 연간 EUI 규칙(f7 가 규칙 함수를 낸다, 이 판에는 없음)
+
+연간 EUI 계산이 7벌(1개월 ×12 외삽 · 상한 5000 손 사본 3곳)이라 같은 이름이 다른 값을 낸다(M5 (f) · 결정 B'). 규칙은 `rules_pure.py` 한 곳에 둔다. 합의한 인터페이스:
+- 입력: 월별 사용량(`YYYY-MM` → kWh, 빈 달은 None) · 연면적 ㎡(None 가능) · 채널(전기·가스 등).
+- 출력: `{value_kwh_m2_yr | None, months_used, basis, absence_kind, code}` — 값이 없으면 `absence_kind`(`data_classification.AbsenceKind`)와 이름 있는 코드를 싣는다.
+- 규칙: 온전한 12개월(또는 `calendar_conventions.complete_month` 기준을 채운 창)만 연간값으로 본다 · 1개월 ×12 외삽과 0.0 행은 값이 아니라 `unknown`(못 잼)으로 낸다 ·
+  상한은 손 사본 5000 이 아니라 `judgement_thresholds.data_quality.eui_plausible_kwh_m2.max` 에서 읽는다.
+- 읽는 쪽(지도·순위·지역 평균)은 재적재 전까지 외삽·0.0 행을 못 잼으로 뺀다. 재적재 실행은 데이터 세션 소관이고 사용자 확인 대상이다.
+
 ## 0.3.60 (2026-09-29) — 질문 틀 1단계 별칭 · 소비처 pin 일괄
 
 - `building_archetypes.json`: `doe_buildings` 별칭 += 대형/중형/소형 오피스(B01~B03) · 소매점(B05) — 질문 속 원형 이름을 대상 종류로 푼다.

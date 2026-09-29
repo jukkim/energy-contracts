@@ -30,6 +30,8 @@ components:
     DeclaredAssumptions:      {$ref: 'declared_assumptions.json'}
     OperationManifest:        {$ref: 'operation_manifest.json'}
     AiroRequest:              {$ref: 'airo_request.json'}
+    AiroResult:               {$ref: 'airo_result.json'}
+    InterfaceTypes:           {$ref: 'interface_types.json'}
     AnomalyResponse:          {$ref: 'anomaly_response.json'}
     AuthPolicy:               {$ref: 'auth_policy.json'}
     ResourceAuthorization:    {$ref: 'resource_authorization.json'}

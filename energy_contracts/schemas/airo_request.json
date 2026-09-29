@@ -11,14 +11,33 @@
     "energy-decision-studio",
     "building-energy-3d"
   ],
-  "version": "2.2",
-  "updated": "2026-09-28",
+  "version": "2.3",
+  "updated": "2026-09-29",
+  "$comment": "2.3(2026-09-29 M3, f7 합의): ① target 생략 허용(게이트웨이 질문 틀이 정한다) ② continuation(되묻기 답·계획 실행의 이어가기) ③ intent 'plan'(쓰기 = 계획 경로) ④ intent 'debate'(AgentLeague) · Target/TargetContext 에 asset_kind·members·expansion(서버가 채움) · Period.basis += coverage_of_needs. 모두 가산 — 2.2 에서 유효한 봉투는 2.3 에서도 유효하다.",
   "type": "object",
   "additionalProperties": false,
   "required": [
     "asker",
-    "target",
     "query"
+  ],
+  "allOf": [
+    {
+      "if": {
+        "required": [
+          "intent"
+        ],
+        "properties": {
+          "intent": {
+            "const": "plan"
+          }
+        }
+      },
+      "then": {
+        "required": [
+          "continuation"
+        ]
+      }
+    }
   ],
   "properties": {
     "contract": {
@@ -34,10 +53,14 @@
       "$ref": "#/$defs/Asker"
     },
     "target": {
-      "$ref": "#/$defs/Target"
+      "$ref": "#/$defs/Target",
+      "description": "2.3: 생략할 수 있다 — 없으면 게이트웨이 질문 틀(question_frame)이 질문 > 직전 대상 > 질의자 배정·기본값 순으로 정하고, 정한 대상과 출처를 응답 TargetContext 에 싣는다. 첫 질의·대상 칩이 없는 표면이 v1 로 떨어지지 않게 한다(Studio NO_TARGET · Lab)."
     },
     "period": {
       "$ref": "#/$defs/Period"
+    },
+    "continuation": {
+      "$ref": "#/$defs/Continuation"
     },
     "query": {
       "type": "string",
@@ -59,10 +82,12 @@
       "enum": [
         "value",
         "scene",
-        "both"
+        "both",
+        "plan",
+        "debate"
       ],
       "default": "value",
-      "description": "무엇을 원하나 — value=값만(기본) · scene=화면만 · both=값과 화면을 함께. 없으면 value 로 본다(기존 요청의 바이트가 달라지지 않는다). 2026-09-23 신설: 이 칸이 없을 때 봉투가 작업 방식을 value 로 고정해 장면 요구가 조용히 사라지던 것을 고친다."
+      "description": "무엇을 원하나 — value=값만(기본) · scene=화면만 · both=값과 화면을 함께. 없으면 value 로 본다(기존 요청의 바이트가 달라지지 않는다). 2026-09-23 신설: 이 칸이 없을 때 봉투가 작업 방식을 value 로 고정해 장면 요구가 조용히 사라지던 것을 고친다. 2.3(M3) 추가: plan=계획 경로(쓰기 — v1 task_mode plan_action + permissions.plan 과 같은 뜻). continuation 이 반드시 있어야 하고, 무엇이 쓰기인지는 게이트웨이가 정한다(표면은 쓰기 판정 사본을 두지 않는다) · debate=AgentLeague 토론(게이트웨이가 표면 이름만 보고 토론으로 보내던 것을 봉투의 뜻으로 옮긴다). 값·장면 의도를 표면이 싣지 않으면 서버가 질문의 표시 낱말로 판단한다(M2)."
     }
   },
   "$defs": {
@@ -145,9 +170,61 @@
         },
         "archetype": {
           "$ref": "#/$defs/Archetype"
+        },
+        "asset_kind": {
+          "$ref": "#/$defs/AssetKind"
+        },
+        "members": {
+          "$ref": "#/$defs/TargetMembers"
+        },
+        "expansion": {
+          "$ref": "#/$defs/TargetExpansion"
         }
       },
       "allOf": [
+        {
+          "if": {
+            "required": [
+              "asset_kind"
+            ],
+            "properties": {
+              "kind": {
+                "const": "asset"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "asset_kind": {
+                "enum": [
+                  "BLD",
+                  "FAC",
+                  "HOM",
+                  "RET"
+                ]
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "required": [
+              "asset_kind"
+            ],
+            "properties": {
+              "kind": {
+                "const": "portfolio"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "asset_kind": {
+                "const": "PRT"
+              }
+            }
+          }
+        },
         {
           "if": {
             "properties": {
@@ -243,7 +320,99 @@
           }
         }
       ],
-      "description": "필지번호(19자리)는 대상이 아니다 — 필지 화면의 조회 열쇠로만. ms-·원천 코드·BE-3D 정수 패킷 번호는 서버 안에서만."
+      "description": "필지번호(19자리)는 대상이 아니다 — 필지 화면의 조회 열쇠로만. ms-·원천 코드·BE-3D 정수 패킷 번호는 서버 안에서만. 이 정의가 공통 타입 TargetRef 의 정본이다(interface_types.json#/$defs/TargetRef 가 이것을 가리킨다 — 사본 금지). 2.3: asset_kind·members·expansion 은 서버가 채우는 칸이다(표면이 보내면 서버 값이 덮는다)."
+    },
+    "AssetKind": {
+      "type": "string",
+      "enum": [
+        "BLD",
+        "FAC",
+        "HOM",
+        "RET",
+        "PRT"
+      ],
+      "description": "AIR 자산 종류(2.3). 값 목록 정본 = common.json#/$defs/AirAssetKind — 이 봉투는 게이트웨이가 파일 하나로 검사하므로(airo_request_v2) 파일 밖 $ref 를 두지 않고, 같은 목록인지는 EC 시험(test_interface_contracts)이 지킨다. v2→v1 에서 점포(RET)가 building_ids 로 들어가 '건물'로 보이던 종류 손실을 막는다."
+    },
+    "TargetMembers": {
+      "type": "array",
+      "maxItems": 10000,
+      "items": {
+        "type": "string",
+        "minLength": 1
+      },
+      "description": "전개된 구성원 식별자(2.3, 서버가 채움) — 포트폴리오 → 구성 자산, 지역 → 건물·원형 등. 어떤 규칙으로 전개했는지는 expansion 에 싣는다. 비어 있으면 '전개했고 0 건'이고, 칸이 없으면 '전개하지 않음'이다(둘을 섞지 않는다)."
+    },
+    "TargetExpansion": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "rule_id"
+      ],
+      "properties": {
+        "rule_id": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 160,
+          "description": "전개 규칙 이름(예: portfolio_members · region_children_prefix · region_to_archetypes). 규칙은 한 전개기가 가진다"
+        },
+        "rule_ko": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "maxLength": 400
+        },
+        "from_kind": {
+          "enum": [
+            "asset",
+            "portfolio",
+            "building",
+            "region",
+            "archetype"
+          ]
+        },
+        "to_kind": {
+          "enum": [
+            "asset",
+            "portfolio",
+            "building",
+            "region",
+            "archetype"
+          ]
+        },
+        "member_count": {
+          "type": "integer",
+          "minimum": 0
+        }
+      },
+      "description": "대상 전개 근거(2.3) — 포트폴리오→구성원·지역→원형 같은 전개를 선언 규칙으로 기록한다."
+    },
+    "Continuation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "requested_tool"
+      ],
+      "properties": {
+        "requested_tool": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 120,
+          "description": "이어서 부를 도구 이름(되묻기에 답하는 둘째 턴 · 계획 실행). v1 requested_tool 과 같은 뜻"
+        },
+        "tool_arguments": {
+          "type": "object",
+          "default": {},
+          "description": "그 도구의 인자(v1 tool_arguments 와 같은 뜻). 없으면 빈 객체"
+        },
+        "prior_request_id": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 120,
+          "description": "이 턴이 이어 가는 앞 요청의 request_id(되묻기·거절을 낸 요청). 있으면 서버가 앞 요청의 대상·기간을 이어 쓴다"
+        }
+      },
+      "description": "이어가기(2.3 M3) — v1 에만 있던 requested_tool·tool_arguments 를 봉투로 옮긴다(Studio CONTINUATION_TURN·PLAN_ACTION 이 v1 로 떨어지던 이유)."
     },
     "Archetype": {
       "type": "object",
@@ -322,9 +491,10 @@
             "client_selection",
             "declared_replay_period",
             "calendar_relative_to_today",
+            "coverage_of_needs",
             null
           ],
-          "description": "기간 근거. declared_replay_period = 선언된 재생 분석 기간(자료 끝이 아니라 등록된 재생 창) · calendar_relative_to_today = 오늘 기준 달력 상대 기간(예 '지난달') — 2026-09-28 W8(Studio S42) 이관"
+          "description": "기간 근거. declared_replay_period = 선언된 재생 분석 기간(자료 끝이 아니라 등록된 재생 창) · calendar_relative_to_today = 오늘 기준 달력 상대 기간(예 '지난달') — 2026-09-28 W8(Studio S42) 이관 · coverage_of_needs = 질문이 기간을 말하지 않았을 때 도구가 필요로 하는 채널이 모두 덮는 창(operation_manifest default_period 한 규칙 — 2.3 M3/M4)"
         }
       },
       "description": "서버의 단일 파서가 text 를 start·end_exclusive·grain·basis 로 정규화한다. LLM 은 정규화 값을 직접 주지 않는다(날짜를 지어내지 않게)."
@@ -377,6 +547,16 @@
         "resolved": {
           "type": "boolean",
           "description": "서버가 대상을 식별자까지 풀었는가"
+        },
+        "asset_kind": {
+          "$ref": "#/$defs/AssetKind",
+          "description": "2.3: 요청 대상의 AIR 자산 종류를 그대로 보존한다(kind 를 asset→building 으로 바꾸지 않는다)"
+        },
+        "members": {
+          "$ref": "#/$defs/TargetMembers"
+        },
+        "expansion": {
+          "$ref": "#/$defs/TargetExpansion"
         },
         "attributes": {
           "type": "object",

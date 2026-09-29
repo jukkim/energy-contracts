@@ -8,8 +8,8 @@
     "8sim-shared",
     "ems_transformer (serving general_ops/cohort · internal_query_tools · asset_inputs/_virtual · measure_economics · simulation_pack_analysis)"
   ],
-  "version": "1.0",
-  "updated": "2026-09-28",
+  "version": "1.1",
+  "updated": "2026-09-29",
   "type": "object",
   "default": {
     "hazard_days": {
@@ -64,6 +64,13 @@
       "rule_ko": "빠른 회수 = 단순 회수기간 3년 이내(질문이 회수 문턱을 말하지 않았을 때)",
       "classification": "assumed",
       "source": "선언 가정(2026-09-29 N6-X1) — 정본 조치 카탈로그 measure_cost_catalog 의 운영·저비용 조치 참고 회수기간(simple_payback_yr_ref: RCX 1.1~1.7년 · LED 1.5~3년 · VSD 1~3년)의 상한. 소비처 = 게이트웨이 retrofit_economics quick_payback_carbon_gap"
+    },
+    "top_share_pct_default": {
+      "value": 25.0,
+      "unit": "%",
+      "rule_ko": "상위·하위 비율 = 25%(질문이 '상위/하위 몇 %'를 말하지 않았을 때) — 상위 = 비교 집단 분위 0.75 이상 · 하위 = 분위 0.25 이하",
+      "classification": "assumed",
+      "source": "선언 가정(2026-09-29 M1-g/M12) — 게이트웨이 serving/general_ops/cohort.py 형평 규칙의 코드 리터럴 '고원단위 = 코호트 EUI 상위 25%'(_stats.percentile(…, 0.75))를 옮김. 소비처 = 게이트웨이 serving/general_ops/clarify.selection_basis(rank_top·rank_bottom 선언 기본값, 표식 declared_default:energy-contracts/declared_assumptions#top_share_pct_default). cohort.py 의 0.75 리터럴을 이 값에서 파생하도록 바꾸는 것은 게이트웨이 몫(이 값 등재와 별개)"
     },
     "measure_applicability": {
       "id": "airo-measure-applicability-assumed-v1",

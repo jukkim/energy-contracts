@@ -1,0 +1,86 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "energy-contracts/interface_types.json",
+  "title": "AIRO 인터페이스 공통 타입 (TargetRef · PeriodRef · Quantity)",
+  "description": "질의 경로의 모든 단계(표면 어댑터·질문 틀·결속기·도구·결과 봉투·검산기)가 대상·기간·수량을 한 모양으로 주고받게 하는 공통 타입(2026-09-29 M3 — 공모전 docs/ARCHITECTURE_MIGRATION_M1_M6_2026-09-29.md §2 · scratch/expert_0929/INTERFACES.md §4.2①). 새 모양을 만들지 않고 이미 있는 정본을 가리킨다: 대상·기간 = airo_request.json 의 Target·Period, 분류 = data_classification.json 의 ClassificationWord. 도구 인자 이름 23가지(target_id·city·building_id …)·기간 인자 14가지는 이 타입에서 파생하는 선언 대응표로 옮긴다(어댑터층 이전 — 재작성하지 않는다).",
+  "_usage": "runtime-validate",
+  "_consumers": [
+    "ems_transformer",
+    "airos-energy-decision",
+    "agentleague",
+    "energy-decision-studio",
+    "building-energy-3d"
+  ],
+  "version": "1.0",
+  "updated": "2026-09-29",
+  "$comment": "파일 밖 $ref(airo_request.json · data_classification.json)는 $id 기준 상대 경로다. 검사하는 쪽은 EC schemas/*.json 전부를 한 레지스트리(referencing)에 올려 읽는다 — tests/test_interface_contracts.py 가 그 방법의 본보기다.",
+  "$defs": {
+    "TargetRef": {
+      "$ref": "airo_request.json#/$defs/Target",
+      "description": "대상 참조 = airo-request/v2 의 Target 그대로(kind·ids·label·source·archetype) + 2.3 에서 더한 asset_kind(AIR 자산 종류 — v1 에서 잃던 것)·members(전개된 구성원)·expansion(전개 규칙 rule_id·rule_ko). 정의는 airo_request.json 한 곳이다(사본 금지)."
+    },
+    "TargetContextRef": {
+      "$ref": "airo_request.json#/$defs/TargetContext",
+      "description": "응답에 싣는 대상 문맥 = airo-request/v2 의 TargetContext 그대로(요청 kind·ids·source 보존 + asset_kind·members·expansion + 끌어낸 속성과 출처)."
+    },
+    "PeriodRef": {
+      "$ref": "airo_request.json#/$defs/Period",
+      "description": "기간 참조 = airo-request/v2 의 Period 그대로(text·start·end_exclusive·tz·grain·basis). 끝은 배타(end_exclusive)다 — 포함 끝 'end' 를 쓰는 도구는 어댑터가 바꾼다. 결과의 period_used 는 basis 를 반드시 싣는다(기본 기간을 어떤 규칙으로 골랐는지 = coverage_of_needs 등)."
+    },
+    "ClassificationWordRef": {
+      "$ref": "data_classification.json#/$defs/ClassificationWord",
+      "description": "분류 낱말 = data_classification.json 의 정본 17 낱말. 도구 스키마의 지역 enum 10 변형을 이것 하나로 바꾼다(손실 있는 내림 맞춤 금지)."
+    },
+    "AbsenceKindRef": {
+      "$ref": "data_classification.json#/$defs/AbsenceKind",
+      "description": "부재 축(not_applicable · missing · unknown) — 값이 왜 없나."
+    },
+    "QuantityUnit": {
+      "type": "string",
+      "enum": [
+        "ratio",
+        "pct",
+        "count",
+        "KRW",
+        "kWh",
+        "kW",
+        "kWh_pe",
+        "kWh/m2",
+        "kg_CO2",
+        "t_CO2",
+        "m2",
+        "celsius",
+        "yr",
+        "month",
+        "day",
+        "hour"
+      ],
+      "description": "수량 단위 어휘. 에너지·전력·탄소·1차에너지·면적·온도의 표기는 energy_units.json#default.base_units 와 같다(시험이 포함 관계를 지킨다). ratio=0~1 비율 · pct=백분율(25 = 25%) — 질문의 '상위 25%' 는 pct 로 싣고 환산은 한 곳(질문 수 환산)에서 한다."
+    },
+    "Quantity": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "value",
+        "unit"
+      ],
+      "properties": {
+        "value": {
+          "type": "number"
+        },
+        "unit": {
+          "$ref": "#/$defs/QuantityUnit"
+        },
+        "text": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "maxLength": 200,
+          "description": "질문 원문의 부분 문자열(질문이 말한 수일 때) — 수를 지어내지 않았다는 근거"
+        }
+      },
+      "description": "수와 단위 한 쌍 — 질문 수 환산의 결과 모양. 수 인자에 단위를 선언해 버려지는 인자·비율/백분율 혼동을 막는다."
+    }
+  }
+}

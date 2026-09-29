@@ -1,0 +1,461 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "energy-contracts/airo_result.json",
+  "title": "AIRO 도구 결과 봉투 (airo-result/v1)",
+  "description": "도구 결과 한 모양(2026-09-29 M3 — 공모전 docs/ARCHITECTURE_MIGRATION_M1_M6_2026-09-29.md §2 · scratch/expert_0929/INTERFACES.md §4.2③). 지금 결과 모양 5가지(result{} 중첩 · 최상위 rows[] · 평평한 스칼라 · payload{} · items[])를 판정기·투영·검산기·장면 컴파일러가 이 하나로 읽는다. 이전은 어댑터층으로 한다: 게이트웨이 tool_router 출구가 도구 결과를 이 봉투로 정규화해 감사 기록과 내부 소비자에게 주고, 응답 바이트는 바꾸지 않는다. 도구 고유 스칼라는 summary, 행은 rows 로 옮길 뿐 없애지 않는다.",
+  "_usage": "runtime-validate",
+  "_consumers": [
+    "ems_transformer",
+    "airos-energy-decision",
+    "agentleague",
+    "energy-decision-studio",
+    "building-energy-3d"
+  ],
+  "version": "1.0",
+  "updated": "2026-09-29",
+  "$comment": "파일 밖 $ref(interface_types.json · data_classification.json · error_response.json · airo_request.json)는 $id 기준 상대 경로다. 검사하는 쪽은 EC schemas/*.json 전부를 한 레지스트리에 올려 읽는다(tests/test_interface_contracts.py 본보기).",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "contract",
+    "status",
+    "rows",
+    "absences",
+    "classification",
+    "ec_version",
+    "result_hash"
+  ],
+  "properties": {
+    "contract": {
+      "const": "airo-result/v1"
+    },
+    "tool": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "maxLength": 120,
+      "description": "결과를 낸 도구 이름"
+    },
+    "operation": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "maxLength": 160,
+      "description": "연산 이름(operation_manifest 의 연산). 같은 이름·다른 계산을 막으려고 싣는다"
+    },
+    "result_schema": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "maxLength": 160,
+      "description": "summary·rows 의 도구 고유 형식 이름(예 '<도구>-result/v1'). 검산기 등록부가 이 이름으로 검산기를 찾는다"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "ok",
+        "partial",
+        "needs_input",
+        "refused",
+        "unavailable",
+        "unsupported"
+      ],
+      "description": "ok=답 · partial=일부 답(빠진 칸은 absences) · needs_input=되묻기(질문이 정해야 할 것) · refused=이름 있는 거절 · unavailable=상류·자료원이 응답하지 않음 · unsupported=기능 없음. ok 가 아니면 refusal 을 싣는다(partial 은 선택). 실패 상태 낱말 13가지를 이 여섯으로 모은다."
+    },
+    "target_context": {
+      "$ref": "interface_types.json#/$defs/TargetContextRef"
+    },
+    "period_used": {
+      "anyOf": [
+        {
+          "$ref": "interface_types.json#/$defs/PeriodRef"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "description": "이 결과가 실제로 쓴 기간(질문이 말한 기간이 아니라 쓴 기간). 기간이 필요 없는 결과는 null"
+    },
+    "row_kind": {
+      "type": "string",
+      "enum": [
+        "ranked",
+        "card",
+        "series",
+        "table",
+        "scalar"
+      ],
+      "description": "행 종류 — ranked=순위 목록(top_n 을 적용할 수 있는 것은 이것뿐) · card=한 대상의 부분 행 모음(자르지 않는다) · series=시계열 · table=순서 없는 표 · scalar=행 없이 summary 만"
+    },
+    "columns": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/Column"
+      },
+      "description": "rows 의 칸 선언. rows 의 칸 이름은 여기 있어야 한다(검산기·투영이 칸 별칭을 짐작하지 않게)"
+    },
+    "rows": {
+      "type": "array",
+      "items": {
+        "type": "object"
+      },
+      "description": "행 목록. 비식별 값만(좌표·주소·원천 코드·측정 세트 ID 금지)"
+    },
+    "population": {
+      "$ref": "#/$defs/Population"
+    },
+    "summary": {
+      "type": "object",
+      "description": "도구 고유 스칼라(예전 result{} 의 평평한 칸)"
+    },
+    "absences": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/Absence"
+      },
+      "description": "빠진 칸과 그 이유. 비어 있으면 '검사했고 빠진 것 없음'이다. '제공 안 됨'(빈 목록을 통과로 세던 거짓 초록)과 '검사했고 0 건'을 이 칸과 population 으로 가른다"
+    },
+    "classification": {
+      "$ref": "#/$defs/ResultClassification"
+    },
+    "honesty_label": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "maxLength": 200,
+      "description": "사람 대면 정직 표지(예 '가상'·'추정'·'잠정'). 실측·공식 수치와 섞지 않고 구분해 보인다"
+    },
+    "assumptions": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/Assumption"
+      },
+      "description": "이 결과가 쓴 선언 가정(질문이 값을 말하지 않아 쓴 기본값). 값마다 근거(basis)를 싣는다"
+    },
+    "source_ids": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "minLength": 1
+      },
+      "description": "근거 자료 식별자(비식별)"
+    },
+    "ec_version": {
+      "type": "string",
+      "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+([-+][0-9A-Za-z.-]+)?$",
+      "description": "이 결과를 만든 쪽이 읽은 energy-contracts 판(정본 값·규칙의 판)"
+    },
+    "refusal": {
+      "$ref": "error_response.json#/$defs/Refusal"
+    },
+    "result_hash": {
+      "type": "string",
+      "minLength": 8,
+      "maxLength": 128,
+      "description": "결과 지문(판정·인수가 같은 답을 보는지 대조)"
+    },
+    "result_hash_scheme": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "maxLength": 80,
+      "description": "지문 계산 방식 이름(예 sha256-canonical-json-v1)"
+    }
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "status": {
+            "enum": [
+              "needs_input",
+              "refused",
+              "unavailable",
+              "unsupported"
+            ]
+          }
+        }
+      },
+      "then": {
+        "required": [
+          "refusal"
+        ]
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "status": {
+            "enum": [
+              "ok",
+              "partial"
+            ]
+          }
+        }
+      },
+      "then": {
+        "required": [
+          "target_context",
+          "row_kind",
+          "columns"
+        ]
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "status": {
+            "const": "ok"
+          }
+        }
+      },
+      "then": {
+        "not": {
+          "required": [
+            "refusal"
+          ]
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "status": {
+            "enum": [
+              "ok",
+              "partial"
+            ]
+          },
+          "rows": {
+            "maxItems": 0
+          },
+          "row_kind": {
+            "not": {
+              "const": "scalar"
+            }
+          }
+        }
+      },
+      "then": {
+        "required": [
+          "population"
+        ],
+        "description": "행이 없는 ok/partial 은 '검사했고 0 건'인지 population.row_count_full 로 밝힌다(빈 목록을 조용히 통과시키지 않는다)"
+      }
+    },
+    {
+      "if": {
+        "required": [
+          "row_kind"
+        ],
+        "properties": {
+          "row_kind": {
+            "const": "ranked"
+          }
+        }
+      },
+      "then": {
+        "required": [
+          "population"
+        ]
+      }
+    }
+  ],
+  "$defs": {
+    "Column": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "name"
+      ],
+      "properties": {
+        "name": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 120
+        },
+        "concept": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "maxLength": 120,
+          "description": "칸의 뜻(투영 FIELD_CONCEPTS 정본 이름 — 예 eui_kwh_m2 · saved_kwh). EUI 3종·절감량 여럿 같은 별칭 모호를 막는다"
+        },
+        "unit": {
+          "anyOf": [
+            {
+              "$ref": "interface_types.json#/$defs/QuantityUnit"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "classification": {
+          "$ref": "interface_types.json#/$defs/ClassificationWordRef"
+        },
+        "label_ko": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "maxLength": 120
+        }
+      }
+    },
+    "Population": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "row_count_full",
+        "rows_returned"
+      ],
+      "properties": {
+        "row_count_full": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "minimum": 0,
+          "description": "자르기 전 전체 행 수. null = 못 잼(0 으로 지어내지 않는다)"
+        },
+        "rows_returned": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "truncated": {
+          "type": "boolean"
+        },
+        "top_n_applied": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "minimum": 1,
+          "description": "적용한 상위 N(ranked 에서만). 없으면 null"
+        }
+      }
+    },
+    "Absence": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "slot",
+        "absence_kind"
+      ],
+      "properties": {
+        "slot": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 200,
+          "description": "빠진 칸(결과 칸 이름 또는 입력 칸 이름)"
+        },
+        "absence_kind": {
+          "$ref": "interface_types.json#/$defs/AbsenceKindRef"
+        },
+        "code": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "pattern": "^[A-Z][A-Z0-9_]+$",
+          "description": "뜻 단위 사유 코드(Refusal.code 와 같은 어휘)"
+        },
+        "why_ko": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "maxLength": 400
+        }
+      }
+    },
+    "ResultClassification": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "word"
+      ],
+      "properties": {
+        "word": {
+          "$ref": "interface_types.json#/$defs/ClassificationWordRef"
+        },
+        "label_ko": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "maxLength": 60,
+          "description": "data_classification.json#default.classification.words[word].label_ko"
+        },
+        "virtual_fields": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {
+            "type": "string"
+          },
+          "description": "가상·추정으로 채운 칸 이름(출처 표시 대상)"
+        },
+        "sources": {
+          "type": "array",
+          "items": {
+            "$ref": "interface_types.json#/$defs/ClassificationWordRef"
+          },
+          "description": "합성 전 입력 분류 낱말들(합성 규칙 = rules_pure.ec_classification_combine)"
+        }
+      },
+      "description": "결과 전체의 분류 — 정본 17 낱말 하나. 분류가 없으면 unknown(measured 로 올리지 않는다)"
+    },
+    "Assumption": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "key",
+        "value",
+        "classification",
+        "basis"
+      ],
+      "properties": {
+        "key": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 120,
+          "description": "가정 이름(예 aging_years_default · top_share_pct_default)"
+        },
+        "value": {
+          "description": "쓴 값(수·문자열·목록)"
+        },
+        "unit": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "maxLength": 40
+        },
+        "classification": {
+          "$ref": "interface_types.json#/$defs/ClassificationWordRef"
+        },
+        "basis": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 300,
+          "description": "근거 출처 id — 예 energy-contracts/declared_assumptions#aging_years_default"
+        },
+        "rule_ko": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "maxLength": 600
+        }
+      }
+    }
+  }
+}
