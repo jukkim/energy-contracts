@@ -166,3 +166,27 @@ def test_table_fingerprint_ignores_line_endings_only():
 def test_gitattributes_pins_data_json_to_lf():
     attrs = (Path(rr.__file__).resolve().parents[1] / ".gitattributes").read_text(encoding="utf-8")
     assert "energy_contracts/data/*.json" in attrs and "eol=lf" in attrs
+
+
+# 2026-09-30 v0.3.67 — 문장 속 지명: 짧은 지명은 읽고 일상어 어간만 막는다(사용자 결정) · 양쪽 반례
+@pytest.mark.parametrize("text", ["예산 10억으로 조합해", "동작 방식을 알려줘", "목표 달성 여부", "음성으로 알려줘",
+                                  "심사해 수정해 줘", "10년 동안 사용량"])
+def test_everyday_words_are_not_places_in_sentences(text):
+    assert rr.find_region_mention(text) is None
+
+
+@pytest.mark.parametrize("text,code", [("충남 예산 건물", "44810"), ("예산군 건물", "44810"), ("대구 달성군", "27710"),
+                                       ("강남 24시간 예측", "11680"), ("마포 노후 건물", "11440"),
+                                       ("무안 사랑초", "46840"), ("해운대 날씨", "26350")])
+def test_short_place_names_and_marked_stems_are_places(text, code):
+    r = rr.find_region_mention(text)
+    assert r is not None and r.code == code
+
+
+def test_field_input_is_not_blocked():
+    assert rr.resolve("예산").code == "44810"                          # 사람이 지역 칸에 적은 값은 지명이다
+
+
+def test_everyday_stem_table_lists_only_real_stems():
+    stems = {k for k, v in rr._index().sigungu_by_key.items() if any(g == 1 for _, g in v)}
+    assert rr.everyday_stems() and rr.everyday_stems() <= stems        # 표가 낡으면(없는 어간) 빨강

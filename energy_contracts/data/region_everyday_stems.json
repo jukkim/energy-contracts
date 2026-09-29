@@ -1,0 +1,98 @@
+{
+ "schema": "region-everyday-stems-v1",
+ "doc": "시·군·구 이름의 어간(접미 뗀 줄임) 가운데 문장 속에서 지명이 아닌 일반어로 흔히 쓰이는 것. regions.find_region_mention(문장 속 지명 찾기)은 이 어간이 접미 없이 · 같은 문장에 그 시도 표기 없이 나오면 지명으로 읽지 않는다. 지역 칸 입력(resolve)은 막지 않는다. 사용자 결정 2026-09-30(짧은 지명은 읽고 일상어만 막는다) · 캠페인 docs/QUERY100_NEXT_BATCH_DESIGN_2026-09-29.md 묶음 7 · 5.",
+ "stems": {
+  "수정": {
+   "meaning": "修正 — 고침",
+   "basis": "place_resolution_diff 2026-09-29(문맥 none) 실측 오독 147행"
+  },
+  "예산": {
+   "meaning": "豫算",
+   "basis": "place_resolution_diff 2026-09-29(문맥 none) 실측 오독 106행"
+  },
+  "동안": {
+   "meaning": "기간",
+   "basis": "place_resolution_diff 2026-09-29(문맥 none) 실측 오독 23행"
+  },
+  "동작": {
+   "meaning": "動作",
+   "basis": "place_resolution_diff 2026-09-29(문맥 none) 실측 오독 10행"
+  },
+  "달성": {
+   "meaning": "達成",
+   "basis": "place_resolution_diff 2026-09-29(문맥 none) 실측 오독 6행"
+  },
+  "음성": {
+   "meaning": "音聲",
+   "basis": "place_resolution_diff 2026-09-29(문맥 none) 실측 오독 5행"
+  },
+  "강화": {
+   "meaning": "强化",
+   "basis": "place_resolution_diff 2026-09-29(문맥 none) 실측 오독 4행"
+  },
+  "사상": {
+   "meaning": "思想",
+   "basis": "place_resolution_diff 2026-09-29(문맥 none) 실측 오독 2행"
+  },
+  "연수": {
+   "meaning": "年數·硏修",
+   "basis": "place_resolution_diff 2026-09-29(문맥 none) 실측 오독 1행"
+  },
+  "부여": {
+   "meaning": "附與",
+   "basis": "place_resolution_diff 2026-09-29(문맥 none) 실측 오독 1행"
+  },
+  "고령": {
+   "meaning": "高齡",
+   "basis": "place_resolution_diff 2026-09-29(문맥 none) 실측 오독 1행"
+  },
+  "상당": {
+   "meaning": "相當(상당히)",
+   "basis": "표준국어대사전 일반어 — 에너지·정책 문장에서 지명이 아닌 뜻으로 흔히 쓰임"
+  },
+  "수지": {
+   "meaning": "收支",
+   "basis": "표준국어대사전 일반어 — 에너지·정책 문장에서 지명이 아닌 뜻으로 흔히 쓰임"
+  },
+  "영양": {
+   "meaning": "營養",
+   "basis": "표준국어대사전 일반어 — 에너지·정책 문장에서 지명이 아닌 뜻으로 흔히 쓰임"
+  },
+  "단원": {
+   "meaning": "單元",
+   "basis": "표준국어대사전 일반어 — 에너지·정책 문장에서 지명이 아닌 뜻으로 흔히 쓰임"
+  },
+  "청원": {
+   "meaning": "請願",
+   "basis": "표준국어대사전 일반어 — 에너지·정책 문장에서 지명이 아닌 뜻으로 흔히 쓰임"
+  },
+  "상주": {
+   "meaning": "常駐",
+   "basis": "표준국어대사전 일반어 — 에너지·정책 문장에서 지명이 아닌 뜻으로 흔히 쓰임"
+  },
+  "동남": {
+   "meaning": "방위",
+   "basis": "표준국어대사전 일반어 — 에너지·정책 문장에서 지명이 아닌 뜻으로 흔히 쓰임"
+  },
+  "서북": {
+   "meaning": "방위",
+   "basis": "표준국어대사전 일반어 — 에너지·정책 문장에서 지명이 아닌 뜻으로 흔히 쓰임"
+  },
+  "진도": {
+   "meaning": "進度",
+   "basis": "표준국어대사전 일반어 — 에너지·정책 문장에서 지명이 아닌 뜻으로 흔히 쓰임"
+  },
+  "거창": {
+   "meaning": "巨創(거창한)",
+   "basis": "표준국어대사전 일반어 — 에너지·정책 문장에서 지명이 아닌 뜻으로 흔히 쓰임"
+  },
+  "장수": {
+   "meaning": "長壽",
+   "basis": "표준국어대사전 일반어 — 에너지·정책 문장에서 지명이 아닌 뜻으로 흔히 쓰임"
+  },
+  "광산": {
+   "meaning": "鑛山",
+   "basis": "표준국어대사전 일반어 — 에너지·정책 문장에서 지명이 아닌 뜻으로 흔히 쓰임"
+  }
+ }
+}
