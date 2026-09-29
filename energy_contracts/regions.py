@@ -429,14 +429,15 @@ def resolve(query: Optional[str], *, context: Optional[str] = None) -> RegionRes
 
 
 def _with_children_prefix(r: RegionResolution) -> RegionResolution:
-    """우산 시면 하위 접두 4자리를 싣는다 — 표의 다른 시군구가 같은 4자리로 시작할 때만(짐작하지 않는다)."""
+    """우산 시면 하위 접두 4자리를 싣는다 — 표의 ``umbrella`` 표시(`umbrella_codes`, `pnu_range_prefix` 와 같은 규칙)로만.
+    2026-09-30 v0.3.68: 예전엔 '같은 4자리로 시작하는 다른 시군구가 있나' 로 짐작해 영동군(43740)에 4374 를 붙였고,
+    그 접두가 증평군(43745)으로 펴졌다(268곳 전수 대조에서 어긋남은 이 하나)."""
     from dataclasses import replace
     code = r.code or ""
-    if not (r.ok and len(code) == 5 and code.endswith("0")):
+    if not (r.ok and len(code) == 5 and code.isdigit()):
         return r
-    head = code[:4]
-    if any(c != code and c.startswith(head) for c in table()["sigungu"]):
-        return replace(r, children_prefix=head)
+    if canonical_sigungu(code) in umbrella_codes():
+        return replace(r, children_prefix=code[:4])
     return r
 
 
@@ -614,8 +615,14 @@ def disambiguate_by_point(res: RegionResolution, lon: float, lat: float,
 #: 지역 이름 뒤에 붙는 조사 — 문장에서 지역을 찾을 때만 뗀다(긴 것부터).
 #: 긴 것부터(첫 일치 하나만 뗀다). 2026-09-29 M4: '에도·에게·보다·처럼·에서도' 추가 — '강남구에도' 가 '도' 만 떼여 못 풀렸다
 #:   (게이트웨이 목록과의 합집합 — 조사 떼기 사본 5벌 통합의 첫 걸음).
-_JOSA = ("에서는", "에서도", "에서", "으로", "까지", "부터", "에는", "에도", "에게", "보다", "처럼",
-         "로", "에", "의", "은", "는", "이", "가", "을", "를", "도", "만")
+#: 2026-09-30 v0.3.68: 조사·접미 목록은 **여기 한 곳**(공개 `PLACE_PARTICLES`) — 게이트웨이 `place_resolution.PLACE_TRAILERS`
+#:   가 이 객체를 import 한다(두 벌이던 목록의 합집합 + '이랑'·'랑'·'하고' — '노원구랑' 을 두 경로 모두 못 읽었다). 긴 것부터.
+#:   떼고 남은 것이 지명 사전에 없으면 지명이 아니다(소비처가 사전으로 본다) — 목록이 넓어도 '사랑' 은 지명이 되지 않는다.
+PLACE_PARTICLES: tuple[str, ...] = tuple(sorted({
+    "에서는", "에서의", "에서도", "에서", "에게", "에는", "에도", "으로", "까지", "부터", "보다", "처럼", "대비", "전체", "일대",
+    "관내", "지역", "소재", "청사", "구청", "시청", "군청", "도청", "이랑", "하고",
+    "의", "에", "은", "는", "이", "가", "을", "를", "과", "와", "도", "로", "만", "별", "내", "쪽", "권", "청", "랑"},
+    key=lambda s: (-len(s), s)))
 
 
 _ANCHOR_PAREN = re.compile(r"\s*\([^)]*\)\s*")
@@ -677,7 +684,7 @@ def find_region_mention(text: str, *, context: Optional[str] = None,
         for i in range(0, len(words) - n + 1):
             chunk = words[i:i + n]
             tries = [chunk]
-            for j in _JOSA:
+            for j in PLACE_PARTICLES:
                 if chunk[-1].endswith(j) and len(chunk[-1]) > len(j) + 1:
                     tries.append(chunk[:-1] + [chunk[-1][: -len(j)]])
                     break

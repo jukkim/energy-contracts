@@ -198,3 +198,29 @@ def test_everyday_stem_rule_is_public_and_the_same_one_find_uses():
     assert rr.everyday_stem_blocked("예산", "충남 예산 건물") is False
     assert rr.everyday_stem_blocked("강남", "강남 24시간 예측") is False
     assert not hasattr(rr, "_everyday_stem_blocked")
+
+
+# 2026-09-30 v0.3.68 — 우산 시 표시로만 자식 접두 · 조사 목록 한 곳 · 양쪽 반례
+def test_children_prefix_only_for_umbrella_cities():
+    assert rr.resolve("영동군").children_prefix is None                 # 짐작 규칙이 4374 → 증평군으로 폈다
+    assert rr.resolve("수원").children_prefix == "4111"
+    assert rr.resolve("화성시").children_prefix == "4159"
+    for code in rr.umbrella_codes():                                   # 우산 시 전부는 그대로(전수)
+        assert rr.resolve(code).children_prefix == code[:4], code
+
+
+def test_place_particles_one_list_longest_first():
+    p = rr.PLACE_PARTICLES
+    assert {"랑", "이랑", "하고", "구청", "에서도"} <= set(p)
+    assert list(p) == sorted(p, key=lambda s: (-len(s), s))
+
+
+@pytest.mark.parametrize("text,code", [("노원구랑 롯데타워 보여줘", "11350"), ("강남구하고 비교", "11680")])
+def test_new_particles_read_places(text, code):
+    r = rr.find_region_mention(text)
+    assert r is not None and r.code == code
+
+
+@pytest.mark.parametrize("text", ["사랑으로 알려줘", "하고 싶은 말"])
+def test_new_particles_do_not_make_places(text):
+    assert rr.find_region_mention(text) is None
