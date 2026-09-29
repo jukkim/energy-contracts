@@ -8,8 +8,8 @@
     "executor_keys": "projects\\energy-decision-studio\\lib\\actions\\executor_keys.ts"
   },
   "counts": {
-    "opcodes": 107,
-    "opA": 8,
+    "opcodes": 108,
+    "opA": 9,
     "opB": 88,
     "opC": 11,
     "routerClasses": 43,
@@ -117,6 +117,13 @@
       "ns": "data",
       "consumerClass": "B",
       "summary": "전문 함수가 반환한 검증 결과를 근거 패널로 표시. evidenceId + binding(/facts/result) + resolvedValue"
+    },
+    {
+      "api": "mountUhiGrid",
+      "name": "data.uhiGrid",
+      "ns": "data",
+      "consumerClass": "A",
+      "summary": "지표온도(열섬) 격자를 지면 사각형으로 — 한 출처(여름 합성 실측이 있으면 그것, 없으면 더미 = 추정 배지), 칸 크기는 서버 값. 게이트웨"
     },
     {
       "api": "unmountBftDropdown",
@@ -2502,7 +2509,9 @@
       "showAnalysis",
       "selectBuildings"
     ],
-    "acMissing": [],
+    "acMissing": [
+      "mountUhiGrid"
+    ],
     "bop": {
       "emittedTokens": 15,
       "covered": [
