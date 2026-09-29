@@ -4,6 +4,13 @@
 
 ---
 
+## 0.3.66 (2026-09-30, 태그 v0.3.66) — 지명 표 지문을 줄끝과 무관하게
+
+- `regions.canonical_table_bytes()`(줄끝 LF 정규화) · `table_sha256()` 은 그것을 해시한다(f7 7e9f102). 원인: 메인 체크아웃(core.autocrlf=true, .gitattributes 없음)에서
+  `data/region_resolver_table.json` 이 CRLF 로 풀려 같은 표가 체크아웃마다 다른 지문(01c72d7d… ↔ a86590aa…)이 됐다 — '두 소비처가 같은 표' 대조가 기계마다 달라졌다.
+- `.gitattributes`: `energy_contracts/data/*.json text eol=lf`(예방).
+- 반례: CRLF = LF 같은 지문 · 내용이 다르면 다른 지문 · gitattributes 등재. 생성 상수 영향 없음(drift 0).
+
 ## 0.3.65 (2026-09-30, 태그 v0.3.65) — regions 가 EC 대상 id `region:<숫자>` 를 받는다
 
 - `energy_contracts.regions._resolve` 입구에서 `TARGET_ID_PREFIX`("region:")를 떼고 숫자(코드) 경로로 보낸다 — 숫자가 아니면 `REASON_BAD_CODE` 이름 있는 거절(f7 1294333).
