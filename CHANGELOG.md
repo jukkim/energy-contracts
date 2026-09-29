@@ -4,6 +4,13 @@
 
 ---
 
+## 0.3.65 (2026-09-30, 태그 v0.3.65) — regions 가 EC 대상 id `region:<숫자>` 를 받는다
+
+- `energy_contracts.regions._resolve` 입구에서 `TARGET_ID_PREFIX`("region:")를 떼고 숫자(코드) 경로로 보낸다 — 숫자가 아니면 `REASON_BAD_CODE` 이름 있는 거절(f7 1294333).
+  뿌리(F07): 게이트웨이 장면 조리법이 EC 대상 id 형식 `region:11680` 을 싣는데 be-3d 해석기가 지명으로 읽다 0동 선택이 됐다 — 처리기마다 벗기지 않고 해석기 한 곳에서 받는다.
+  반례: 계약 pattern 이 이 접두로 시작(가정을 시험으로) · region:11/4111/11680 = 숫자만과 같은 결과 · 'region:'·'region:abc'·'region:강남구' 거절.
+- 생성 상수 영향 없음(drift 0) · 표 생성기 이관(④)은 다음 판.
+
 ## 0.3.64 (2026-09-30, 태그 v0.3.64) — 지명 해석 하나(regions) · 폭염 출처 문구
 
 - `energy_contracts.regions`(f7 T1 ①): be-3d region_resolver 의 규칙·표를 그대로 옮긴 순수 모듈 — `resolve(query, context=<시도>)` · `find_region_mention` · `resolve_code`. 표 = package data `data/region_resolver_table.json`.
