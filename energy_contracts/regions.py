@@ -644,9 +644,10 @@ def everyday_stems() -> frozenset[str]:
     return frozenset(json.loads(EVERYDAY_STEMS_PATH.read_text(encoding="utf-8"))["stems"])
 
 
-def _everyday_stem_blocked(word: str, text: str) -> bool:
+def everyday_stem_blocked(word: str, text: str) -> bool:
     """문장 속 이 낱말을 지명으로 읽지 않나 — 시·군·구 어간(접미 없음)이 일상어 표에 있고, 같은 문장에 그 시군구의
-    시도 표기가 없을 때. '예산 10억' 은 막고 '충남 예산'·'예산군' 은 막지 않는다. 지역 칸 입력(resolve)에는 쓰지 않는다."""
+    시도 표기가 없을 때. '예산 10억' 은 막고 '충남 예산'·'예산군' 은 막지 않는다. 지역 칸 입력(resolve)에는 쓰지 않는다.
+    공개 이름(v0.3.68): 문장에서 자리마다 resolve 를 부르는 소비처(게이트웨이 place_resolution 어댑터)가 같은 규칙을 쓴다 — 사본 금지."""
     if word not in everyday_stems():
         return False
     codes = [c for c, grade in _index().sigungu_by_key.get(word, []) if grade == 1]
@@ -684,7 +685,7 @@ def find_region_mention(text: str, *, context: Optional[str] = None,
                 q = " ".join(c)
                 if q in NATION_WORDS or q.isdigit() or q in table()["anchors"]:
                     continue
-                if len(c) == 1 and _everyday_stem_blocked(c[0], text):
+                if len(c) == 1 and everyday_stem_blocked(c[0], text):
                     continue
                 r = resolve(q, context=context)
                 if r.status != STATUS_UNRESOLVED:

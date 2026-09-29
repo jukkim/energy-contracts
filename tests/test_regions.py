@@ -190,3 +190,11 @@ def test_field_input_is_not_blocked():
 def test_everyday_stem_table_lists_only_real_stems():
     stems = {k for k, v in rr._index().sigungu_by_key.items() if any(g == 1 for _, g in v)}
     assert rr.everyday_stems() and rr.everyday_stems() <= stems        # 표가 낡으면(없는 어간) 빨강
+
+
+def test_everyday_stem_rule_is_public_and_the_same_one_find_uses():
+    # v0.3.68: 소비처(게이트웨이 어댑터)가 같은 규칙을 부른다 — 이름 하나, 사본 없음
+    assert rr.everyday_stem_blocked("예산", "예산 10억") is True
+    assert rr.everyday_stem_blocked("예산", "충남 예산 건물") is False
+    assert rr.everyday_stem_blocked("강남", "강남 24시간 예측") is False
+    assert not hasattr(rr, "_everyday_stem_blocked")
