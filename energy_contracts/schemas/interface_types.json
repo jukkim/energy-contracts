@@ -11,9 +11,9 @@
     "energy-decision-studio",
     "building-energy-3d"
   ],
-  "version": "1.1",
+  "version": "1.2",
   "updated": "2026-09-29",
-  "$comment": "1.1(2026-09-29 RV-B1 초안, 0.3.62): QuantityUnit += score. 가산.파일 밖 $ref(airo_request.json · data_classification.json)는 $id 기준 상대 경로다. 검사하는 쪽은 EC schemas/*.json 전부를 한 레지스트리(referencing)에 올려 읽는다 — tests/test_interface_contracts.py 가 그 방법의 본보기다.",
+  "$comment": "1.2(2026-09-29 3b-2 S1 초안, 0.3.63 — 태그·gen_constants 는 묶음 끝): RequestResolution(실행 전 해석 입구 응답) 추가. 가산. 1.1(2026-09-29 RV-B1 초안, 0.3.62): QuantityUnit += score. 가산.파일 밖 $ref(airo_request.json · data_classification.json)는 $id 기준 상대 경로다. 검사하는 쪽은 EC schemas/*.json 전부를 한 레지스트리(referencing)에 올려 읽는다 — tests/test_interface_contracts.py 가 그 방법의 본보기다.",
   "$defs": {
     "TargetRef": {
       "$ref": "airo_request.json#/$defs/Target",
@@ -82,6 +82,63 @@
         }
       },
       "description": "수와 단위 한 쌍 — 질문 수 환산의 결과 모양. 수 인자에 단위를 선언해 버려지는 인자·비율/백분율 혼동을 막는다."
+    },
+    "RequestResolution": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "contract",
+        "question_frame",
+        "target_context"
+      ],
+      "properties": {
+        "contract": {
+          "const": "request-resolution/v1",
+          "description": "응답 표지 — 클라이언트는 이 글자가 정확히 같을 때만 결정으로 받는다(오류 본문 포함 — 200·422·401·403 모두 같은 글자)."
+        },
+        "question_frame": {
+          "type": [
+            "object",
+            "null"
+          ],
+          "description": "질의 응답 validation.question_frame 과 같은 칸(게이트웨이 question-frame/v1 — contract·subject_kind·places·period·strategies … + place_resolution). 입구가 틀을 뽑지 못했으면 null."
+        },
+        "target_context": {
+          "$ref": "#/$defs/TargetContextRef",
+          "description": "실행 전 대상 = 질의 응답 validation.target_context 와 같은 함수로 만든다. 전국 = kind region · ids [region:kr] · 원형 = kind archetype. 되묻기·거절이면 resolved=false(kind·source null · ids 빈 목록)."
+        },
+        "refusal": {
+          "$ref": "error_response.json#/$defs/Refusal",
+          "description": "결정이 되묻기(PLACE_AMBIGUOUS — 200) 또는 거절(봉투 422 · 신원 401/403/503)이면 EC Refusal 1.1. 결정이 났으면 칸이 없다."
+        },
+        "period": {
+          "type": [
+            "object",
+            "null"
+          ],
+          "description": "덧칸(선택): 봉투 기간(period_window) 또는 입구가 한 번 푼 질문 기간(question_period). 클라이언트는 모르는 칸을 무시한다."
+        },
+        "place_decision": {
+          "type": [
+            "object",
+            "null"
+          ],
+          "description": "덧칸(선택): 지명 해석 결과(code·places·ambiguous·candidates·why — 게이트웨이 place_resolution 어댑터 모양)."
+        },
+        "stage": {
+          "const": "pre_execution",
+          "description": "덧칸(선택): 이 대상은 실행 전 대상이다 — 연쇄(chain_step)로 최종 대상이 바뀌는 질문은 질의 응답의 대상과 다를 수 있다."
+        },
+        "errors": {
+          "type": "array",
+          "maxItems": 5,
+          "items": {
+            "type": "string"
+          },
+          "description": "덧칸(선택): 봉투 오류의 검사 메시지(airo-request/v2 422 의 errors 와 같은 것)."
+        }
+      },
+      "description": "1.2(0.3.63 초안): 실행 전 해석 입구 POST /v1/request-resolution 의 응답(2026-09-29 3b-2 S1 · 공모전 docs/QUERY100_NEXT_BATCH_DESIGN_2026-09-29.md 3b-2 (c)). 요청 = airo-request v2 봉투 그대로(질의 입구와 같은 질의자·신원·대상 결정 함수). 도구·플래너·LLM 을 부르지 않는다 — be-3d Lab 장면 경로가 게이트웨이의 대상 결정을 먼저 받아 기본 대상(강남구)을 붙일지 정한다(E14)."
     }
   }
 }

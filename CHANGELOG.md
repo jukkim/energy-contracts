@@ -4,6 +4,11 @@
 
 ---
 
+## 0.3.63 (unreleased, 2026-09-29) — 요청 해석 입구 모양
+
+- `interface_types.json` 1.2: `RequestResolution` 추가 — 게이트웨이 `POST /v1/request-resolution` 응답(`contract="request-resolution/v1"` · question_frame · target_context · period · place_decision · refusal?). 도구·LLM 없이 질문 틀과 대상 결정만 돌려주는 입구다. be-3d 장면 경로가 대상을 게이트웨이 결정 하나에서 받는다(묶음 3 S1).
+- 생성 상수 영향 없음(`gen_constants --check` drift 0) → 태그·소비처 핀은 다음 발행 때.
+
 ## 0.3.62 (2026-09-29, 태그 v0.3.62) — RV-B 계약 일관성
 
 근거: 공모전 `docs/REVIEW_FIX_PLAN_2026-09-29.md` §B · `scratch/review_0929/R3_CONSISTENCY.md`(H3·M1·M2·M4·M10·T).

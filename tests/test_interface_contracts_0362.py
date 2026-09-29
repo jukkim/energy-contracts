@@ -45,7 +45,11 @@ def _ok(v, inst) -> bool:
 def test_versions_bumped_for_the_draft():
     assert _load("airo_request.json")["version"] == "2.4"
     assert _load("airo_result.json")["version"] == "1.1"
-    assert _load("interface_types.json")["version"] == "1.1"
+    # 근거(2026-09-29 3b-2 S1, 0.3.63 초안): interface_types 는 RequestResolution 추가로 1.1 → 1.2 (스키마 $comment 1.2 절).
+    # 1.1 의 가산분(QuantityUnit += score)은 아래 test_declared_units_are_quantity_units_and_new_entries_exist 가 그대로
+    # 지키고, 1.2 가산분은 RequestResolution 이 $defs 에 있는지로 본다(반대쪽). 나머지 세 판 고정은 바꾸지 않는다.
+    assert "RequestResolution" in _load("interface_types.json")["$defs"]
+    assert _load("interface_types.json")["version"] == "1.2"
     assert _load("declared_assumptions.json")["version"] == "1.2"
     for name in ("airo_request.json", "airo_result.json", "interface_types.json", "declared_assumptions.json"):
         Draft202012Validator.check_schema(_load(name))
