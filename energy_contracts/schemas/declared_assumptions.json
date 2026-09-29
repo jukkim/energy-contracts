@@ -18,9 +18,9 @@
         "threshold_c": 33.0,
         "comparison": "daily_max_ge",
         "months": [6, 9],
-        "rule_ko": "폭염일 = 일 최고기온 33℃ 이상(기상청 폭염 기준 인용)",
+        "rule_ko": "폭염일 = 일 최고기온 33℃ 이상(기상청 폭염일수 통계 정의 인용)",
         "classification": "declared",
-        "source": "기상청 폭염특보 기준(일 최고기온 33℃ 이상) 인용 — 게이트웨이 general_ops/cohort.HAZARD_DEFAULTS · internal_query_tools complaint_causes heatwave_c 기본"
+        "source": "기상청 기후통계 폭염일수 정의(일 최고기온 33℃ 이상인 날) 인용 — 폭염특보(2020~ 일 최고 체감온도 33℃)와는 다른 기준. 게이트웨이 general_ops/cohort.HAZARD_DEFAULTS · internal_query_tools complaint_causes heatwave_c 기본"
       },
       "cold": {
         "threshold_c": -12.0,
