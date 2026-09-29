@@ -65,14 +65,22 @@ STRATEGY_EXEMPT_PATTERNS = [
 STRATEGY_SCAN_EXTS = {".py", ".ts", ".tsx", ".js", ".jsx", ".html", ".yaml", ".yml"}
 
 
+def _is_readable_file(p: Path) -> bool:
+    try:
+        return p.is_file()
+    except OSError:
+        return False
+
+
 def scan_legacy_strategies(paths: list[Path]) -> list[tuple[Path, int, str]]:
     violations = []
     for root in paths:
         if root.is_file():
             files = [root]
         else:
-            files = [p for p in root.rglob("*") if p.is_file()
-                     and p.suffix in STRATEGY_SCAN_EXTS]
+            # 확장자를 먼저 본다(stat 없음). 접근할 수 없는 항목(깨진 pytest `current` 링크 등, 2026-09-29 실측
+            #   WinError 1920)은 읽을 수 없는 파일과 같이 건너뛴다 — 아래 read_text 실패와 같은 규칙.
+            files = [p for p in root.rglob("*") if p.suffix in STRATEGY_SCAN_EXTS and _is_readable_file(p)]
         for fp in files:
             # 절대경로가 아니라 **루트 기준 상대경로**로 판정한다(`_exempt_key` 참조).
             if any(pat in _exempt_key(fp, root) for pat in STRATEGY_EXEMPT_PATTERNS):
@@ -219,8 +227,7 @@ def scan_stale_canonical_values(paths: list[Path]) -> list[tuple[Path, int, str]
         if root.is_file():
             files = [root]
         else:
-            files = [p for p in root.rglob("*") if p.is_file()
-                     and p.suffix in CANONICAL_SCAN_EXTS]
+            files = [p for p in root.rglob("*") if p.suffix in CANONICAL_SCAN_EXTS and _is_readable_file(p)]
         for fp in files:
             if any(pat in _exempt_key(fp, root) for pat in CANONICAL_EXEMPT_PATTERNS):
                 continue

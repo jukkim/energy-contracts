@@ -4,7 +4,18 @@
 
 ---
 
-## 분류 어휘 1.3 · 선언 가정 상수 (2026-09-28 최종 라운드 ②·N32, unreleased)
+## 0.3.59 (2026-09-29) — 계량 물리 한계 · 빠른 회수 기본값 · 건물부문 NDC 기준 · 태그 재발행
+
+- 태그 `v0.3.58` 이후 들어온 스키마(예: `airo_request.json`)가 태그 판에 없어, 태그로 설치하는 소비처(be-3d)가 `load_schema("airo_request")`
+  에서 멈췄다(2026-09-29 Lab compose-nl 500). 판 번호를 올려 태그를 다시 낸다.
+- `declared_assumptions.json`: `meter_physical_limit`(최대 원단위 기반 시간 상한의 첨두 배수 · 중앙값 배수 · 이웃 급등 배수, assumed) ·
+  `quick_payback_max_yr_default` 3.0년(assumed — 카탈로그 빠른 조치 회수 범위 상단).
+- `rules_pure.py`: `ec_meter_limits` · `ec_meter_value_ok` · `ec_median` · `ec_meter_cell_bound` · `ec_meter_spike_indices` ·
+  `ec_meter_jump_indices` — 게이트웨이 `serving/meter_guard.py` 와 AIROS 계량 가드가 같은 규칙을 쓴다.
+- `energy_constants.json`: `ndc_targets.building_sector_inventory`(2018 52.1 · 2024 잠정 43.59 백만t, 건물부문 직접 배출).
+- `scripts/validate_ssot.py`: 확장자를 먼저 보고, 접근할 수 없는 항목은 읽을 수 없는 파일처럼 건너뛴다(깨진 pytest 링크로 검사 전체가 멈췄다).
+
+## 분류 어휘 1.3 · 선언 가정 상수 (2026-09-28 최종 라운드 ②·N32, 0.3.59 에 포함)
 
 - `data_classification.json` 1.3: `DataSource` += `virtual`(경진대회 가상 채움, 표시 '가상') · `EvidenceDisplayClass` += `virtual`·`unknown` ·
   `$defs.ClassificationWord`(결과 분류 낱말 17) · `default.classification`(낱말 → 출처·표시 등급·한글 라벨·가상 여부 · 옛 낱말 별칭 · 합성 규칙).

@@ -244,3 +244,109 @@ def ec_classification_meta(word: object, table: dict | None = None) -> dict:
     t = _ec_classification_table(table)
     w = ec_classification_normalize(word, t)
     return {"word": w, **t["words"][w]}
+
+
+# ── 계량 칸 물리 한계(2026-09-29 N13 · 한 벌) ─────────────────────────────────────────────────────────
+#   게이트웨이 serving/meter_guard.py 와 AIROS measurement_profile 이 같은 규칙을 쓴다(두 벌이면 합계가 갈린다).
+#   수는 DECLARED_ASSUMPTIONS.meter_physical_limit · JUDGEMENT_THRESHOLDS.data_quality.eui_plausible_kwh_m2.max.
+
+def ec_meter_value_ok(v: object) -> bool:
+    """칸 값 = 유한 · 음수 아님 · bool 아님."""
+    if isinstance(v, bool) or not isinstance(v, (int, float)):
+        return False
+    return v == v and v not in (float("inf"), float("-inf")) and v >= 0
+
+
+def ec_median(values) -> float:
+    xs = sorted(float(x) for x in values)
+    if not xs:
+        raise ValueError("ec_median: 빈 목록")
+    n = len(xs)
+    return xs[n // 2] if n % 2 else (xs[n // 2 - 1] + xs[n // 2]) / 2.0
+
+
+def ec_meter_limits(declared_assumptions: dict | None = None, judgement_thresholds: dict | None = None) -> dict:
+    """상한 규칙의 수 — 인자가 없으면 생성본 전역(DECLARED_ASSUMPTIONS·JUDGEMENT_THRESHOLDS)."""
+    da = declared_assumptions if declared_assumptions is not None else globals().get("DECLARED_ASSUMPTIONS")
+    jt = judgement_thresholds if judgement_thresholds is not None else globals().get("JUDGEMENT_THRESHOLDS")
+    if da is None or jt is None:
+        raise LookupError("ec_meter_limits: DECLARED_ASSUMPTIONS·JUDGEMENT_THRESHOLDS 가 없다(생성본 밖에서는 인자로)")
+    spec = da["meter_physical_limit"]
+    return {"eui_max_kwh_m2_yr": float(jt["data_quality"]["eui_plausible_kwh_m2"]["max"]),
+            "peak_to_mean_factor": float(spec["peak_to_mean_factor"]),
+            "median_multiplier": float(spec["median_multiplier"]),
+            "neighbour_jump_multiple": float(spec.get("neighbour_jump_multiple", 10.0)),
+            "same_hour_median_multiple": float(spec.get("same_hour_median_multiple", 10.0))}
+
+
+def ec_meter_cell_bound(values, area_m2, granularity: str, limits: dict):
+    """(칸 상한 kWh 또는 None, 근거). 연면적이 있으면 연면적 × 원단위 상한 ÷ 8,760 × 배수 × 칸 시간 수,
+    없으면 양수 칸 중앙값 × 중앙값 배수. 둘 다 없으면 None(검사 못 함)."""
+    # 칸 하나의 최대 시간 수 — 월 칸은 31일(가장 긴 달)로 잡는다(상한은 넓게, 정상 값을 자르지 않는다). 생성본은 함수만 옮기므로 안에 둔다.
+    hours = {"hourly": 1.0, "subhourly": 1.0, "daily": 24.0, "monthly": 31 * 24.0}.get(granularity, 1.0)
+    if ec_meter_value_ok(area_m2) and area_m2 > 0:
+        bound = float(area_m2) * limits["eui_max_kwh_m2_yr"] / 8760.0 * limits["peak_to_mean_factor"] * hours
+        return bound, {"rule": "area_x_ec_eui_max", "gross_area_m2": float(area_m2),
+                       "eui_max_kwh_m2_yr": limits["eui_max_kwh_m2_yr"],
+                       "peak_to_mean_factor": limits["peak_to_mean_factor"], "cell_hours": hours}
+    positive = [float(v) for v in values if ec_meter_value_ok(v) and v > 0]
+    if not positive:
+        return None, {"rule": "no_bound", "why": "연면적도 양수 칸도 없어 상한을 정하지 않았다(검사 못 함)"}
+    med = ec_median(positive)
+    return med * limits["median_multiplier"], {"rule": "series_median_x_declared_multiplier", "median_kwh": med,
+                                               "median_multiplier": limits["median_multiplier"],
+                                               "positive_cells": len(positive)}
+
+
+def ec_meter_spike_indices(values, bound) -> list:
+    """상한을 넘는 유효 칸 번호 — 빈 칸·음수는 급등이 아니다."""
+    if bound is None:
+        return []
+    return [k for k, v in enumerate(values) if ec_meter_value_ok(v) and float(v) > bound]
+
+
+def ec_meter_jump_indices(values, first_local_hour: int, granularity: str, limits: dict, exclude=()):
+    """홀로 튄 한 칸(시간 계열만) — (칸 번호, 근거). first_local_hour = 첫 칸의 현지(KST) 시각 0~23 — 칸 k 의 시각은
+    (first_local_hour + k) % 24. 걸리려면 모두: 앞뒤 칸이 있다 · 값 > 이웃 배수 × max(앞, 뒤) · 값 > 같은 시각 중앙값 배수 × 기준값
+    (그 시각 양수 칸 중앙값, 계열 양수 중앙값보다 작으면 그 값). exclude = 물리 상한으로 대체할 칸(중앙값에서 빼고 이웃이면 기준값)."""
+    exclude = set(exclude or ())
+    if granularity not in ("hourly", "subhourly") or len(values) < 3:
+        return [], {"rule": "not_applicable", "why": "홀로 튄 칸 규칙은 시간 계열에만"}
+    j_mult, h_mult = limits["neighbour_jump_multiple"], limits["same_hour_median_multiple"]
+
+    def hour(k: int) -> int:
+        return (int(first_local_hour) + k) % 24
+
+    by_hour: dict = {}
+    positive: list = []
+    for k, v in enumerate(values):
+        if k in exclude or not ec_meter_value_ok(v) or v <= 0:
+            continue
+        by_hour.setdefault(hour(k), []).append(float(v))
+        positive.append(float(v))
+    if not positive:
+        return [], {"rule": "no_reference", "why": "양수 칸이 없어 기준값을 정하지 않았다"}
+    floor = ec_median(positive)
+    ref = {h: max(ec_median(vs), floor) for h, vs in by_hour.items()}
+
+    def reference(k: int) -> float:
+        return ref.get(hour(k), floor)
+
+    def neighbour(k: int):
+        if k in exclude:
+            return reference(k)
+        v = values[k]
+        return float(v) if ec_meter_value_ok(v) else None
+
+    hits = []
+    for k in range(1, len(values) - 1):
+        v = values[k]
+        if k in exclude or not ec_meter_value_ok(v):
+            continue
+        left, right = neighbour(k - 1), neighbour(k + 1)
+        if left is None or right is None:
+            continue
+        if float(v) > j_mult * max(left, right) and float(v) > h_mult * reference(k):
+            hits.append(k)
+    return hits, {"rule": "isolated_neighbour_jump", "neighbour_jump_multiple": j_mult,
+                  "same_hour_median_multiple": h_mult, "series_positive_median_kwh": floor}

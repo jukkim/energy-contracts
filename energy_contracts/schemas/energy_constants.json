@@ -154,6 +154,22 @@
           "type": "string",
           "description": "건물 배출 맥락의 기본 목표 키(targets 의 키). 국가 전체 질문은 national_2030 을 명시해 고른다."
         },
+        "building_sector_inventory": {
+          "type": "object",
+          "description": "국가 건물부문 배출 인벤토리(직접 배출만, 백만 tCO2eq) — 건물부문 NDC 와 같은 범위(2026-09-29 Query100 C02·C03). 지역 2018 기준 추정의 국가 추세. 연도 키는 문자열.",
+          "required": ["scope", "emissions_mtco2eq", "data_source", "sources"],
+          "properties": {
+            "scope": {"type": "string", "enum": ["direct_only"]},
+            "scope_ko": {"type": "string"},
+            "emissions_mtco2eq": {"type": "object", "additionalProperties": {"type": "number", "exclusiveMinimum": 0}},
+            "provisional_years": {"type": "array", "items": {"type": "integer"}},
+            "data_source": {"type": "string"},
+            "sources": {"type": "array", "minItems": 1, "items": {"type": "object", "required": ["year", "source_title", "source_url", "source_date"]}},
+            "retrieved": {"type": "string"},
+            "cross_check": {"type": "string"},
+            "use": {"type": "string"}
+          }
+        },
         "targets": {
           "type": "object",
           "additionalProperties": {
@@ -317,6 +333,24 @@
           "retrieved": "2026-09-28",
           "note": "원문: '건물 부문은 … 2018년, 2024년 대비 53.6%~56.2%, 44.5%~47.7% 감축한다.' 국무회의 확정 보도 = https://www.korea.kr/news/policyNewsView.do?newsId=148954548 (국가 전체 53~61%, 부문 수치는 이 보도에 없음). 범위 목표라 단일 감축률이 없다 — 계산은 min·max 둘 다 낸다."
         }
+      },
+      "building_sector_inventory": {
+        "scope": "direct_only",
+        "scope_ko": "건물 안 연료 연소의 직접 배출만 — 전기·열 사용의 간접 배출은 전환 부문(건물부문 NDC 대상 아님)",
+        "emissions_mtco2eq": {"2018": 52.1, "2024": 43.59},
+        "provisional_years": [2024],
+        "data_source": "external",
+        "sources": [
+          {"year": 2018, "source_title": "기후행동 정책포털 — 2030 국가 온실가스 감축목표 NDC 부문별 감축목표 표(건물)",
+           "source_url": "https://www.gihoo.or.kr/gallery.es?mid=a30202000000&bid=0010&act=view&list_no=552",
+           "source_date": "2021-10-18"},
+          {"year": 2024, "source_title": "대한민국 정책브리핑 — 2024년도 국가 온실가스 잠정배출량 6억 9,158만톤",
+           "source_url": "https://www.korea.kr/news/policyNewsView.do?newsId=156721749",
+           "source_date": "2025-08-22", "quote_ko": "건물 부문 4,359만 t … 직접 배출만 포함하며 전기·열 사용 간접 배출은 제외"}
+        ],
+        "retrieved": "2026-09-29",
+        "cross_check": "building_2035 원문의 '2018년 대비 53.6% = 2024년 대비 44.5%' → 52.1×(1−0.536)/(1−0.445) = 43.55 ≈ 43.59(0.1% 안)",
+        "use": "지역 2018 기준 직접 배출 추정 = 지역 최근 직접 배출 ÷ (최근/2018) — 지역이 국가 추세를 따른다는 가정(imputed, 표시 '추정')"
       }
     }
   }

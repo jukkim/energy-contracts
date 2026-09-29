@@ -50,6 +50,21 @@
       "classification": "assumed",
       "source": "게이트웨이 general_ops/cohort.AGING_YEARS_DEFAULT"
     },
+    "meter_physical_limit": {
+      "peak_to_mean_factor": 3.0,
+      "median_multiplier": 100.0,
+      "neighbour_jump_multiple": 10.0,
+      "same_hour_median_multiple": 10.0,
+      "rule_ko": "계량 칸 물리 상한 = 연면적 × 연간 원단위 상한(judgement_thresholds.data_quality.eui_plausible_kwh_m2.max) ÷ 8,760시간 × 최대/평균 배수 3 × 칸 시간 수(연면적이 없으면 그 계열의 양수 칸 중앙값 × 100). 상한을 넘는 칸은 비정상 계량값(계량기 넘김 등)으로 보고 추정 대체한다 — 원값·사유를 남긴다. 홀로 튄 한 칸(시간 계열) = 앞뒤 두 칸이 모두 있고 그 값이 두 이웃 중 큰 값의 10배와 같은 시각 중앙값(계열 양수 중앙값보다 작으면 그 값)의 10배를 **모두** 넘는 칸 — 여러 시간에 걸쳐 오르는 기동·재실 피크와 날마다 되풀이되는 피크는 이웃·같은 시각 중앙값이 높아 걸리지 않는다. 물리 상한으로 이미 대체한 이웃은 같은 시각 기준값으로 본다",
+      "classification": "assumed",
+      "source": "선언 가정(2026-09-29 N13 — 서빙 계량 계열의 약 1e8 kWh/h 급등과 그 옆의 약 1/1,000 메아리 칸). 원단위 상한은 정본 judgement_thresholds(계량 기록기 상한 3,000 kWh/㎡·년)를 따르고, 배수 3(연간 평균 대비 최대 시간 수요)·중앙값 배수 100·이웃 배수 10·같은 시각 중앙값 배수 10 은 우리 선언이다. 정상 최대(여름 피크)는 이 상한보다 훨씬 낮다. 소비처 = 게이트웨이 serving/meter_guard.py"
+    },
+    "quick_payback_max_yr_default": {
+      "value": 3.0,
+      "rule_ko": "빠른 회수 = 단순 회수기간 3년 이내(질문이 회수 문턱을 말하지 않았을 때)",
+      "classification": "assumed",
+      "source": "선언 가정(2026-09-29 N6-X1) — 정본 조치 카탈로그 measure_cost_catalog 의 운영·저비용 조치 참고 회수기간(simple_payback_yr_ref: RCX 1.1~1.7년 · LED 1.5~3년 · VSD 1~3년)의 상한. 소비처 = 게이트웨이 retrofit_economics quick_payback_carbon_gap"
+    },
     "measure_applicability": {
       "id": "airo-measure-applicability-assumed-v1",
       "classification": "assumed",
