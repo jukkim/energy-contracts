@@ -405,7 +405,32 @@
         "conversion": "1,360.26 원/L(2024 연평균, 부가세 포함) ÷ 9.47 kWh/L(순발열량 34.1 MJ/L). 보일러 효율 미반영. 2025 연평균 출처 없음(2026-08 시점값 166.5).",
         "source": "대한석유협회 주유소 판매가격 통계 2024"
       },
-      "_scope": "요금 계산·경제성(MACC)·Query500 financial_assumptions 의 2026 canonical. 인용 시 항목명의 스코프(평균판매단가/소매 사용요금/도매/사용요금)를 병기한다."
+      "_scope": "요금 계산·경제성(MACC)·Query500 financial_assumptions 의 2026 canonical. 인용 시 항목명의 스코프(평균판매단가/소매 사용요금/도매/사용요금)를 병기한다.",
+      "tariff_class_selection": {
+        "general_b_min_contract_kw": 300,
+        "rule_ko": "계약전력 300kW 이상이면 일반용전력(을) 고압 요금(electricity_tou_general_b_2026), 미만이면 일반용전력(갑)",
+        "source": "한전 기본공급약관 일반용전력(갑)·(을) 적용 기준(계약전력 300kW)"
+      },
+      "electricity_avg_sales_price_by_year": {
+        "2024": {
+          "all": 162.92,
+          "residential": 156.91,
+          "general": 172.99,
+          "industrial": 168.17,
+          "education": 143.0,
+          "status": "확정"
+        },
+        "2025": {
+          "all": 170.4,
+          "residential": 159.0,
+          "general": 172.7,
+          "industrial": 181.9,
+          "status": "잠정"
+        },
+        "unit": "KRW/kWh",
+        "basis": "electricity_avg_sales_price.basis 의 '2024 확정' 값과 2025 잠정값을 연도별 칸으로 옮김(같은 출처)",
+        "source": "한국전력통계 2025판(EG-TIPS 재게시) · 한전 2025 결산 보도 2026-03-02"
+      }
     },
     "frozen_sets": {
       "simulation_accounting_2025": {

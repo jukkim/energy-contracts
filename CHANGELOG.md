@@ -4,6 +4,11 @@
 
 ---
 
+## 0.3.69 (2026-09-30, 태그 v0.3.69) — 요금제 선택 기준 · 연도별 평균판매단가
+
+- `market_prices.retail_reference_2026.tariff_class_selection`: 계약전력 300kW 이상 → 일반용(을) 고압 요금(`electricity_tou_general_b_2026`), 미만 → 일반용(갑). 한전 기본공급약관(MCP-023).
+- `retail_reference_2026.electricity_avg_sales_price_by_year`: 2024 확정·2025 잠정 평균판매단가를 연도별 칸으로(같은 출처 — 기존 basis 문장의 값을 구조화, MCP-004 전년 대비 단가 효과).
+
 ## 0.3.68 (2026-09-30, 태그 v0.3.68) — 게이트웨이 지명 어댑터가 EC 로 바뀔 수 있게(차단 넷 해소)
 
 - `everyday_stem_blocked(word, text)` 공개(f7 8db2fe1) — 문장에서 자리마다 resolve 를 부르는 소비처가 같은 규칙을 쓴다.
