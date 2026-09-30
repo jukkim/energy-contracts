@@ -11,9 +11,9 @@
     "energy-decision-studio",
     "building-energy-3d"
   ],
-  "version": "2.4",
-  "updated": "2026-09-29",
-  "$comment": "2.4(2026-09-29 RV-B1 초안, 0.3.62): 응답 칸이 실제로 싣는 모양을 선언 — TargetContext 에 contract·chain_steps·final_target_source·choices 와 '대상 없음' 모양(resolved=false → kind·source null, ids 빈 목록) · Period 에 source·basis_ko·why·generator·contract 와 basis += forecast_relative_to_today · 원형 미지정(ids=[archetype:all]) 대상은 archetype 객체 없이 허용 · TargetExpansion.rule_id 예시를 게이트웨이 전개 규칙 이름으로 · 봉투 최상위 tool_input_mode(v1 같은 칸 그대로 — v1 입구를 닫기 전 준비) · 봉투 최상위 as_of(요청의 기준 시각) · Continuation 은 requested_tool 또는 prior_request_id 중 하나(되묻기 답의 둘째 턴은 도구가 아직 없다). 모두 가산 — 2.3 에서 유효한 봉투·문맥은 2.4 에서도 유효하다. 2.3(2026-09-29 M3, f7 합의): ① target 생략 허용(게이트웨이 질문 틀이 정한다) ② continuation(되묻기 답·계획 실행의 이어가기) ③ intent 'plan'(쓰기 = 계획 경로) ④ intent 'debate'(AgentLeague) · Target/TargetContext 에 asset_kind·members·expansion(서버가 채움) · Period.basis += coverage_of_needs. 모두 가산 — 2.2 에서 유효한 봉투는 2.3 에서도 유효하다.",
+  "version": "2.5",
+  "updated": "2026-10-01",
+  "$comment": "2.5(2026-10-01, 0.3.73 · 캠페인 docs/CAPABILITY_FIRST_QUERY_DESIGN_2026-09-30.md 결정 14): 봉투 최상위 interpretation{frame_id, from_request_id} — 사용자가 답의 '고를 질문'(validation.suggested_questions[]) 가운데 하나를 눌러 고른 정형 질문. 선택 칸이고 가산이다 — 2.4 에서 유효한 봉투는 2.5 에서도 유효하다(칸이 없으면 게이트웨이 요청 바이트가 달라지지 않는다). 2.4(2026-09-29 RV-B1 초안, 0.3.62):응답 칸이 실제로 싣는 모양을 선언 — TargetContext 에 contract·chain_steps·final_target_source·choices 와 '대상 없음' 모양(resolved=false → kind·source null, ids 빈 목록) · Period 에 source·basis_ko·why·generator·contract 와 basis += forecast_relative_to_today · 원형 미지정(ids=[archetype:all]) 대상은 archetype 객체 없이 허용 · TargetExpansion.rule_id 예시를 게이트웨이 전개 규칙 이름으로 · 봉투 최상위 tool_input_mode(v1 같은 칸 그대로 — v1 입구를 닫기 전 준비) · 봉투 최상위 as_of(요청의 기준 시각) · Continuation 은 requested_tool 또는 prior_request_id 중 하나(되묻기 답의 둘째 턴은 도구가 아직 없다). 모두 가산 — 2.3 에서 유효한 봉투·문맥은 2.4 에서도 유효하다. 2.3(2026-09-29 M3, f7 합의): ① target 생략 허용(게이트웨이 질문 틀이 정한다) ② continuation(되묻기 답·계획 실행의 이어가기) ③ intent 'plan'(쓰기 = 계획 경로) ④ intent 'debate'(AgentLeague) · Target/TargetContext 에 asset_kind·members·expansion(서버가 채움) · Period.basis += coverage_of_needs. 모두 가산 — 2.2 에서 유효한 봉투는 2.3 에서도 유효하다.",
   "type": "object",
   "additionalProperties": false,
   "required": [
@@ -61,6 +61,9 @@
     },
     "continuation": {
       "$ref": "#/$defs/Continuation"
+    },
+    "interpretation": {
+      "$ref": "#/$defs/Interpretation"
     },
     "as_of": {
       "type": "string",
@@ -459,6 +462,27 @@
         }
       },
       "description": "이어가기(2.3 M3) — v1 에만 있던 requested_tool·tool_arguments 를 봉투로 옮긴다(Studio CONTINUATION_TURN·PLAN_ACTION 이 v1 로 떨어지던 이유)."
+    },
+    "Interpretation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "frame_id"
+      ],
+      "properties": {
+        "frame_id": {
+          "type": "string",
+          "pattern": "^[A-Za-z0-9_.:-]{1,64}$",
+          "description": "고른 정형 질문의 번호 — 답의 validation.suggested_questions[].frame_id 값 그대로(표면이 짓지 않는다). 모양 = 1~64자 [A-Za-z0-9_.:-]. 어떤 번호가 지금 켜져 있는지는 게이트웨이 정형 질문 표(serving/canonical_questions)가 정한다 — 이 스키마는 모양만 본다."
+        },
+        "from_request_id": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 120,
+          "description": "그 선택지를 낸 답의 request_id(어느 답의 선택지였는지) — 길이 한도는 봉투 request_id 와 같다. 없으면 싣지 않는다."
+        }
+      },
+      "description": "고른 해석(2.5) — 사용자가 답의 '고를 질문' 가운데 하나를 골랐다. 게이트웨이는 질문 글을 다시 해석하지 않고(LLM 변환 없음) 그 정형 질문으로 실행한다. 대상·기간은 이 칸이 정하지 않는다(target·period·이어가기 규칙 그대로)."
     },
     "Archetype": {
       "type": "object",

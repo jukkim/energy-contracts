@@ -4,6 +4,20 @@
 
 ---
 
+## 0.3.73 (2026-10-01, 태그 v0.3.73) — 요청 봉투 2.5: 고른 해석 `interpretation`(선택 칸 · 가산)
+
+근거 = 캠페인 `docs/CAPABILITY_FIRST_QUERY_DESIGN_2026-09-30.md` 결정 14 · 화면 세션 합의 `scratch/capability_first/screen_contract_agreed_with_f7.md`.
+화면(Studio·AIROS)은 답의 '고를 질문'(`validation.suggested_questions[]`)을 누르면 이 칸을 보내는데, 2.4 봉투는 모르는 칸을 거절했다.
+
+- `airo_request.json` 2.4 → 2.5: 봉투 최상위 `interpretation` = `$defs.Interpretation{frame_id, from_request_id?}`.
+  `frame_id` = 1~64자 `[A-Za-z0-9_.:-]`(필수) · `from_request_id` = 1~120자(봉투 `request_id` 한도와 같다). 모르는 칸 금지.
+  뜻: 게이트웨이가 질문 글을 다시 해석하지 않고 고른 정형 질문으로 실행한다. 대상·기간은 이 칸이 정하지 않는다.
+  2.4 에서 유효한 봉투는 그대로 유효하다(칸이 없으면 게이트웨이 요청 바이트가 달라지지 않는다).
+- 어떤 `frame_id` 가 켜져 있는지는 스키마가 아니라 게이트웨이 정형 질문 표가 정한다(이 스키마는 모양만).
+- 생성 상수: 변화 없음(`airo_request` 는 runtime-validate — `gen_constants.py --all` 12 소비처 SAME · `--check` drift 0). pydantic 모델 `airo_request.py` 재생성.
+- 시험 `tests/test_airo_request_interpretation_0373.py`(새 — 받아야 할 것 8 · 막아야 할 것 13) · `test_interface_contracts_0362` 의 봉투 판 고정을 2.5 로(근거 주석).
+- 소비처가 맞출 것: 게이트웨이 시험 `tests/test_m3g_envelope_v23.py` 의 봉투 판 고정(2.4) — 게이트웨이 묶음 끝에서 2.5 로.
+
 ## 0.3.72 (2026-09-30, 태그 v0.3.72) — 일반화 단계 소비처가 기다리는 행(요청 C1~C11 · WP6 R10 · 가산)
 
 요청 = 캠페인 `scratch/wp_requests/EC_ROWS_NEEDED.md`. 0.3.71 의 키와 값은 하나도 바꾸지 않았다(문구 포함) — 예외 하나 = 사용자·EC 소유자 결정인
