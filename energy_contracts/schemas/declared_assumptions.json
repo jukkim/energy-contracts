@@ -11,9 +11,9 @@
     "airos-energy-decision",
     "ems_transformer (serving general_ops/cohort · internal_query_tools · asset_inputs/_virtual · measure_economics · simulation_pack_analysis)"
   ],
-  "version": "1.5",
-  "updated": "2026-09-30",
-  "$comment": "1.5(2026-09-30, 0.3.72 — 일반화 단계 소비처 요청 C1~C11 · WP6 R10 · 가산): 새 행 33개(키 목록 = CHANGELOG 0.3.72) · 기존 행 값 안에 새 칸 (hazard_week_scenarios.value.cold · serving_display_limits.value.presentation_table_max_columns·presentation_chart_max_series · scene_motion_defaults.value.descend_keys·dive_building_end_alt_m · sim_schedule_inference.value.morning_window_hours·startup_window_hours — 뜻은 행 수준 value_notes_ko) · comm_status_thresholds.by_delivery.<프로필>.label_ko. 1.4 의 키와 값(문구 포함)은 하나도 바꾸지 않았다 — 새 칸만. moved_literal = 코드 리터럴 값 그대로 · declared_demo_assumption = 외부 근거 없는 선언. 별칭·어휘 표(한 별칭 = 한 열쇠 · 가리키는 열쇠 존재)는 scripts/vocabulary_gate.py 가 적재 때(gen_constants.load_schemas · validate_ssot --check schemas) 검사한다. · 1.4(2026-09-30, 0.3.71 — GPT 상의 반영 · 사용자 지시 '지피티와 상의해서 정해' · 가산): 근거 없이 정한 여섯 값(short_cycling · comm_status_thresholds · life_roadmap · investment_tiers · precool_delta_c · judgement_thresholds 의 min_observed_temperature_days)과 인용 셋(min_r2 · pmv_inputs · debate_stated_term_ranges)을 검토했다. 1.3 의 키와 value 는 하나도 바꾸지 않았다 — 새 칸은 전부 **행 수준**(value 의 형제)에 둔다: 소비처가 value 를 통째로 도구 인자로 넘기는 자리(투자 구간·수명 로드맵 — 도구 스키마가 모르는 칸을 거절한다)가 있어서다. 새 칸: short_cycling.interpretation · comm_status_thresholds.by_delivery·unknown_delivery_profile · life_roadmap.sensitivity_life_used_shares·remaining_life_status_when_unknown · investment_tiers.classification_basis·numeric_thresholds_role·label_ko_by_work_scope · precool_delta_c.conditions_ko. 여섯 값은 표준값이 아니다 — basis_kind 는 declared_demo_assumption 그대로이고 basis 에 'GPT 상의 2026-09-30' 을 적는다(표준 인용으로 올리지 않는다). 인용 셋은 웹 대조(2026-09-30)로 문구를 고쳤다. · 1.3(2026-09-30, 0.3.70 — 일반화 감사 hard-coded-default 47건 · 남은 목록 N4-0): 게이트웨이·AgentLeague·be-3d 코드 리터럴로 있던 선언 기본값·문턱·화면 상한·가상 생성 규칙을 옮김(가산 — 1.2 의 행과 값은 그대로). 새 행은 전부 id · value · unit(QuantityUnit 낱말) 또는 unit_text · label_ko · rule_ko · classification · basis_kind · basis · source 를 싣는다. basis_kind: moved_literal(코드 값 그대로) · declared_demo_assumption(외부 근거 없는 선언 시연 가정) · standard_citation(표준·법령 인용) · derived_from_ec(이미 있는 정본 값에서 파생 — 새 수 없음). 이미 정본에 있는 값(순위 기본 개수 · 이상 z · 상위 비율 · 빠른 회수 · 폭염 달 창)은 새 행을 만들지 않았다 — 코드가 그 행을 읽는다. hazard_days.heat 에 baseline_months 추가. · 1.2(2026-09-29 RV-B3 초안, 0.3.62): 단위를 interface_types.QuantityUnit 낱말로(top_share '%'→pct · 햇수 yr) · 게이트웨이 모듈 상수로 남아 있던 선언 기본값을 옮김 — scenario_defaults(공실률·시나리오 공실률·끌 수 있는 부하 절감 몫·우선순위) · _assumption_ranges(가정 탐색 범위 5개) · measured_portfolio(순위 행 기본 개수). 값은 옮기기만 했다(동작 변경 없음). 모든 항목의 분류 = assumed(선언 가정) — 사람 대면 라벨은 data_classification 의 assumed label_ko 에서 파생한다.",
+  "version": "1.6",
+  "updated": "2026-10-01",
+  "$comment": "1.6(2026-10-01, 0.3.74 — 캠페인 요청 scratch/capability_first/EC_ROWS_NEEDED_round3.md E5-2·E5-3·R3F-1·R3F-2 · 가산): 새 행 셋 — operation_reading_window(28일 · 7일 · 구성원 12곳 — 게이트웨이 decision_support 리터럴 값 그대로) · operation_reading_freshness(읽은 창이 오늘과 같은 철이면 '지금 운전' — 설계 §2.5 한계 4 '한 철' · 계절 = calendar_conventions.question_season_system · 새 수는 0 하나) · cohort_city_min_share(0.5 초과 — 낱말 '다수결'의 뜻). 기존 행 값 안에 새 칸 serving_display_limits.value.display_significant_digits(3 — measure_candidates 리터럴 그대로, 뜻은 value_notes_ko). 요청이 제안한 operations_proxy_rules.value 대신 새 행으로 둔 까닭: 그 value 는 경제성 수명 격자 가정이 통째로 답에 싣는다(옛 답 바이트 보존). 1.5 의 키와 값(문구 포함)은 하나도 바꾸지 않았다. · 1.5(2026-09-30, 0.3.72 — 일반화 단계 소비처 요청 C1~C11 · WP6 R10 · 가산): 새 행 33개(키 목록 = CHANGELOG 0.3.72) · 기존 행 값 안에 새 칸 (hazard_week_scenarios.value.cold · serving_display_limits.value.presentation_table_max_columns·presentation_chart_max_series · scene_motion_defaults.value.descend_keys·dive_building_end_alt_m · sim_schedule_inference.value.morning_window_hours·startup_window_hours — 뜻은 행 수준 value_notes_ko) · comm_status_thresholds.by_delivery.<프로필>.label_ko. 1.4 의 키와 값(문구 포함)은 하나도 바꾸지 않았다 — 새 칸만. moved_literal = 코드 리터럴 값 그대로 · declared_demo_assumption = 외부 근거 없는 선언. 별칭·어휘 표(한 별칭 = 한 열쇠 · 가리키는 열쇠 존재)는 scripts/vocabulary_gate.py 가 적재 때(gen_constants.load_schemas · validate_ssot --check schemas) 검사한다. · 1.4(2026-09-30, 0.3.71 — GPT 상의 반영 · 사용자 지시 '지피티와 상의해서 정해' · 가산): 근거 없이 정한 여섯 값(short_cycling · comm_status_thresholds · life_roadmap · investment_tiers · precool_delta_c · judgement_thresholds 의 min_observed_temperature_days)과 인용 셋(min_r2 · pmv_inputs · debate_stated_term_ranges)을 검토했다. 1.3 의 키와 value 는 하나도 바꾸지 않았다 — 새 칸은 전부 **행 수준**(value 의 형제)에 둔다: 소비처가 value 를 통째로 도구 인자로 넘기는 자리(투자 구간·수명 로드맵 — 도구 스키마가 모르는 칸을 거절한다)가 있어서다. 새 칸: short_cycling.interpretation · comm_status_thresholds.by_delivery·unknown_delivery_profile · life_roadmap.sensitivity_life_used_shares·remaining_life_status_when_unknown · investment_tiers.classification_basis·numeric_thresholds_role·label_ko_by_work_scope · precool_delta_c.conditions_ko. 여섯 값은 표준값이 아니다 — basis_kind 는 declared_demo_assumption 그대로이고 basis 에 'GPT 상의 2026-09-30' 을 적는다(표준 인용으로 올리지 않는다). 인용 셋은 웹 대조(2026-09-30)로 문구를 고쳤다. · 1.3(2026-09-30, 0.3.70 — 일반화 감사 hard-coded-default 47건 · 남은 목록 N4-0): 게이트웨이·AgentLeague·be-3d 코드 리터럴로 있던 선언 기본값·문턱·화면 상한·가상 생성 규칙을 옮김(가산 — 1.2 의 행과 값은 그대로). 새 행은 전부 id · value · unit(QuantityUnit 낱말) 또는 unit_text · label_ko · rule_ko · classification · basis_kind · basis · source 를 싣는다. basis_kind: moved_literal(코드 값 그대로) · declared_demo_assumption(외부 근거 없는 선언 시연 가정) · standard_citation(표준·법령 인용) · derived_from_ec(이미 있는 정본 값에서 파생 — 새 수 없음). 이미 정본에 있는 값(순위 기본 개수 · 이상 z · 상위 비율 · 빠른 회수 · 폭염 달 창)은 새 행을 만들지 않았다 — 코드가 그 행을 읽는다. hazard_days.heat 에 baseline_months 추가. · 1.2(2026-09-29 RV-B3 초안, 0.3.62): 단위를 interface_types.QuantityUnit 낱말로(top_share '%'→pct · 햇수 yr) · 게이트웨이 모듈 상수로 남아 있던 선언 기본값을 옮김 — scenario_defaults(공실률·시나리오 공실률·끌 수 있는 부하 절감 몫·우선순위) · _assumption_ranges(가정 탐색 범위 5개) · measured_portfolio(순위 행 기본 개수). 값은 옮기기만 했다(동작 변경 없음). 모든 항목의 분류 = assumed(선언 가정) — 사람 대면 라벨은 data_classification 의 assumed label_ko 에서 파생한다.",
   "type": "object",
   "default": {
     "hazard_days": {
@@ -471,6 +471,47 @@
       "basis": "외부 근거 없는 선언 시연 가정",
       "source": "게이트웨이(8.simulation/ems_transformer/serving) internal_query_tools(complaint_causes op_ratio · retrofit_economics steps) · decision_support.HEATING_PROXY_DAYS · HEAT_DAY_PROXY_QUANTILE · low_load_plr_threshold"
     },
+    "operation_reading_window": {
+      "id": "operation_reading_window",
+      "value": {
+        "load_shape_window_days": 28,
+        "load_shape_min_days": 7,
+        "portfolio_reading_sample": 12
+      },
+      "unit_text": "day · count",
+      "label_ko": "실측 운전 읽기의 창·최소 날·구성원 표본",
+      "rule_ko": "운전 읽기(부하 모양 서명) = 계열 끝에서부터 24시간이 모두 실측으로 찬 날 최대 28일 · 그런 날이 7일 미만이면 읽지 않는다 · 포트폴리오 실측 연산은 구성원 12곳까지 그대로, 넘으면 번호 순 등간격 선언 표본 12곳(규칙·표본 수를 결과에 싣는다)",
+      "classification": "assumed",
+      "basis_kind": "moved_literal",
+      "basis": "코드 리터럴 값 그대로 옮김(값 동일 — 답이 바뀌지 않는다) — 외부 근거 없는 선언 시연 가정. 28일 = 캠페인 설계 CAPABILITY_FIRST_QUERY_DESIGN §2.5 한계 4('읽는 창은 최근 온전한 28일 한 철'). 새 행으로 둔 까닭: operations_proxy_rules 의 value 는 경제성 수명 격자 가정(_assumption_ranges.declared_parameter)이 통째로 답에 싣는다 — 거기에 칸을 더하면 옛 답 바이트가 바뀐다",
+      "source": "게이트웨이(8.simulation/ems_transformer/serving) decision_support.MEASURED_WINDOW_DAYS(28) · SEASON_MIN_DAYS(7 — 계절 창 연산의 최소 날도 같은 상수) · MEASURED_MEMBER_LIMIT(12 — general_ops/receipt_producers 의 구성원 상한도 같은 상수) (캠페인 요청 scratch/capability_first/EC_ROWS_NEEDED_round3.md E5-3)"
+    },
+    "operation_reading_freshness": {
+      "id": "operation_reading_freshness",
+      "value": {
+        "max_season_lag": 0,
+        "season_system_ref": "calendar_conventions.question_season_system"
+      },
+      "unit_text": "season",
+      "label_ko": "읽은 운전 기록을 '지금 운전'으로 볼 수 있는 나이(계절)",
+      "rule_ko": "읽은 창의 끝날이 오늘(KST)과 같은 계절(질문 계절 체계 — 봄 3~5월 · 여름 6~8월 · 가을 9~11월 · 겨울 12~2월, 해를 건너뛰지 않은 같은 철) 안이면 '지금 운전'으로 읽고, 그보다 앞 철이면 '지난 기록'이라 적는다(읽은 기간을 늘 함께 보인다) · 이 판정은 '지금 하고 있나' 열을 지우지 않는다",
+      "classification": "assumed",
+      "basis_kind": "declared_demo_assumption",
+      "basis": "선언 시연 가정 — 캠페인 설계 CAPABILITY_FIRST_QUERY_DESIGN §2.5 한계 4('읽는 창은 최근 온전한 28일 한 철이다. 실측 기간이 오래됐으면 기간을 그대로 적는다'): 운전 읽기는 한 철의 운전을 대표하므로 오늘이 든 철이 아닌 기록은 지금 운전을 대신하지 않는다. 계절 경계 = calendar_conventions.question_season_system(meteorological — EC 소유자 결정 2026-09-30). 새 수는 0(같은 철) 하나이고 날 수 문턱은 두지 않았다",
+      "source": "게이트웨이 general_ops/measure_candidates.READING_FRESHNESS_UNMEASURED 자리(캠페인 요청 scratch/capability_first/EC_ROWS_NEEDED_round3.md R3F-1 · 3회전 리뷰 M8 — 실측 4동 기록이 2012년 12월)"
+    },
+    "cohort_city_min_share": {
+      "id": "cohort_city_min_share",
+      "value": 0.5,
+      "unit": "ratio",
+      "comparison": "greater_than",
+      "label_ko": "구성원 기록 도시 '다수결'의 최소 몫(초과)",
+      "rule_ko": "포트폴리오 표준 모델의 도시 = 구성원 기록 주소 도시 가운데 가장 많은 도시 — 그 도시를 가진 구성원이 기록을 읽은 구성원의 절반을 넘을 때만(0.5 초과) '다수결'이라 적는다. 절반 이하이면 도시는 그대로 두고 '구성원 N곳 중 M곳의 도시(과반 아님)'로 적는다",
+      "classification": "assumed",
+      "basis_kind": "declared_demo_assumption",
+      "basis": "선언 — 낱말 '다수결'의 뜻(과반: 절반을 넘음)을 문턱으로 옮긴 것이다(측정·표준 값이 아니다). 게이트웨이는 구성원 기록 최다 도시에 늘 '(구성원 다수결 — 추정)'을 달았는데, 기록 25곳 가운데 3곳으로 정한 도시(3회전 리뷰 M9)에도 그 이름표가 붙었다",
+      "source": "게이트웨이 asset_inputs/measured_ops._cohort_city · asset_inputs/archetype_climate_grid.city_basis_state(캠페인 요청 scratch/capability_first/EC_ROWS_NEEDED_round3.md R3F-2)"
+    },
     "operational_peak_shave_share_default": {
       "id": "operational_peak_shave_share_default",
       "value": 0.1,
@@ -922,7 +963,8 @@
         "parcel_wide_max_groups": 60,
         "scene_selection_max": 2000,
         "presentation_table_max_columns": 12,
-        "presentation_chart_max_series": 6
+        "presentation_chart_max_series": 6,
+        "display_significant_digits": 3
       },
       "unit_text": "byte · count",
       "label_ko": "화면·장면에 싣는 크기 상한",
@@ -933,7 +975,8 @@
       "source": "be-3d src/visualization/scenarios_api.PAYLOAD_MAX_BYTES · 게이트웨이(8.simulation/ems_transformer/serving) panel_projection.PANEL_VALUE_TARGET_BYTES · PANEL_TABLE_KEEP_ROWS · answer_presentation.MAX_ROWS · MAX_POINTS · query_orchestrator._GROUP_ROWS_SHOWN · _GROUP_DERIVED_ROWS · _GROUP_ROW_COLUMNS · _COMPARISON_MAX_SERIES_FIELDS · _SCENE_SELECTION_MAX · general_ops/cohort.MAP_ROWS_MAX · PARCEL_WIDE_MAX_GROUPS",
       "value_notes_ko": {
         "presentation_table_max_columns": "공통 표시 객체 표의 열 상한 12 — answer_presentation.MAX_COLUMNS 리터럴 값 그대로(0.3.72 요청 C4)",
-        "presentation_chart_max_series": "공통 표시 객체 그림의 계열 상한 6 — answer_presentation.MAX_SERIES 리터럴 값 그대로(0.3.72 요청 C4)"
+        "presentation_chart_max_series": "공통 표시 객체 그림의 계열 상한 6 — answer_presentation.MAX_SERIES 리터럴 값 그대로(0.3.72 요청 C4)",
+        "display_significant_digits": "표시 칸(목표 보기의 기준 사용량·1% 눈금·변화량 display_quantity)의 유효숫자 3 — 게이트웨이 general_ops/measure_candidates.DISPLAY_SIGNIFICANT_DIGITS 리터럴 값 그대로 옮김(0.3.74 요청 E5-2). 근거 = 캠페인 설계 CAPABILITY_FIRST_QUERY_DESIGN §2.4 한계 3('kWh 는 유효숫자 2~3자리로 보인다 · 0.1 kWh 자리까지 찍지 않는다'). 글 모양이지 판정 문턱이 아니다 — 정확한 값은 원래 칸 그대로"
       }
     },
     "answer_delivery_rules": {

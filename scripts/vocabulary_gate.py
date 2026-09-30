@@ -235,6 +235,13 @@ def problems(docs: dict[str, dict]) -> tuple[list[str], int]:
         if prev != code:
             out.append(f"ems_strategies.observable_signature.metric '{sig.get('metric')}' 가 {prev} · {code} 둘에")
 
+    # ── 0.3.74(2026-10-01 · 캠페인 요청 EC_ROWS_NEEDED_round3): 새 어휘 칸이 가리키는 열쇠 ─────────────────────────────────────
+    #   요금 종별(원형 전기 · 자산 종류 가스) · 설정온도 동작 · 적용 전제 · 조합 쉬운 이름 · 용도→원형 관계. 소비처는 모르는 열쇠를 만나면
+    #   조용히 참조 단가·'전제 없음'으로 떨어진다 — 그래서 적재 때 막는다(규칙 한 곳 · 반례 = tests/test_ec_rows_0374.py).
+    out_0374, n_0374 = _problems_0374(d, docs.get("building_usage_map"))
+    out += out_0374
+    checks += n_0374
+
     cal = d("calendar_conventions")
     chosen = cal.get("question_season_system")
     if chosen is not None:
@@ -249,6 +256,132 @@ def problems(docs: dict[str, dict]) -> tuple[list[str], int]:
                 out.append(f"calendar_conventions.question_season_system={chosen!r} 에 계절 {lacking} 가 없다")
             if months != list(range(1, 13)):
                 out.append(f"calendar_conventions.question_season_system={chosen!r} 가 1~12월을 한 번씩 덮지 않는다")
+    return out, checks
+
+
+def _class_keys(table: Any) -> set[str]:
+    """종별 표({열쇠: {label_ko, market_prices_ref …}, rule_ko, source …}) → 종별 열쇠(항목이 사전인 것만)."""
+    return {k for k, v in (table or {}).items() if isinstance(v, dict)}
+
+
+def _walk(node: Any, dotted: str) -> Any:
+    for part in str(dotted).split("."):
+        if not isinstance(node, dict) or part not in node:
+            return None
+        node = node[part]
+    return node
+
+
+def _problems_0374(d, usage_doc: dict | None = None) -> tuple[list[str], int]:
+    """0.3.74 어휘 칸 검사 — ``d(name)`` = 그 스키마의 default · ``usage_doc`` = building_usage_map 문서 전체(대상 사실 칸의 선언). (결함, 검사 수)."""
+    out: list[str] = []
+    checks = 0
+    tv, ba, ems, um = d("target_vocabulary"), d("building_archetypes"), d("ems_strategies"), d("building_usage_map")
+    market = d("market_prices")
+
+    # ① 요금 종별 — 원형 전기 종별 · 자산 종류 가스 종별이 종별 표의 열쇠이고, 종별 표의 market_prices_ref 가 수를 가리킨다
+    elec = _class_keys(tv.get("electricity_price_classes"))
+    gas = _class_keys(tv.get("gas_price_classes"))
+    for name, table in (("electricity_price_classes", tv.get("electricity_price_classes")), ("gas_price_classes", tv.get("gas_price_classes"))):
+        for key in _class_keys(table):
+            checks += 1
+            ref = (table[key] or {}).get("market_prices_ref")
+            value = _walk(market, ref) if ref else None
+            number = lambda v: isinstance(v, (int, float)) and not isinstance(v, bool)  # noqa: E731
+            # 달이 필요한 종별(needs_month — 계절 단가 표)은 수를 담은 표 · 그 밖은 수 하나
+            ok = (isinstance(value, dict) and any(number(v) for v in value.values())) if (table[key] or {}).get("needs_month") else number(value)
+            if not ok:
+                out.append(f"target_vocabulary.{name}.{key}.market_prices_ref={ref!r} 가 market_prices 의 수(계절 종별이면 수 표)를 가리키지 않는다")
+    docs = ba.get("doe_buildings") or {}
+    with_class = {c: m.get("electricity_price_class") for c, m in docs.items() if "electricity_price_class" in (m or {})}
+    if with_class:
+        checks += len(docs)
+        lacking = sorted(set(docs) - set(with_class))
+        if lacking:
+            out.append(f"building_archetypes.doe_buildings: electricity_price_class 가 없는 원형 {lacking}(한 원형만 빠지면 소비처가 조용히 참조 단가로 떨어진다)")
+        bad = sorted(c for c, v in with_class.items() if v not in elec)
+        if bad:
+            out.append(f"building_archetypes.doe_buildings.electricity_price_class: electricity_price_classes 에 없는 종별 {[(c, with_class[c]) for c in bad]}")
+    kinds = tv.get("air_asset_kinds") or {}
+    if any("gas_price_class" in (k or {}) for k in kinds.values()):
+        checks += len(kinds)
+        for kind, spec in kinds.items():
+            if "gas_price_class" not in (spec or {}):
+                out.append(f"target_vocabulary.air_asset_kinds.{kind}: gas_price_class 칸이 없다(null = 참조 단가 — 칸이 없으면 선언 없음)")
+            elif spec["gas_price_class"] is not None and spec["gas_price_class"] not in gas:
+                out.append(f"target_vocabulary.air_asset_kinds.{kind}.gas_price_class={spec['gas_price_class']!r} 가 gas_price_classes 에 없다")
+
+    # ② 전략 — 설정온도 동작 · 적용 전제 · 쉬운 이름
+    strategies = ems.get("strategies") or {}
+    actions = set(((ems.get("setpoint_actions") or {}).get("values") or {}))
+    conditions = (ems.get("applicability_conditions") or {}).get("values") or {}
+    # 전제를 가르는 대상 사실 = 용도 항목 스키마(UsageEntry)가 참·거짓 칸으로 선언한 이름(예 operates_24h)
+    entry_props = (((usage_doc or {}).get("$defs") or {}).get("UsageEntry") or {}).get("properties") or {}
+    usage_facts = {k for k, spec in entry_props.items() if isinstance(spec, dict) and spec.get("type") == "boolean"}
+    if ems.get("setpoint_actions") is not None:
+        for code, meta in strategies.items():
+            checks += 1
+            act = (meta or {}).get("setpoint_action")
+            if meta.get("type") == "combined":
+                if act is not None:
+                    out.append(f"ems_strategies.{code}: 조합 전략에 setpoint_action={act!r} — 조합은 구성 대책에서 파생한다(싣지 않는다)")
+            elif act not in actions:
+                out.append(f"ems_strategies.{code}.setpoint_action={act!r} 가 setpoint_actions.values 에 없다")
+    for code, meta in strategies.items():
+        for cond in (meta or {}).get("applies_when") or []:
+            checks += 1
+            if cond not in conditions:
+                out.append(f"ems_strategies.{code}.applies_when: applicability_conditions.values 에 없는 전제 {cond!r}")
+    for cond, spec in conditions.items():
+        checks += 1
+        fact = (spec or {}).get("decided_by_usage_fact")
+        if fact is not None and fact not in usage_facts:
+            out.append(f"ems_strategies.applicability_conditions.{cond}.decided_by_usage_fact={fact!r} 를 선언한 용도가 building_usage_map.usages 에 없다")
+        if fact is not None and not isinstance((spec or {}).get("met_when_fact_is"), bool):
+            out.append(f"ems_strategies.applicability_conditions.{cond}: met_when_fact_is 가 참·거짓이 아니다")
+    rule = ems.get("easy_name_rule")
+    if rule is not None:
+        prefix, joiner = str(rule.get("combined_prefix_ko") or ""), str(rule.get("joiner_ko") or "")
+        names: dict[str, str] = {}
+        for code, meta in strategies.items():
+            checks += 1
+            easy = (meta or {}).get("easy_name_kr")
+            if not isinstance(easy, str) or not easy.strip():
+                out.append(f"ems_strategies.{code}: easy_name_kr 가 비었다")
+                continue
+            if meta.get("type") == "combined":
+                want = prefix + joiner.join(str((strategies.get(c) or {}).get("easy_name_kr")) for c in meta.get("components") or [])
+                if easy != want:
+                    out.append(f"ems_strategies.{code}.easy_name_kr 가 구성 대책의 쉬운 이름을 이은 글과 다르다: {easy!r} ≠ {want!r}")
+            names[code] = easy
+        bad, n = collisions({c: [e] for c, e in names.items()})
+        checks += n
+        out += [f"ems_strategies.easy_name_kr 이름 겹침 {b}" for b in bad]
+
+    # ③ 용도 → 원형 관계 — 원형(또는 규칙)이 있는 행마다 관계 어휘의 열쇠 · 원형 없음 행에는 없다
+    ua = um.get("usage_archetype") or {}
+    relations = set(((ua.get("archetype_relations") or {}).get("values") or {}))
+    if relations:
+        for usage, row in (ua.get("rows") or {}).items():
+            checks += 1
+            has_target = bool((row or {}).get("archetype") or (row or {}).get("rule"))
+            rel = (row or {}).get("archetype_relation")
+            if has_target and rel not in relations:
+                out.append(f"building_usage_map.usage_archetype.rows[{usage}].archetype_relation={rel!r} 가 archetype_relations.values 에 없다")
+            if not has_target and rel is not None:
+                out.append(f"building_usage_map.usage_archetype.rows[{usage}]: 원형 없음 행에 archetype_relation={rel!r}(대상 아님 — 싣지 않는다)")
+
+    # ④ 선언 가정이 가리키는 계절 체계
+    fresh = (d("declared_assumptions").get("operation_reading_freshness") or {}).get("value")
+    if fresh is not None:
+        checks += 1
+        ref = str(fresh.get("season_system_ref") or "")
+        schema, _, key = ref.partition(".")
+        # 가리키는 칸이 **있는가**만 본다 — 체계가 아직 null(미정)이면 소비처가 판정하지 않는다(못 잼 — 0.3.72 시험이 null 을 통과시킨다)
+        if not key or key not in d(schema):
+            out.append(f"declared_assumptions.operation_reading_freshness.season_system_ref={ref!r} 가 계절 체계 칸을 가리키지 않는다")
+        if not isinstance(fresh.get("max_season_lag"), int) or isinstance(fresh.get("max_season_lag"), bool) or fresh["max_season_lag"] < 0:
+            out.append("declared_assumptions.operation_reading_freshness.max_season_lag 가 0 이상의 정수가 아니다")
     return out, checks
 
 

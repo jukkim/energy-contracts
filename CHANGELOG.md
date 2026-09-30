@@ -4,6 +4,42 @@
 
 ---
 
+## 0.3.74 (2026-10-01, 태그 v0.3.74) — 게이트웨이 3회전 묶음이 기다리는 행(요청 E4-1 · E5-1~3 · E6-1~3 · R3F-1~3 · WP2 §4 · 가산)
+
+요청 = 캠페인 `scratch/capability_first/EC_ROWS_NEEDED_round3.md` · `requests_round1.md` WP2 §4(설계 `docs/CAPABILITY_FIRST_QUERY_DESIGN_2026-09-30.md`).
+0.3.73 의 키와 값(문구 포함)은 하나도 바꾸지 않았다 — 예외는 판 표지와 원형 별칭 목록 셋의 **뒤에 붙이기**뿐(시험이 태그와 잎마다 맞댄다).
+
+- `building_usage_map` 1.2 → 1.3: 용도 별칭 `사무실 → 업무시설`(사무소·오피스와 같은 일상어 — 면적 모름 = 중형 + '면적 미확인') ·
+  `usages.convenience_store.operates_24h = true`(선언 가정 — 게이트웨이 가상 일정 `_virtual.OCCUPIED_HOURS['RET']` 값 그대로 · ⚠
+  `calendar_conventions.day_windows.outside_hours_store` 의 이름표 '영업 외(1~7시)'와 뜻이 어긋난다 — 결정은 EC 소유자·사용자) ·
+  `usage_archetype.rows[*].archetype_relation`(same_type | nearest_other_type + `relation_basis_ko` — 편의점·교육연구시설·근린생활·공장·확장 용도 =
+  가장 가까운 다른 종류) + 관계 어휘 `usage_archetype.archetype_relations`. 요청은 `usages[*]` 에 두자고 했으나 원형을 정하는 표(rows)에 두었다 —
+  1.2 가 usages 에 원형 사실을 손으로 적지 않기로 한 규칙 그대로.
+- `building_archetypes` 2.2 → 2.3: 원형 별칭 B01 '큰 사무실·대형 사무실·큰 오피스' · B02 '중형 사무실' · B03 '작은 사무실·소형 사무실·작은 오피스'
+  (DOE 규모 구간의 어휘 결정 — '큰'은 면적을 말하지 않는다) · `doe_buildings[*].electricity_price_class`(주택 원형 B16·B17·B18 = 주택용 · 학교 B07·B08 =
+  교육용 · 나머지 = 일반용 — 규칙 `electricity_price_class_rule`) · `sim_axes.scenario_names`(현재 기후 · 2050년 SSP2-4.5 · 2050·2080년 SSP5-8.5 — 근거 = 기상 파일 계보 ·
+  IPCC AR6 이름).
+- `target_vocabulary` 1.1 → 1.2: `gas_price_classes`(주택용 · 산업용 — 값은 `market_prices.retail_reference_2026.gas_retail_seoul` 을 가리키기만) ·
+  `air_asset_kinds[*].gas_price_class`(HOM = residential · FAC = industrial · BLD·RET·PRT = null → 참조 단가 `unit_prices.gas_krw` 그대로 — 기존 요금이 움직이지 않는다) ·
+  `$defs.AirAssetKindEntry` 에 이미 쓰던 `electricity_price_class` 와 새 `gas_price_class` 선언.
+- `ems_strategies` 3.4 → 3.5: `strategies[*].easy_name_kr`(쉬운 이름 23 — 조합은 `easy_name_rule` 로 구성 대책 이름을 이은 글 · 적재 검사가 같은지 본다) ·
+  단일 전략 `setpoint_action`(어휘 `setpoint_actions`: M04·M05 comfort_band_dynamic · M16 night_setback · M09 pre_peak_shift · M00 fixed_with_night_setback ·
+  **M10 peak_hour_setup** — 요청은 '나머지 none' 이었으나 8.simulation `docs/PHYSICS_SPEC_2026-09-15_CONTRACT.md` §5 M10 VB 가 14~17시 냉방 설정 +2℃ 를 적어 그대로 옮겼다 ·
+  나머지 none) · `applies_when`(M00·M06·M16 비운영 시간 · M01 날마다 켜고 끔 · M03 여러 대 · M08 기계 환기 · M18 ESS — 어휘 `applicability_conditions`,
+  전제를 가르는 대상 사실 = 용도 칸 `operates_24h`).
+- `declared_assumptions` 1.5 → 1.6: 새 행 셋 — `operation_reading_window`(28일 · 7일 · 구성원 12곳 — decision_support 리터럴 그대로) ·
+  `operation_reading_freshness`(읽은 창이 오늘과 같은 철이면 '지금 운전' — 설계 §2.5 한계 4 '한 철' · 계절 = `calendar_conventions.question_season_system` ·
+  새 수는 0 하나) · `cohort_city_min_share`(0.5 초과 — 낱말 '다수결'의 뜻). 기존 행 값 안에 `serving_display_limits.value.display_significant_digits`(3 —
+  measure_candidates 리터럴 그대로). 요청이 제안한 `operations_proxy_rules.value` 대신 새 행으로 둔 까닭: 그 value 는 게이트웨이 경제성 수명 격자 가정
+  (`_assumption_ranges.declared_parameter`)이 통째로 답에 싣는다 — 칸을 더하면 옛 답 바이트가 바뀐다.
+- 적재 검사 `scripts/vocabulary_gate.py`: 새 칸이 가리키는 열쇠(원형 전기 종별 · 자산 가스 종별과 그 `market_prices_ref` 가 수를 가리키는가 · 설정 동작 · 적용 전제와
+  그 대상 사실 · 조합 쉬운 이름 = 구성 이름을 이은 글 · 쉬운 이름 겹침 · 용도→원형 관계 · 운전 기록 나이의 계절 체계) — 칸이 있을 때만 돈다(0.3.73 모양은 통과).
+- 넣지 않은 것(근거 없음 · 결정 몫): M01 끄는(정지) 시각 서명(R3F-4 — 새 문턱이고 인용할 근거가 없다) · 효과 결함 설비 정본 자리와 H_D(R3F-5 — 시뮬 세션·사용자) ·
+  설비 라벨 이름(E4-2 — 시뮬 세션이 템플릿 계보에서).
+- pydantic 모델 재생성: building_usage_map · building_archetypes · target_vocabulary · ems_strategies. 생성 상수: `gen_constants.py --all` 12 소비처 재생성 · `--check` drift 0.
+- 시험 `tests/test_ec_rows_0374.py`(새 — 요청 값 · 0.3.73 태그와 잎 전부 · 검사가 막을 것 17 · 통과시킬 것 5 · 생성본 도달 · 넣지 않은 요청) · 0.3.70 시험의 새 행 개수(+3)와
+  `test_interface_contracts_0362` 의 declared_assumptions 판 고정(1.6)을 근거와 함께 갱신.
+
 ## 0.3.73 (2026-10-01, 태그 v0.3.73) — 요청 봉투 2.5: 고른 해석 `interpretation`(선택 칸 · 가산)
 
 근거 = 캠페인 `docs/CAPABILITY_FIRST_QUERY_DESIGN_2026-09-30.md` 결정 14 · 화면 세션 합의 `scratch/capability_first/screen_contract_agreed_with_f7.md`.

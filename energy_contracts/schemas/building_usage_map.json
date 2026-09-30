@@ -11,9 +11,9 @@
     "agentleague",
     "eduarena"
   ],
-  "version": "1.2",
-  "updated": "2026-09-28",
-  "$comment": "v1.2(2026-09-28 최종 라운드 X2): 용도 표 두 벌(usages[*].archetype 손 값 ↔ usage_archetype.rows)을 하나로 — 정본 = usage_archetype.rows. usages[*] 는 archetype 을 손으로 적지 않고 registry_usage(rows 키)만 적는다. 생성본 BUILDING_USAGES 의 archetype(영문명)·archetype_code 는 gen_constants 가 rows 에서 파생한다. 편의점 = B11(사용자 결정 2026-09-28 22:35 — 자산 용도를 알 때; 대장 주용도 근린생활 B03 은 용도를 모를 때만). 공동주택 층수 규칙(apartment_by_floors: 지상 5층 이하 중층 B16 · 초과 고층 B17 · 층수 미상 B16) 추가. 확장 용도 행(노유자·수련·문화및집회·운동·운수·자동차관련·위험물·방송통신) = 가장 가까운 원형의 선언 가정(classification assumed) 또는 이름 있는 결손(방송통신 = DOE 원형 없음).",
+  "version": "1.3",
+  "updated": "2026-10-01",
+  "$comment": "v1.3(2026-10-01 · EC 0.3.74 — 캠페인 scratch/capability_first/EC_ROWS_NEEDED_round3.md E6-1 · E5-1 · R3F-3 · 가산): 용도 별칭 '사무실' → 업무시설(사무소·오피스와 같은 일상어 — 면적 모름 = 중형·'면적 미확인') · usages.convenience_store.operates_24h(선언 가정 — 게이트웨이 가상 일정 _virtual.OCCUPIED_HOURS['RET'] 값 그대로) · usage_archetype.rows[*].archetype_relation(same_type | nearest_other_type — 같은 종류일 때만 '같은 종류 표준 모델'이라 말한다) + 관계 어휘 usage_archetype.archetype_relations. 원형 없음 행(방송통신시설)에는 관계 칸이 없다. 1.2 의 키·값·문구는 그대로. · v1.2(2026-09-28 최종 라운드 X2): 용도 표 두 벌(usages[*].archetype 손 값 ↔ usage_archetype.rows)을 하나로 — 정본 = usage_archetype.rows. usages[*] 는 archetype 을 손으로 적지 않고 registry_usage(rows 키)만 적는다. 생성본 BUILDING_USAGES 의 archetype(영문명)·archetype_code 는 gen_constants 가 rows 에서 파생한다. 편의점 = B11(사용자 결정 2026-09-28 22:35 — 자산 용도를 알 때; 대장 주용도 근린생활 B03 은 용도를 모를 때만). 공동주택 층수 규칙(apartment_by_floors: 지상 5층 이하 중층 B16 · 초과 고층 B17 · 층수 미상 B16) 추가. 확장 용도 행(노유자·수련·문화및집회·운동·운수·자동차관련·위험물·방송통신) = 가장 가까운 원형의 선언 가정(classification assumed) 또는 이름 있는 결손(방송통신 = DOE 원형 없음).",
   "$defs": {
     "UsageEntry": {
       "type": "object",
@@ -64,6 +64,14 @@
               "type": "number"
             }
           }
+        },
+        "operates_24h": {
+          "type": "boolean",
+          "description": "그 용도가 24시간 운영(문 닫는 시간 없음)인가 — 선언 가정(근거 = operates_24h_basis). 칸이 없으면 운영 일정 선언이 없다(모름 — 짐작하지 않는다). 소비처: 대책 적용 전제(ems_strategies applicability_conditions 의 decided_by_usage_fact)."
+        },
+        "operates_24h_basis": {
+          "type": "object",
+          "description": "operates_24h 의 분류·근거(classification · basis_kind · basis · source · note_ko)"
         }
       }
     },
@@ -101,6 +109,17 @@
         "detail_of": {
           "type": "string",
           "description": "세부 용도 행이 속한 대장 주용도(예 편의점 → 제1종근린생활시설). 세부 용도를 알면 이 행이 주용도 행보다 앞선다"
+        },
+        "archetype_relation": {
+          "enum": [
+            "same_type",
+            "nearest_other_type"
+          ],
+          "description": "행의 원형이 그 용도와 같은 종류의 건물인가(어휘 = usage_archetype.archetype_relations). same_type 일 때만 '같은 종류 표준 모델'이라 말한다. 원형 없음(archetype null) 행에는 싣지 않는다(대상 아님)"
+        },
+        "relation_basis_ko": {
+          "type": "string",
+          "description": "archetype_relation 의 근거(사람 말)"
         }
       },
       "oneOf": [
@@ -188,6 +207,14 @@
           "hot_water": 0.1,
           "lighting": 0.2,
           "ventilation": 0.3
+        },
+        "operates_24h": true,
+        "operates_24h_basis": {
+          "classification": "assumed",
+          "basis_kind": "moved_literal",
+          "basis": "게이트웨이 가상 일정 선언 asset_inputs/_virtual.OCCUPIED_HOURS['RET'] = 0~23시(점포 = 24시간 운영) 값 그대로 옮김 — 외부 근거 없는 선언 시연 가정. 점포 기록(아이로스)에는 운영 일정(24시간 영업 여부·휴점)이 없다(게이트웨이 asset_inputs/airos_assigned_operations_query)",
+          "source": "게이트웨이(8.simulation/ems_transformer/serving) asset_inputs/_virtual.OCCUPIED_HOURS · 캠페인 scratch/capability_first/EC_ROWS_NEEDED_round3.md E5-1",
+          "note_ko": "⚠ calendar_conventions.day_windows.outside_hours_store(1~7시)의 이름표 '영업 외' 와 뜻이 어긋난다 — 그 창은 AIROS-005 하네스의 저활동 창 선언이다. 어느 쪽을 고칠지는 EC 소유자·사용자 결정(0.3.74 는 둘 다 그대로 두었다)"
         }
       },
       "education": {
@@ -280,98 +307,151 @@
       "rows": {
         "업무시설": {
           "rule": "office_by_gross_floor_area",
-          "basis": "D1"
+          "basis": "D1",
+          "archetype_relation": "same_type",
+          "relation_basis_ko": "업무시설(사무소) → DOE 사무소 원형(연면적으로 대형·중형·소형) — 같은 종류"
         },
         "근린생활시설": {
           "archetype": "B03",
-          "basis": "be-3d policy_savings.USAGE_TO_ARCHETYPE(정책 절감 지도·F14 공용, 2026-09-25) 이관"
+          "basis": "be-3d policy_savings.USAGE_TO_ARCHETYPE(정책 절감 지도·F14 공용, 2026-09-25) 이관",
+          "archetype_relation": "nearest_other_type",
+          "relation_basis_ko": "근린생활시설은 소매점·음식점·의원·사무소 등이 섞인 대장 주용도 범주 — 소형 사무소 원형은 그 가운데 사무소만 같은 종류(be-3d 정책 절감 지도의 대리 규칙 이관)"
         },
         "제1종근린생활시설": {
           "archetype": "B03",
-          "basis": "be-3d policy_savings.USAGE_TO_ARCHETYPE(정책 절감 지도·F14 공용, 2026-09-25) 이관"
+          "basis": "be-3d policy_savings.USAGE_TO_ARCHETYPE(정책 절감 지도·F14 공용, 2026-09-25) 이관",
+          "archetype_relation": "nearest_other_type",
+          "relation_basis_ko": "근린생활시설 범주(소매점·음식점·의원·사무소 등) — 소형 사무소 원형은 그 가운데 사무소만 같은 종류"
         },
         "제2종근린생활시설": {
           "archetype": "B03",
-          "basis": "be-3d policy_savings.USAGE_TO_ARCHETYPE(정책 절감 지도·F14 공용, 2026-09-25) 이관"
+          "basis": "be-3d policy_savings.USAGE_TO_ARCHETYPE(정책 절감 지도·F14 공용, 2026-09-25) 이관",
+          "archetype_relation": "nearest_other_type",
+          "relation_basis_ko": "근린생활시설 범주(음식점·사무소·학원 등) — 소형 사무소 원형은 그 가운데 사무소만 같은 종류"
         },
         "판매시설": {
           "archetype": "B05",
-          "basis": "be-3d policy_savings.USAGE_TO_ARCHETYPE(정책 절감 지도·F14 공용, 2026-09-25) 이관"
+          "basis": "be-3d policy_savings.USAGE_TO_ARCHETYPE(정책 절감 지도·F14 공용, 2026-09-25) 이관",
+          "archetype_relation": "same_type",
+          "relation_basis_ko": "판매시설(시장·상점) → DOE 독립 판매점(소매) — 같은 종류(판매) · 규모·형태는 다를 수 있다"
         },
         "교육연구시설": {
           "archetype": "B07",
-          "basis": "be-3d policy_savings.USAGE_TO_ARCHETYPE(정책 절감 지도·F14 공용, 2026-09-25) 이관"
+          "basis": "be-3d policy_savings.USAGE_TO_ARCHETYPE(정책 절감 지도·F14 공용, 2026-09-25) 이관",
+          "archetype_relation": "nearest_other_type",
+          "relation_basis_ko": "교육연구시설은 학교(초·중·고·대학)·교육원·연구소·도서관을 묶는 대장 주용도 — 초등학교 원형은 그 가운데 초등학교만 같은 종류(중·고등학교 원형 B08 은 따로 있다 · 도서관 → 초등학교는 같은 종류가 아니다 — 리뷰 M5)"
         },
         "의료시설": {
           "archetype": "B12",
-          "basis": "be-3d policy_savings.USAGE_TO_ARCHETYPE(정책 절감 지도·F14 공용, 2026-09-25) 이관"
+          "basis": "be-3d policy_savings.USAGE_TO_ARCHETYPE(정책 절감 지도·F14 공용, 2026-09-25) 이관",
+          "archetype_relation": "same_type",
+          "relation_basis_ko": "의료시설(병원 — 의원은 근린생활시설) → DOE 병원 — 같은 종류"
         },
         "공동주택": {
           "rule": "apartment_by_floors",
-          "basis": "be-3d policy_savings.USAGE_TO_ARCHETYPE(정책 절감 지도·F14 공용, 2026-09-25) 이관 · 층수 규칙 = be-3d simulation/archetypes._MIDRISE_MAX_FLOORS(지상 5층 이하 중층) 이관(2026-09-28 X2)"
+          "basis": "be-3d policy_savings.USAGE_TO_ARCHETYPE(정책 절감 지도·F14 공용, 2026-09-25) 이관 · 층수 규칙 = be-3d simulation/archetypes._MIDRISE_MAX_FLOORS(지상 5층 이하 중층) 이관(2026-09-28 X2)",
+          "archetype_relation": "same_type",
+          "relation_basis_ko": "공동주택(아파트) → 중층·고층 아파트 원형(층수 규칙) — 같은 종류"
         },
         "숙박시설": {
           "archetype": "B14",
-          "basis": "be-3d policy_savings.USAGE_TO_ARCHETYPE(정책 절감 지도·F14 공용, 2026-09-25) 이관"
+          "basis": "be-3d policy_savings.USAGE_TO_ARCHETYPE(정책 절감 지도·F14 공용, 2026-09-25) 이관",
+          "archetype_relation": "same_type",
+          "relation_basis_ko": "숙박시설(호텔·여관) → DOE 소형 호텔 — 같은 종류(숙박) · 규모는 다를 수 있다"
         },
         "단독주택": {
           "archetype": "B18",
-          "basis": "be-3d policy_savings.USAGE_TO_ARCHETYPE(정책 절감 지도·F14 공용, 2026-09-25) 이관 · B18 단독주택 원형(2026-09-13)"
+          "basis": "be-3d policy_savings.USAGE_TO_ARCHETYPE(정책 절감 지도·F14 공용, 2026-09-25) 이관 · B18 단독주택 원형(2026-09-13)",
+          "archetype_relation": "same_type",
+          "relation_basis_ko": "단독주택 → 한국 단독주택 원형 B18 — 같은 종류"
         },
         "공장": {
           "archetype": "B04",
-          "basis": "be-3d policy_savings.USAGE_TO_ARCHETYPE(정책 절감 지도·F14 공용, 2026-09-25) 이관"
+          "basis": "be-3d policy_savings.USAGE_TO_ARCHETYPE(정책 절감 지도·F14 공용, 2026-09-25) 이관",
+          "archetype_relation": "nearest_other_type",
+          "relation_basis_ko": "공장 → 창고 원형(가장 가까운 대리) — 같은 종류 아님(공정 부하가 없는 원형)"
         },
         "창고시설": {
           "archetype": "B04",
-          "basis": "be-3d policy_savings.USAGE_TO_ARCHETYPE(정책 절감 지도·F14 공용, 2026-09-25) 이관"
+          "basis": "be-3d policy_savings.USAGE_TO_ARCHETYPE(정책 절감 지도·F14 공용, 2026-09-25) 이관",
+          "archetype_relation": "same_type",
+          "relation_basis_ko": "창고시설 → DOE 창고 — 같은 종류"
         },
         "편의점": {
           "archetype": "B11",
           "detail_of": "제1종근린생활시설",
           "classification": "declared",
-          "basis": "사용자 결정 2026-09-28 22:35 — 편의점 원형 = B11(QuickServiceRestaurant). 자산 용도가 편의점이면 이 행, 대장 주용도(제1종근린생활시설 → B03)는 용도를 모를 때만"
+          "basis": "사용자 결정 2026-09-28 22:35 — 편의점 원형 = B11(QuickServiceRestaurant). 자산 용도가 편의점이면 이 행, 대장 주용도(제1종근린생활시설 → B03)는 용도를 모를 때만",
+          "archetype_relation": "nearest_other_type",
+          "relation_basis_ko": "편의점 → 패스트푸드점 원형(사용자 결정 2026-09-28 22:35) — 같은 종류 아님(편의점 = 냉장 진열 · 원형 = 조리 부하가 크고 문 닫는 시간이 있다 — 리뷰 M9 · 설계 §5)"
         },
         "노유자시설": {
           "archetype": "B12",
           "classification": "assumed",
-          "basis": "확장 용도(2026-09-28 X2) — 24시간 거주 돌봄 시설, 가장 가까운 원형 병원(be-3d archetypes._USAGE_KR_TO_EN 노유자→hospital 과 같음)"
+          "basis": "확장 용도(2026-09-28 X2) — 24시간 거주 돌봄 시설, 가장 가까운 원형 병원(be-3d archetypes._USAGE_KR_TO_EN 노유자→hospital 과 같음)",
+          "archetype_relation": "nearest_other_type",
+          "relation_basis_ko": "확장 용도(선언 가정 assumed) — 가장 가까운 원형 병원으로 대리 · 같은 종류 아님"
         },
         "수련시설": {
           "archetype": "B07",
           "classification": "assumed",
-          "basis": "확장 용도(2026-09-28 X2) — be-3d 수련시설→education 과 같음"
+          "basis": "확장 용도(2026-09-28 X2) — be-3d 수련시설→education 과 같음",
+          "archetype_relation": "nearest_other_type",
+          "relation_basis_ko": "확장 용도(선언 가정 assumed) — 가장 가까운 원형 초등학교로 대리 · 같은 종류 아님"
         },
         "문화및집회시설": {
           "archetype": "B05",
           "classification": "assumed",
-          "basis": "확장 용도(2026-09-28 X2) — 넓은 단일 공간·주간 운영, be-3d cultural→retail 유사와 같음"
+          "basis": "확장 용도(2026-09-28 X2) — 넓은 단일 공간·주간 운영, be-3d cultural→retail 유사와 같음",
+          "archetype_relation": "nearest_other_type",
+          "relation_basis_ko": "확장 용도(선언 가정 assumed) — 가장 가까운 원형 독립 판매점으로 대리 · 같은 종류 아님"
         },
         "운동시설": {
           "archetype": "B14",
           "classification": "assumed",
-          "basis": "확장 용도(2026-09-28 X2) — be-3d 운동시설→mixed_use(hotel 유사)와 같음"
+          "basis": "확장 용도(2026-09-28 X2) — be-3d 운동시설→mixed_use(hotel 유사)와 같음",
+          "archetype_relation": "nearest_other_type",
+          "relation_basis_ko": "확장 용도(선언 가정 assumed) — 가장 가까운 원형 소형 호텔로 대리 · 같은 종류 아님"
         },
         "운수시설": {
           "archetype": "B04",
           "classification": "assumed",
-          "basis": "확장 용도(2026-09-28 X2) — be-3d 운수시설→warehouse 와 같음"
+          "basis": "확장 용도(2026-09-28 X2) — be-3d 운수시설→warehouse 와 같음",
+          "archetype_relation": "nearest_other_type",
+          "relation_basis_ko": "확장 용도(선언 가정 assumed) — 가장 가까운 원형 창고로 대리 · 같은 종류 아님"
         },
         "자동차관련시설": {
           "archetype": "B04",
           "classification": "assumed",
-          "basis": "확장 용도(2026-09-28 X2) — be-3d 자동차관련시설→warehouse 와 같음"
+          "basis": "확장 용도(2026-09-28 X2) — be-3d 자동차관련시설→warehouse 와 같음",
+          "archetype_relation": "nearest_other_type",
+          "relation_basis_ko": "확장 용도(선언 가정 assumed) — 가장 가까운 원형 창고로 대리 · 같은 종류 아님"
         },
         "위험물저장및처리시설": {
           "archetype": "B04",
           "classification": "assumed",
-          "basis": "확장 용도(2026-09-28 X2) — be-3d 위험물→warehouse 와 같음"
+          "basis": "확장 용도(2026-09-28 X2) — be-3d 위험물→warehouse 와 같음",
+          "archetype_relation": "nearest_other_type",
+          "relation_basis_ko": "확장 용도(선언 가정 assumed) — 가장 가까운 원형 창고로 대리 · 같은 종류 아님"
         },
         "방송통신시설": {
           "archetype": null,
           "absence": "no_doe_archetype",
           "basis": "확장 용도(2026-09-28 X2) — 데이터센터·통신시설은 DOE 원형이 없다(be-3d 는 창고로 근사) — 원형을 지어내지 않고 이름 있는 결손"
         }
+      },
+      "archetype_relations": {
+        "values": {
+          "same_type": {
+            "label_ko": "같은 종류 표준 모델"
+          },
+          "nearest_other_type": {
+            "label_ko": "가장 가까운 다른 종류의 표준 모델(같은 종류 아님)"
+          }
+        },
+        "rule_ko": "행마다 원형이 그 용도와 같은 종류의 건물인가를 적는다 — same_type 일 때만 '같은 종류 표준 모델'이라 말하고, nearest_other_type 는 대리라고 적되 같은 종류라고 말하지 않는다. 원형 없음(archetype null) 행에는 칸이 없다(대상 아님 — 결손 이름은 absence)",
+        "classification": "declared",
+        "basis": "캠페인 3회전 리뷰 M5·M9(편의점 → 패스트푸드점 · 도서관(교육연구시설) → 초등학교는 같은 종류가 아니다) · 캠페인 scratch/capability_first/EC_ROWS_NEEDED_round3.md R3F-3 · 행마다 relation_basis_ko(원형 이름·대장 범주의 뜻 — 확장 용도 행은 classification assumed 가 이미 '가장 가까운 원형'이라 적었다)"
       },
       "usage_aliases": {
         "아파트": "공동주택",
@@ -391,7 +471,8 @@
         "전산센터": "방송통신시설",
         "통신시설": "방송통신시설",
         "오피스": "업무시설",
-        "청사": "업무시설"
+        "청사": "업무시설",
+        "사무실": "업무시설"
       },
       "apartment_by_floors": {
         "midrise_max_floors_inclusive": 5,
@@ -476,6 +557,10 @@
             "type": "string"
           },
           "description": "세부 용도·옛 이름 → 주용도(rows 키)."
+        },
+        "archetype_relations": {
+          "type": "object",
+          "description": "archetype_relation 어휘(values) · 규칙 · 근거"
         }
       }
     }

@@ -11,8 +11,9 @@
     "building-energy-3d",
     "agentleague"
   ],
-  "version": "1.1",
-  "updated": "2026-09-30",
+  "version": "1.2",
+  "updated": "2026-10-01",
+  "$comment": "1.2(2026-10-01 · EC 0.3.74 — 캠페인 scratch/capability_first/EC_ROWS_NEEDED_round3.md E6-3 · 가산): 가스 요금 종별 gas_price_classes(값 = market_prices.retail_reference_2026.gas_retail_seoul 의 종별 — 서울 도시가스 요금표 2026-09-01) · air_asset_kinds[*].gas_price_class(가정 = 주택용 · 공장 = 산업용 · 건물·점포·포트폴리오 = null → 참조 단가 unit_prices.gas_krw 그대로). $defs.AirAssetKindEntry 에 이미 쓰던 electricity_price_class 와 새 gas_price_class 칸 선언. 1.1 의 키·값·문구는 그대로.",
   "$defs": {
     "AirAssetKindEntry": {
       "type": "object",
@@ -59,6 +60,20 @@
             "members"
           ]
         },
+        "electricity_price_class": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "description": "자산 종류 → 전기 요금 종별(electricity_price_classes 의 열쇠). null = 종별 없음(참조 단가 market_prices.unit_prices 를 쓰고 표시)"
+        },
+        "gas_price_class": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "description": "자산 종류 → 가스 요금 종별(gas_price_classes 의 열쇠 — 0.3.74). null = 참조 단가 market_prices.unit_prices.gas_krw(일반용 영업1). 칸이 없으면 선언 없음(소비처는 짐작하지 않는다)"
+        },
         "aliases_ko": {
           "type": "array",
           "items": {
@@ -83,9 +98,18 @@
       "rule_ko": "자산 종류 → 요금 종별(air_asset_kinds[*].electricity_price_class): 점포 = 저압 계절 단가 · 건물 = 일반용 · 공장 = 산업용 · 가정 = 주택용. 용도가 교육(education_use_types)이면 교육용이 먼저. 모르는 종류는 종별 없음(참조 단가 unit_prices 를 쓰고 표시) — 계약 요금이 아니다",
       "source": "게이트웨이 general_ops/_financial.PRICE_CLASS_BY_KIND·EDUCATION_USE_TYPES·PRICE_CLASS_KO(2026-09-28 W5 선택 규칙) 이관"
     },
+    "gas_price_classes": {
+      "residential": {"label_ko": "주택용 도시가스(서울 소매)", "market_prices_ref": "retail_reference_2026.gas_retail_seoul.residential"},
+      "industrial": {"label_ko": "산업용 도시가스(서울 소매)", "market_prices_ref": "retail_reference_2026.gas_retail_seoul.industrial"},
+      "rule_ko": "자산 종류 → 가스 요금 종별(air_asset_kinds[*].gas_price_class): 가정 = 주택용 · 공장 = 산업용 · 건물·점포·포트폴리오(null)와 자산 종류가 없는 원형·지역 = 참조 단가(market_prices.unit_prices.gas_krw — 일반용 영업1, 기존 값 그대로). 값은 market_prices_ref 가 가리키는 칸에서만 읽는다(원/kWh — 기본요금 제외 · 계약 요금·고지서가 아니다)",
+      "classification": "declared",
+      "basis": "서울 도시가스 요금표 2026-09-01(코원에너지서비스) · 서울시 물가정보 소매공급비용 — market_prices.retail_reference_2026.gas_retail_seoul(주택 22.6226 · 산업 26.5588 원/MJ × 3.6). 종별 선택은 electricity_price_classes 의 자산 종류 규칙과 같은 뜻(가정 = 주택용 · 공장 = 산업용). market_prices.unit_prices.residential.gas_krw(45)는 EC _audit 가 어긋남으로 동결한 값이라 가리키지 않는다",
+      "source": "캠페인 scratch/capability_first/EC_ROWS_NEEDED_round3.md E6-3 · 게이트웨이 general_ops/unit_conversion(GAS_PRICE_CLASS_NOT_IN_EC 자리)"
+    },
     "air_asset_kinds": {
       "BLD": {
         "electricity_price_class": "general",
+        "gas_price_class": null,
         "label_ko": "건물",
         "target_kind": "asset",
         "subject_field": "building_ids",
@@ -96,6 +120,7 @@
       },
       "FAC": {
         "electricity_price_class": "industrial",
+        "gas_price_class": "industrial",
         "label_ko": "공장",
         "target_kind": "asset",
         "subject_field": "building_ids",
@@ -105,6 +130,7 @@
       },
       "HOM": {
         "electricity_price_class": "residential",
+        "gas_price_class": "residential",
         "label_ko": "가정",
         "target_kind": "asset",
         "subject_field": "home_ids",
@@ -115,6 +141,7 @@
       },
       "RET": {
         "electricity_price_class": "general_low_voltage",
+        "gas_price_class": null,
         "label_ko": "점포",
         "target_kind": "asset",
         "subject_field": "building_ids",
@@ -125,6 +152,7 @@
       },
       "PRT": {
         "electricity_price_class": null,
+        "gas_price_class": null,
         "label_ko": "포트폴리오",
         "target_kind": "portfolio",
         "subject_field": "portfolio_ids",

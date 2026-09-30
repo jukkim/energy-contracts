@@ -11,7 +11,8 @@
     "agentleague",
     "eduarena"
   ],
-  "version": "3.4",
+  "version": "3.5",
+  "$comment": "3.5(2026-10-01 · EC 0.3.74 — 캠페인 scratch/capability_first/EC_ROWS_NEEDED_round3.md E4-1 · E5-1 · requests_round1.md WP2 §4 · 가산): strategies[*].easy_name_kr(쉬운 이름 — 조합은 easy_name_rule 로 구성 대책의 쉬운 이름을 잇는다) · 단일 전략 setpoint_action(어휘 setpoint_actions — 조합은 싣지 않고 구성에서 파생) · applies_when(적용 전제 — 어휘 applicability_conditions). 3.4 의 키·값·문구는 그대로. 어휘와 가리키는 열쇠는 scripts/vocabulary_gate.py 가 적재 때 본다.",
   "$defs": {
     "StrategyCode": {
       "type": "string",
@@ -209,6 +210,22 @@
                 "type": "string"
               }
             }
+          },
+          "easy_name_kr": {
+            "type": "string",
+            "description": "쉬운 이름(사람 대면 표·요약 — 정본 이름은 name_kr). 조합(combined)은 default.easy_name_rule 로 구성 대책의 쉬운 이름을 components 순서로 이은 글이다(손으로 따로 짓지 않는다 — 적재 검사가 같은지 본다)"
+          },
+          "setpoint_action": {
+            "type": "string",
+            "description": "단일 전략이 설정온도를 어떻게 움직이나(어휘 = default.setpoint_actions.values 의 열쇠). 조합(combined)에는 싣지 않는다(구성 대책에서 파생)"
+          },
+          "applies_when": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "uniqueItems": true,
+            "description": "대상에 이 전략이 뜻이 있으려면 있어야 할 전제(어휘 = default.applicability_conditions.values 의 열쇠 — 모두 만족해야 한다). 칸이 없으면 선언된 전제가 없다는 뜻이다('늘 된다'는 주장이 아니다)"
           }
         },
         "required": [
@@ -564,6 +581,18 @@
         "type": "string"
       },
       "description": "KBEP 대리모형이 학습한 전략(정수 id = M 번호). 그 밖(M16~M22)은 fast-path 값이 없다 — 게이트웨이 DR 가드와 같은 선."
+    },
+    "setpoint_actions": {
+      "type": "object",
+      "description": "설정온도 동작 어휘(values) · 규칙 · 근거"
+    },
+    "applicability_conditions": {
+      "type": "object",
+      "description": "적용 전제 어휘(values — 전제마다 판정에 쓰는 대상 사실) · 규칙 · 근거"
+    },
+    "easy_name_rule": {
+      "type": "object",
+      "description": "조합 전략의 쉬운 이름을 잇는 규칙(머리 · 잇는 글)"
     }
   },
   "default": {
@@ -596,7 +625,12 @@
           "basis_kind": "moved_literal",
           "basis": "게이트웨이 decision_support._mcode_candidates(부하 모양 후보 · MCP-019) 리터럴 값 그대로 — 외부 근거 없는 선언 판정 규칙",
           "source": "게이트웨이 decision_support._mcode_candidates → general_ops/strategy_signature.py (요청 C9 · 감사 C2-20)"
-        }
+        },
+        "easy_name_kr": "기준 운전(설정온도 고정 · 밤 설정 완화)",
+        "setpoint_action": "fixed_with_night_setback",
+        "applies_when": [
+          "non_operating_hours"
+        ]
       },
       "M01": {
         "name_en": "ScheduleOpt",
@@ -622,55 +656,85 @@
           "basis_kind": "moved_literal",
           "basis": "게이트웨이 decision_support._mcode_candidates(부하 모양 후보 · MCP-019) 리터럴 값 그대로 — 외부 근거 없는 선언 판정 규칙",
           "source": "게이트웨이 decision_support._mcode_candidates → general_ops/strategy_signature.py (요청 C9 · 감사 C2-20)"
-        }
+        },
+        "easy_name_kr": "켜고 끄는 시각 맞추기",
+        "setpoint_action": "none",
+        "applies_when": [
+          "daily_start_stop"
+        ]
       },
       "M02": {
         "name_en": "Economizer",
         "name_kr": "엔탈피 이코노마이저 (외기 무료냉방)",
         "type": "single",
-        "components": []
+        "components": [],
+        "easy_name_kr": "바깥 공기로 식히기",
+        "setpoint_action": "none"
       },
       "M03": {
         "name_en": "Staging",
         "name_kr": "냉동기·보일러 대수 제어",
         "type": "single",
-        "components": []
+        "components": [],
+        "easy_name_kr": "냉동기·보일러 필요한 대수만 돌리기",
+        "setpoint_action": "none",
+        "applies_when": [
+          "multiple_plant_units"
+        ]
       },
       "M04": {
         "name_en": "PMV_Strict",
         "name_kr": "PMV ±0.5 동적 설정온도",
         "type": "single",
-        "components": []
+        "components": [],
+        "easy_name_kr": "쾌적 범위 안 설정온도 자동 조절(엄격)",
+        "setpoint_action": "comfort_band_dynamic"
       },
       "M05": {
         "name_en": "PMV_Relaxed",
         "name_kr": "PMV ±0.7 동적 설정온도",
         "type": "single",
-        "components": []
+        "components": [],
+        "easy_name_kr": "쾌적 범위 안 설정온도 자동 조절(완화)",
+        "setpoint_action": "comfort_band_dynamic"
       },
       "M06": {
         "name_en": "NightCycle",
         "name_kr": "야간 순환 (NightCycle)",
         "type": "single",
-        "components": []
+        "components": [],
+        "easy_name_kr": "밤에는 필요할 때만 냉난방",
+        "setpoint_action": "none",
+        "applies_when": [
+          "non_operating_hours"
+        ]
       },
       "M07": {
         "name_en": "DCV",
         "name_kr": "CO2 수요제어환기",
         "type": "single",
-        "components": []
+        "components": [],
+        "easy_name_kr": "사람 수(CO2)에 맞춘 환기",
+        "setpoint_action": "none"
       },
       "M08": {
         "name_en": "HeatRecovery",
         "name_kr": "전열교환기 (ERV)",
         "type": "single",
-        "components": []
+        "components": [],
+        "easy_name_kr": "환기 열 회수(전열교환기)",
+        "setpoint_action": "none",
+        "applies_when": [
+          "mechanical_outdoor_air"
+        ]
       },
       "M09": {
         "name_en": "Precooling",
         "name_kr": "피크 전 프리쿨링/프리히팅",
         "type": "single",
-        "components": []
+        "components": [],
+        "easy_name_kr": "피크 전에 미리 냉난방",
+        "setpoint_action": "pre_peak_shift"
       },
       "M10": {
         "name_en": "DemandResponse",
@@ -696,7 +760,9 @@
           "basis_kind": "moved_literal",
           "basis": "게이트웨이 decision_support._mcode_candidates(부하 모양 후보 · MCP-019) 리터럴 값 그대로 — 외부 근거 없는 선언 판정 규칙",
           "source": "게이트웨이 decision_support._mcode_candidates → general_ops/strategy_signature.py (요청 C9 · 감사 C2-20)"
-        }
+        },
+        "easy_name_kr": "피크 시간 전력 제한(수요반응)",
+        "setpoint_action": "peak_hour_setup"
       },
       "M11": {
         "name_en": "Combined_EMS",
@@ -706,7 +772,8 @@
           "M01",
           "M02",
           "M03"
-        ]
+        ],
+        "easy_name_kr": "조합: 켜고 끄는 시각 맞추기 + 바깥 공기로 식히기 + 냉동기·보일러 필요한 대수만 돌리기"
       },
       "M12": {
         "name_en": "Combined_PMV05",
@@ -717,7 +784,8 @@
           "M02",
           "M03",
           "M04"
-        ]
+        ],
+        "easy_name_kr": "조합: 켜고 끄는 시각 맞추기 + 바깥 공기로 식히기 + 냉동기·보일러 필요한 대수만 돌리기 + 쾌적 범위 안 설정온도 자동 조절(엄격)"
       },
       "M13": {
         "name_en": "Combined_PMV07",
@@ -728,7 +796,8 @@
           "M02",
           "M03",
           "M05"
-        ]
+        ],
+        "easy_name_kr": "조합: 켜고 끄는 시각 맞추기 + 바깥 공기로 식히기 + 냉동기·보일러 필요한 대수만 돌리기 + 쾌적 범위 안 설정온도 자동 조절(완화)"
       },
       "M14": {
         "name_en": "Combined_Full",
@@ -740,7 +809,8 @@
           "M03",
           "M06",
           "M07"
-        ]
+        ],
+        "easy_name_kr": "조합: 켜고 끄는 시각 맞추기 + 바깥 공기로 식히기 + 냉동기·보일러 필요한 대수만 돌리기 + 밤에는 필요할 때만 냉난방 + 사람 수(CO2)에 맞춘 환기"
       },
       "M15": {
         "name_en": "Combined_Premium",
@@ -753,7 +823,8 @@
           "M04",
           "M06",
           "M07"
-        ]
+        ],
+        "easy_name_kr": "조합: 켜고 끄는 시각 맞추기 + 바깥 공기로 식히기 + 냉동기·보일러 필요한 대수만 돌리기 + 쾌적 범위 안 설정온도 자동 조절(엄격) + 밤에는 필요할 때만 냉난방 + 사람 수(CO2)에 맞춘 환기"
       },
       "M16": {
         "name_en": "DR_NightSetback",
@@ -773,19 +844,31 @@
           "basis_kind": "moved_literal",
           "basis": "게이트웨이 decision_support._mcode_candidates(부하 모양 후보 · MCP-019) 리터럴 값 그대로 — 외부 근거 없는 선언 판정 규칙",
           "source": "게이트웨이 decision_support._mcode_candidates → general_ops/strategy_signature.py (요청 C9 · 감사 C2-20)"
-        }
+        },
+        "easy_name_kr": "수요반응 밤 설정 완화",
+        "setpoint_action": "night_setback",
+        "applies_when": [
+          "non_operating_hours"
+        ]
       },
       "M17": {
         "name_en": "LightingControl",
         "name_kr": "조명 제어 (디밍)",
         "type": "single",
-        "components": []
+        "components": [],
+        "easy_name_kr": "조명 밝기 줄이기",
+        "setpoint_action": "none"
       },
       "M18": {
         "name_en": "ESSPeakShaving",
         "name_kr": "ESS 피크셰이빙",
         "type": "single",
-        "components": []
+        "components": [],
+        "easy_name_kr": "배터리(ESS)로 피크 깎기",
+        "setpoint_action": "none",
+        "applies_when": [
+          "ess_installed"
+        ]
       },
       "M19": {
         "name_en": "DR_Integrated",
@@ -796,7 +879,8 @@
           "M04",
           "M17",
           "M18"
-        ]
+        ],
+        "easy_name_kr": "조합: 바깥 공기로 식히기 + 쾌적 범위 안 설정온도 자동 조절(엄격) + 조명 밝기 줄이기 + 배터리(ESS)로 피크 깎기"
       },
       "M20": {
         "name_en": "DR_EmergencyCurtail",
@@ -809,20 +893,89 @@
           "M17",
           "M09",
           "M18"
-        ]
+        ],
+        "easy_name_kr": "조합: 수요반응 밤 설정 완화 + 바깥 공기로 식히기 + 쾌적 범위 안 설정온도 자동 조절(엄격) + 조명 밝기 줄이기 + 피크 전에 미리 냉난방 + 배터리(ESS)로 피크 깎기"
       },
       "M21": {
         "name_en": "ThermalStorage",
         "name_kr": "빙축열/수축열 (열저장)",
         "type": "single",
-        "components": []
+        "components": [],
+        "easy_name_kr": "얼음·물에 냉열 저장(축열)",
+        "setpoint_action": "none"
       },
       "M22": {
         "name_en": "PV_SelfConsumption",
         "name_kr": "태양광 자가소비 최적화",
         "type": "single",
-        "components": []
+        "components": [],
+        "easy_name_kr": "태양광 전기 바로 쓰기",
+        "setpoint_action": "none"
       }
+    },
+    "easy_name_rule": {
+      "combined_prefix_ko": "조합: ",
+      "joiner_ko": " + ",
+      "rule_ko": "조합(combined) 전략의 쉬운 이름 = combined_prefix_ko + 구성 대책(components 순서)의 쉬운 이름을 joiner_ko 로 이은 글",
+      "basis": "requests_round1.md WP2 §4(설계가 쉬운 이름을 요구 — 표·요약이 'PMV ±0.7 동적 설정온도' 를 그대로 보였다) · 머리 '조합: ' = 게이트웨이 general_ops/measure_candidates.COMBO_NAME_HEAD_KO(자기 표 조합 칸 이름)와 같은 글"
+    },
+    "setpoint_actions": {
+      "values": {
+        "comfort_band_dynamic": {
+          "label_ko": "쾌적 범위(PMV) 안에서 설정온도를 동적으로 움직임"
+        },
+        "night_setback": {
+          "label_ko": "비운영 시간(밤)에 설정온도를 완화"
+        },
+        "pre_peak_shift": {
+          "label_ko": "피크 전에 설정온도를 당겨 미리 냉난방(프리쿨링·프리히팅)"
+        },
+        "peak_hour_setup": {
+          "label_ko": "피크 시간에 냉방 설정온도를 올림(수요반응)"
+        },
+        "fixed_with_night_setback": {
+          "label_ko": "고정 설정온도 + 밤 설정 완화(기준안)"
+        },
+        "none": {
+          "label_ko": "설정온도를 움직이지 않음"
+        }
+      },
+      "rule_ko": "단일 전략마다 설정온도를 어떻게 움직이는지의 선언 — 조합은 싣지 않고 구성 대책에서 파생한다. 설정온도 ℃ 단계 질문에 자기 표의 '가장 가까운 줄'(쾌적 범위 안 동적 설정)을 고르는 소비처는 comfort_band_dynamic 을 읽는다",
+      "classification": "declared",
+      "basis": "정본 전략 이름·물리 정의의 뜻 그대로 — M04·M05 'PMV ± 동적 설정온도'(8.simulation docs/PHYSICS_SPEC_2026-09-15_CONTRACT.md §5 M04/M05: PMV 밴드에 따라 냉·난방 설정을 움직인다) · M16 'DR 야간 셋백' · M09 '피크 전 프리쿨링/프리히팅' · M00 '고정 설정온도 + 야간 Setback'(기준안) · M10 = 같은 문서 §5 M10 VB 'VA(+2 ℃ 14~17 시) + 수요관리'(피크 시간 냉방 설정 상향 — 요청 E4-1 의 '나머지 none' 과 달리 설정을 움직인다) · 나머지 단일 전략(기동 시각·외기·대수·야간 순환·환기·전열교환·조명·ESS·열저장·태양광) = none",
+      "source": "캠페인 scratch/capability_first/EC_ROWS_NEEDED_round3.md E4-1 · 게이트웨이 general_ops/archetype_climate_grid.setpoint_strategy_codes(예전 이름 낱말 '설정온도' 읽기)"
+    },
+    "applicability_conditions": {
+      "values": {
+        "non_operating_hours": {
+          "label_ko": "운영하지 않는 시간(밤·휴일)이 있다",
+          "decided_by_usage_fact": "operates_24h",
+          "met_when_fact_is": false,
+          "unmet_ko": "24시간 운영이라 운영하지 않는 시간이 없다"
+        },
+        "daily_start_stop": {
+          "label_ko": "날마다 켜고 끄는 운전(운영 시작·끝)이 있다",
+          "decided_by_usage_fact": "operates_24h",
+          "met_when_fact_is": false,
+          "unmet_ko": "24시간 운영이라 날마다 켜고 끄지 않는다"
+        },
+        "multiple_plant_units": {
+          "label_ko": "냉동기·보일러가 여러 대다",
+          "decided_by_usage_fact": null
+        },
+        "mechanical_outdoor_air": {
+          "label_ko": "기계 환기(외기를 들이는 공조 설비)가 있다",
+          "decided_by_usage_fact": null
+        },
+        "ess_installed": {
+          "label_ko": "ESS(전력 저장 장치)가 설치돼 있다",
+          "decided_by_usage_fact": null
+        }
+      },
+      "rule_ko": "applies_when 의 전제는 모두 만족해야 그 대책이 대상에 뜻이 있다. 전제를 가르는 대상 사실(decided_by_usage_fact — building_usage_map.usages[*] 의 칸)이 선언돼 있으면 그 값으로 판정한다(met_when_fact_is 와 같으면 만족 · 다르면 대상 아님). 사실이 선언되지 않았거나 가르는 사실이 없는 전제(설비 대수·기계 환기·ESS)는 판정하지 않는다(못 잼 — 현장 확인)",
+      "classification": "declared",
+      "basis": "전략 정의(name_kr · name_en)의 뜻 그대로 — 야간 순환·DR 야간 셋백·기준안 야간 Setback = 비운영 시간 · 최적 기동·정지 = 날마다 켜고 끔 · 냉동기·보일러 대수 제어 = 여러 대 · 전열교환기 = 기계 환기 · ESS 피크셰이빙 = ESS. 표준 모델(원형) 율을 다른 대상에 대리로 보일 때 일정·설비 전제가 다르면 율이 옮겨지지 않는다(설계 §5 · 결정 2 사유)",
+      "source": "캠페인 scratch/capability_first/EC_ROWS_NEEDED_round3.md E5-1 · 게이트웨이 general_ops/measure_candidates.SCHEDULE_APPLICABILITY_UNMEASURED 자리"
     },
     "signal_mapping": {
       "NORMAL": "M17",

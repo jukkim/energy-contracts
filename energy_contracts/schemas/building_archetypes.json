@@ -11,8 +11,8 @@
     "reverse-ems (usecase_iv_coldstart _DEFAULT_ANNUAL_BASELINE_KWH = M00 EUI × doe area, manual sync)",
     "gen_constants → AXIS_ARCHETYPES·USAGE_ARCHETYPE (building-energy-3d·8sim-shared·agentleague)"
   ],
-  "version": "2.2",
-  "$comment": "v2.2(2026-09-28 최종 라운드 O2·대표 설비): area_m2 = v4 정본 연면적(B16 1,457→3,134.61 · B17 3,135→7,836.48 등 — KBEP 결함 탐지 EUI 분모가 2.2~2.5배 틀렸다) · representative_hvac 신설(be-3d·Studio 손 표 이관).",
+  "version": "2.3",
+  "$comment": "v2.3(2026-10-01 · EC 0.3.74 — 캠페인 scratch/capability_first/EC_ROWS_NEEDED_round3.md E6-1 · E6-2 · requests_round1.md WP2 §4 · 가산): 원형 별칭 B01 '큰 사무실·대형 사무실·큰 오피스' · B02 '중형 사무실' · B03 '작은 사무실·소형 사무실·작은 오피스'(DOE 규모 구간의 어휘 결정 — '큰'은 면적을 말하지 않는다) · 원형 전기 요금 종별 doe_buildings[*].electricity_price_class(target_vocabulary.electricity_price_classes 의 열쇠 · 규칙 electricity_price_class_rule) · sim_axes.scenario_names(시나리오 한글 이름). 2.2 의 키·값·문구는 그대로. · v2.2(2026-09-28 최종 라운드 O2·대표 설비): area_m2 = v4 정본 연면적(B16 1,457→3,134.61 · B17 3,135→7,836.48 등 — KBEP 결함 탐지 EUI 분모가 2.2~2.5배 틀렸다) · representative_hvac 신설(be-3d·Studio 손 표 이관).",
   "type": "object",
   "properties": {
     "doe_buildings": {
@@ -38,6 +38,10 @@
             "type": "string",
             "pattern": "^H[A-G]$",
             "description": "원형의 대표 냉난방(설비 조합을 모를 때 하나를 고르는 규칙 — hvac_types 중 하나). 2026-09-28 최종 라운드: be-3d policy_savings._HVAC_REPRESENTATIVE 손 표를 이관. 한국 실정 = 중층 아파트 개별 가스보일러 온돌(HE) · 고층 아파트 지역난방(HG) · 단독주택 HE — hvac_types 의 첫 값이 대표가 아니다(B16 첫 값 HD · B17 첫 값 HE). 모르는 원형은 기본값 없음(이름 있는 결손)"
+          },
+          "electricity_price_class": {
+            "type": "string",
+            "description": "원형의 전기 요금 종별(target_vocabulary.electricity_price_classes 의 열쇠 — 규칙 = default.electricity_price_class_rule). 자산 종류가 없는 원형 대상의 참조 단가를 고르는 칸(계약 요금이 아니다)"
           },
           "kbep_id": {
             "type": "integer",
@@ -143,7 +147,15 @@
       "scenarios": ["baseline", "ssp245_2050", "ssp585_2050", "ssp585_2080"],
       "setpoints": ["c24h18", "c24h20", "c26h18", "c26h20", "c26h22", "c28h18", "c28h20", "c28h22"],
       "rule_ko": "시뮬 셀 축 — 순서가 곧 KBEP 정수(Scenario_id 0~3 · Setpoint_id 0~7)이고 셀 id 코드(VAR V00~ · IDX L001~)다. 설정온도 cXXhYY = 냉방 XX℃·난방 YY℃",
-      "source": "8.simulation/_shared/sim_id.SCENARIOS·SETPOINTS(2026-09-28 화이트박스 D23 — sim_campaign_2026 run_sca_setpoint_expansion · 디스크 실측 2026-08-31) 이관(O3)"
+      "source": "8.simulation/_shared/sim_id.SCENARIOS·SETPOINTS(2026-09-28 화이트박스 D23 — sim_campaign_2026 run_sca_setpoint_expansion · 디스크 실측 2026-08-31) 이관(O3)",
+      "scenario_names": {"baseline": {"name_kr": "현재 기후(대표 기상년)"}, "ssp245_2050": {"name_kr": "2050년 기후 · SSP2-4.5(중간 배출)"}, "ssp585_2050": {"name_kr": "2050년 기후 · SSP5-8.5(매우 높은 배출)"}, "ssp585_2080": {"name_kr": "2080년 기후 · SSP5-8.5(매우 높은 배출)"}},
+      "scenario_names_basis": "시나리오 열쇠(기후 · 해) 그대로의 한글 이름 — 기상 파일 = 8.simulation docs/MASTER_PLAN_CLIMATE_POLICY_SIM_2026-07.md M1(FWG v4.2.0 이 대표 기상년(TMYx)을 SSP 시나리오 × 2050·2080 으로 변환한 EPW — 그 해 한 해의 관측·예보가 아니다) · 배출 경로 이름 = IPCC AR6 WG1 SPM(SSP2-4.5 중간 · SSP5-8.5 매우 높음) · 요청 = requests_round1.md WP2 §4(표·요약이 ssp585_2080 을 글자 그대로 보였다)"
+    },
+    "electricity_price_class_rule": {
+      "rule_ko": "원형 → 전기 요금 종별: 주택 원형(B16 중층 아파트 · B17 고층 아파트 · B18 단독주택) = 주택용 · 학교 원형(B07 초등학교 · B08 중·고등학교) = 교육용(2024) · 나머지 = 일반용. 자산 종류가 없는 원형 대상의 참조 단가를 고르는 규칙이다(계약 요금·고지서가 아니다)",
+      "classification": "declared",
+      "basis": "target_vocabulary.electricity_price_classes 의 자산 종류 → 종별 규칙과 같은 뜻(가정 = 주택용 · 교육 용도 = 교육용 · 건물 = 일반용) — 원형은 자산 종류가 없어 요금 환산이 일반용 mid-peak 참조 단가(market_prices.unit_prices.electricity_krw)를 주택·학교 원형에도 곱했다(캠페인 scratch/capability_first/EC_ROWS_NEEDED_round3.md E6-2)",
+      "source": "캠페인 scratch/capability_first/EC_ROWS_NEEDED_round3.md E6-2 · 게이트웨이 general_ops/_financial.energy_rate(원형 인자) · general_ops/unit_conversion"
     },
     "doe_buildings": {
       "B01": {
@@ -158,9 +170,13 @@
           "HG"
         ],
         "representative_hvac": "HA",
+        "electricity_price_class": "general",
         "aliases": [
           "LO",
-          "대형 오피스"
+          "대형 오피스",
+          "큰 사무실",
+          "대형 사무실",
+          "큰 오피스"
         ]
       },
       "B02": {
@@ -175,9 +191,11 @@
           "HF"
         ],
         "representative_hvac": "HC",
+        "electricity_price_class": "general",
         "aliases": [
           "MO",
-          "중형 오피스"
+          "중형 오피스",
+          "중형 사무실"
         ]
       },
       "B03": {
@@ -191,9 +209,13 @@
           "HE"
         ],
         "representative_hvac": "HC",
+        "electricity_price_class": "general",
         "aliases": [
           "SO",
-          "소형 오피스"
+          "소형 오피스",
+          "작은 사무실",
+          "소형 사무실",
+          "작은 오피스"
         ]
       },
       "B04": {
@@ -206,6 +228,7 @@
           "HC"
         ],
         "representative_hvac": "HC",
+        "electricity_price_class": "general",
         "aliases": []
       },
       "B05": {
@@ -218,6 +241,7 @@
           "HC"
         ],
         "representative_hvac": "HC",
+        "electricity_price_class": "general",
         "aliases": [
           "SR",
           "소매점"
@@ -233,6 +257,7 @@
           "HC"
         ],
         "representative_hvac": "HC",
+        "electricity_price_class": "general",
         "aliases": [
           "RetailStripmall"
         ]
@@ -248,6 +273,7 @@
           "HF"
         ],
         "representative_hvac": "HA",
+        "electricity_price_class": "education_2024",
         "aliases": [
           "PS"
         ]
@@ -264,6 +290,7 @@
           "HF"
         ],
         "representative_hvac": "HA",
+        "electricity_price_class": "education_2024",
         "aliases": []
       },
       "B09": {
@@ -276,6 +303,7 @@
           "HC"
         ],
         "representative_hvac": "HC",
+        "electricity_price_class": "general",
         "aliases": []
       },
       "B10": {
@@ -288,6 +316,7 @@
           "HC"
         ],
         "representative_hvac": "HC",
+        "electricity_price_class": "general",
         "aliases": []
       },
       "B11": {
@@ -301,6 +330,7 @@
           "HE"
         ],
         "representative_hvac": "HC",
+        "electricity_price_class": "general",
         "aliases": []
       },
       "B12": {
@@ -313,6 +343,7 @@
           "HA"
         ],
         "representative_hvac": "HA",
+        "electricity_price_class": "general",
         "aliases": []
       },
       "B13": {
@@ -326,6 +357,7 @@
           "HD"
         ],
         "representative_hvac": "HC",
+        "electricity_price_class": "general",
         "aliases": []
       },
       "B14": {
@@ -339,6 +371,7 @@
           "HD"
         ],
         "representative_hvac": "HC",
+        "electricity_price_class": "general",
         "aliases": []
       },
       "B15": {
@@ -352,6 +385,7 @@
           "HD"
         ],
         "representative_hvac": "HA",
+        "electricity_price_class": "general",
         "aliases": []
       },
       "B16": {
@@ -366,6 +400,7 @@
           "HG"
         ],
         "representative_hvac": "HE",
+        "electricity_price_class": "residential",
         "aliases": [
           "midrise_apt"
         ]
@@ -381,6 +416,7 @@
           "HG"
         ],
         "representative_hvac": "HG",
+        "electricity_price_class": "residential",
         "aliases": [
           "highrise_apt"
         ]
@@ -395,6 +431,7 @@
           "HE"
         ],
         "representative_hvac": "HE",
+        "electricity_price_class": "residential",
         "aliases": [],
         "source": "8.simulation _shared/building_areas.py B18 (E+ eio 실측 85.00 m²) · B18_DETACHED_HOUSE_ONBOARDING_2026-09-13 §0 결정 4(H_E 하나)"
       }
