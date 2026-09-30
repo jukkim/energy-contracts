@@ -11,9 +11,9 @@
     "airos-energy-decision",
     "ems_transformer (serving general_ops/cohort · internal_query_tools · asset_inputs/_virtual · measure_economics · simulation_pack_analysis)"
   ],
-  "version": "1.4",
+  "version": "1.5",
   "updated": "2026-09-30",
-  "$comment": "1.4(2026-09-30, 0.3.71 — GPT 상의 반영 · 사용자 지시 '지피티와 상의해서 정해' · 가산): 근거 없이 정한 여섯 값(short_cycling · comm_status_thresholds · life_roadmap · investment_tiers · precool_delta_c · judgement_thresholds 의 min_observed_temperature_days)과 인용 셋(min_r2 · pmv_inputs · debate_stated_term_ranges)을 검토했다. 1.3 의 키와 value 는 하나도 바꾸지 않았다 — 새 칸은 전부 **행 수준**(value 의 형제)에 둔다: 소비처가 value 를 통째로 도구 인자로 넘기는 자리(투자 구간·수명 로드맵 — 도구 스키마가 모르는 칸을 거절한다)가 있어서다. 새 칸: short_cycling.interpretation · comm_status_thresholds.by_delivery·unknown_delivery_profile · life_roadmap.sensitivity_life_used_shares·remaining_life_status_when_unknown · investment_tiers.classification_basis·numeric_thresholds_role·label_ko_by_work_scope · precool_delta_c.conditions_ko. 여섯 값은 표준값이 아니다 — basis_kind 는 declared_demo_assumption 그대로이고 basis 에 'GPT 상의 2026-09-30' 을 적는다(표준 인용으로 올리지 않는다). 인용 셋은 웹 대조(2026-09-30)로 문구를 고쳤다. · 1.3(2026-09-30, 0.3.70 — 일반화 감사 hard-coded-default 47건 · 남은 목록 N4-0): 게이트웨이·AgentLeague·be-3d 코드 리터럴로 있던 선언 기본값·문턱·화면 상한·가상 생성 규칙을 옮김(가산 — 1.2 의 행과 값은 그대로). 새 행은 전부 id · value · unit(QuantityUnit 낱말) 또는 unit_text · label_ko · rule_ko · classification · basis_kind · basis · source 를 싣는다. basis_kind: moved_literal(코드 값 그대로) · declared_demo_assumption(외부 근거 없는 선언 시연 가정) · standard_citation(표준·법령 인용) · derived_from_ec(이미 있는 정본 값에서 파생 — 새 수 없음). 이미 정본에 있는 값(순위 기본 개수 · 이상 z · 상위 비율 · 빠른 회수 · 폭염 달 창)은 새 행을 만들지 않았다 — 코드가 그 행을 읽는다. hazard_days.heat 에 baseline_months 추가. · 1.2(2026-09-29 RV-B3 초안, 0.3.62): 단위를 interface_types.QuantityUnit 낱말로(top_share '%'→pct · 햇수 yr) · 게이트웨이 모듈 상수로 남아 있던 선언 기본값을 옮김 — scenario_defaults(공실률·시나리오 공실률·끌 수 있는 부하 절감 몫·우선순위) · _assumption_ranges(가정 탐색 범위 5개) · measured_portfolio(순위 행 기본 개수). 값은 옮기기만 했다(동작 변경 없음). 모든 항목의 분류 = assumed(선언 가정) — 사람 대면 라벨은 data_classification 의 assumed label_ko 에서 파생한다.",
+  "$comment": "1.5(2026-09-30, 0.3.72 — 일반화 단계 소비처 요청 C1~C11 · WP6 R10 · 가산): 새 행 33개(키 목록 = CHANGELOG 0.3.72) · 기존 행 값 안에 새 칸 (hazard_week_scenarios.value.cold · serving_display_limits.value.presentation_table_max_columns·presentation_chart_max_series · scene_motion_defaults.value.descend_keys·dive_building_end_alt_m · sim_schedule_inference.value.morning_window_hours·startup_window_hours — 뜻은 행 수준 value_notes_ko) · comm_status_thresholds.by_delivery.<프로필>.label_ko. 1.4 의 키와 값(문구 포함)은 하나도 바꾸지 않았다 — 새 칸만. moved_literal = 코드 리터럴 값 그대로 · declared_demo_assumption = 외부 근거 없는 선언. 별칭·어휘 표(한 별칭 = 한 열쇠 · 가리키는 열쇠 존재)는 scripts/vocabulary_gate.py 가 적재 때(gen_constants.load_schemas · validate_ssot --check schemas) 검사한다. · 1.4(2026-09-30, 0.3.71 — GPT 상의 반영 · 사용자 지시 '지피티와 상의해서 정해' · 가산): 근거 없이 정한 여섯 값(short_cycling · comm_status_thresholds · life_roadmap · investment_tiers · precool_delta_c · judgement_thresholds 의 min_observed_temperature_days)과 인용 셋(min_r2 · pmv_inputs · debate_stated_term_ranges)을 검토했다. 1.3 의 키와 value 는 하나도 바꾸지 않았다 — 새 칸은 전부 **행 수준**(value 의 형제)에 둔다: 소비처가 value 를 통째로 도구 인자로 넘기는 자리(투자 구간·수명 로드맵 — 도구 스키마가 모르는 칸을 거절한다)가 있어서다. 새 칸: short_cycling.interpretation · comm_status_thresholds.by_delivery·unknown_delivery_profile · life_roadmap.sensitivity_life_used_shares·remaining_life_status_when_unknown · investment_tiers.classification_basis·numeric_thresholds_role·label_ko_by_work_scope · precool_delta_c.conditions_ko. 여섯 값은 표준값이 아니다 — basis_kind 는 declared_demo_assumption 그대로이고 basis 에 'GPT 상의 2026-09-30' 을 적는다(표준 인용으로 올리지 않는다). 인용 셋은 웹 대조(2026-09-30)로 문구를 고쳤다. · 1.3(2026-09-30, 0.3.70 — 일반화 감사 hard-coded-default 47건 · 남은 목록 N4-0): 게이트웨이·AgentLeague·be-3d 코드 리터럴로 있던 선언 기본값·문턱·화면 상한·가상 생성 규칙을 옮김(가산 — 1.2 의 행과 값은 그대로). 새 행은 전부 id · value · unit(QuantityUnit 낱말) 또는 unit_text · label_ko · rule_ko · classification · basis_kind · basis · source 를 싣는다. basis_kind: moved_literal(코드 값 그대로) · declared_demo_assumption(외부 근거 없는 선언 시연 가정) · standard_citation(표준·법령 인용) · derived_from_ec(이미 있는 정본 값에서 파생 — 새 수 없음). 이미 정본에 있는 값(순위 기본 개수 · 이상 z · 상위 비율 · 빠른 회수 · 폭염 달 창)은 새 행을 만들지 않았다 — 코드가 그 행을 읽는다. hazard_days.heat 에 baseline_months 추가. · 1.2(2026-09-29 RV-B3 초안, 0.3.62): 단위를 interface_types.QuantityUnit 낱말로(top_share '%'→pct · 햇수 yr) · 게이트웨이 모듈 상수로 남아 있던 선언 기본값을 옮김 — scenario_defaults(공실률·시나리오 공실률·끌 수 있는 부하 절감 몫·우선순위) · _assumption_ranges(가정 탐색 범위 5개) · measured_portfolio(순위 행 기본 개수). 값은 옮기기만 했다(동작 변경 없음). 모든 항목의 분류 = assumed(선언 가정) — 사람 대면 라벨은 data_classification 의 assumed label_ko 에서 파생한다.",
   "type": "object",
   "default": {
     "hazard_days": {
@@ -284,6 +284,23 @@
             "offset_c": 4.0,
             "label_ko": "보수(문턱 + 4℃)"
           }
+        ],
+        "cold": [
+          {
+            "id": "optimistic",
+            "offset_c": 0.0,
+            "label_ko": "낙관(한파 문턱 수준이 이어짐)"
+          },
+          {
+            "id": "mid",
+            "offset_c": -2.0,
+            "label_ko": "중간(문턱 − 2℃)"
+          },
+          {
+            "id": "conservative",
+            "offset_c": -4.0,
+            "label_ko": "보수(문턱 − 4℃)"
+          }
         ]
       },
       "unit": "celsius",
@@ -292,7 +309,10 @@
       "classification": "assumed",
       "basis_kind": "declared_demo_assumption",
       "basis": "외부 근거 없는 선언 시연 가정 — 문턱 자체는 정본 hazard_days.heat(기상청 폭염일 정의 인용)",
-      "source": "게이트웨이(8.simulation/ems_transformer/serving) decision_support.HEATWAVE_WEEK_SCENARIOS"
+      "source": "게이트웨이(8.simulation/ems_transformer/serving) decision_support.HEATWAVE_WEEK_SCENARIOS",
+      "value_notes_ko": {
+        "cold": "한파 주 시나리오 = 일 최저기온이 한파 문턱(hazard_days.cold.threshold_c) + 0·−2·−4℃ 인 날이 한 주 이어진다고 본다(질문이 기온을 말하지 않았을 때) — 폭염(heat)과 같은 모양의 외부 근거 없는 선언 시연 가정 · 0.3.72 요청 C9"
+      }
     },
     "pmv_inputs": {
       "id": "pmv_inputs",
@@ -395,7 +415,9 @@
         "startup_jump_multiple_of_median": 3.0,
         "startup_search_first_hour": 3,
         "startup_rise_share_of_peak": 0.1,
-        "plant_on_share_of_peak": 0.1
+        "plant_on_share_of_peak": 0.1,
+        "morning_window_hours": 12,
+        "startup_window_hours": 2
       },
       "unit_text": "ratio · hour",
       "label_ko": "시뮬레이션 시계열에서 운영일·재실·기동 시각을 읽는 문턱",
@@ -403,7 +425,11 @@
       "classification": "assumed",
       "basis_kind": "declared_demo_assumption",
       "basis": "외부 근거 없는 선언 시연 가정 — 조리법마다 같은 문장이 따로 있었다",
-      "source": "게이트웨이(8.simulation/ems_transformer/serving) asset_inputs/simulation_scene_query._operating_days · _occupied_mask · _startup_hour · general_ops/sim_packs._early_start · simulation_pack_analysis._night_heating_plan · asset_inputs/simulation_pack_analysis(occupied)"
+      "source": "게이트웨이(8.simulation/ems_transformer/serving) asset_inputs/simulation_scene_query._operating_days · _occupied_mask · _startup_hour · general_ops/sim_packs._early_start · simulation_pack_analysis._night_heating_plan · asset_inputs/simulation_pack_analysis(occupied)",
+      "value_notes_ko": {
+        "morning_window_hours": "겨울 기동 비교의 아침 창 = 0~11시(12시간) — simulation_scene_query._winter_startup_compare 의 range(12) 값 그대로(0.3.72 요청 C3)",
+        "startup_window_hours": "기동 = 일정 시작 후 2시간 안 — simulation_pack_analysis._mild_day_peak_causes 의 h − start < 2.0 값 그대로(0.3.72 요청 C2)"
+      }
     },
     "sim_sample_policy": {
       "id": "sim_sample_policy",
@@ -491,11 +517,13 @@
       "by_delivery": {
         "hourly_realtime": {
           "ok_max_staleness_h": 2,
-          "delayed_max_staleness_h": 24
+          "delayed_max_staleness_h": 24,
+          "label_ko": "시간 단위 실시간"
         },
         "daily_batch": {
           "ok_max_staleness_h": 24,
-          "delayed_max_staleness_h": 72
+          "delayed_max_staleness_h": 72,
+          "label_ko": "일 배치"
         }
       },
       "unknown_delivery_profile": "daily_batch",
@@ -843,7 +871,13 @@
         "side_pitch_deg": -35,
         "tour_anchor_max": 6,
         "row_anchor_max": 12,
-        "story_duration_s": 90
+        "story_duration_s": 90,
+        "descend_keys": [
+          [600, -85],
+          [300, -45],
+          [150, -12]
+        ],
+        "dive_building_end_alt_m": 250
       },
       "unit_text": "s · deg · m",
       "label_ko": "장면 연출 기본값(시점·회전·멈춤·경로)",
@@ -851,7 +885,11 @@
       "classification": "assumed",
       "basis_kind": "declared_demo_assumption",
       "basis": "외부 근거 없는 선언 시연 가정(화면 상수). ⚠ 회전 기본 14초 = 오늘 코드 값 — 목록 N8-15 의 '기본 12' 는 채택하지 않았다(한 값). '천천히' 20초는 N8-15 의 선언",
-      "source": "게이트웨이(8.simulation/ems_transformer/serving) _compose_execution_guard.PLAIN_MOVE_DEFAULT_VIEW · query_orchestrator(orbitSeconds 14 · _top_one_tour · tour.get('orbit_seconds', 14)) · scene_choreography.VERSION_SECONDS_DEFAULT · PATH_LEG_SECONDS · PATH_RANGE_M · _SIDE_PITCH · holdSeconds 4|8 · anchors[:6] · scene_contract.ROW_ANCHOR_MAX · durationS 6 · asset_inputs/simulation_scene_query.SCENE_DURATION_DEFAULT_S"
+      "source": "게이트웨이(8.simulation/ems_transformer/serving) _compose_execution_guard.PLAIN_MOVE_DEFAULT_VIEW · query_orchestrator(orbitSeconds 14 · _top_one_tour · tour.get('orbit_seconds', 14)) · scene_choreography.VERSION_SECONDS_DEFAULT · PATH_LEG_SECONDS · PATH_RANGE_M · _SIDE_PITCH · holdSeconds 4|8 · anchors[:6] · scene_contract.ROW_ANCHOR_MAX · durationS 6 · asset_inputs/simulation_scene_query.SCENE_DURATION_DEFAULT_S",
+      "value_notes_ko": {
+        "descend_keys": "층 자료가 없을 때 위↔아래 훑기의 (거리 m, 기울기 °) 세 단계 — 예전 scene_choreography._DESCEND_KEYS 리터럴 값 그대로(0.3.72 요청 C3)",
+        "dive_building_end_alt_m": "급강하 도착이 건물 한 채일 때 끝 높이 250 m — 내려다보는 각 −35°에서 건물 한 채가 화면을 채우는 높이(선언 · be-3d 등록부 허용 60~3000 · 0.3.72 요청 C3)"
+      }
     },
     "display_tier_alpha": {
       "id": "display_tier_alpha",
@@ -882,7 +920,9 @@
         "comparison_max_series_fields": 3,
         "map_rows_max": 300,
         "parcel_wide_max_groups": 60,
-        "scene_selection_max": 2000
+        "scene_selection_max": 2000,
+        "presentation_table_max_columns": 12,
+        "presentation_chart_max_series": 6
       },
       "unit_text": "byte · count",
       "label_ko": "화면·장면에 싣는 크기 상한",
@@ -890,7 +930,11 @@
       "classification": "assumed",
       "basis_kind": "declared_demo_assumption",
       "basis": "성능·전송 상한(선언). 48KB = 장면 저장 한도 64KB 의 75%(봉투·다른 op 몫을 남김) · 표 20행 = Studio 표의 가장 좁은 쪽. 질문이 행 수를 말하면 그 수가 먼저다",
-      "source": "be-3d src/visualization/scenarios_api.PAYLOAD_MAX_BYTES · 게이트웨이(8.simulation/ems_transformer/serving) panel_projection.PANEL_VALUE_TARGET_BYTES · PANEL_TABLE_KEEP_ROWS · answer_presentation.MAX_ROWS · MAX_POINTS · query_orchestrator._GROUP_ROWS_SHOWN · _GROUP_DERIVED_ROWS · _GROUP_ROW_COLUMNS · _COMPARISON_MAX_SERIES_FIELDS · _SCENE_SELECTION_MAX · general_ops/cohort.MAP_ROWS_MAX · PARCEL_WIDE_MAX_GROUPS"
+      "source": "be-3d src/visualization/scenarios_api.PAYLOAD_MAX_BYTES · 게이트웨이(8.simulation/ems_transformer/serving) panel_projection.PANEL_VALUE_TARGET_BYTES · PANEL_TABLE_KEEP_ROWS · answer_presentation.MAX_ROWS · MAX_POINTS · query_orchestrator._GROUP_ROWS_SHOWN · _GROUP_DERIVED_ROWS · _GROUP_ROW_COLUMNS · _COMPARISON_MAX_SERIES_FIELDS · _SCENE_SELECTION_MAX · general_ops/cohort.MAP_ROWS_MAX · PARCEL_WIDE_MAX_GROUPS",
+      "value_notes_ko": {
+        "presentation_table_max_columns": "공통 표시 객체 표의 열 상한 12 — answer_presentation.MAX_COLUMNS 리터럴 값 그대로(0.3.72 요청 C4)",
+        "presentation_chart_max_series": "공통 표시 객체 그림의 계열 상한 6 — answer_presentation.MAX_SERIES 리터럴 값 그대로(0.3.72 요청 C4)"
+      }
     },
     "answer_delivery_rules": {
       "id": "answer_delivery_rules",
@@ -1132,6 +1176,894 @@
       "basis_kind": "standard_citation",
       "basis": "법령·정본에서 근거를 댈 수 있는 항만 실었다. 근거 없는 항은 넣지 않았다(임의 범위 금지)",
       "source": "REMAINING_GAP_BUILD_LIST N1-2 STATED_TERM_QUANTITIES(코드 리터럴 없음 — 새 등록부)"
+    },
+    "demo_user_answers": {
+      "id": "demo_user_answers",
+      "value": {
+        "energy_budget_share_of_monthly_cost": 0.95,
+        "maintenance_budget_share_of_annual_cost": 0.1,
+        "replacement_measure_code": "CHIL",
+        "failure_probability_rule": "1/lifetime_yr",
+        "downtime_share_of_unit_replacement": 0.2,
+        "action_result_word": "재발",
+        "event_reservation_rule": "shortest_span"
+      },
+      "unit_text": "ratio · rule",
+      "label_ko": "시연 사용자 선언값(가상) 생성 규칙의 선언 가정",
+      "rule_ko": "시연 사용자 선언값(가상) 생성 규칙의 선언 가정 — 월 전기 예산 = 월 평균 전기요금 × 0.95 · 월 유지보수 예산 = 연간 전기요금 × 0.10 ÷ 12 · 교체 조치 = CHIL(정본 조치 목록) · 연간 고장 확률 = 1 ÷ 조치 수명(lifetime_yr) · 고장 1건 정지 손실 = 구성원 1곳 교체비 × 0.20 · 가상 조치 이력에서 고를 결과 낱말 '재발' · 행사 = 가상 예약 가운데 점유 시간이 가장 짧은 예약. 실제 사용자가 값을 말하면 그 값이 먼저다",
+      "classification": "assumed",
+      "basis_kind": "declared_demo_assumption",
+      "basis": "외부 근거 없는 선언 시연 가정(요청 C11 — 예산 몫·정지 손실 몫은 근거 자료 없음 · 고장 확률은 일정 위험률 가정) — 캠페인 build_demo_user_answers.DECLARED 와 같은 값",
+      "source": "캠페인 validation/query500/build_demo_user_answers.declared(name) (요청 C11 · 2026-09-30)"
+    },
+    "economics_horizon_years_default": {
+      "id": "economics_horizon_years_default",
+      "value": 10,
+      "unit": "yr",
+      "label_ko": "경제성 분석 지평 기본값",
+      "rule_ko": "경제성 분석 지평 = 10년(질문이 기간을 말하지 않았을 때). 연산 이름이 지평을 말하면(5년 조합 등) 그 연산 인자가 먼저다",
+      "classification": "assumed",
+      "basis_kind": "moved_literal",
+      "basis": "코드 리터럴 값 그대로 옮김(값 동일) — 외부 근거 없는 선언 시연 가정 — internal_query_tools retrofit_economics(horizon_years or 10) · ten_year_tco(or 10)",
+      "source": "게이트웨이(8.simulation/ems_transformer/serving) general_ops/_assumption_ranges.declared_horizon_years() (요청 C9)"
+    },
+    "financial_candidate_measures_max": {
+      "id": "financial_candidate_measures_max",
+      "value": 4,
+      "unit": "count",
+      "label_ko": "가상 재무 입력의 후보 조치 수",
+      "rule_ko": "질문이 조치를 부르지 않았을 때 가상 재무 입력에 쓰는 조치 수 = 4(전기 절감액 큰 순)",
+      "classification": "assumed",
+      "basis_kind": "moved_literal",
+      "basis": "코드 리터럴 값 그대로 옮김(값 동일) — 외부 근거 없는 선언 시연 가정 — asset_inputs/locked_financial_scenario_compute.TOP_MEASURES",
+      "source": "게이트웨이(8.simulation/ems_transformer/serving) asset_inputs/locked_financial_scenario_compute.candidate_measures_max() (요청 C9)"
+    },
+    "climate_load_shift": {
+      "id": "climate_load_shift",
+      "value": {
+        "baseline": {},
+        "ssp245_2050": {
+          "cooling_elec": 1.25,
+          "heating_gas": 0.85
+        },
+        "ssp585_2050": {
+          "cooling_elec": 1.4,
+          "heating_gas": 0.75
+        },
+        "ssp585_2080": {
+          "cooling_elec": 1.6,
+          "heating_gas": 0.65
+        }
+      },
+      "unit": "ratio",
+      "label_ko": "기후 시나리오별 용도 부하 배수(예시 — 서울)",
+      "rule_ko": "기후 축(F15) 합성 = 시나리오별 냉방 전기 × 배수 · 난방 가스 × 배수(baseline = 배수 없음). 예시(illustrative) 값 — 서울 한 도시 기준. 시뮬레이션 기후 칸이 결속되면 그것이 먼저다",
+      "classification": "assumed",
+      "basis_kind": "moved_literal",
+      "basis": "게이트웨이 measure_economics._CLIMATE_SHIFT('illustrative, 서울' 로 표시된 리터럴) 값 그대로 — 근거 자료가 적혀 있지 않은 예시값(선언 시연 가정). SSP 시나리오 이름은 표시용이다",
+      "source": "게이트웨이(8.simulation/ems_transformer/serving) measure_economics._CLIMATE_SHIFT (요청 C9)"
+    },
+    "facility_use_classes": {
+      "id": "facility_use_classes",
+      "value": {
+        "cooling_shelter_candidate": {
+          "label_ko": "무더위 쉼터 후보(추정 — 지정 쉼터 명단 아님)",
+          "names_ko": ["무더위쉼터", "쉼터", "냉방 쉼터"],
+          "uses": ["14100"],
+          "use_prefixes": ["11"],
+          "classification": "estimated",
+          "basis": "행정안전부 무더위쉼터 지정 대상 유형(경로당·주민센터·복지관 등)을 건축물대장 주용도로 옮긴 선언 — 노유자시설(대분류 11)·공공업무시설(14100). 원문 대조 전이라 추정(estimated)"
+        }
+      },
+      "unit_text": "rule",
+      "label_ko": "시설 종류 선언(주용도 코드로 고른 시설 후보)",
+      "rule_ko": "시설 종류 = 건축물대장 주용도 코드(uses)·대분류 앞자리(use_prefixes)로 고른 **후보**다 — 지정 명단이 아니다(종류마다 classification 을 그대로 표시). 새 시설 종류는 이 표에 한 줄씩 더한다(도구 코드는 바꾸지 않는다)",
+      "classification": "assumed",
+      "basis_kind": "declared_demo_assumption",
+      "basis": "선언 시연 가정 — 종류별 근거는 각 항목 basis(무더위 쉼터 후보: 원문 대조 전)",
+      "source": "게이트웨이(8.simulation/ems_transformer/serving) general_ops/uhi_facility_overlap.facility_classes() (요청 C10)"
+    },
+    "small_building_area_m2_default": {
+      "id": "small_building_area_m2_default",
+      "value": 1000.0,
+      "unit": "m2",
+      "label_ko": "소형 건물 연면적 기준",
+      "rule_ko": "형평·배분의 소형 건물 = 연면적 1,000㎡ 미만(질문이 기준을 말하지 않았을 때)",
+      "classification": "assumed",
+      "basis_kind": "moved_literal",
+      "basis": "코드 리터럴 값 그대로 옮김(값 동일) — 외부 근거 없는 선언 시연 가정 — general_ops/cohort.py region_measure_economics(small_area_m2 or 1000.0)",
+      "source": "게이트웨이(8.simulation/ems_transformer/serving) general_ops/cohort.declared_value('small_building_area_m2_default') (요청 C10)"
+    },
+    "cohort_bands_default": {
+      "id": "cohort_bands_default",
+      "value": {
+        "area_edges_m2": [500, 1000, 3000, 5000, 10000],
+        "era_edges": [1980, 1990, 2010],
+        "payback_band_edges_yr": [3, 5, 10, 15]
+      },
+      "unit_text": "m2 · yr",
+      "label_ko": "코호트 구간 경계(면적·준공·회수기간)",
+      "rule_ko": "구간화(재식별 방지·분포 표시)의 선언 경계 = 연면적 500·1,000·3,000·5,000·10,000㎡ · 준공 1980·1990·2010년 · 회수기간 3·5·10·15년. 적용 규칙 문턱이 있으면 그 문턱과 합집합",
+      "classification": "assumed",
+      "basis_kind": "moved_literal",
+      "basis": "코드 리터럴 값 그대로 옮김(값 동일) — 외부 근거 없는 선언 시연 가정 — general_ops/cohort.py _area_band 기본 경계 · region_measure_economics 면적·준공 칸 경계 · PAYBACK_BANDS",
+      "source": "게이트웨이(8.simulation/ems_transformer/serving) general_ops/cohort.py (요청 C10)"
+    },
+    "cohort_segmentation_default": {
+      "id": "cohort_segmentation_default",
+      "value": {
+        "k": 4,
+        "outlier_share": 0.01
+      },
+      "unit_text": "count · ratio",
+      "label_ko": "코호트 군집 기본값(군집 수·이상치 몫)",
+      "rule_ko": "코호트 군집 = 4개 · 이상치 몫 1%(질문이 수를 말하지 않았을 때)",
+      "classification": "assumed",
+      "basis_kind": "moved_literal",
+      "basis": "코드 리터럴 값 그대로 옮김(값 동일) — 외부 근거 없는 선언 시연 가정 — general_ops/cohort.py cohort_segmentation(k · outlier_share or 0.01)",
+      "source": "게이트웨이(8.simulation/ems_transformer/serving) general_ops/cohort.cohort_segmentation (요청 C10)"
+    },
+    "forecast_horizon_default": {
+      "id": "forecast_horizon_default",
+      "value": {
+        "horizon_hours": 24,
+        "step_hours": 1
+      },
+      "unit": "hour",
+      "label_ko": "예측 지평·간격 기본값",
+      "rule_ko": "예측 구간 = 앞으로 24시간 · 1시간 간격(질문이 예측 구간을 말하지 않았을 때)",
+      "classification": "assumed",
+      "basis_kind": "moved_literal",
+      "basis": "코드 리터럴 값 그대로 옮김(값 동일) — 외부 근거 없는 선언 시연 가정 — general_ops/periods.DEFAULT_FORECAST · asset_inputs/exogenous_load_forecast_workflow.HORIZON_HOURS",
+      "source": "게이트웨이(8.simulation/ems_transformer/serving) general_ops/periods.forecast_default() (요청 C5)"
+    },
+    "period_substitution": {
+      "id": "period_substitution",
+      "value": {
+        "nearest_year_max_shift_yr": 6
+      },
+      "unit": "yr",
+      "label_ko": "같은 달력 기간 대체 — 거슬러 볼 해 수",
+      "rule_ko": "물은 기간에 실측이 없을 때 같은 달력 기간을 최대 6년까지 거슬러 찾는다(찾은 해를 결과에 적는다)",
+      "classification": "assumed",
+      "basis_kind": "moved_literal",
+      "basis": "코드 리터럴 값 그대로 옮김(값 동일) — 외부 근거 없는 선언 시연 가정 — asset_inputs/measured_action_inputs.SHIFT_BACK_YEARS",
+      "source": "게이트웨이(8.simulation/ems_transformer/serving) general_ops/periods.substitution_param('nearest_year_max_shift_yr') (요청 C5)"
+    },
+    "ranking_basis_default": {
+      "id": "ranking_basis_default",
+      "value": "원단위(면적당 사용량)",
+      "unit_text": "rule",
+      "label_ko": "순위 기준 기본값",
+      "rule_ko": "순위를 청했는데 기준을 말하지 않았을 때 = 원단위(면적당 사용량) — 규모가 다른 대상을 견주는 기본 지표. 값은 되묻기 규칙표 ranking_basis 선택지 글자 그대로다",
+      "classification": "assumed",
+      "basis_kind": "moved_literal",
+      "basis": "코드 리터럴 값 그대로 옮김(값 동일) — 외부 근거 없는 선언 시연 가정 — general_ops/clarify.RULES ranking_basis.default_choice",
+      "source": "게이트웨이(8.simulation/ems_transformer/serving) general_ops/clarify.default_choice_of(rule) (요청 C5 · WP5)"
+    },
+    "schedule_event_nouns": {
+      "id": "schedule_event_nouns",
+      "value": {
+        "nouns": ["특별 행사", "행사", "축제", "대관", "세미나", "공연", "박람회", "학회", "체육대회", "콘서트"],
+        "nouns_needing_date_word": ["이벤트"],
+        "date_words": ["날짜", "일정", "기간", "당일", "날", "일", "때"],
+        "boundary": "명사 앞에 한글이 붙지 않고, 뒤에는 date_words 또는 조사만 붙는다(공연장·세미나실·행사장·박람회장·대관령 은 사건이 아니다)"
+      },
+      "unit_text": "rule",
+      "label_ko": "운영 일정을 바꾸는 사건 명사",
+      "rule_ko": "사건 명사 = nouns(앞뒤 경계 규칙 boundary) · '이벤트' 는 날짜 말(date_words)이 붙을 때만. 되묻기 규칙표(event_date)와 일정 결속기가 같은 표를 읽는다",
+      "classification": "assumed",
+      "basis_kind": "moved_literal",
+      "basis": "코드 리터럴 값 그대로 옮김(값 동일) — 외부 근거 없는 선언 시연 가정 — general_ops/clarify.EVENT_NOUNS · EVENT_NOUN_TAIL(2026-09-30 C5 검토 반영)",
+      "source": "게이트웨이(8.simulation/ems_transformer/serving) general_ops/clarify.EVENT_NOUNS · EVENT_NOUN_TAIL (요청 C5)"
+    },
+    "drop_sustain_share_of_threshold": {
+      "id": "drop_sustain_share_of_threshold",
+      "value": 0.5,
+      "unit": "ratio",
+      "label_ko": "급감 뒤 절감 지속 판정 몫",
+      "rule_ko": "급감 뒤 '절감 지속' = 급감 문턱의 절반(0.5) 이상 낮게 유지",
+      "classification": "assumed",
+      "basis_kind": "moved_literal",
+      "basis": "코드 리터럴 값 그대로 옮김(값 동일) — 외부 근거 없는 선언 시연 가정 — internal_query_tools.store_operations_brief drop_diagnosis(drop_threshold_pct / 2)",
+      "source": "게이트웨이(8.simulation/ems_transformer/serving) internal_query_tools._declared_value('drop_sustain_share_of_threshold') (요청 C8)"
+    },
+    "quadrant_split_default": {
+      "id": "quadrant_split_default",
+      "value": "median",
+      "unit_text": "rule",
+      "label_ko": "두 축 사분면을 가르는 통계 기본값",
+      "rule_ko": "질문이 가르는 값을 말하지 않은 두 축 사분면 = 실린 행의 중앙값(median)으로 가른다(허용: median · mean). 질문이 두 값을 말하면 그 값이 먼저다",
+      "classification": "assumed",
+      "basis_kind": "moved_literal",
+      "basis": "코드 리터럴 값 그대로 옮김(값 동일) — 외부 근거 없는 선언 시연 가정 — general_ops/projection.derive 의 statistics.median(감사 B2-09)",
+      "source": "게이트웨이(8.simulation/ems_transformer/serving) general_ops/projection.quadrant_split_rule() (요청 C4)"
+    },
+    "priority_axis_defaults": {
+      "id": "priority_axis_defaults",
+      "value": {
+        "difficulty_score_neutral": 0.5
+      },
+      "unit": "ratio",
+      "label_ko": "우선순위 축 중립값(부담 칸이 없는 행)",
+      "rule_ko": "우선순위 축 '난이도(가상)' 에서 부담 칸이 없는 행의 중립값 = 0.5(0~1 백분위의 가운데)",
+      "classification": "assumed",
+      "basis_kind": "moved_literal",
+      "basis": "코드 리터럴 값 그대로 옮김(값 동일) — 외부 근거 없는 선언 시연 가정 — general_ops/projection.FIELD_CONCEPTS[word:난이도].derive.neutral(감사 B2-06)",
+      "source": "게이트웨이(8.simulation/ems_transformer/serving) general_ops/projection._declared_neutral('priority_axis_defaults', 'difficulty_score') (요청 C4)"
+    },
+    "debate_axis_scales": {
+      "id": "debate_axis_scales",
+      "value": {
+        "습도": 100,
+        "공기질": 100,
+        "쾌적": 100,
+        "민원": 100,
+        "투자": 100000000,
+        "회수": 10,
+        "잔존가치": 100000000,
+        "예산": 100000000,
+        "요금": 10000000,
+        "탄소": 100,
+        "형평성": 1,
+        "상호작용": 10000,
+        "CAPEX": 100000000,
+        "피크": 100,
+        "절감": 10000,
+        "에너지": 10000,
+        "효율": 1,
+        "총량": 10000,
+        "즉시성": 100,
+        "지속성": 10,
+        "위험": 1,
+        "법규": 1,
+        "난방": 10000,
+        "공사성": 1,
+        "안전": 1,
+        "감축 추가성": 100,
+        "공간": 1000,
+        "총효과": 10000,
+        "실행성": 1,
+        "성능": 1,
+        "설명가능성": 1,
+        "권한": 1,
+        "식별확률": 1,
+        "역효과": 1000,
+        "속도": 1000,
+        "정밀도": 100,
+        "비용": 10000000,
+        "현재 ROI": 1,
+        "미래위험": 1,
+        "배출": 100,
+        "공사순서": 1,
+        "_unbound": 1
+      },
+      "unit_text": "rule",
+      "label_ko": "대안 비교 축의 가상 값 척도",
+      "rule_ko": "가상 축 값 = 효용(0~1) × 척도(작을수록 좋은 축은 1 − 효용). 키 = 축 어휘의 말(debate_vocabulary.TERMS) · '_unbound' = 어휘에 없는 축 이름의 단위 없는 서열 점수",
+      "classification": "assumed",
+      "basis_kind": "moved_literal",
+      "basis": "AgentLeague family_packets._AXIS_UNITS 의 셋째 칸(척도) 값 그대로 · 예외 '법규'(위반 건수 축) = 1 — 빌드 목록 N1-7: 셈 단위 축은 정수 건수라 척도 1(옛 100 은 건수 41 처럼 제약 0건과 모순됐다)",
+      "source": "AgentLeague family_packets._AXIS_UNITS"
+    },
+    "debate_recalc_fixtures": {
+      "id": "debate_recalc_fixtures",
+      "value": {
+        "comfort_limit": {
+          "default_change": {
+            "change": "set",
+            "value": 10,
+            "unit": "h"
+          },
+          "before": {
+            "max_violation_h": {
+              "$change": 2
+            },
+            "candidates": [
+              {
+                "id": "high_saving",
+                "violation_h": {
+                  "$change": 1.5,
+                  "digits": 1
+                },
+                "saving_kWh": 200
+              },
+              {
+                "id": "comfort_safe",
+                "violation_h": {
+                  "$change": 0.8,
+                  "digits": 1
+                },
+                "saving_kWh": 130
+              }
+            ]
+          }
+        },
+        "budget_portfolio": {
+          "default_change": {
+            "change": "scale",
+            "factor_word": "half",
+            "direction": "down"
+          },
+          "digits": 0,
+          "before": {
+            "budget_KRW": 100,
+            "measures": [
+              {
+                "id": "A",
+                "capex_KRW": 40,
+                "saving_kWh": 70,
+                "sequence": 1
+              },
+              {
+                "id": "B",
+                "capex_KRW": 60,
+                "saving_kWh": 90,
+                "sequence": 2
+              }
+            ]
+          }
+        },
+        "operating_hours": {
+          "default_change": {
+            "change": "add",
+            "value": 2,
+            "unit": "h",
+            "direction": "up"
+          },
+          "before": {
+            "hours_per_day": 12,
+            "days": 30,
+            "baseline_kW": {
+              "$scope": "mean_load_kw"
+            },
+            "alternative_kW": {
+              "$scope": "mean_load_kw",
+              "times": 0.85,
+              "digits": 3
+            }
+          }
+        },
+        "sensor_coverage": {
+          "default_change": {
+            "change": "share",
+            "value": 20,
+            "unit": "%"
+          },
+          "share_of": "total_sensors",
+          "before": {
+            "total_sensors": 100,
+            "missing_sensors": 0,
+            "base_confidence": 0.9,
+            "minimum_coverage": 0.9
+          }
+        },
+        "tariff_pareto": {
+          "default_change": {
+            "change": "scale",
+            "value": 15,
+            "unit": "%",
+            "direction": "up"
+          },
+          "before": {
+            "tariff_KRW_per_kWh": 100,
+            "candidates": [
+              {
+                "id": "A",
+                "capex_KRW": 100000,
+                "saving_kWh": 1000,
+                "annual_maintenance_KRW": 10000
+              },
+              {
+                "id": "B",
+                "capex_KRW": 50000,
+                "saving_kWh": 600,
+                "annual_maintenance_KRW": 20000
+              }
+            ]
+          }
+        },
+        "tenant_veto": {
+          "before": {
+            "veto_enabled": false,
+            "candidates": [
+              {
+                "id": "setpoint28",
+                "setpoint_C": 28,
+                "precool_h": 0,
+                "complaint_veto": true,
+                "saving_kWh": 200
+              },
+              {
+                "id": "precool26",
+                "setpoint_C": 26,
+                "precool_h": 2,
+                "complaint_veto": false,
+                "saving_kWh": 140
+              }
+            ]
+          },
+          "after": {
+            "veto_enabled": true
+          }
+        },
+        "sign_disagreement": {
+          "basis": {
+            "baseline_id": {
+              "$baseline_id": true
+            },
+            "schedule_id": "schedule:common",
+            "weather_id": "weather:common",
+            "unit": "kWh",
+            "sign_convention": "saving_positive"
+          },
+          "before": {
+            "candidates": [
+              {
+                "id": "fast",
+                "surrogate_kWh": 100,
+                "reference_kWh": 90,
+                "surrogate_basis": {
+                  "$basis": true
+                },
+                "reference_basis": {
+                  "$basis": true
+                },
+                "input_position_in_training_range": {
+                  "$assumed": "redebate.input_position",
+                  "basis": "후보 입력의 학습 범위 대비 위치(가상)"
+                },
+                "training_range_max": 1.0
+              },
+              {
+                "id": "safe",
+                "surrogate_kWh": 50,
+                "reference_kWh": 50,
+                "surrogate_basis": {
+                  "$basis": true
+                },
+                "reference_basis": {
+                  "$basis": true
+                },
+                "input_position_in_training_range": 0.7,
+                "training_range_max": 1.0
+              }
+            ]
+          },
+          "after": {
+            "candidates": [
+              {
+                "id": "fast",
+                "surrogate_kWh": 100,
+                "reference_kWh": -20,
+                "surrogate_basis": {
+                  "$basis": true
+                },
+                "reference_basis": {
+                  "$basis": true
+                },
+                "input_position_in_training_range": {
+                  "$assumed": "redebate.input_position",
+                  "basis": "후보 입력의 학습 범위 대비 위치(가상)"
+                },
+                "training_range_max": 1.0
+              },
+              {
+                "id": "safe",
+                "surrogate_kWh": 50,
+                "reference_kWh": 50,
+                "surrogate_basis": {
+                  "$basis": true
+                },
+                "reference_basis": {
+                  "$basis": true
+                },
+                "input_position_in_training_range": 0.7,
+                "training_range_max": 1.0
+              }
+            ]
+          }
+        },
+        "strategy_hypotheses": {
+          "before": {
+            "close_probability_gap": 0.05,
+            "hypotheses": [
+              {
+                "id": "strategyA",
+                "prior": 0.5,
+                "likelihood": 0.8
+              },
+              {
+                "id": "strategyB",
+                "prior": 0.5,
+                "likelihood": 0.2
+              }
+            ]
+          },
+          "after": {
+            "hypotheses": [
+              {
+                "id": "strategyA",
+                "prior": 0.5,
+                "likelihood": 0.51
+              },
+              {
+                "id": "strategyB",
+                "prior": 0.5,
+                "likelihood": 0.49
+              }
+            ]
+          }
+        },
+        "robust_capacity": {
+          "before": {
+            "climate_loads_kW": {
+              "current": {
+                "$scope": "max_load_kw"
+              }
+            },
+            "candidates": [
+              {
+                "id": "current",
+                "capacity_kW": {
+                  "$scope": "max_load_kw",
+                  "times": 1.1,
+                  "digits": 3
+                },
+                "capex_KRW": 100
+              },
+              {
+                "id": "robust",
+                "capacity_kW": {
+                  "$scope": "max_load_kw",
+                  "times": 1.6,
+                  "digits": 3
+                },
+                "capex_KRW": 150
+              }
+            ]
+          },
+          "after": {
+            "climate_loads_kW": {
+              "current": {
+                "$scope": "max_load_kw"
+              },
+              "2050_virtual": {
+                "$scope": "max_load_kw",
+                "times": 1.35,
+                "digits": 3
+              }
+            }
+          }
+        },
+        "staff_schedule": {
+          "before": {
+            "staff_count": 4,
+            "hours_per_person_day": 8,
+            "deadline_days": 5,
+            "candidates": [
+              {
+                "id": "manual",
+                "automation_level": 0,
+                "person_hours": 128
+              },
+              {
+                "id": "automated",
+                "automation_level": 0.8,
+                "person_hours": 32
+              }
+            ]
+          },
+          "after": {
+            "staff_count": 1
+          }
+        }
+      },
+      "unit_text": "rule",
+      "label_ko": "반론 재계산 연산의 시연 입력",
+      "rule_ko": "연산마다 변경 전 입력(before)·질문이 수를 말하지 않았을 때의 변화(default_change)·선언된 변경 후(after). '$change' = 반론이 말한 값 × 배수 · '$scope' = 공통 범위 칸 × 배수 · '$assumed' = debate_assumption_ranges 의 키 · '$basis' = 두 계산이 같이 쓰는 조건 칸",
+      "classification": "assumed",
+      "basis_kind": "moved_literal",
+      "basis": "AgentLeague family_packets._redebate_case 의 픽스처 리터럴 값 그대로",
+      "source": "AgentLeague family_packets._redebate_case"
+    },
+    "debate_numeric_rules": {
+      "id": "debate_numeric_rules",
+      "value": {
+        "comfort_band_c": [22, 26],
+        "imputation_max_gap_h": 3,
+        "utility_floor": 0.01,
+        "utility_ceiling": 0.99,
+        "assumption_min_gain": 0.05,
+        "assumption_shrink": 0.5,
+        "half_factor": 0.5,
+        "resolution_guard_minutes": 15
+      },
+      "unit_text": "rule",
+      "label_ko": "토론 수치 해석·가정 비교·재계산의 선언 규칙 상수",
+      "rule_ko": "쾌적 띠 22~26℃(가정) · 보간 대체 가능 연속 결측 3시간 · Pareto 효용 하한 0.01·상한 0.99 · 가정 비교 최소 이득 0.05·양보 축소 0.5 · '절반' = 0.5 · 해상도 가드 15분",
+      "classification": "assumed",
+      "basis_kind": "moved_literal",
+      "basis": "AgentLeague family_packets(_numeric_metric comfort_band · _fixed_item_cell '3시간' · pareto_request 0.01/0.99 · assumption_request 0.05/0.5) · scenario._decision_guard_results(15분) 리터럴 값 그대로",
+      "source": "AgentLeague family_packets · scenario"
+    },
+    "debate_calendar": {
+      "id": "debate_calendar",
+      "value": {
+        "hours_per_year": 8760.0,
+        "months_per_year": 12
+      },
+      "unit_text": "rule",
+      "label_ko": "연환산 달력 상수",
+      "rule_ko": "연환산 = 관측 창 값 × 8760 ÷ 관측 시간(평년) · 월 → 연 = × 12",
+      "classification": "declared",
+      "basis_kind": "moved_literal",
+      "basis": "달력 산술(평년 365일 × 24시간 = 8760 · 윤년 8784 — simulation_channels 의 hours 설명과 같은 규칙) · AgentLeague family_packets.assumption_request 의 8760.0 리터럴 값 그대로(요청 분류 'reference' 는 이 표의 분류 declared 로 적었다 — 정의이지 가정이 아니다)",
+      "source": "AgentLeague family_packets.assumption_request"
+    },
+    "debate_family_critics": {
+      "id": "debate_family_critics",
+      "value": {
+        "numeric": ["data", "economic", "carbon", "legal"],
+        "shortage": ["data", "legal", "safety"],
+        "assumption": ["economic", "carbon", "legal", "data"],
+        "redebate": ["data", "economic", "safety", "carbon"],
+        "audit": ["data", "legal"]
+      },
+      "unit_text": "rule",
+      "label_ko": "토론 가족별 기본 Critic 구성(추가 가족)",
+      "rule_ko": "질문이 Critic 을 적지 않았을 때의 가족별 기본 Critic 구성 — debate_default_personas.critics_by_family 에 없는 가족만 둔다(같은 가족이 두 행에 있으면 EC_ROW_DRIFT). Critic 이름은 critics.CRITIC_NAMES 에 있어야 한다",
+      "classification": "assumed",
+      "basis_kind": "moved_literal",
+      "basis": "AgentLeague family_packets.numeric_request·shortage_request·assumption_request·redebate_request·audit_request 의 코드 Critic 목록 값 그대로",
+      "source": "AgentLeague family_packets(2026-09-30 C6 — 코드 목록을 EC 로 옮김)",
+      "why_new_row": "기존 행 debate_default_personas 를 고치면 이미지에 구운 생성본(옛 값)과 마운트 원본(새 값)이 달라 모든 가족이 EC_ROW_DRIFT 로 멈춘다 — 새 행이면 기존 행이 그대로라 재기동만으로 읽힌다"
+    },
+    "indoor_design_rh_pct": {
+      "id": "indoor_design_rh_pct",
+      "value": 50.0,
+      "unit": "pct",
+      "label_ko": "실내 설계 상대습도(%RH)",
+      "rule_ko": "습도 설명(잠열 몫 추정)의 실내 설계 상대습도 = 50%RH(냉방 설정온도는 EC 정본)",
+      "classification": "assumed",
+      "basis_kind": "moved_literal",
+      "basis": "코드 리터럴 값 그대로 옮김(값 동일) — 외부 근거 없는 선언 시연 가정 — asset_inputs/simulation_scene_query.INDOOR_DESIGN_RH",
+      "source": "게이트웨이(8.simulation/ems_transformer/serving) asset_inputs/simulation_scene_query._declared('indoor_design_rh_pct') (요청 C3)"
+    },
+    "diagnosis_risk_thresholds": {
+      "id": "diagnosis_risk_thresholds",
+      "value": {
+        "night_excess_share_pct": 5.0,
+        "month_increase_pct": 10.0,
+        "peak_to_mean_ratio": 2.0,
+        "imputed_hour_share_pct": 10.0
+      },
+      "unit_text": "pct · ratio",
+      "label_ko": "진단 한 장의 위험 점검 문턱",
+      "rule_ko": "위험 점검 네 항목 = 야간 초과 몫(야간 비중 − 코호트 중앙, %p) 5 초과 · 최근 온전한 달 증가율 10% 초과 · 피크 시각 평균 ÷ 24시각 평균 2배 초과 · 추정 채움 시간 몫 10% 초과",
+      "classification": "assumed",
+      "basis_kind": "declared_demo_assumption",
+      "basis": "외부 근거 없는 선언 시연 가정 — 값은 요청 C7 의 제안",
+      "source": "게이트웨이(8.simulation/ems_transformer/serving) general_ops/receipt_producers.diagnosis_risk_criteria() → measured_store_analysis._diagnosis_risk_checks (요청 C7)"
+    },
+    "home_baseload_low_share": {
+      "id": "home_baseload_low_share",
+      "value": 0.1,
+      "unit": "ratio",
+      "label_ko": "가정 기저 전력 — 낮은 쪽 몫",
+      "rule_ko": "가정 기저 전력(W) = 최근 날들의 시간별 소비 중 낮은 쪽 10% 의 평균",
+      "classification": "assumed",
+      "basis_kind": "declared_demo_assumption",
+      "basis": "외부 근거 없는 선언 시연 가정 — 값은 요청 C7 의 제안",
+      "source": "게이트웨이(8.simulation/ems_transformer/serving) general_ops/measured_home._baseload_w (요청 C7)"
+    },
+    "appliance_exhaustive_search_max": {
+      "id": "appliance_exhaustive_search_max",
+      "value": 4,
+      "unit": "count",
+      "label_ko": "가상 기기 배치 전수 탐색 기기 수 상한",
+      "rule_ko": "가상 기기 배치에서 시작 시각 조합을 전수 탐색하는 기기 수 = 4대까지(넘으면 탐욕 배치 — 결과에 적는다)",
+      "classification": "assumed",
+      "basis_kind": "declared_demo_assumption",
+      "basis": "계산량 상한의 선언 시연 가정 — 값은 요청 C7 의 제안",
+      "source": "게이트웨이(8.simulation/ems_transformer/serving) general_ops/measured_day._exhaustive_limit (요청 C7)"
+    },
+    "drop_reference_days_default": {
+      "id": "drop_reference_days_default",
+      "value": 28,
+      "unit": "day",
+      "label_ko": "급감 판정 기준 창 일수",
+      "rule_ko": "급감 판정의 기준 창 = 질문 기간 바로 앞 28일 · 질문 기간이 없으면 자료의 첫 28일",
+      "classification": "assumed",
+      "basis_kind": "moved_literal",
+      "basis": "코드 리터럴 값 그대로 옮김(값 동일) — 외부 근거 없는 선언 시연 가정 — measured_store_analysis.REFERENCE_DAYS_DEFAULT",
+      "source": "게이트웨이(8.simulation/ems_transformer/serving) measured_store_analysis.REFERENCE_DAYS_DEFAULT (요청 C7)"
+    },
+    "drop_integrity_rule": {
+      "id": "drop_integrity_rule",
+      "value": {
+        "drop_threshold_pct": 30.0,
+        "min_interval_days": 3,
+        "reference_full_days_min": 14,
+        "daily_rows_min": 28
+      },
+      "unit_text": "pct · day",
+      "label_ko": "급감 판정 기본값(문턱·최소 일수)",
+      "rule_ko": "급감 = 기대 대비 30% 이상 하락이 3일 이상 이어진 구간 · 기준 창의 온전한 날(24시간) 14일 이상 · 일별 행 28개 이상(= 기준 창 일수)",
+      "classification": "assumed",
+      "basis_kind": "moved_literal",
+      "basis": "코드 리터럴 값 그대로 옮김(값 동일) — 외부 근거 없는 선언 시연 가정 — measured_store_analysis._drop_integrity_verdict(drop_threshold_pct 30.0 · min_interval_days 3 · len(ref) < 14 · _rows(…, 28))",
+      "source": "게이트웨이(8.simulation/ems_transformer/serving) measured_store_analysis._drop_integrity_verdict (요청 C7)"
+    },
+    "action_review": {
+      "id": "action_review",
+      "value": {
+        "base_quantile": 0.1,
+        "high_quantile": 0.95,
+        "on_share": 0.2,
+        "recurring_days": 3,
+        "stopped_share": 0.1,
+        "base_collapse_share": 0.5,
+        "deviation_floor_share": 0.05,
+        "typical_min_samples": 3,
+        "low_service_share": 0.85,
+        "burden_increase_share": 0.1,
+        "pilot_share": 0.2,
+        "pilot_min_for_rollout": 3,
+        "control_drift_share": 0.05,
+        "completeness_min": 0.9,
+        "representative_ratio_band": [0.5, 2.0],
+        "min_pre_days": 7,
+        "min_measured_days_for_fill": 7,
+        "inspection_score_weights": {
+          "fault": 3,
+          "setting": 2,
+          "unknown": 1
+        },
+        "intervals_shown": 40,
+        "members_listed": 40,
+        "channels_listed": 20,
+        "windows": {
+          "pilot_rollout": {
+            "span_days": 56,
+            "pre_days": 28
+          },
+          "side_effects": {
+            "span_days": 56,
+            "pre_days": 28
+          },
+          "mv_scenes": {
+            "span_days": 56,
+            "pre_days": 28
+          },
+          "quarter_lessons_sop": {
+            "span_days": 91,
+            "pre_days": 28,
+            "action_day_margin_days": 14
+          }
+        },
+        "closing_hours": {
+          "round_the_clock": [2, 3, 4],
+          "tail_hours": 2
+        }
+      },
+      "unit_text": "ratio · count · day · hour",
+      "label_ko": "조치 검토(실측 전후) 선언 값",
+      "rule_ko": "조치 검토 연산(설비 채널 분리 · 이탈 · 원인 분류 · 점검 순서 · 시범 확대 · 부작용 · M&V · 분기 교훈)의 분위·문턱·창 길이·표시 개수 — 규칙 문장은 게이트웨이 measured_actions.rule_ko 가 같은 값에서 만든다",
+      "classification": "assumed",
+      "basis_kind": "moved_literal",
+      "basis": "코드 리터럴 값 그대로 옮김(값 동일) — 외부 근거 없는 선언 시연 가정 — general_ops/measured_actions.py(BASE_QUANTILE … COMPLETENESS_MIN · MIN_PRE_DAYS · _review_member · _ORDER 3/2/1 · [:40]) · asset_inputs/measured_action_inputs.py(ACTION_SPAN_DAYS · ACTION_PRE_DAYS · _action_days 14 · _closing {2,3,4} · [:20])",
+      "source": "게이트웨이(8.simulation/ems_transformer/serving) general_ops/measured_actions.review_value(name) · operation_window(op) (요청 C2)"
+    },
+    "virtual_action_effects": {
+      "id": "virtual_action_effects",
+      "value": {
+        "setpoint_up": {
+          "cooling_cut": [0.08, 0.15]
+        },
+        "night_hvac_off": {
+          "restart_boost": [0.3, 0.6]
+        },
+        "deadband_widen": {
+          "cooling_cut": [0.06, 0.12],
+          "cycle_hours": [22, 6],
+          "cycle_on_factor": 1.6
+        },
+        "early_lights_off": {
+          "base_cut": [0.05, 0.1]
+        },
+        "filter_replace": {
+          "cooling_cut": [0.03, 0.08],
+          "airflow_gain": [0.08, 0.18]
+        },
+        "coil_clean": {
+          "cooling_cut": [0.05, 0.12],
+          "airflow_gain": [0.04, 0.1]
+        }
+      },
+      "unit_text": "ratio · hour",
+      "label_ko": "가상 조치 효과의 선언 범위",
+      "rule_ko": "가상 조치 효과 = 조치·칸마다 선언 범위 [하한, 상한] 안에서 결정적 추첨(같은 입력이면 같은 값) · 불감대 확대의 순환 시간 22~6시 · 순환 운전 배수 1.6. 조치 이름·부르는 말·효과 프로그램은 게이트웨이 선언 조치표에 있다(수가 아니다)",
+      "classification": "assumed",
+      "basis_kind": "moved_literal",
+      "basis": "코드 리터럴 값 그대로 옮김(값 동일) — 외부 근거 없는 선언 시연 가정 — general_ops/measured_actions.ACTION_CATALOG 효과 범위 · apply_action(22~6시 · ×1.6)",
+      "source": "게이트웨이(8.simulation/ems_transformer/serving) general_ops/measured_actions.effect_range(code, draw) (요청 C2)"
+    },
+    "lhs_axis": {
+      "id": "lhs_axis",
+      "value": {
+        "default_delta_share": 0.1,
+        "t_min": 2.0,
+        "min_samples_over_params": 10,
+        "occupancy_delta_share": 0.2
+      },
+      "unit_text": "ratio · t · count",
+      "label_ko": "시뮬 표본(LHS) 축 비교 규칙",
+      "rule_ko": "LHS 축 비교 = 기본 변화 폭 10% · |t| ≥ 2.0 · 표본 수 ≥ 인자 수 + 10 · 재실 민감도 변화 폭 20%",
+      "classification": "assumed",
+      "basis_kind": "moved_literal",
+      "basis": "코드 리터럴 값 그대로 옮김(값 동일) — 외부 근거 없는 선언 시연 가정 — general_ops/sim_packs._lhs_axis_compare(0.1 · 2.0 · +10) · simulation_pack_analysis._occupancy_sensitivity(0.2 · +10) · _outdoor_temp_sensitivity(+10)",
+      "source": "게이트웨이(8.simulation/ems_transformer/serving) _sim_source.lhs_rule(name) (요청 C2)"
+    },
+    "virtual_start_shift": {
+      "id": "virtual_start_shift",
+      "value": {
+        "default_hours": 2,
+        "temp_rise_c_per_h": 0.5,
+        "search_last_hour": 14
+      },
+      "unit_text": "hour · celsius/h",
+      "label_ko": "가상 기동 이동(앞당김·늦춤) 선언 가정",
+      "rule_ko": "가상 기동 이동 = 기본 2시간 · 예열 중 실내 온도 상승 0.5℃/h · 기동 탐색 1~14시. 에너지 기동 문턱은 sim_schedule_inference.startup_rise_share_of_peak",
+      "classification": "assumed",
+      "basis_kind": "moved_literal",
+      "basis": "코드 리터럴 값 그대로 옮김(값 동일) — 외부 근거 없는 선언 시연 가정 — general_ops/sim_packs._early_start(0.5℃/h · 1~14시) · hours_earlier or 2",
+      "source": "게이트웨이(8.simulation/ems_transformer/serving) general_ops/sim_packs.shift_rule(name) (요청 C2)"
+    },
+    "sim_pack_analysis_defaults": {
+      "id": "sim_pack_analysis_defaults",
+      "value": {
+        "range_quantiles": [0.1, 0.9],
+        "success_rate_band": {
+          "low": 0.2,
+          "high": 0.6
+        },
+        "min_pairs": 10,
+        "min_baseline_samples": 10
+      },
+      "unit_text": "quantile · ratio · count",
+      "label_ko": "시뮬 팩 분석 기본값(범위 분위·성공률 띠·최소 표본)",
+      "rule_ko": "범위 = 10~90 분위 · 성공률 띠 낮음 0.2 미만 · 높음 0.6 이상 · 최소 짝 10 · 최소 기준 표본 10(모자라면 이름 있는 부재)",
+      "classification": "assumed",
+      "basis_kind": "moved_literal",
+      "basis": "코드 리터럴 값 그대로 옮김(값 동일) — 외부 근거 없는 선언 시연 가정 — simulation_pack_analysis(range_low_q 0.1 · range_high_q 0.9 · success_rate_high 0.6 · low 0.2 · len(pairs) < 10 · len(base) < 10)",
+      "source": "게이트웨이(8.simulation/ems_transformer/serving) simulation_pack_analysis._declared_value(...) (요청 C2)"
+    },
+    "virtual_population_shares": {
+      "id": "virtual_population_shares",
+      "value": {
+        "elderly_share_range": [0.1, 0.3]
+      },
+      "unit": "ratio",
+      "label_ko": "가상 인구 구성 몫 범위",
+      "rule_ko": "가상 고령 인구 몫 = 지역마다 10~30% 안에서 결정적 생성(실제 인구 통계가 결속되면 그것이 먼저)",
+      "classification": "assumed",
+      "basis_kind": "moved_literal",
+      "basis": "코드 리터럴 값 그대로 옮김(값 동일) — 외부 근거 없는 선언 시연 가정 — general_ops/region_policy_effect_heat_overlap.ELDERLY_VIRTUAL_RANGE",
+      "source": "게이트웨이(8.simulation/ems_transformer/serving) _virtual.population_share(region, kind) ← gap_fill.fill('population_share', …) (요청 C2 · C10 R3)"
+    },
+    "policy_adverse_boundary": {
+      "id": "policy_adverse_boundary",
+      "value": 0,
+      "unit": "ratio",
+      "label_ko": "정책 역효과 경계(정책 절감률)",
+      "rule_ko": "정책 역효과 건물 = 정책 절감률(절감 양수) 0 미만 = 에너지가 늘어난 건물(질문이 기준을 말하지 않았을 때). 경계 0 은 부호의 정의이지 문턱 가정이 아니다",
+      "classification": "declared",
+      "basis_kind": "moved_literal",
+      "basis": "부호 정의(새 수 없음) — 게이트웨이 틀 컴파일러의 selectBuildings{metric: policy_savings, op: lt, value: 0} 리터럴 0 을 옮김. be-3d compose_scene_intent.without_declared_conditions 는 basis 가 이 행을 가리키고 값이 같은 조건만 선언 조건으로 뺀다",
+      "source": "게이트웨이 틀 컴파일러(정책 역효과 선택 policy_adverse) · be-3d scenario_nl_compose (요청 WP6 R10 · 2026-09-30)",
+      "metric": "policy_savings",
+      "comparison": "strictly_less"
     }
   }
 }

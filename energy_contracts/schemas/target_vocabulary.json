@@ -11,8 +11,8 @@
     "building-energy-3d",
     "agentleague"
   ],
-  "version": "1.0",
-  "updated": "2026-09-28",
+  "version": "1.1",
+  "updated": "2026-09-30",
   "$defs": {
     "AirAssetKindEntry": {
       "type": "object",
@@ -58,6 +58,15 @@
             "registry_usage",
             "members"
           ]
+        },
+        "aliases_ko": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          },
+          "uniqueItems": true,
+          "description": "그 자산 종류를 가리키는 일상 이름(label_ko 밖) — '내 것' 을 가리키는 말(소유 표현 × 자산 명사)의 자산 명사. 한 이름은 한 종류에만(적재 때 scripts/vocabulary_gate.py 가 겹침을 거절)"
         }
       }
     }
@@ -82,7 +91,8 @@
         "subject_field": "building_ids",
         "building_number": "registry_confirmed",
         "has_series": true,
-        "archetype_source": "record"
+        "archetype_source": "record",
+        "aliases_ko": ["사옥", "빌딩"]
       },
       "FAC": {
         "electricity_price_class": "industrial",
@@ -100,7 +110,8 @@
         "subject_field": "home_ids",
         "building_number": "registry_confirmed",
         "has_series": true,
-        "archetype_source": "registry_usage"
+        "archetype_source": "registry_usage",
+        "aliases_ko": ["집"]
       },
       "RET": {
         "electricity_price_class": "general_low_voltage",
@@ -109,7 +120,8 @@
         "subject_field": "building_ids",
         "building_number": "registry_confirmed",
         "has_series": true,
-        "archetype_source": "record"
+        "archetype_source": "record",
+        "aliases_ko": ["매장", "가게", "지점"]
       },
       "PRT": {
         "electricity_price_class": null,

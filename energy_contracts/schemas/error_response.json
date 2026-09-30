@@ -11,9 +11,9 @@
     "agentleague",
     "eduarena"
   ],
-  "version": "1.2",
+  "version": "1.3",
   "updated": "2026-09-30",
-  "$comment": "RFC 7807: https://www.rfc-editor.org/rfc/rfc7807 · 1.2(2026-09-30): 코드 PAYLOAD_TOO_LARGE(413, validation) 추가 — be-3d 장면 저장이 한도(declared_assumptions.serving_display_limits.scene_payload_max_bytes)를 넘는 본문을 이름 없이 413 으로 거절하던 자리 · 1.1(2026-09-29 M3): 거절 봉투 Refusal 신설 + Problem 에 같은 칸(kind·field·expected·got·message_ko·next_ko·retry·legacy_code)을 선택 칸으로 추가 — 가산, 1.0 에서 유효한 Problem 은 그대로 유효하다.",
+  "$comment": "RFC 7807: https://www.rfc-editor.org/rfc/rfc7807 · 1.3(2026-09-30, 0.3.72 — 요청 C2 · f7): Refusal.retry 열거에 later(일시 장애 — 잠시 뒤 같은 요청을 다시 보내면 달라질 수 있다) 추가 — 가산, 1.2 에서 유효한 거절은 그대로 유효하다. · 1.2(2026-09-30): 코드 PAYLOAD_TOO_LARGE(413, validation) 추가 — be-3d 장면 저장이 한도(declared_assumptions.serving_display_limits.scene_payload_max_bytes)를 넘는 본문을 이름 없이 413 으로 거절하던 자리 · 1.1(2026-09-29 M3): 거절 봉투 Refusal 신설 + Problem 에 같은 칸(kind·field·expected·got·message_ko·next_ko·retry·legacy_code)을 선택 칸으로 추가 — 가산, 1.0 에서 유효한 Problem 은 그대로 유효하다.",
   "$defs": {
     "Problem": {
       "type": "object",
@@ -143,9 +143,10 @@
           "enum": [
             "ask",
             "fill",
-            "none"
+            "none",
+            "later"
           ],
-          "description": "ask=사용자에게 되묻는다 · fill=서버가 채울 수 있다(가상·추정 채움 + 출처 표시, 또는 자료 적재 뒤) · none=같은 요청을 다시 보내도 같은 답"
+          "description": "ask=사용자에게 되묻는다 · fill=서버가 채울 수 있다(가상·추정 채움 + 출처 표시, 또는 자료 적재 뒤) · none=같은 요청을 다시 보내도 같은 답 · later=일시 장애(시간 초과·과부하·외부 서비스 일시 중단) — 잠시 뒤 같은 요청을 다시 보내면 답이 달라질 수 있다"
         },
         "legacy_code": {
           "type": [

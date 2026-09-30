@@ -11,7 +11,7 @@
     "agentleague",
     "eduarena"
   ],
-  "version": "3.3",
+  "version": "3.4",
   "$defs": {
     "StrategyCode": {
       "type": "string",
@@ -146,6 +146,69 @@
               "$ref": "#/$defs/StrategyCode"
             },
             "description": "복합 전략의 구성 요소 (single은 빈 배열)"
+          },
+          "observable_signature": {
+            "type": "object",
+            "required": [
+              "metric",
+              "op",
+              "threshold"
+            ],
+            "description": "실측 시간 부하 모양에서 이 전략의 흔적을 읽는 판정 규칙(선언 — 0.3.72 요청 C9). 없는 전략 = '판정 규칙 없음'(짐작하지 않는다)",
+            "properties": {
+              "metric": {
+                "type": "string"
+              },
+              "definition_ko": {
+                "type": "string"
+              },
+              "op": {
+                "type": "string",
+                "enum": [
+                  "lt",
+                  "le",
+                  "gt",
+                  "ge",
+                  "within"
+                ]
+              },
+              "threshold": {
+                "oneOf": [
+                  {
+                    "type": "number"
+                  },
+                  {
+                    "type": "array",
+                    "items": {
+                      "type": "number"
+                    },
+                    "minItems": 2,
+                    "maxItems": 2
+                  }
+                ]
+              },
+              "high": {
+                "type": "number"
+              },
+              "params": {
+                "type": "object"
+              },
+              "confidence": {
+                "type": "object"
+              },
+              "classification": {
+                "type": "string"
+              },
+              "basis_kind": {
+                "type": "string"
+              },
+              "basis": {
+                "type": "string"
+              },
+              "source": {
+                "type": "string"
+              }
+            }
           }
         },
         "required": [
@@ -509,13 +572,57 @@
         "name_en": "Baseline",
         "name_kr": "고정 설정온도 + 야간 Setback",
         "type": "single",
-        "components": []
+        "components": [],
+        "observable_signature": {
+          "metric": "night_to_day_ratio",
+          "definition_ko": "시간 부하 모양(평일 — 없으면 전체)의 밤 평균 ÷ 낮 평균 — 밤 = [0, 6)시 · 낮 = [9, 18)시(끝 시각 제외)",
+          "op": "lt",
+          "threshold": 0.5,
+          "params": {
+            "night_hours": [
+              0,
+              6
+            ],
+            "day_hours": [
+              9,
+              18
+            ]
+          },
+          "confidence": {
+            "met": "medium",
+            "not_met": "low"
+          },
+          "classification": "assumed",
+          "basis_kind": "moved_literal",
+          "basis": "게이트웨이 decision_support._mcode_candidates(부하 모양 후보 · MCP-019) 리터럴 값 그대로 — 외부 근거 없는 선언 판정 규칙",
+          "source": "게이트웨이 decision_support._mcode_candidates → general_ops/strategy_signature.py (요청 C9 · 감사 C2-20)"
+        }
       },
       "M01": {
         "name_en": "ScheduleOpt",
         "name_kr": "최적 기동·정지 (OptimalStart+EarlyStop)",
         "type": "single",
-        "components": []
+        "components": [],
+        "observable_signature": {
+          "metric": "weekday_ramp_hour",
+          "definition_ko": "평일 시간 부하 모양이 처음으로 최소 + 0.5 × (최대 − 최소) 이상이 되는 시각",
+          "op": "within",
+          "threshold": [
+            5,
+            8
+          ],
+          "params": {
+            "ramp_share": 0.5
+          },
+          "confidence": {
+            "met": "medium",
+            "not_met": "low"
+          },
+          "classification": "assumed",
+          "basis_kind": "moved_literal",
+          "basis": "게이트웨이 decision_support._mcode_candidates(부하 모양 후보 · MCP-019) 리터럴 값 그대로 — 외부 근거 없는 선언 판정 규칙",
+          "source": "게이트웨이 decision_support._mcode_candidates → general_ops/strategy_signature.py (요청 C9 · 감사 C2-20)"
+        }
       },
       "M02": {
         "name_en": "Economizer",
@@ -569,7 +676,27 @@
         "name_en": "DemandResponse",
         "name_kr": "피크 전력 수요반응 (부하 제한)",
         "type": "single",
-        "components": []
+        "components": [],
+        "observable_signature": {
+          "metric": "peak_plateau_day_share",
+          "definition_ko": "하루 셋째로 큰 시간값이 그날 최대의 0.97 이상인 날(최대 > 0)의 비율 — 상위 3시간이 평평하게 눌린 날",
+          "op": "ge",
+          "threshold": 0.5,
+          "high": 0.7,
+          "params": {
+            "top_hours": 3,
+            "plateau_share_of_day_max": 0.97
+          },
+          "confidence": {
+            "high": "high",
+            "met": "medium",
+            "not_met": "low"
+          },
+          "classification": "assumed",
+          "basis_kind": "moved_literal",
+          "basis": "게이트웨이 decision_support._mcode_candidates(부하 모양 후보 · MCP-019) 리터럴 값 그대로 — 외부 근거 없는 선언 판정 규칙",
+          "source": "게이트웨이 decision_support._mcode_candidates → general_ops/strategy_signature.py (요청 C9 · 감사 C2-20)"
+        }
       },
       "M11": {
         "name_en": "Combined_EMS",
@@ -632,7 +759,21 @@
         "name_en": "DR_NightSetback",
         "name_kr": "DR 야간 셋백 (능동 부하감축)",
         "type": "single",
-        "components": []
+        "components": [],
+        "observable_signature": {
+          "metric": "weekend_to_weekday_ratio",
+          "definition_ko": "주말 시간 부하 모양의 합 ÷ 평일 시간 부하 모양의 합",
+          "op": "lt",
+          "threshold": 0.6,
+          "confidence": {
+            "met": "medium",
+            "not_met": "low"
+          },
+          "classification": "assumed",
+          "basis_kind": "moved_literal",
+          "basis": "게이트웨이 decision_support._mcode_candidates(부하 모양 후보 · MCP-019) 리터럴 값 그대로 — 외부 근거 없는 선언 판정 규칙",
+          "source": "게이트웨이 decision_support._mcode_candidates → general_ops/strategy_signature.py (요청 C9 · 감사 C2-20)"
+        }
       },
       "M17": {
         "name_en": "LightingControl",

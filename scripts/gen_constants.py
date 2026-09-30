@@ -32,6 +32,7 @@ SCHEMAS_DIR = CONTRACTS_ROOT / "energy_contracts" / "schemas"
 # E→M 정본(legacy_ems_code_mapping.json) → gcs_e_codes 투영. 생성본보다 먼저 맞춘다(2026-09-15).
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 import legacy_e_codes  # noqa: E402
+import vocabulary_gate  # noqa: E402  — 0.3.72 선언 어휘 적재 검사(한 별칭 = 한 열쇠 · 가리키는 열쇠 존재) — validate_ssot 와 같은 함수
 WORKSPACE_ROOT = CONTRACTS_ROOT.parents[1]
 
 # 표준 프로젝트별 출력 경로 (Tier 3) — Phase M-4: exports 화이트리스트 도입
@@ -325,7 +326,13 @@ PROJECT_TARGETS: dict[str, dict] = {
 
 
 def load_schemas() -> dict:
-    """필요한 SSOT 스키마들을 로드해 단일 dict로 반환."""
+    """필요한 SSOT 스키마들을 로드해 단일 dict로 반환.
+
+    0.3.72: 선언 어휘(조치·설비·자산 종류·분류 낱말·시설 별칭 · 전송 주기 이름 · 사건 명사 · 가리키는 열쇠)에 결함이 있으면
+    **생성하지 않는다**(ValueError) — 한 별칭이 두 열쇠를 가리키는 표가 소비처로 나가면 소비처가 조용히 한쪽을 고른다."""
+    _vocab_bad, _vocab_checks = vocabulary_gate.problems_in_dir(SCHEMAS_DIR)
+    if _vocab_bad or not _vocab_checks:
+        raise ValueError(f"선언 어휘 적재 검사 실패(검사 {_vocab_checks}건): " + " | ".join(_vocab_bad or ["검사 0건 — 돌지 않았다"]))
     ems = json.loads((SCHEMAS_DIR / "ems_strategies.json").read_text(encoding="utf-8"))
     # 2026-08-16: **엣지가 실제로 구동할 수 있는 전략.** 정본(23종)의 부분집합이라
     #   화면 enum·엣지 검증이 여기서 파생된다(격차 14종 → 0종).

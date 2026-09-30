@@ -65,7 +65,9 @@ def test_new_rows_carry_value_unit_label_basis_and_class():
     rows, units = _new_rows(), _units()
     problems = [p for k, r in rows.items() for p in row_problems(k, r, units)]
     assert not problems, problems
-    assert len(rows) == 54, len(rows)          # 검사 54 건(0 건이면 그것이 사고다)
+    # 근거(2026-09-30, 0.3.72): 새 행 33(요청 C1~C11 · WP6 R10 — 이름 목록 = test_declared_assumptions_0372.NEW_ROWS_0372) 도 같은 모양 규칙을
+    #   지킨다. 0.3.70 의 54 행이 그대로인지는 0.3.72 시험의 태그 대조가 본다(반대쪽).
+    assert len(rows) == 54 + 33, len(rows)     # 검사 87 건(0 건이면 그것이 사고다)
     # 근거 없는 값은 '선언 시연 가정' 이라고 스스로 적는다 — 표준인 척하지 않는다
     demo = [k for k, r in rows.items() if r["basis_kind"] == "declared_demo_assumption"]
     assert demo and all("선언" in rows[k]["basis"] or "가정" in rows[k]["basis"] for k in demo), \
@@ -172,7 +174,9 @@ def test_judgement_thresholds_1_1_additions():
     thr = t["default"]
     # 근거(2026-09-30, 0.3.71): 1.1 → 1.2 는 가산(temperature_sensitivity 두 행에 basis_kind·basis·표시 칸 — 값 그대로, $comment 1.2 절).
     # 1.1 가산분의 값은 아래 단언이 그대로 지킨다.
-    assert t["version"] == "1.2"
+    # 근거(2026-09-30, 0.3.72): 1.2 → 1.3 은 가산(anomaly.robust_z — 요청 C2, 스키마 $comment 1.3 절). 1.2 의 값이 그대로인지는
+    #   0.3.72 시험의 태그 대조가 본다(반대쪽).
+    assert t["version"] == "1.3"
     assert thr["anomaly"]["monthly_screening_min_months"]["value"] == 6
     assert thr["anomaly"]["band_out_share_multiple"]["value"] == 2.0
     assert thr["anomaly"]["sustained_out_hours"]["value"] == 3
@@ -204,7 +208,8 @@ def test_certified_tests_carry_only_certificate_values():
 
 def test_payload_too_large_is_a_validation_code():
     e = _load("error_response.json")
-    assert e["version"] == "1.2"
+    # 근거(2026-09-30, 0.3.72): 1.2 → 1.3 은 가산(Refusal.retry 열거 += later — 요청 C2). 코드 표는 그대로(아래 16개).
+    assert e["version"] == "1.3"
     assert e["default"]["codes"]["PAYLOAD_TOO_LARGE"] == {"status": 413, "title": "Payload too large", "category": "validation"}
     assert e["default"]["codes"]["VALIDATION_FAILED"]["status"] == 422          # 옛 코드는 그대로
     assert len(e["default"]["codes"]) == 16
@@ -376,7 +381,8 @@ def test_0371_existing_keys_and_values_unchanged():
         (1.2, {"summer": 0.5, "winter": 1.0, "spring": 0.7, "autumn": 0.7}, 0.1, True)
     terms = d["debate_stated_term_ranges"]["value"]
     assert terms["lease_term_yr"]["range"] == [1, 10] and terms["budget_cycle_yr"]["range"] == [1, 1]
-    assert len(_new_rows()) == 54                       # 새 행을 만들지 않았다(칸만 더했다)
+    # 0.3.71 은 새 행을 만들지 않았다(칸만 더했다 — 54). 근거(0.3.72): 새 행 33 을 더했다 — 이름 목록과 태그 대조는 0.3.72 시험.
+    assert len(_new_rows()) == 54 + 33
 
 
 def test_0371_consulted_rows_say_what_their_basis_is():
@@ -419,8 +425,11 @@ def test_0371_new_keys_carry_the_decisions():
     # A2 — 전송 주기별 문턱: 옛 value 는 일 배치 기준과 같은 값이다(파생 — 두 벌이 갈리면 실패)
     comm = d["comm_status_thresholds"]
     assert set(comm["by_delivery"]) == {"hourly_realtime", "daily_batch"}; checked += 1
-    assert comm["by_delivery"]["daily_batch"] == comm["value"]; checked += 1
-    assert all(set(p) == set(comm["value"]) and p["ok_max_staleness_h"] < p["delayed_max_staleness_h"]
+    # 근거(2026-09-30, 0.3.72 · 요청 C8): 프로필마다 사람 말 이름 label_ko 칸이 생겼다(문구 칸). 파생 대조는 문턱 칸끼리 — 문턱 두 칸이
+    #   옛 value 와 같고(두 벌이 갈리면 실패) 프로필의 칸은 문턱 두 칸 + 이름뿐이다(반대쪽: 문턱 칸이 늘거나 빠지면 실패).
+    thresholds = lambda p: {k: v for k, v in p.items() if k != "label_ko"}  # noqa: E731
+    assert thresholds(comm["by_delivery"]["daily_batch"]) == comm["value"]; checked += 1
+    assert all(set(thresholds(p)) == set(comm["value"]) and p["ok_max_staleness_h"] < p["delayed_max_staleness_h"]
                for p in comm["by_delivery"].values()); checked += 1
     assert comm["by_delivery"]["hourly_realtime"]["ok_max_staleness_h"] < comm["value"]["ok_max_staleness_h"]; checked += 1
     assert comm["unknown_delivery_profile"] in comm["by_delivery"]; checked += 1

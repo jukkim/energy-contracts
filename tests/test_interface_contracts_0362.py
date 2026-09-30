@@ -55,7 +55,9 @@ def test_versions_bumped_for_the_draft():
     # 그대로 지키고, 1.2 행의 값이 바뀌지 않았는지는 test_declared_assumptions_0370.test_rows_of_1_2_keep_their_values 가 본다(반대쪽).
     # 근거(2026-09-30, 0.3.71): 1.3 → 1.4 는 가산(GPT 상의 반영 — 행 수준 새 칸 · 문구만, 스키마 $comment 1.4 절). 1.3 의 키·값이
     # 그대로인지는 test_declared_assumptions_0370.test_0371_existing_keys_and_values_unchanged 가 본다(반대쪽).
-    assert _load("declared_assumptions.json")["version"] == "1.4"
+    # 근거(2026-09-30, 0.3.72): 1.4 → 1.5 는 가산(새 행 33 · 기존 행 값 안 새 칸 — 스키마 $comment 1.5 절). 1.4 의 키·값(문구 포함)이
+    # 그대로인지는 test_declared_assumptions_0372.test_additive_against_the_0371_tag 가 본다(반대쪽).
+    assert _load("declared_assumptions.json")["version"] == "1.5"
     for name in ("airo_request.json", "airo_result.json", "interface_types.json", "declared_assumptions.json"):
         Draft202012Validator.check_schema(_load(name))
 

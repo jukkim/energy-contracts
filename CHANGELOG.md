@@ -4,6 +4,40 @@
 
 ---
 
+## 0.3.72 (2026-09-30, 태그 v0.3.72) — 일반화 단계 소비처가 기다리는 행(요청 C1~C11 · WP6 R10 · 가산)
+
+요청 = 캠페인 `scratch/wp_requests/EC_ROWS_NEEDED.md`. 0.3.71 의 키와 값은 하나도 바꾸지 않았다(문구 포함) — 예외 하나 = 사용자·EC 소유자 결정인
+`calendar_conventions.question_season_system`(null → `meteorological`)과 그 설명 문장. moved_literal = 오늘 코드 리터럴 값 그대로.
+
+- `declared_assumptions` 1.4 → 1.5: 새 행 33 — `demo_user_answers`(C11) · `economics_horizon_years_default` · `financial_candidate_measures_max` ·
+  `climate_load_shift`(C9) · `facility_use_classes`(무더위 쉼터 후보 — estimated, 원문 대조 전) · `small_building_area_m2_default` · `cohort_bands_default` ·
+  `cohort_segmentation_default`(C10) · `forecast_horizon_default` · `period_substitution` · `ranking_basis_default` · `schedule_event_nouns`(C5) ·
+  `drop_sustain_share_of_threshold`(C8) · `quadrant_split_default` · `priority_axis_defaults`(C4) · `debate_axis_scales`(법규 = 1 — 셈 단위 축) ·
+  `debate_recalc_fixtures` · `debate_numeric_rules` · `debate_calendar` · `debate_family_critics`(C6 — 기존 debate_* 행은 그대로) · `indoor_design_rh_pct`(C3) ·
+  `diagnosis_risk_thresholds` · `home_baseload_low_share` · `appliance_exhaustive_search_max` · `drop_reference_days_default` · `drop_integrity_rule`(C7) ·
+  `action_review` · `virtual_action_effects` · `lhs_axis` · `virtual_start_shift` · `sim_pack_analysis_defaults` · `virtual_population_shares`(C2) ·
+  `policy_adverse_boundary`(WP6 R10 — 부호 정의 0).
+  기존 행 값 안에 새 칸: `hazard_week_scenarios.value.cold`(0 · −2 · −4℃) · `serving_display_limits.value.presentation_table_max_columns`(12)·`presentation_chart_max_series`(6) ·
+  `scene_motion_defaults.value.descend_keys`·`dive_building_end_alt_m`(250) · `sim_schedule_inference.value.morning_window_hours`(12)·`startup_window_hours`(2)
+  — 뜻은 행 수준 `value_notes_ko`(rule_ko 문장은 그대로 — 답 바이트 보존). `comm_status_thresholds.by_delivery.<프로필>.label_ko`.
+- `calendar_conventions` 1.1 → 1.2: `question_season_system = "meteorological"`(계절 넷을 모두 가진 유일한 체계 — 봄 3~5 · 여름 6~8 · 가을 9~11 · 겨울 12~2) ·
+  `question_season_system_basis`.
+- `equipment_taxonomy` 1.2.0 → 1.3.0: `aliases_ko`(C8 표 + C2 추가) · `labels_ko`(capability_matrix 20종 → name_ko + aliases_ko — aliases_ko 를 모두 담고 질문 말 냉방·냉동고·온돌) ·
+  `dr_class`(DR_CLASS_TABLE 을 종류로 — plug 는 유지, 끌 수 있는 가상 충전은 dr_three_stage) · `$defs.DrClass`. 모델 재생성.
+- `measure_cost_catalog` 1.3 → 1.4: 조치 12개 전부 `aliases_ko`. 모델 재생성.
+- `ems_strategies` 3.3 → 3.4: M00 · M01 · M10 · M16 `observable_signature`(decision_support._mcode_candidates 문턱 값 그대로). 모델 재생성.
+- `data_classification` 1.3 → 1.4: `words.estimated.aliases_ko` [근사, 범위]. `target_vocabulary` 1.0 → 1.1: `air_asset_kinds.{HOM,RET,BLD}.aliases_ko`. 모델 재생성.
+- `region_codes` 2.4 → 2.5: 시뮬 도시 18곳 `coastal` + `coastal_basis`(행정구역이 바다에 닿는가 — 지리 선언). ⚠ 옛 코드 `_COASTAL_CITIES`(부산·인천)보다 넓다:
+  울산·강릉·제주·포항·창원·목포도 해안. 모델 재생성.
+- `error_response` 1.2 → 1.3: Refusal.retry 열거 += `later`(일시 장애). 모델 재생성(error_response · airo_result · interface_types).
+- `judgement_thresholds` 1.2 → 1.3: `anomaly.robust_z`(수정 z 3.5 · 이상 · MAD × 1.4826 — Iglewicz & Hoaglin 1993).
+- 넣지 않은 것: `review_task_roles`(검토 역할 이름 = 재구성 등록부 어휘) · 판정 정책 값 둘(env·설정) · `storage_capex_krw_per_kwh`·
+  `home_appliance_replacement…new_saving_share_range`·`ai_model_registry…training_domain`(요청이 값·근거를 정하지 않았다 — 지어내지 않는다).
+- 적재 검사 `scripts/vocabulary_gate.py`(새): 스키마를 훑어 어휘 표를 **찾아서**(손 목록 없음) 한 별칭 = 한 열쇠 · 가리키는 열쇠 존재(설비 종류 = capability_matrix ·
+  분류 = ClassificationWord · 용도 = EndUse …) · 질문 계절 체계가 계절 넷을 덮는가. `gen_constants.load_schemas`(결함이면 생성 안 함) ·
+  `validate_ssot --check schemas` 가 같은 함수를 부른다.
+- 시험 `tests/test_declared_assumptions_0372.py`(새) · 0.3.70/0.3.71 시험의 고정 개수·판 번호를 0.3.72 근거와 함께 갱신.
+
 ## 0.3.71 (2026-09-30, 태그 v0.3.71) — 근거 없이 정한 여섯 값·인용 셋을 GPT 와 상의해 고침(가산)
 
 사용자 지시(2026-09-30 19:24 "지피티와 상의해서 정해") · 상의 기록 = 캠페인 `review_exchange/rounds/R079_gpt.md`(Azure gpt-5.6-sol, 인용은 웹 대조).

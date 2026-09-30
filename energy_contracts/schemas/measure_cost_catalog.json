@@ -4,14 +4,14 @@
   "title": "Measure Cost Catalog (조치 경제성 카탈로그 — MACC)",
   "description": "조치별 깜냥절감(deemed savings) + 단위 CAPEX + 수명 SSOT. 운영(EMS)·패시브(외피)·설비교체를 '돈'으로 비교(한계저감비용곡선 MACC)하기 위한 근거 데이터. Spec source = 공모전/2026-04-24_AI챔피언_전국민AI경진대회/docs/MEASURE_ECONOMICS_SPEC.md (2026-07-12). sibling policy_measures.json#$defs.MeasureCode(자본·설계 조치 8종, 공학 기여분) + ems_strategies.json#StrategyCode(운영 M00~M20)에 '비용 축'을 additive 로 얹는다 — measure_ref 로 두 네임스페이스를 참조. 탄소가격·요금·배출계수는 재정의하지 않고 market_prices.json(kau/unit_prices) + emission_factors.json(0.4173) 을 인용한다(ssot-canonical-compliance). ⚠ deemed 절감률=조사 근거(신뢰도 A~C), CAPEX 단위단가=국제값 현지화 추정(한국 공개 단가표 부재=no_korean_data). 실측/E+ 정밀화 시 상위호환 교체.",
   "_usage": "hybrid",
-  "$comment": "reference-only — gen_constants.py load_schemas() 미진입(SOURCE_HASH 무관, codegen cascade 회피, sibling policy_measures.json 과 동일 패턴). consumer 는 wheel `from energy_contracts import load_schema; load_schema('measure_cost_catalog')` 로 소비. 상태=designed (F16 후보 economics 축, 서빙 미구현). 값 정정 시 bulk-edit-verify.",
+  "$comment": "1.4(2026-09-30, 0.3.72 — 요청 C9·C1·C2 · 가산): 조치마다 aliases_ko(질문·조치 대상 명사가 조치를 부르는 일상 이름 — 한 별칭 = 한 조치, 적재 때 scripts/vocabulary_gate.py). 값·단가는 그대로. · reference-only — gen_constants.py load_schemas() 미진입(SOURCE_HASH 무관, codegen cascade 회피, sibling policy_measures.json 과 동일 패턴). consumer 는 wheel `from energy_contracts import load_schema; load_schema('measure_cost_catalog')` 로 소비. 상태=designed (F16 후보 economics 축, 서빙 미구현). 값 정정 시 bulk-edit-verify.",
   "_consumers": [
     "agentleague",
     "ems_transformer",
     "building-energy-3d",
     "gen_constants → DISCOUNT_RATE_DEFAULT·DISCOUNT_RATE_SOURCE (building-energy-3d·8sim-shared·agentleague)"
   ],
-  "version": "1.3",
+  "version": "1.4",
   "updated": "2026-09-30",
   "$defs": {
     "WorkScope": {
@@ -302,6 +302,15 @@
           "note": {
             "type": "string",
             "description": "가정·함정 메모."
+          },
+          "aliases_ko": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 1
+            },
+            "uniqueItems": true,
+            "description": "조치를 부르는 일상 이름(이름·코드 밖) — '창문' → WIN. 한 별칭은 한 조치에만(겹치면 적재 때 거절)"
           }
         }
       }
@@ -442,7 +451,11 @@
         "capex_confidence": "A",
         "transferability": "validated",
         "source": "LBNL Building Commissioning ($0.30/ft², 중앙값 16%)",
-        "note": "운영 조치 중 payback 최우수. 성능 드리프트로 주기 재실시 필요."
+        "note": "운영 조치 중 payback 최우수. 성능 드리프트로 주기 재실시 필요.",
+        "aliases_ko": [
+          "설비 재조정",
+          "커미셔닝"
+        ]
       },
       "BEMS": {
         "name": "BEMS 최적제어(M00~M20)",
@@ -462,7 +475,10 @@
         "capex_confidence": "C",
         "transferability": "estimated",
         "source": "KEA BEMS 실증(신라대 12.2%/BC카드 7.6%/KT선릉 7.0%)",
-        "note": "RCx 와 용도 중복 — 순차 적용 시 marginal 감소(비가산성)."
+        "note": "RCx 와 용도 중복 — 순차 적용 시 marginal 감소(비가산성).",
+        "aliases_ko": [
+          "건물에너지관리시스템"
+        ]
       },
       "LED": {
         "name": "LED 조명",
@@ -479,7 +495,12 @@
         "capex_confidence": "C",
         "transferability": "no_korean_data",
         "source": "DOE / LED 리트로핏 실측(50프로젝트)",
-        "note": "제어 결합 시 최대 85%(상한). 조명 용도만."
+        "note": "제어 결합 시 최대 85%(상한). 조명 용도만.",
+        "aliases_ko": [
+          "전등",
+          "형광등",
+          "조명등"
+        ]
       },
       "CHIL": {
         "name": "인버터 냉동기",
@@ -496,7 +517,11 @@
         "capex_confidence": "C",
         "transferability": "no_korean_data",
         "source": "DOE FEMP 전기 냉동기(부분부하 30~50%) + EIA 2022 상업용 설비 설치비(수냉식 원심 $560~590/RT≈76~80만원/RT, 공냉식 스크류 $820~1,250/RT≈111~169만원/RT, 환율 1,350원/USD)",
-        "note": "capex_krw_per_m2=25,000은 인버터 VSD 리트로핏 기준(냉동기 전체교체 아님). 전체교체 시 EIA 2022 기준 수냉식 0.3RT/m²×76만/RT=228,000원/m² — 용도 유의. 부분부하 인버터 이득. 미래기후(냉방↑)에서 회수 단축."
+        "note": "capex_krw_per_m2=25,000은 인버터 VSD 리트로핏 기준(냉동기 전체교체 아님). 전체교체 시 EIA 2022 기준 수냉식 0.3RT/m²×76만/RT=228,000원/m² — 용도 유의. 부분부하 인버터 이득. 미래기후(냉방↑)에서 회수 단축.",
+        "aliases_ko": [
+          "칠러",
+          "터보 냉동기"
+        ]
       },
       "VSD": {
         "name": "가변속 펌프/팬",
@@ -513,7 +538,12 @@
         "capex_confidence": "B",
         "transferability": "estimated",
         "source": "KEPCO 효율향상사업 인버터(VFD) 지원단가 2025(실내 27천원/kW · 실외 82천원/kW, 보조금 역산 총CAPEX 약 3배) + DOE/EERE 가변속 펌핑(친화법칙 회전수³∝전력)",
-        "note": "8,000원/m²는 0.030kW/m²(사무소 동력밀도) × 270,000원/kW(KEPCO 역산 총CAPEX 상한) 기준. KEPCO 보조금은 CAPEX의 약 30%로 역산(추정). ⚠ '고효율 전동기 교체' 자체는 1~2%뿐 — 절감은 가변속 제어에서. 합산 금지."
+        "note": "8,000원/m²는 0.030kW/m²(사무소 동력밀도) × 270,000원/kW(KEPCO 역산 총CAPEX 상한) 기준. KEPCO 보조금은 CAPEX의 약 30%로 역산(추정). ⚠ '고효율 전동기 교체' 자체는 1~2%뿐 — 절감은 가변속 제어에서. 합산 금지.",
+        "aliases_ko": [
+          "가변속",
+          "인버터 펌프",
+          "인버터 팬"
+        ]
       },
       "COND": {
         "name": "콘덴싱 보일러",
@@ -530,7 +560,10 @@
         "capex_confidence": "C",
         "transferability": "no_korean_data",
         "source": "DOE FEMP 상업용 보일러(80→95%, 연료 15~30%)",
-        "note": "저부하·저환수온도 운전에서만 잠열 회수. 고온 급탕 전용이면 하한."
+        "note": "저부하·저환수온도 운전에서만 잠열 회수. 고온 급탕 전용이면 하한.",
+        "aliases_ko": [
+          "콘덴싱"
+        ]
       },
       "HP": {
         "name": "히트펌프(가스보일러 대체)",
@@ -552,7 +585,10 @@
         "capex_confidence": "C",
         "transferability": "no_korean_data",
         "source": "연료전환(가스→전기 COP 2.8~4.0), policy_measures SRC02",
-        "note": "가스 제거+전기 추가. 비용·탄소 절감은 전기/가스 요금비·배출계수(0.4173) 의존. 미래기후(난방↓)에서 회수 지연."
+        "note": "가스 제거+전기 추가. 비용·탄소 절감은 전기/가스 요금비·배출계수(0.4173) 의존. 미래기후(난방↓)에서 회수 지연.",
+        "aliases_ko": [
+          "열펌프"
+        ]
       },
       "ERV": {
         "name": "폐열회수 환기",
@@ -570,7 +606,11 @@
         "capex_confidence": "C",
         "transferability": "no_korean_data",
         "source": "ASHRAE 90.1(열회수 코드최소 50%, 실측 60~75%)",
-        "note": "마케팅 '70%'는 상한. HRV(현열만)는 습한 기후 열세."
+        "note": "마케팅 '70%'는 상한. HRV(현열만)는 습한 기후 열세.",
+        "aliases_ko": [
+          "전열교환기",
+          "폐열회수"
+        ]
       },
       "INS": {
         "name": "외벽 단열(외단열)",
@@ -588,7 +628,12 @@
         "capex_confidence": "B",
         "transferability": "validated",
         "source": "국토안전관리원 그린리모델링 이자지원사업 외피 공사 단가 2024(종합 190~266만원/3.3㎡=576~806천원/m²시공면적, 단열 단독 약 30~40% 분리 적용) + DOE 단열 절감률",
-        "note": "그린리모델링 2024 종합공사비 576~806천원/m²(시공면적기준). 연면적 환산·외단열 단독 분리: 120,000원/m²연면적. 그린리모델링 비용편익 순위 최하위권(외단열·내단열이 payback 최장). ESCO 융자 가능(에너지이용합리화법 §25, 70~100%, 1.75% 고정)."
+        "note": "그린리모델링 2024 종합공사비 576~806천원/m²(시공면적기준). 연면적 환산·외단열 단독 분리: 120,000원/m²연면적. 그린리모델링 비용편익 순위 최하위권(외단열·내단열이 payback 최장). ESCO 융자 가능(에너지이용합리화법 §25, 70~100%, 1.75% 고정).",
+        "aliases_ko": [
+          "단열재",
+          "외단열",
+          "내단열"
+        ]
       },
       "WIN": {
         "name": "고성능 창호(삼중)",
@@ -606,7 +651,13 @@
         "capex_confidence": "B",
         "transferability": "validated",
         "source": "국토안전관리원 그린리모델링 이자지원사업 창호 공사 2024(고성능 창호 교체, 종합 단가 중 창호 분리) + Solartech/DOE(삼중창 한랭지 2~3% 추가)",
-        "note": "에너지 회수만으론 온난기후 정당화 어려움. 소음·결로 목적 시 별도 편익 산정. 그린리모델링 공식 단가 대상(국내 실증)."
+        "note": "에너지 회수만으론 온난기후 정당화 어려움. 소음·결로 목적 시 별도 편익 산정. 그린리모델링 공식 단가 대상(국내 실증).",
+        "aliases_ko": [
+          "창문",
+          "유리창",
+          "이중창",
+          "삼중창"
+        ]
       },
       "SEAL": {
         "name": "기밀 개선(침기 저감)",
@@ -624,7 +675,11 @@
         "capex_confidence": "B",
         "transferability": "validated",
         "source": "국토안전관리원 그린리모델링 이자지원사업 기밀 보강 공사 2024(코킹·웨더스트리핑·문틈 밀봉) + NIST/Energy-Solutions(노후 침기 25~40% 손실)",
-        "note": "패시브 항목 중 payback 최우수. 10,000원/m²는 코킹·웨더스트리핑 저비용 처치 기준(대규모 외피 기밀공사 아님). ENV03 종합의 기밀 부분."
+        "note": "패시브 항목 중 payback 최우수. 10,000원/m²는 코킹·웨더스트리핑 저비용 처치 기준(대규모 외피 기밀공사 아님). ENV03 종합의 기밀 부분.",
+        "aliases_ko": [
+          "틈새",
+          "침기"
+        ]
       },
       "SHAD": {
         "name": "외부 차양",
@@ -641,7 +696,12 @@
         "capex_confidence": "C",
         "transferability": "no_korean_data",
         "source": "Enviroscreen/WSAA(냉방수요 최대 30%, 외부>내부 43~47%)",
-        "note": "한국 여름 냉방 피크 대응 유리. 미래기후(냉방↑)에서 회수 단축."
+        "note": "한국 여름 냉방 피크 대응 유리. 미래기후(냉방↑)에서 회수 단축.",
+        "aliases_ko": [
+          "블라인드",
+          "어닝",
+          "차양막"
+        ]
       }
     }
   }

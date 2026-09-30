@@ -1114,6 +1114,17 @@ def check_calendar_thresholds_tariff(schemas_dir: Path | None = None) -> list[st
     return v
 
 
+def check_declared_vocabularies(schemas_dir: Path | None = None) -> list[str]:
+    """0.3.72 — 선언 어휘 적재 검사: 한 별칭 = 한 열쇠 · 가리키는 열쇠는 정본에 있다. 규칙 = scripts/vocabulary_gate.py
+    (생성기 load_schemas 와 **같은 함수** — 두 벌을 두지 않는다). 검사 0건은 통과가 아니다."""
+    sys.path.insert(0, str(Path(__file__).resolve().parent))
+    import vocabulary_gate
+    bad, checks = vocabulary_gate.problems_in_dir(schemas_dir or SCHEMAS_DIR)
+    if not checks:
+        return ["선언 어휘 검사 0건 — 검사가 돌지 않았다(통과 아님)"]
+    return [f"선언 어휘: {b}" for b in bad]
+
+
 def check_mirror_core_keywords() -> list[str]:
     """20 BASE CORE_KEYWORDS 로컬 검증 가드 (Deferred D-3, 사냥꾼 LOW).
 
@@ -1584,6 +1595,7 @@ def main() -> int:
         v += check_replay_policy_source()          # 2026-09-28 G0 — 재생 정책 원천 해시
         v += check_admin_succession()              # 2026-09-28 G1 — 행정구역 승계표 모양
         v += check_calendar_thresholds_tariff()    # 2026-09-28 G1 2차 — 달력·문턱·계절 TOU·할인율
+        v += check_declared_vocabularies()         # 2026-09-30 0.3.72 — 선언 어휘 한 별칭 = 한 열쇠 · 가리키는 열쇠 존재
         v += check_mirror_core_keywords()          # Deferred D-3 — 20 BASE CORE_KEYWORDS 로컬 검증
         v += check_local_mirror_drift(scope)       # P3 (2026-06-17) — 커밋 repo CLAUDE.md REVERSE 키워드 로컬 가드
         if v:

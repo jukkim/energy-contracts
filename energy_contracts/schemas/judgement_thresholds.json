@@ -11,9 +11,9 @@
     "ems_transformer (G5)",
     "airos-energy-decision"
   ],
-  "version": "1.2",
+  "version": "1.3",
   "updated": "2026-09-30",
-  "$comment": "1.2(2026-09-30, 0.3.71 — GPT 상의 반영 · 가산): temperature_sensitivity 두 행에 basis_kind · basis 를 싣고(선언 가정 행과 같은 모양), min_observed_temperature_days 에 예비 추정 표시(preliminary_label_below_months 12 · preliminary_label_ko · must_report_ko), min_r2 에 label_ko '선별 기준(경험칙)' 을 더했다. 값(30 · 0.75)은 그대로. min_observed_temperature_days 의 뜻이 바뀐다: 30일 미만 = 추정하지 않음(1.1 은 참고용으로 실었다). · 1.1(2026-09-30, 0.3.70 — 가산): anomaly 에 월 선별 최소 달 수 · 정상 띠 이탈 몫 배수 · 지속 이탈 시간, comfort 에 PMV 띠 이탈 증가 한도, temperature_sensitivity(기온 민감도 회귀의 품질 관문) 추가. 1.0 의 값은 그대로.",
+  "$comment": "1.3(2026-09-30, 0.3.72 — 요청 C2 · 가산): anomaly.robust_z(수정 z 점수 3.5 · 이상 · 중앙값 절대편차 × 1.4826) — Iglewicz & Hoaglin(1993) 인용. residual_z(표준편차 z 3.0)와 다른 통계량이라 따로 둔다. 1.2 의 값은 그대로. · 1.2(2026-09-30, 0.3.71 — GPT 상의 반영 · 가산): temperature_sensitivity 두 행에 basis_kind · basis 를 싣고(선언 가정 행과 같은 모양), min_observed_temperature_days 에 예비 추정 표시(preliminary_label_below_months 12 · preliminary_label_ko · must_report_ko), min_r2 에 label_ko '선별 기준(경험칙)' 을 더했다. 값(30 · 0.75)은 그대로. min_observed_temperature_days 의 뜻이 바뀐다: 30일 미만 = 추정하지 않음(1.1 은 참고용으로 실었다). · 1.1(2026-09-30, 0.3.70 — 가산): anomaly 에 월 선별 최소 달 수 · 정상 띠 이탈 몫 배수 · 지속 이탈 시간, comfort 에 PMV 띠 이탈 증가 한도, temperature_sensitivity(기온 민감도 회귀의 품질 관문) 추가. 1.0 의 값은 그대로.",
   "type": "object",
   "default": {
     "anomaly": {
@@ -51,6 +51,18 @@
         "rule_ko": "이상 시작으로 보는 이어진 띠 이탈의 최소 시간 = 3시간(단발 튐과 가른다) · 고정값(멈춘 계기) 후보 = 같은 값이 3시간 이상 이어진 구간",
         "source": "게이트웨이 measured_store_analysis._STUCK_RUN_HOURS · _SUSTAINED_OUT_HOURS",
         "classification": "assumed"
+      },
+      "robust_z": {
+        "value": 3.5,
+        "comparison": "at_least",
+        "statistic": "modified_z_mad",
+        "mad_to_sigma": 1.4826,
+        "label_ko": "강건 z(수정 z 점수) 이탈 문턱",
+        "rule_ko": "평소 대비 이탈 = 같은 요일 유형·같은 시각의 중앙값 대비 수정 z 점수 |M| ≥ 3.5 — M = (값 − 중앙값) ÷ (중앙값 절대편차 × 1.4826). 표준편차 z(residual_z 3.0 · 초과)와 통계량이 달라 그 값을 빌리지 않는다",
+        "classification": "declared",
+        "basis_kind": "standard_citation",
+        "basis": "Iglewicz & Hoaglin (1993) How to Detect and Handle Outliers — 수정 z 점수(중앙값 절대편차 기반) |M| > 3.5 를 이상 후보로 권고. 비교 '이상(≥)' 은 옛 코드 DEVIATION_Z = 3.5 의 비교를 그대로 옮긴 것이다(인용은 초과 — 3.5 와 정확히 같은 값에서만 다르다). 1.4826 = 1 ÷ 0.6745(정규분포 환산 상수)",
+        "source": "게이트웨이 general_ops/measured_actions.robust_z()(옛 DEVIATION_Z · 요청 C2 · 감사 C2-11)"
       }
     },
     "saving": {

@@ -9,9 +9,9 @@
     "bems-console",
     "building-energy-3d"
   ],
-  "version": "1.2.0",
-  "updated": "2026-08-03",
-  "$comment": "설계 원칙: (1) EquipmentKind = 물리 설비 종류(실 드라이버 바인딩 축). edge 8종 ∪ console 세분(ahu/vav/pump/pv/meter) 을 한 개념=한 이름으로 통합, light→lighting 통일. (2) DeviceAction = edge value_spec._SPEC 의 물리 동작 verb 를 authoritative 로 채택(driver.apply_device_action 1:1). console OutputKind(setpoint/onoff/dim/door/notify/m_code/dr_dispatch)는 상위 채널 추상 = 별도 축; 그 중 설비 지향 subset(setpoint→set_temp, onoff→on/off, dim→dim)만 capability_matrix 로 검증. (3) value_specs 는 edge value_spec._SPEC 범위를 정확히 보존(무 behavior 변경). meter=read-only(동작 없음). (4) capability_matrix 분해: {on,off,stop,emergency_off,emergency_on} = 모든 제어가능(비 meter) 종류 공통 '보편 제어 프리미티브'(비상정지=범용 안전동작). value 를 갖는 동작만 종류별(set_temp=냉난방류, dim=lighting, set_speed=공기이송류, discharge=ess) — 이 축에서만 (kind,action) 거부(예: lighting 에 set_temp 금지).",
+  "version": "1.3.0",
+  "updated": "2026-09-30",
+  "$comment": "1.3.0(2026-09-30, 0.3.72 — 요청 C1·C2·C8 · 가산): aliases_ko(종류 → 한국어 이름 목록 — 채널·설비 이름 대조) · labels_ko(종류 → name_ko + aliases_ko — 질문의 설비 말 대조, aliases_ko[종류]를 모두 담는다) · dr_class(수요반응 부하 분류 — 선언 규칙). 한 별칭 = 한 종류 · 종류 열쇠는 capability_matrix 에 있어야 한다(적재 때 scripts/vocabulary_gate.py). 1.2.0 의 표는 그대로. · 설계 원칙: (1) EquipmentKind = 물리 설비 종류(실 드라이버 바인딩 축). edge 8종 ∪ console 세분(ahu/vav/pump/pv/meter) 을 한 개념=한 이름으로 통합, light→lighting 통일. (2) DeviceAction = edge value_spec._SPEC 의 물리 동작 verb 를 authoritative 로 채택(driver.apply_device_action 1:1). console OutputKind(setpoint/onoff/dim/door/notify/m_code/dr_dispatch)는 상위 채널 추상 = 별도 축; 그 중 설비 지향 subset(setpoint→set_temp, onoff→on/off, dim→dim)만 capability_matrix 로 검증. (3) value_specs 는 edge value_spec._SPEC 범위를 정확히 보존(무 behavior 변경). meter=read-only(동작 없음). (4) capability_matrix 분해: {on,off,stop,emergency_off,emergency_on} = 모든 제어가능(비 meter) 종류 공통 '보편 제어 프리미티브'(비상정지=범용 안전동작). value 를 갖는 동작만 종류별(set_temp=냉난방류, dim=lighting, set_speed=공기이송류, discharge=ess) — 이 축에서만 (kind,action) 거부(예: lighting 에 set_temp 금지).",
   "type": "object",
   "required": [
     "capability_matrix",
@@ -170,6 +170,15 @@
         "none"
       ],
       "description": "이 설비의 성과를 **시뮬로 대조할 수 있나**. full=설비 단위 시뮬 근거 있음 · meter_only=용도별 계량으로만(설비 단위 절감을 말하지 않는다) · **unreported=모델은 도는데 출력이 회수되지 않음** · none=시뮬 근거 없음.\n⚠ `unreported` 를 `none` 과 나눈 이유: 둘 다 '지금 못 쓴다' 지만 **해야 할 일이 완전히 다르다**. none(ESS)은 모델을 새로 만들어야 하고, unreported(PV)는 출력 미터 2줄을 추가해 재실행하면 된다. 같은 칸에 넣으면 저렴한 복구가 비싼 신규 개발 뒤에 줄을 선다.\n⚠ 캠페인마다 값이 다르므로 **캠페인별로** 적는다 — 하나의 스칼라로 뭉개면 한국 건물 화면에 미국 근거가 붙는다."
+    },
+    "DrClass": {
+      "type": "string",
+      "enum": [
+        "curtailable",
+        "limit",
+        "keep"
+      ],
+      "description": "수요반응 부하 분류 — curtailable=끌 수 있음 · limit=설정 완화로 제한 · keep=유지(감축하지 않음)"
     }
   },
   "properties": {
@@ -243,6 +252,102 @@
           }
         }
       }
+    },
+    "aliases_ko": {
+      "type": "object",
+      "propertyNames": {
+        "$ref": "#/$defs/EquipmentKind"
+      },
+      "additionalProperties": {
+        "type": "array",
+        "items": {
+          "type": "string",
+          "minLength": 1
+        },
+        "uniqueItems": true
+      },
+      "description": "설비 종류 → 한국어 이름 목록(채널 이름·설비 이름 대조). 한 이름은 한 종류에만 — 영문 종류 이름은 열쇠 자체다. 글자 안에서 찾을 때는 가장 긴 이름이 먼저다"
+    },
+    "labels_ko": {
+      "type": "object",
+      "propertyNames": {
+        "$ref": "#/$defs/EquipmentKind"
+      },
+      "additionalProperties": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "name_ko",
+          "aliases_ko"
+        ],
+        "properties": {
+          "name_ko": {
+            "type": "string",
+            "minLength": 1
+          },
+          "aliases_ko": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 1
+            },
+            "uniqueItems": true
+          }
+        }
+      },
+      "description": "설비 종류 → 사람 말 이름·별칭(질문의 설비 말 대조). aliases_ko 는 같은 종류의 aliases_ko 를 모두 담고 질문 말을 더한다(한 말 = 한 종류)"
+    },
+    "dr_class": {
+      "type": "object",
+      "required": [
+        "classes",
+        "by_kind"
+      ],
+      "properties": {
+        "classes": {
+          "type": "object",
+          "propertyNames": {
+            "$ref": "#/$defs/DrClass"
+          },
+          "additionalProperties": {
+            "type": "object"
+          }
+        },
+        "by_kind": {
+          "type": "object",
+          "propertyNames": {
+            "$ref": "#/$defs/EquipmentKind"
+          },
+          "additionalProperties": {
+            "$ref": "#/$defs/DrClass"
+          }
+        },
+        "by_end_use": {
+          "type": "object",
+          "additionalProperties": {
+            "$ref": "#/$defs/DrClass"
+          }
+        },
+        "label_ko": {
+          "type": "string"
+        },
+        "rule_ko": {
+          "type": "string"
+        },
+        "classification": {
+          "type": "string"
+        },
+        "basis_kind": {
+          "type": "string"
+        },
+        "basis": {
+          "type": "string"
+        },
+        "source": {
+          "type": "string"
+        }
+      },
+      "description": "수요반응 부하 분류(선언 규칙). by_kind 에 없는 종류 = 분류 선언 없음(유지로 가정하지 않는다)"
     }
   },
   "default": {
@@ -1244,6 +1349,238 @@
         "energy_source": "electricity",
         "end_use": "other"
       }
+    },
+    "aliases_ko": {
+      "hvac": [
+        "공조 보조",
+        "냉난방기",
+        "에어컨"
+      ],
+      "vrf": [
+        "EHP",
+        "GHP",
+        "시스템 에어컨",
+        "시스템에어컨"
+      ],
+      "ahu": [
+        "공조기",
+        "공조"
+      ],
+      "chiller": [
+        "냉동기",
+        "칠러",
+        "냉동"
+      ],
+      "boiler": [
+        "보일러"
+      ],
+      "fan": [
+        "송풍기",
+        "팬"
+      ],
+      "pump": [
+        "펌프"
+      ],
+      "lighting": [
+        "조명"
+      ],
+      "plug": [
+        "콘센트",
+        "전산실",
+        "주방",
+        "급식실",
+        "조리"
+      ],
+      "refrigeration": [
+        "냉장",
+        "쇼케이스"
+      ],
+      "dhw": [
+        "급탕"
+      ],
+      "cooling_tower": [
+        "냉각탑"
+      ],
+      "erv": [
+        "전열교환기"
+      ],
+      "other": [
+        "승강기",
+        "엘리베이터",
+        "에스컬레이터"
+      ]
+    },
+    "labels_ko": {
+      "hvac": {
+        "name_ko": "개별 냉난방기",
+        "aliases_ko": [
+          "공조 보조",
+          "냉난방기",
+          "에어컨",
+          "냉방"
+        ]
+      },
+      "ahu": {
+        "name_ko": "공기조화기",
+        "aliases_ko": [
+          "공조기",
+          "공조"
+        ]
+      },
+      "vav": {
+        "name_ko": "가변풍량 장치",
+        "aliases_ko": []
+      },
+      "chiller": {
+        "name_ko": "냉동기",
+        "aliases_ko": [
+          "냉동기",
+          "칠러",
+          "냉동"
+        ]
+      },
+      "boiler": {
+        "name_ko": "보일러",
+        "aliases_ko": [
+          "보일러"
+        ]
+      },
+      "fan": {
+        "name_ko": "송풍기",
+        "aliases_ko": [
+          "송풍기",
+          "팬"
+        ]
+      },
+      "pump": {
+        "name_ko": "펌프",
+        "aliases_ko": [
+          "펌프"
+        ]
+      },
+      "lighting": {
+        "name_ko": "조명",
+        "aliases_ko": [
+          "조명"
+        ]
+      },
+      "ess": {
+        "name_ko": "에너지저장장치",
+        "aliases_ko": []
+      },
+      "pv": {
+        "name_ko": "태양광",
+        "aliases_ko": []
+      },
+      "plug": {
+        "name_ko": "플러그 부하",
+        "aliases_ko": [
+          "콘센트",
+          "전산실",
+          "주방",
+          "급식실",
+          "조리"
+        ]
+      },
+      "meter": {
+        "name_ko": "계량기",
+        "aliases_ko": []
+      },
+      "other": {
+        "name_ko": "기타 설비",
+        "aliases_ko": [
+          "승강기",
+          "엘리베이터",
+          "에스컬레이터"
+        ]
+      },
+      "radiant": {
+        "name_ko": "복사 난방",
+        "aliases_ko": [
+          "온돌"
+        ]
+      },
+      "vrf": {
+        "name_ko": "VRF 실외기",
+        "aliases_ko": [
+          "EHP",
+          "GHP",
+          "시스템 에어컨",
+          "시스템에어컨"
+        ]
+      },
+      "district_heat": {
+        "name_ko": "지역난방",
+        "aliases_ko": []
+      },
+      "dhw": {
+        "name_ko": "급탕",
+        "aliases_ko": [
+          "급탕"
+        ]
+      },
+      "refrigeration": {
+        "name_ko": "냉장 설비",
+        "aliases_ko": [
+          "냉장",
+          "쇼케이스",
+          "냉동고"
+        ]
+      },
+      "cooling_tower": {
+        "name_ko": "냉각탑",
+        "aliases_ko": [
+          "냉각탑"
+        ]
+      },
+      "erv": {
+        "name_ko": "전열교환기",
+        "aliases_ko": [
+          "전열교환기"
+        ]
+      }
+    },
+    "dr_class": {
+      "classes": {
+        "curtailable": {
+          "label_ko": "끌 수 있음",
+          "share_ref": "declared_assumptions.switchable_cut_share_default"
+        },
+        "limit": {
+          "label_ko": "설정 완화로 제한",
+          "share_ref": "declared_assumptions.operational_peak_shave_share_default"
+        },
+        "keep": {
+          "label_ko": "유지(감축하지 않음)",
+          "share": 0
+        }
+      },
+      "by_kind": {
+        "lighting": "curtailable",
+        "chiller": "limit",
+        "vrf": "limit",
+        "hvac": "limit",
+        "cooling_tower": "limit",
+        "fan": "keep",
+        "ahu": "keep",
+        "vav": "keep",
+        "erv": "keep",
+        "pump": "keep",
+        "plug": "keep",
+        "refrigeration": "keep"
+      },
+      "by_end_use": {
+        "lights_kw": "curtailable",
+        "cooling_kw": "limit",
+        "fans_kw": "keep",
+        "equipment_kw": "keep"
+      },
+      "label_ko": "수요반응 부하 분류(선언 규칙 — 현장 확인 전)",
+      "rule_ko": "조명 = 끌 수 있음 · 냉방 설비(냉동기·VRF·개별 냉난방기·냉각탑) = 설정 완화로 제한 · 환기·이송(송풍기·공기조화기·가변풍량·전열교환기·펌프) = 최소 환기라 유지 · 플러그 부하·냉장 설비 = 유지. 분류별 몫 = classes 의 share_ref(끌 수 있음 = switchable_cut_share_default · 제한 = operational_peak_shave_share_default · 유지 0). by_kind 에 없는 종류(보일러·급탕·복사 난방·지역난방·저장·태양광·계량기·기타)는 분류 선언이 없다 — 유지로 가정하지 않고 이름 있는 부재로 둔다. 가상 전기차 충전 부하(설비 종류 아님)의 지연은 declared_assumptions.dr_three_stage 가 정한다",
+      "classification": "assumed",
+      "basis_kind": "moved_literal",
+      "basis": "게이트웨이 asset_inputs/simulation_pack_analysis.DR_CLASS_TABLE(용도별 — by_end_use 값 그대로)을 설비 종류로 옮긴 선언(요청 C2 · N6-4). 요청의 'plug 일부 끌 수 있음' 은 종류 단위로 적을 수 없어 DR_CLASS_TABLE(기기·콘센트 = 유지)을 따랐다 — 끌 수 있는 부분(가상 충전)은 dr_three_stage. 냉장 = 유지는 EC EquipmentKind 설명(식품안전 제약으로 DR 제외)과 같다. 외부 근거 없는 선언 시연 가정",
+      "source": "게이트웨이 asset_inputs/simulation_pack_analysis.DR_CLASS_TABLE · _dr_expected_by_class (요청 C2)"
     }
   }
 }

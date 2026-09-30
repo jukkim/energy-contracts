@@ -10,7 +10,7 @@
     "energy-decision-canvas (guarded mirror lib/labels.ts HVAC_LABEL — verify_mirror_sync.py)",
     "8.simulation (sim_campaign_2026 generate_climate_qa.py HVAC_KR 로드)"
   ],
-  "version": "2.4",
+  "version": "2.5",
   "type": "object",
   "properties": {
     "simulation_cities": {
@@ -61,6 +61,14 @@
           "climate_zone_source": {
             "type": "string",
             "description": "climate_zone 판정 근거(원문 조회일 포함)"
+          },
+          "coastal": {
+            "type": "boolean",
+            "description": "해안 도시인가 — 행정구역이 바다에 닿는가(지리 선언 분류). 해안·내륙 비교(습도 설명 등)가 읽는다(0.3.72 · 요청 C3 · 감사 C1-05)"
+          },
+          "coastal_basis": {
+            "type": "string",
+            "description": "coastal 판정 근거"
           }
         }
       }
@@ -140,7 +148,9 @@
           "서울",
           "Seoul",
           "서울특별시"
-        ]
+        ],
+        "coastal": false,
+        "coastal_basis": "행정구역이 바다에 닿지 않는다(지리 — EC 선언 분류 2026-09-30, 요청 C3 · 감사 C1-05)"
       },
       "C02": {
         "name_en": "Busan",
@@ -157,7 +167,9 @@
           "부산",
           "Busan",
           "부산광역시"
-        ]
+        ],
+        "coastal": true,
+        "coastal_basis": "행정구역이 바다에 닿는다(지리 — EC 선언 분류 2026-09-30, 요청 C3 · 감사 C1-05)"
       },
       "C03": {
         "name_en": "Daegu",
@@ -173,7 +185,9 @@
         "aliases": [
           "대구",
           "Daegu"
-        ]
+        ],
+        "coastal": false,
+        "coastal_basis": "행정구역이 바다에 닿지 않는다(지리 — EC 선언 분류 2026-09-30, 요청 C3 · 감사 C1-05)"
       },
       "C04": {
         "name_en": "Incheon",
@@ -190,7 +204,9 @@
           "인천",
           "Incheon",
           "인천광역시"
-        ]
+        ],
+        "coastal": true,
+        "coastal_basis": "행정구역이 바다에 닿는다(지리 — EC 선언 분류 2026-09-30, 요청 C3 · 감사 C1-05)"
       },
       "C05": {
         "name_en": "Gwangju",
@@ -207,7 +223,9 @@
           "광주",
           "Gwangju",
           "광주광역시"
-        ]
+        ],
+        "coastal": false,
+        "coastal_basis": "행정구역이 바다에 닿지 않는다(지리 — EC 선언 분류 2026-09-30, 요청 C3 · 감사 C1-05)"
       },
       "C06": {
         "name_en": "Daejeon",
@@ -224,7 +242,9 @@
           "대전",
           "Daejeon",
           "대전광역시"
-        ]
+        ],
+        "coastal": false,
+        "coastal_basis": "행정구역이 바다에 닿지 않는다(지리 — EC 선언 분류 2026-09-30, 요청 C3 · 감사 C1-05)"
       },
       "C07": {
         "name_en": "Ulsan",
@@ -241,7 +261,9 @@
           "울산",
           "Ulsan",
           "울산광역시"
-        ]
+        ],
+        "coastal": true,
+        "coastal_basis": "행정구역이 바다에 닿는다(지리 — EC 선언 분류 2026-09-30, 요청 C3 · 감사 C1-05)"
       },
       "C08": {
         "name_en": "Gangneung",
@@ -258,7 +280,9 @@
           "강릉",
           "Gangneung",
           "강릉시"
-        ]
+        ],
+        "coastal": true,
+        "coastal_basis": "행정구역이 바다에 닿는다(지리 — EC 선언 분류 2026-09-30, 요청 C3 · 감사 C1-05)"
       },
       "C09": {
         "name_en": "Jeju",
@@ -275,7 +299,9 @@
           "제주",
           "Jeju",
           "제주특별자치도"
-        ]
+        ],
+        "coastal": true,
+        "coastal_basis": "행정구역이 바다에 닿는다(지리 — EC 선언 분류 2026-09-30, 요청 C3 · 감사 C1-05)"
       },
       "C10": {
         "name_en": "Cheongju",
@@ -292,7 +318,9 @@
           "청주",
           "Cheongju",
           "청주시"
-        ]
+        ],
+        "coastal": false,
+        "coastal_basis": "행정구역이 바다에 닿지 않는다(지리 — EC 선언 분류 2026-09-30, 요청 C3 · 감사 C1-05)"
       },
       "C11": {
         "name_en": "Chuncheon",
@@ -309,7 +337,9 @@
           "춘천",
           "Chuncheon",
           "춘천시"
-        ]
+        ],
+        "coastal": false,
+        "coastal_basis": "행정구역이 바다에 닿지 않는다(지리 — EC 선언 분류 2026-09-30, 요청 C3 · 감사 C1-05)"
       },
       "C12": {
         "name_en": "Suwon",
@@ -325,7 +355,9 @@
           "수원",
           "Suwon",
           "수원시"
-        ]
+        ],
+        "coastal": false,
+        "coastal_basis": "행정구역이 바다에 닿지 않는다(지리 — EC 선언 분류 2026-09-30, 요청 C3 · 감사 C1-05)"
       },
       "C13": {
         "name_en": "Jeonju",
@@ -341,7 +373,9 @@
           "전주",
           "Jeonju",
           "전주시"
-        ]
+        ],
+        "coastal": false,
+        "coastal_basis": "행정구역이 바다에 닿지 않는다(지리 — EC 선언 분류 2026-09-30, 요청 C3 · 감사 C1-05)"
       },
       "C14": {
         "name_en": "Pohang",
@@ -357,7 +391,9 @@
           "포항",
           "Pohang",
           "포항시"
-        ]
+        ],
+        "coastal": true,
+        "coastal_basis": "행정구역이 바다에 닿는다(지리 — EC 선언 분류 2026-09-30, 요청 C3 · 감사 C1-05)"
       },
       "C15": {
         "name_en": "Changwon",
@@ -373,7 +409,9 @@
           "창원",
           "Changwon",
           "창원시"
-        ]
+        ],
+        "coastal": true,
+        "coastal_basis": "행정구역이 바다에 닿는다(지리 — EC 선언 분류 2026-09-30, 요청 C3 · 감사 C1-05)"
       },
       "C16": {
         "name_en": "Andong",
@@ -389,7 +427,9 @@
           "안동",
           "Andong",
           "안동시"
-        ]
+        ],
+        "coastal": false,
+        "coastal_basis": "행정구역이 바다에 닿지 않는다(지리 — EC 선언 분류 2026-09-30, 요청 C3 · 감사 C1-05)"
       },
       "C17": {
         "name_en": "Cheorwon",
@@ -405,7 +445,9 @@
           "철원",
           "Cheorwon",
           "철원군"
-        ]
+        ],
+        "coastal": false,
+        "coastal_basis": "행정구역이 바다에 닿지 않는다(지리 — EC 선언 분류 2026-09-30, 요청 C3 · 감사 C1-05)"
       },
       "C18": {
         "name_en": "Mokpo",
@@ -421,7 +463,9 @@
           "목포",
           "Mokpo",
           "목포시"
-        ]
+        ],
+        "coastal": true,
+        "coastal_basis": "행정구역이 바다에 닿는다(지리 — EC 선언 분류 2026-09-30, 요청 C3 · 감사 C1-05)"
       }
     },
     "hvac_types": {

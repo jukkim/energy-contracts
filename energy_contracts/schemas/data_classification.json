@@ -11,9 +11,9 @@
     "agentleague",
     "eduarena"
   ],
-  "version": "1.3",
-  "updated": "2026-09-28",
-  "$comment": "myjob/docs/MODES_AND_DATA_RESEARCH.md §2.3 산출물. | v1.1(2026-09-03): DataSource와 AbsenceKind 분리. | v1.2(2026-09-10): Query500에서 쓰던 estimated/mixed/forecast/reference를 DataSource에 넣지 않고 EvidenceDisplayClass라는 별도 표시 축으로 정본화. DataSource 9종은 불변. | v1.3(2026-09-28 경진대회 최종 라운드 ② 분류 어휘): DataSource 에 virtual(경진대회 가상 채움 — 전역 규칙 competition-virtual-data, 사람 대면 표시 '가상')을 정식 추가. EvidenceDisplayClass 에 virtual·unknown 추가. 결과 분류 낱말 어휘(ClassificationWord)와 합성 규칙(default.classification)을 정본화 — 게이트웨이에 퍼진 낱말(measured_with_imputed·virtual·declared·assumed…)을 한 표로 두고, 옛 낱말은 aliases 로 정본 낱말에 잇는다. 분류가 없으면 unknown(못 잼) — measured 로 올리지 않는다. 합성 코드 = energy_contracts/rules_pure.py ec_classification_*(생성본에 원문 그대로).",
+  "version": "1.4",
+  "updated": "2026-09-30",
+  "$comment": "myjob/docs/MODES_AND_DATA_RESEARCH.md §2.3 산출물. | v1.1(2026-09-03): DataSource와 AbsenceKind 분리. | v1.2(2026-09-10): Query500에서 쓰던 estimated/mixed/forecast/reference를 DataSource에 넣지 않고 EvidenceDisplayClass라는 별도 표시 축으로 정본화. DataSource 9종은 불변. | v1.3(2026-09-28 경진대회 최종 라운드 ② 분류 어휘): DataSource 에 virtual(경진대회 가상 채움 — 전역 규칙 competition-virtual-data, 사람 대면 표시 '가상')을 정식 추가. EvidenceDisplayClass 에 virtual·unknown 추가. 결과 분류 낱말 어휘(ClassificationWord)와 합성 규칙(default.classification)을 정본화 — 게이트웨이에 퍼진 낱말(measured_with_imputed·virtual·declared·assumed…)을 한 표로 두고, 옛 낱말은 aliases 로 정본 낱말에 잇는다. 분류가 없으면 unknown(못 잼) — measured 로 올리지 않는다. 합성 코드 = energy_contracts/rules_pure.py ec_classification_*(생성본에 원문 그대로). | v1.4(2026-09-30, 0.3.72 · 요청 C4): classification.words.estimated.aliases_ko = [근사, 범위] — 라벨 지시('근사' 라벨 · '범위·추정' 라벨)가 가리키는 분류의 사람 말 별칭(한 별칭 = 한 낱말 — scripts/vocabulary_gate.py). 낱말·라벨·합성 규칙은 그대로.",
   "$defs": {
     "DataSource": {
       "type": "string",
@@ -232,7 +232,7 @@
         "certified": {"source": "certified", "display_class": "reference", "label_ko": "공식 인증·등록 값", "virtual": false, "measured_basis": false},
         "simulated": {"source": "simulated", "display_class": "estimated", "label_ko": "시뮬레이션", "virtual": false, "measured_basis": false},
         "predicted": {"source": "predicted", "display_class": "forecast", "label_ko": "예측", "virtual": false, "measured_basis": false},
-        "estimated": {"source": null, "display_class": "estimated", "label_ko": "추정", "virtual": false, "measured_basis": false, "meaning": "모형·보간 추정(출처를 알면 simulated·predicted·imputed 를 쓴다)"},
+        "estimated": {"source": null, "display_class": "estimated", "label_ko": "추정", "virtual": false, "measured_basis": false, "meaning": "모형·보간 추정(출처를 알면 simulated·predicted·imputed 를 쓴다)", "aliases_ko": ["근사", "범위"]},
         "imputed": {"source": "imputed", "display_class": "estimated", "label_ko": "추정(채움)", "virtual": false, "measured_basis": false},
         "external": {"source": "external", "display_class": "reference", "label_ko": "외부 자료", "virtual": false, "measured_basis": false},
         "reference": {"source": null, "display_class": "reference", "label_ko": "참조", "virtual": false, "measured_basis": false, "meaning": "정본·공공 기준표(값이 아니라 기준)"},

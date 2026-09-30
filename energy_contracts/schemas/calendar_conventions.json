@@ -10,7 +10,7 @@
     "8sim-shared",
     "airos-energy-decision"
   ],
-  "version": "1.1",
+  "version": "1.2",
   "updated": "2026-09-30",
   "$defs": {
     "PeriodRole": {
@@ -128,8 +128,9 @@
         "note": "DR 이벤트 창(7~8월 평일 17~20시) — 값은 그 표"
       }
     },
-    "question_season_system": null,
-    "question_season_system_note": "질문의 '여름철'을 어느 체계로 풀지는 G4(기간 해석기, 3b)에서 정한다 — 정하기 전에는 되묻는다.",
+    "question_season_system": "meteorological",
+    "question_season_system_note": "질문의 계절 말(봄·여름·가을·겨울)은 meteorological 체계(봄 3~5 · 여름 6~8 · 가을 9~11 · 겨울 12~2)로 푼다 — 2026-09-30 EC 소유자 결정(요청 C5). 요금 계절로 묻는 질문은 요금 도구가 kepco_tariff 를 읽고, 보일러 분석의 기본 난방 달은 heating_season 이다(다른 뜻 — 다른 이름).",
+    "question_season_system_basis": "EC 소유자 결정(2026-09-30, 0.3.72 · 요청 C5 · 기간 해석기 G4): 계절 넷(봄·여름·가을·겨울)을 모두 가진 체계는 meteorological 뿐이다 — kepco_tariff 는 봄·가을이 spring_fall 한 칸이다. meteorological = 기상학적 계절 구분(봄 3~5 · 여름 6~8 · 가을 9~11 · 겨울 12~2 — 기상청 기후통계가 쓰는 계절 구분). 시뮬레이션 장면(simulation_scene_query)도 이미 이 체계를 읽는다. null 이던 동안 게이트웨이는 체계마다 달이 다른 계절(겨울·봄·가을)을 되물었다.",
     "week": {
       "start_weekday": "MON",
       "days": ["MON", "TUE", "WED", "THU", "FRI", "SAT", "SUN"],
