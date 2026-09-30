@@ -185,6 +185,8 @@ PROJECT_TARGETS: dict[str, dict] = {
                 "ARCHETYPE_TO_BUILDWISE", "USAGE_TO_BUILDWISE", "DEFAULT_BUILDWISE_TYPE", "USAGE_ARCHETYPE",
                 "HVAC_EMS_COMPAT", "CALENDAR_CONVENTIONS", "JUDGEMENT_THRESHOLDS",
                 "DISCOUNT_RATE_DEFAULT", "DISCOUNT_RATE_SOURCE",
+                # 2026-09-30 (0.3.70): 선언 가정 — 장면 저장 한도(serving_display_limits.scene_payload_max_bytes) · 자료 등급 투명도
+                "DECLARED_ASSUMPTIONS",
             ],
             "ts": [
                 "EMISSION_FACTORS_KR", "EMISSION_FACTORS", "PRIMARY_ENERGY_FACTORS",
@@ -201,6 +203,8 @@ PROJECT_TARGETS: dict[str, dict] = {
                 "HVAC_NAME_KR",
                 # 2026-09-28 최종 라운드(f7): 분류 라벨 한 곳 — Lab/be-3d evidence_panel 이 여기서 라벨을 만든다
                 "DATA_CLASSIFICATION_VOCAB", "EVIDENCE_DISPLAY_CLASSES",
+                # 2026-09-30 (0.3.70): 선언 가정 — 뷰어의 자료 등급 투명도(display_tier_alpha)가 손 리터럴 대신 여기서 읽는다
+                "DECLARED_ASSUMPTIONS",
             ],
         },
     },
@@ -226,6 +230,9 @@ PROJECT_TARGETS: dict[str, dict] = {
                 #  load_schema 원본 대신 생성본에서 · 분류 어휘 · 선언 가정(가상 연료 구성의 대표 설비는 AXIS_ARCHETYPES.representative_hvac)
                 "MARKET_PRICES", "DATA_CLASSIFICATION_VOCAB", "EVIDENCE_DISPLAY_CLASSES", "DECLARED_ASSUMPTIONS",
                 "AIR_ASSET_KINDS", "ELECTRICITY_PRICE_CLASSES",
+                # 2026-09-30 (0.3.70): 공인 시험 성적(토론 근거 body['certified'] 와 같은 표). 토론 역할 문턱·가정 범위는
+                #  DECLARED_ASSUMPTIONS 의 debate_* 행(위 — 이미 수출 중)에서 읽는다
+                "CERTIFIED_TESTS",
                 # 2026-09-28: 연료 사상(carbon.FUEL_ALIASES 사본 대체)
                 "FUEL_VOCABULARY",
             ],
@@ -279,6 +286,8 @@ PROJECT_TARGETS: dict[str, dict] = {
                 #  — 게이트웨이 serving/classification.py 가 여기서 읽는다(낱말표·라벨표 손 사본 금지)
                 "EVIDENCE_DISPLAY_CLASSES", "DATA_CLASSIFICATION_VOCAB", "DECLARED_ASSUMPTIONS",
                 "ELECTRICITY_PRICE_CLASSES", "FUEL_VOCABULARY",
+                # 2026-09-30 (0.3.70): 공인 시험 성적 — 게이트웨이 토론 근거(debate_evidence)가 성적서 값만 싣는다
+                "CERTIFIED_TESTS",
                 # 2026-09-28 O3·O5 — 시뮬 셀 축 · 시뮬 비용 트랙 단가(market_prices.sim_cost_track_2025)
                 "AXIS_SCENARIOS", "AXIS_SETPOINTS", "MARKET_PRICES", "BUILDING_USAGES",
             ],
@@ -392,9 +401,11 @@ def load_schemas() -> dict:
     cost_catalog = _load("measure_cost_catalog.json")
     # 선언 가정 상수(2026-09-28 N32) — 폭염·한파·노후·조치 적용 문턱·가상 ESS 효율·기본 용도 분해
     declared = _load("declared_assumptions.json")
+    # 공인 시험 성적 전달 표(2026-09-30, 0.3.70) — 성적서 값만(가상·추정으로 만들지 않는다). 정본 표 = 캠페인 CAMPAIGN_REFERENCE.
+    certified = _load("certified_tests.json")
     return {"archetypes": archetypes, "hvac_matrix": hvac_matrix, "target_vocab": target_vocab,
             "calendar": calendar, "thresholds": thresholds, "cost_catalog": cost_catalog,
-            "declared": declared,
+            "declared": declared, "certified": certified,
         "edge_cap": edge_cap, "household_consent": household_consent, "region": region, "kbs": kbs,
         "ems": ems, "ports": ports, "common": common,
             "agents": agents, "intents": intents,
@@ -1084,6 +1095,11 @@ def _generalization_python(schemas: dict) -> list[str]:
         out.append("# ─ 선언 가정 상수 (declared_assumptions.json — 폭염·한파·노후·적용 문턱·가상 ESS·기본 용도 분해) ─────")
         out.append(f"DECLARED_ASSUMPTIONS: dict = {decl!r}")
         out.append("")
+    cert = (schemas.get("certified") or {}).get("default")
+    if cert:
+        out.append("# ─ 공인 시험 성적 (certified_tests.json — 성적서 값만 · 자체 검증값에는 공인 라벨을 붙이지 않는다) ─────")
+        out.append(f"CERTIFIED_TESTS: dict = {cert!r}")
+        out.append("")
     method = ((schemas.get("cost_catalog") or {}).get("default") or {}).get("method") or {}
     if method.get("discount_rate_default") is not None:
         out.append("# ─ 할인율 (measure_cost_catalog.json#method — 결정 D3, 근거 포함) ───────────────")
@@ -1378,6 +1394,7 @@ def gen_typescript(schemas: dict) -> str:
     _ts_dump("logfmt",     "LOGGING_FORMAT")
     _ts_dump("sim_scn",    "SIM_EMS_PATTERNS",    ["ems_patterns"])
     _ts_dump("oapi_resp",  "OPENAPI_RESPONSES",   ["standard_responses"])
+    _ts_dump("declared",   "DECLARED_ASSUMPTIONS")   # 0.3.70 — 선언 가정(화면 상수 포함) 전체, py 와 같은 표
 
     # ─ Critics 도메인 중립 SSOT (2026-05-27 0.2.3 — frontend i18n / UI 매핑) ──
     # SSOT: energy_contracts/critics/* (Python). 프로세스 import 부담 없이 frontend

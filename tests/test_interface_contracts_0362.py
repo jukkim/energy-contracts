@@ -50,7 +50,10 @@ def test_versions_bumped_for_the_draft():
     # 지키고, 1.2 가산분은 RequestResolution 이 $defs 에 있는지로 본다(반대쪽). 나머지 세 판 고정은 바꾸지 않는다.
     assert "RequestResolution" in _load("interface_types.json")["$defs"]
     assert _load("interface_types.json")["version"] == "1.2"
-    assert _load("declared_assumptions.json")["version"] == "1.2"
+    # 근거(2026-09-30, 0.3.70): declared_assumptions 는 가산으로 1.2 → 1.3 (스키마 $comment 1.3 절 — 코드 리터럴로 있던 선언
+    # 기본값을 옮김). 1.2 의 가산분(단위 낱말 · 새 항목 5개)은 아래 test_declared_units_are_quantity_units_and_new_entries_exist 가
+    # 그대로 지키고, 1.2 행의 값이 바뀌지 않았는지는 test_declared_assumptions_0370.test_rows_of_1_2_keep_their_values 가 본다(반대쪽).
+    assert _load("declared_assumptions.json")["version"] == "1.3"
     for name in ("airo_request.json", "airo_result.json", "interface_types.json", "declared_assumptions.json"):
         Draft202012Validator.check_schema(_load(name))
 

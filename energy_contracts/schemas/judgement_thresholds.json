@@ -11,8 +11,9 @@
     "ems_transformer (G5)",
     "airos-energy-decision"
   ],
-  "version": "1.0",
-  "updated": "2026-09-28",
+  "version": "1.1",
+  "updated": "2026-09-30",
+  "$comment": "1.1(2026-09-30, 0.3.70 — 가산): anomaly 에 월 선별 최소 달 수 · 정상 띠 이탈 몫 배수 · 지속 이탈 시간, comfort 에 PMV 띠 이탈 증가 한도, temperature_sensitivity(기온 민감도 회귀의 품질 관문) 추가. 1.0 의 값은 그대로.",
   "type": "object",
   "default": {
     "anomaly": {
@@ -32,6 +33,24 @@
       "tukey_iqr_k": {
         "value": 1.5,
         "source": "게이트웨이 원단위 이상치(Tukey)"
+      },
+      "monthly_screening_min_months": {
+        "value": 6,
+        "rule_ko": "월 단위 이상 선별(계절 잔차 z, screening_z)은 달 값이 6개 이상일 때만 계산한다 — 모자라면 못 잼",
+        "source": "게이트웨이 measured_store_analysis.MONTH_ANOMALY_MIN_MONTHS",
+        "classification": "assumed"
+      },
+      "band_out_share_multiple": {
+        "value": 2.0,
+        "rule_ko": "정상 띠 이탈 = 띠 밖 시간 몫이 기대 몫의 2배를 넘을 때",
+        "source": "게이트웨이 measured_store_analysis._normal_band_changepoint(out_share > 2.0 * expected_share)",
+        "classification": "assumed"
+      },
+      "sustained_out_hours": {
+        "value": 3,
+        "rule_ko": "이상 시작으로 보는 이어진 띠 이탈의 최소 시간 = 3시간(단발 튐과 가른다) · 고정값(멈춘 계기) 후보 = 같은 값이 3시간 이상 이어진 구간",
+        "source": "게이트웨이 measured_store_analysis._STUCK_RUN_HOURS · _SUSTAINED_OUT_HOURS",
+        "classification": "assumed"
       }
     },
     "saving": {
@@ -76,6 +95,13 @@
       },
       "pmv_band": {
         "ref": "simulation_scenarios.json#default.pmv_thresholds"
+      },
+      "pmv_out_of_band_increase": {
+        "value": 0.10,
+        "unit_text": "share_points",
+        "rule_ko": "재실 시간 중 PMV 가 쾌적 띠(pmv_band) 밖인 시간 비율이 기준 운전보다 10%p 넘게 늘면 그 전략 갈래는 탈락(가정 규칙 · 현장 판정 아님)",
+        "source": "게이트웨이 asset_inputs/simulation_scene_query._three_branch_strategy(scene-critic-comfort-v1 max_increase_share_points)",
+        "classification": "assumed"
       }
     },
     "setpoint": {
@@ -110,6 +136,20 @@
       "rank_min_sample_buildings": {
         "value": 30,
         "source": "be-3d region_census.MIN_RANK_SAMPLE_BUILDINGS(ingestion 이관 135 와 같은 선)"
+      }
+    },
+    "temperature_sensitivity": {
+      "min_observed_temperature_days": {
+        "value": 30,
+        "rule_ko": "기온 민감도(외기 1℃당 기울기)는 기온·사용량이 함께 관측된 날이 30일 이상일 때만 값으로 낸다 — 모자라면 참고용(reference_only)",
+        "source": "선언 시연 가정(외부 근거 없음) — data_quality.rank_min_sample_buildings(30)와 같은 표본 선. REMAINING_GAP_BUILD_LIST N3-19",
+        "classification": "assumed"
+      },
+      "min_r2": {
+        "value": 0.75,
+        "rule_ko": "기온 민감도 회귀의 결정계수 R² 가 0.75 미만이면 참고용(reference_only)으로만 싣는다",
+        "source": "IPMVP 통계 길잡이의 경험칙(R² 0.75 이상이면 관계가 쓸 만하다) 인용 — 원문 조항 대조 전. REMAINING_GAP_BUILD_LIST N3-19",
+        "classification": "assumed"
       }
     }
   }

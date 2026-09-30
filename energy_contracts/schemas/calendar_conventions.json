@@ -10,8 +10,8 @@
     "8sim-shared",
     "airos-energy-decision"
   ],
-  "version": "1.0",
-  "updated": "2026-09-28",
+  "version": "1.1",
+  "updated": "2026-09-30",
   "$defs": {
     "PeriodRole": {
       "enum": [
@@ -130,6 +130,12 @@
     },
     "question_season_system": null,
     "question_season_system_note": "질문의 '여름철'을 어느 체계로 풀지는 G4(기간 해석기, 3b)에서 정한다 — 정하기 전에는 되묻는다.",
+    "week": {
+      "start_weekday": "MON",
+      "days": ["MON", "TUE", "WED", "THU", "FRI", "SAT", "SUN"],
+      "rule_ko": "주 = 월요일~일요일(ISO 8601 주 — 질문의 '이번 주·지난주'는 이 경계로 자른다)",
+      "source": "ISO 8601 주 정의(월요일 시작) — 게이트웨이 period_parser._relative_by_rule 의 코드 규칙을 옮김(1.1, 2026-09-30)"
+    },
     "quarters": {
       "Q1": [
         1,

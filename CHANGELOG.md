@@ -4,6 +4,24 @@
 
 ---
 
+## 0.3.70 (2026-09-30, 태그 v0.3.70) — 코드 리터럴로 있던 선언 기본값을 정본으로(가산)
+
+- `declared_assumptions` 1.2 → 1.3: 새 행 54개(1.2 의 16행·값은 그대로). 게이트웨이·AgentLeague·be-3d 에 손 리터럴로 있던 선언 기본값·문턱·화면 상한·가상 생성 규칙을 옮김 —
+  시나리오 단계(예산 몫·기준선 분위) · 수요반응 3단계 · 폭염 주 시나리오·기본 전략 · PMV 가정 입력 · 야간 셋백·예냉 · 시뮬 표본·일정 추론 문턱 · 가정 가전·가상 생성기 범위 ·
+  수명 로드맵·할인율 격자·투자 구간·예산 묶음·조치 묶음 · 장면 연출 기본값·화면 상한·부분 전달·다시 계획 한도·구성원 상한 · 토론 역할 문턱·가정 범위·기본 관점.
+  새 행은 `id · value · unit(QuantityUnit) 또는 unit_text · label_ko · rule_ko · classification · basis_kind · basis · source` 를 싣는다.
+  `basis_kind` = moved_literal · declared_demo_assumption(외부 근거 없는 선언 시연 가정) · standard_citation · derived_from_ec(새 수 없음).
+- 이미 정본에 있는 값에는 새 행을 만들지 않았다(코드가 기존 행을 읽는다): 순위 기본 개수(10) · 이상 z(3.0·2.0) · 상위 비율(25%) · 빠른 회수(3년) · 폭염 달 창.
+  코드 리터럴이 정본과 달랐던 곳(순위 5·20 · 강건 z 3.5 · 가상 정책 대상 20% · PMV 대사량 1.1)은 정본 값이 이긴다.
+- `hazard_days.heat.baseline_months` [6, 8] 추가(폭염 기준 창).
+- `judgement_thresholds` 1.0 → 1.1: `anomaly.monthly_screening_min_months`(6) · `band_out_share_multiple`(2.0) · `sustained_out_hours`(3) ·
+  `comfort.pmv_out_of_band_increase`(0.10) · `temperature_sensitivity.min_observed_temperature_days`(30)·`min_r2`(0.75).
+- `calendar_conventions` 1.0 → 1.1: `week`(월요일 시작, ISO 8601).
+- `error_response` 1.1 → 1.2: 코드 `PAYLOAD_TOO_LARGE`(413, validation).
+- `certified_tests` 1.0 신설: KOLAS 26-10050 성적서 값만(부하예측 CVRMSE 12.91%·12.55% · 자연어 진단 · EMS 식별). 자체 검증값 12.93% 는 수 칸에 없다. 생성 상수 `CERTIFIED_TESTS`.
+- 생성기: `CERTIFIED_TESTS` 방출(8sim-shared·agentleague) · be-3d 생성본(py·ts)에 `DECLARED_ASSUMPTIONS` 추가. 표는 통째로 파생된다(목록을 손으로 적지 않는다).
+- 시험 `tests/test_declared_assumptions_0370.py`: 검사 10 — 행 모양(54행)·반례 7 · 1.2 행 값 불변 · 가리키는 정본 값과 일치 24 · 중복 행 없음 · 생성본 도달 13.
+
 ## 0.3.69 (2026-09-30, 태그 v0.3.69) — 요금제 선택 기준 · 연도별 평균판매단가
 
 - `market_prices.retail_reference_2026.tariff_class_selection`: 계약전력 300kW 이상 → 일반용(을) 고압 요금(`electricity_tou_general_b_2026`), 미만 → 일반용(갑). 한전 기본공급약관(MCP-023).

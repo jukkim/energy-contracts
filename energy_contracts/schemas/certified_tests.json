@@ -1,0 +1,54 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "energy-contracts/certified_tests.json",
+  "title": "Certified Tests",
+  "description": "공인 시험 성적의 정본 전달 표(2026-09-30, 0.3.70). 공인 성적서에 적힌 값만 싣는다 — 가상·추정으로 만들지 않는다(가짜 공인 금지). 값의 원천 = 캠페인 docs/CAMPAIGN_REFERENCE.md 의 정본 표. 그 표에 없는 값은 null 과 사유(note)로 둔다. 자체 검증값(성적서에 없는 값)에는 공인 라벨을 붙이지 않는다.",
+  "_usage": "codegen",
+  "_consumers": [
+    "8sim-shared",
+    "agentleague",
+    "ems_transformer (serving/debate_evidence family_scope_body — body['certified'])"
+  ],
+  "version": "1.0",
+  "updated": "2026-09-30",
+  "type": "object",
+  "default": {
+    "load_forecast": {
+      "certificate": "KOLAS 26-10050",
+      "module_ko": "부하예측 모듈(Korean_BB)",
+      "metric": "CVRMSE",
+      "cvrmse_public_pct": 12.91,
+      "public_scope": "공개 실측 955동(BDG-2 611 + Electricity 344)",
+      "cvrmse_korea_pct": 12.55,
+      "korea_scope": "한국 편의점 실측 200동",
+      "criterion_pct_max": 13.27,
+      "scope_note": "공인 값은 두 집단의 CVRMSE 뿐이다(기준 13.27% 이하 양쪽 통과). 12.93% 는 Korean_BB 자체 검증값으로 성적서에 없다 — 공인 라벨을 붙이지 않는다. 개별 건물의 예측 정확도를 보증하지 않는다",
+      "classification": "certified",
+      "source": "캠페인 docs/CAMPAIGN_REFERENCE.md §1 '모델 성능 (KOLAS 26-10050 공인 포함)' 표 · §5 'KOLAS 26-10050 국제공인' (2026-09-30 옮김 — 성적서 원문과의 대조는 그 문서가 정본)"
+    },
+    "nl_diagnosis": {
+      "certificate": "KOLAS 26-10050",
+      "module_ko": "자연어 진단 모듈",
+      "metric": "필수항목 포함률 · 문자 BLEU",
+      "required_item_coverage": 0.84,
+      "required_item_coverage_min": 0.8,
+      "char_bleu": 0.22,
+      "char_bleu_min": 0.15,
+      "scope_note": "성적서의 두 지표와 기준. 시험 집단 규모는 정본 표에 없다 — null",
+      "sample_scope": null,
+      "classification": "certified",
+      "source": "캠페인 docs/CAMPAIGN_REFERENCE.md §5 'KOLAS 26-10050 국제공인' ②"
+    },
+    "ems_identification": {
+      "certificate": "KOLAS 26-10050",
+      "module_ko": "EMS 식별 모듈(reverse)",
+      "metric": "Macro-F1(active bits)",
+      "macro_f1": 0.85,
+      "macro_f1_min": 0.8,
+      "sample_scope": "M00~M08 9-bit · 시뮬 파생 held-out 2,989건",
+      "scope_note": "시뮬레이션 파생 시험 집단의 값이다 — 실측 정답 기반이 아니다('실측 GT 기반' 표현 금지)",
+      "classification": "certified",
+      "source": "캠페인 docs/CAMPAIGN_REFERENCE.md §1 모델 성능 표 · §5 ③ · §7 정직성 필수 고지"
+    }
+  }
+}

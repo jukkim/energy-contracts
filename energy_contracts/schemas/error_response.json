@@ -11,9 +11,9 @@
     "agentleague",
     "eduarena"
   ],
-  "version": "1.1",
-  "updated": "2026-09-29",
-  "$comment": "RFC 7807: https://www.rfc-editor.org/rfc/rfc7807 · 1.1(2026-09-29 M3): 거절 봉투 Refusal 신설 + Problem 에 같은 칸(kind·field·expected·got·message_ko·next_ko·retry·legacy_code)을 선택 칸으로 추가 — 가산, 1.0 에서 유효한 Problem 은 그대로 유효하다.",
+  "version": "1.2",
+  "updated": "2026-09-30",
+  "$comment": "RFC 7807: https://www.rfc-editor.org/rfc/rfc7807 · 1.2(2026-09-30): 코드 PAYLOAD_TOO_LARGE(413, validation) 추가 — be-3d 장면 저장이 한도(declared_assumptions.serving_display_limits.scene_payload_max_bytes)를 넘는 본문을 이름 없이 413 으로 거절하던 자리 · 1.1(2026-09-29 M3): 거절 봉투 Refusal 신설 + Problem 에 같은 칸(kind·field·expected·got·message_ko·next_ko·retry·legacy_code)을 선택 칸으로 추가 — 가산, 1.0 에서 유효한 Problem 은 그대로 유효하다.",
   "$defs": {
     "Problem": {
       "type": "object",
@@ -244,6 +244,11 @@
         "status": 403,
         "title": "Demo mode — read-only fixture",
         "category": "auth"
+      },
+      "PAYLOAD_TOO_LARGE": {
+        "status": 413,
+        "title": "Payload too large",
+        "category": "validation"
       }
     }
   }
