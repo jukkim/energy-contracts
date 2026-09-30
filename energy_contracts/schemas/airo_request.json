@@ -11,9 +11,9 @@
     "energy-decision-studio",
     "building-energy-3d"
   ],
-  "version": "2.5",
+  "version": "2.6",
   "updated": "2026-10-01",
-  "$comment": "2.5(2026-10-01, 0.3.73 · 캠페인 docs/CAPABILITY_FIRST_QUERY_DESIGN_2026-09-30.md 결정 14): 봉투 최상위 interpretation{frame_id, from_request_id} — 사용자가 답의 '고를 질문'(validation.suggested_questions[]) 가운데 하나를 눌러 고른 정형 질문. 선택 칸이고 가산이다 — 2.4 에서 유효한 봉투는 2.5 에서도 유효하다(칸이 없으면 게이트웨이 요청 바이트가 달라지지 않는다). 2.4(2026-09-29 RV-B1 초안, 0.3.62):응답 칸이 실제로 싣는 모양을 선언 — TargetContext 에 contract·chain_steps·final_target_source·choices 와 '대상 없음' 모양(resolved=false → kind·source null, ids 빈 목록) · Period 에 source·basis_ko·why·generator·contract 와 basis += forecast_relative_to_today · 원형 미지정(ids=[archetype:all]) 대상은 archetype 객체 없이 허용 · TargetExpansion.rule_id 예시를 게이트웨이 전개 규칙 이름으로 · 봉투 최상위 tool_input_mode(v1 같은 칸 그대로 — v1 입구를 닫기 전 준비) · 봉투 최상위 as_of(요청의 기준 시각) · Continuation 은 requested_tool 또는 prior_request_id 중 하나(되묻기 답의 둘째 턴은 도구가 아직 없다). 모두 가산 — 2.3 에서 유효한 봉투·문맥은 2.4 에서도 유효하다. 2.3(2026-09-29 M3, f7 합의): ① target 생략 허용(게이트웨이 질문 틀이 정한다) ② continuation(되묻기 답·계획 실행의 이어가기) ③ intent 'plan'(쓰기 = 계획 경로) ④ intent 'debate'(AgentLeague) · Target/TargetContext 에 asset_kind·members·expansion(서버가 채움) · Period.basis += coverage_of_needs. 모두 가산 — 2.2 에서 유효한 봉투는 2.3 에서도 유효하다.",
+  "$comment": "2.6(2026-10-01, 0.3.75 · 화면 세션 요청 — 캠페인 scratch/capability_first/requests_round3.md 주 세션 메모 06:25): surface enum 에 canvas(energy-decision-canvas :3030 — 6단계 흐름도를 v2 질의 한 번으로 채운다)를 더하고 surface 에 설명을 단다. 가산이다 — 2.5 에서 유효한 봉투는 2.6 에서도 유효하고, 목록 밖의 표면 이름은 여전히 거절한다. canvas 가 따르는 규칙(Studio 와 같은 선언 공무원 표면)은 스키마가 아니라 게이트웨이 한 곳이 정한다. 2.5(2026-10-01, 0.3.73 ·캠페인 docs/CAPABILITY_FIRST_QUERY_DESIGN_2026-09-30.md 결정 14): 봉투 최상위 interpretation{frame_id, from_request_id} — 사용자가 답의 '고를 질문'(validation.suggested_questions[]) 가운데 하나를 눌러 고른 정형 질문. 선택 칸이고 가산이다 — 2.4 에서 유효한 봉투는 2.5 에서도 유효하다(칸이 없으면 게이트웨이 요청 바이트가 달라지지 않는다). 2.4(2026-09-29 RV-B1 초안, 0.3.62):응답 칸이 실제로 싣는 모양을 선언 — TargetContext 에 contract·chain_steps·final_target_source·choices 와 '대상 없음' 모양(resolved=false → kind·source null, ids 빈 목록) · Period 에 source·basis_ko·why·generator·contract 와 basis += forecast_relative_to_today · 원형 미지정(ids=[archetype:all]) 대상은 archetype 객체 없이 허용 · TargetExpansion.rule_id 예시를 게이트웨이 전개 규칙 이름으로 · 봉투 최상위 tool_input_mode(v1 같은 칸 그대로 — v1 입구를 닫기 전 준비) · 봉투 최상위 as_of(요청의 기준 시각) · Continuation 은 requested_tool 또는 prior_request_id 중 하나(되묻기 답의 둘째 턴은 도구가 아직 없다). 모두 가산 — 2.3 에서 유효한 봉투·문맥은 2.4 에서도 유효하다. 2.3(2026-09-29 M3, f7 합의): ① target 생략 허용(게이트웨이 질문 틀이 정한다) ② continuation(되묻기 답·계획 실행의 이어가기) ③ intent 'plan'(쓰기 = 계획 경로) ④ intent 'debate'(AgentLeague) · Target/TargetContext 에 asset_kind·members·expansion(서버가 채움) · Period.basis += coverage_of_needs. 모두 가산 — 2.2 에서 유효한 봉투는 2.3 에서도 유효하다.",
   "type": "object",
   "additionalProperties": false,
   "required": [
@@ -99,8 +99,10 @@
         "studio",
         "lab",
         "airos",
-        "agentleague"
-      ]
+        "agentleague",
+        "canvas"
+      ],
+      "description": "봉투를 보낸 표면(응용) 이름 — 답·기록에 이 이름 그대로 남는다. 2.6: canvas = energy-decision-canvas(6단계 흐름도). 표면마다 어떤 규칙(질의자·화면·도구)을 따르는지는 게이트웨이가 정한다(canvas 는 Studio 와 같은 선언 공무원 표면 — 게이트웨이 규칙 한 곳). 이 목록 밖의 이름은 거절한다."
     },
     "intent": {
       "type": "string",

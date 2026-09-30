@@ -4,6 +4,20 @@
 
 ---
 
+## 0.3.75 (2026-10-01, 태그 v0.3.75) — 요청 봉투 표면 이름 canvas(airo_request 2.6 · 가산)
+
+요청 = 화면 세션(캠페인 `scratch/capability_first/requests_round3.md` 주 세션 메모 06:25 — energy-decision-canvas :3030 이 6단계 흐름도를 v2 질의 한 번으로
+채운다). 캔버스는 이미 `surface: "canvas"` 를 보내고, 2.5 봉투는 목록 밖 이름이라 422 로 거절했다.
+
+- `airo_request` 2.5 → 2.6: `properties.surface.enum` 뒤에 `canvas` 하나를 붙이고 `surface` 에 설명을 단다. 앞 다섯 이름·순서는 그대로 —
+  2.5 에서 유효한 봉투는 2.6 에서도 유효하고, 목록 밖 이름(`Canvas` · `canvas ` · 앱 폴더 이름 · 빈 글 …)은 여전히 거절한다.
+  canvas 가 따르는 규칙(Studio 와 같은 선언 공무원 표면 — 질의자·화면·도구·신원)은 스키마가 아니라 게이트웨이 한 곳이 정한다.
+- 생성 상수 그대로(runtime-validate 스키마: `gen_constants --all` 12 소비처 SAME · `--check` drift 0) · pydantic 모델 `airo_request.py` 재생성
+  (`Surface.canvas` · surface 설명).
+- 시험: 새 `test_airo_request_surface_canvas_0375`(받아야 할 canvas 봉투 5 · 2.5 봉투 7 · 막아야 할 봉투 14 · v0.3.74 태그와 잎 전부 대조 ·
+  생성 모델의 표면 목록 = 스키마 목록) · `test_interface_contracts_0362` 의 봉투 판 고정 2.5 → 2.6(근거 주석).
+- 소비처 뒤처리: 게이트웨이 봉투 판 고정 시험(`tests/test_m3g_envelope_v23.py`)은 2.6 으로 — 게이트웨이 묶음 끝에 함께.
+
 ## 0.3.74 (2026-10-01, 태그 v0.3.74) — 게이트웨이 3회전 묶음이 기다리는 행(요청 E4-1 · E5-1~3 · E6-1~3 · R3F-1~3 · WP2 §4 · 가산)
 
 요청 = 캠페인 `scratch/capability_first/EC_ROWS_NEEDED_round3.md` · `requests_round1.md` WP2 §4(설계 `docs/CAPABILITY_FIRST_QUERY_DESIGN_2026-09-30.md`).
