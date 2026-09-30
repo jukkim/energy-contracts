@@ -4,6 +4,24 @@
 
 ---
 
+## 0.3.71 (2026-09-30, 태그 v0.3.71) — 근거 없이 정한 여섯 값·인용 셋을 GPT 와 상의해 고침(가산)
+
+사용자 지시(2026-09-30 19:24 "지피티와 상의해서 정해") · 상의 기록 = 캠페인 `review_exchange/rounds/R079_gpt.md`(Azure gpt-5.6-sol, 인용은 웹 대조).
+0.3.70 의 키와 value 는 하나도 바꾸지 않았다 — 새 칸은 전부 **행 수준**(value 의 형제). 여섯 값은 표준값이 아니다: `basis_kind` 는 `declared_demo_assumption` 그대로, basis 에 'GPT 상의(2026-09-30)'.
+
+- `declared_assumptions` 1.3 → 1.4:
+  - `short_cycling`: `interpretation: screening_only` — 하루 6회 초과는 '단주기 기동' 판정이 아니라 확인할 채널을 고르는 선별 조건(시간 자료로는 분 단위 현상을 판정할 수 없다 · 제조사 최소 운전·정지 시간/허용 기동 횟수와 분 단위 상태 자료를 요청).
+  - `comm_status_thresholds`: `by_delivery`(hourly_realtime 2·24시간 · daily_batch 24·72시간) · `unknown_delivery_profile: daily_batch`. 옛 value(24·72) = 일 배치 기준.
+  - `life_roadmap`: `sensitivity_life_used_shares [0.25, 0.75]` · `remaining_life_status_when_unknown: unknown_assumed_scenarios` — 연식이 없으면 잔여수명은 미상, 세 시나리오를 나란히.
+  - `investment_tiers`: `classification_basis: measure_cost_catalog.work_scope` · `numeric_thresholds_role: fallback_only` · `label_ko_by_work_scope` — 구간은 공사 범위로, ㎡당 문턱은 조치 목록에 없는 조치에만.
+  - `precool_delta_c`: 이름 '하향 시험 폭(최대)' · `conditions_ko` 4개(조기 기동 먼저 · 재실 전 복귀 · 습도·결로·최대수요 · 효과 확인된 건물만).
+  - `pmv_inputs` · `debate_stated_term_ranges`(상가건물 임대차보호법 제9조 제1항 임차인 예외 · 제10조 제2항 · 국가재정법 제2조): 인용 문구 정정, '원문 대조 전' 삭제.
+- `judgement_thresholds` 1.1 → 1.2: `temperature_sensitivity.min_observed_temperature_days` 에 `preliminary_label_below_months 12` · `preliminary_label_ko` · `must_report_ko`(기온 범위 · 유효 일수) — 30일 미만은 추정하지 않는다(1.1 은 참고용으로 실었다).
+  `min_r2` 는 '선별 기준(경험칙)' — IPMVP 경험칙이지 합격 기준 아님, ASHRAE Guideline 14 NMBE·CV(RMSE) 와 별개. 두 행에 `basis_kind`·`basis`.
+- `measure_cost_catalog` 1.2 → 1.3: `$defs.WorkScope`(operational · minor_repair · major_project) · 조치마다 `work_scope`(필수 — 빠지면 스키마 검증 실패). 선언 분류:
+  운영 = RCX·BEMS · 소규모 보수 = LED·VSD·SEAL · 대공사 = CHIL·COND·HP·ERV·INS·WIN·SHAD. 생성 모델 `_pydantic_models/measure_cost_catalog.py` 재생성.
+- 시험 `tests/test_declared_assumptions_0370.py` 0.3.71 절: 0.3.70 태그 파일과 키·값 가산 대조(문구 제외 잎 전부) · 고정값 · 근거 표기 · 새 칸 15 · 조치 전부 work_scope(빠지면 스키마·모델 둘 다 거절 — 조치마다) · 정의 일치. 반례 양쪽.
+
 ## 0.3.70 (2026-09-30, 태그 v0.3.70) — 코드 리터럴로 있던 선언 기본값을 정본으로(가산)
 
 - `declared_assumptions` 1.2 → 1.3: 새 행 54개(1.2 의 16행·값은 그대로). 게이트웨이·AgentLeague·be-3d 에 손 리터럴로 있던 선언 기본값·문턱·화면 상한·가상 생성 규칙을 옮김 —

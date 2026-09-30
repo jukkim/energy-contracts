@@ -11,9 +11,9 @@
     "ems_transformer (G5)",
     "airos-energy-decision"
   ],
-  "version": "1.1",
+  "version": "1.2",
   "updated": "2026-09-30",
-  "$comment": "1.1(2026-09-30, 0.3.70 — 가산): anomaly 에 월 선별 최소 달 수 · 정상 띠 이탈 몫 배수 · 지속 이탈 시간, comfort 에 PMV 띠 이탈 증가 한도, temperature_sensitivity(기온 민감도 회귀의 품질 관문) 추가. 1.0 의 값은 그대로.",
+  "$comment": "1.2(2026-09-30, 0.3.71 — GPT 상의 반영 · 가산): temperature_sensitivity 두 행에 basis_kind · basis 를 싣고(선언 가정 행과 같은 모양), min_observed_temperature_days 에 예비 추정 표시(preliminary_label_below_months 12 · preliminary_label_ko · must_report_ko), min_r2 에 label_ko '선별 기준(경험칙)' 을 더했다. 값(30 · 0.75)은 그대로. min_observed_temperature_days 의 뜻이 바뀐다: 30일 미만 = 추정하지 않음(1.1 은 참고용으로 실었다). · 1.1(2026-09-30, 0.3.70 — 가산): anomaly 에 월 선별 최소 달 수 · 정상 띠 이탈 몫 배수 · 지속 이탈 시간, comfort 에 PMV 띠 이탈 증가 한도, temperature_sensitivity(기온 민감도 회귀의 품질 관문) 추가. 1.0 의 값은 그대로.",
   "type": "object",
   "default": {
     "anomaly": {
@@ -141,14 +141,26 @@
     "temperature_sensitivity": {
       "min_observed_temperature_days": {
         "value": 30,
-        "rule_ko": "기온 민감도(외기 1℃당 기울기)는 기온·사용량이 함께 관측된 날이 30일 이상일 때만 값으로 낸다 — 모자라면 참고용(reference_only)",
-        "source": "선언 시연 가정(외부 근거 없음) — data_quality.rank_min_sample_buildings(30)와 같은 표본 선. REMAINING_GAP_BUILD_LIST N3-19",
+        "preliminary_label_below_months": 12,
+        "preliminary_label_ko": "예비 추정",
+        "must_report_ko": [
+          "관측한 기온 범위(최저~최고 ℃)",
+          "유효 일수(기온·사용량이 함께 관측된 날)"
+        ],
+        "label_ko": "기온 민감도 예비 추정의 최소 관측 일수",
+        "rule_ko": "30일은 예비 추정의 최소 관측 일수다(기온·사용량이 함께 관측된 날) · 관측이 12개월(또는 온전한 냉방·난방 한 철) 미만이면 결과에 '예비 추정'이라고 표시한다 · 결과에 관측한 기온 범위(최저~최고)와 유효 일수를 함께 적는다(범위 문턱은 두지 않는다 — 새 수를 짓지 않는다) · 30일 미만이면 추정하지 않는다",
+        "basis_kind": "declared_demo_assumption",
+        "basis": "선언 시연 가정 — GPT 상의(2026-09-30): ASHRAE Guideline 14·FEMP 는 기준 기간이 운전·기후 범위를 대표해야 한다고 하고 연간 정상화에는 통상 12개월을 쓴다; '30일' 은 표준값이 아니라 선언 가정이다(data_quality.rank_min_sample_buildings(30)와 같은 표본 선)",
+        "source": "REMAINING_GAP_BUILD_LIST N3-19(게이트웨이 measured_portfolio 기온 민감도 품질 관문) — 근거는 basis",
         "classification": "assumed"
       },
       "min_r2": {
         "value": 0.75,
-        "rule_ko": "기온 민감도 회귀의 결정계수 R² 가 0.75 미만이면 참고용(reference_only)으로만 싣는다",
-        "source": "IPMVP 통계 길잡이의 경험칙(R² 0.75 이상이면 관계가 쓸 만하다) 인용 — 원문 조항 대조 전. REMAINING_GAP_BUILD_LIST N3-19",
+        "label_ko": "기온 민감도 회귀 적합도 선별 기준(경험칙)",
+        "rule_ko": "기온 민감도 회귀의 결정계수 R² 가 0.75 미만이면 참고용(reference_only)으로만 싣는다 — 선별 기준(경험칙)이지 합격 기준이 아니다. 편향·오차(NMBE·CV(RMSE))를 대신하지 않는다",
+        "basis_kind": "standard_citation",
+        "basis": "IPMVP(EVO) 통계·불확도 설명이 소개하는 경험칙 — 'R² 에 보편적인 최소 기준은 없으나 0.75 이상이 양호한 관계의 합리적 지표로 흔히 간주된다'(필수 합격 기준 아님 · 판본별 위치 상이). 편향·오차 기준은 별개다: ASHRAE Guideline 14 월별 |NMBE|≤5%·CV(RMSE)≤15% / 시간별 |NMBE|≤10%·CV(RMSE)≤30%. R² 는 그것들을 대신하지 않는다 — 웹 대조 2026-09-30",
+        "source": "REMAINING_GAP_BUILD_LIST N3-19(게이트웨이 measured_portfolio 기온 민감도 품질 관문) — 근거는 basis",
         "classification": "assumed"
       }
     }

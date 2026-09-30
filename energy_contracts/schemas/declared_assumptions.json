@@ -11,9 +11,9 @@
     "airos-energy-decision",
     "ems_transformer (serving general_ops/cohort · internal_query_tools · asset_inputs/_virtual · measure_economics · simulation_pack_analysis)"
   ],
-  "version": "1.3",
+  "version": "1.4",
   "updated": "2026-09-30",
-  "$comment": "1.3(2026-09-30, 0.3.70 — 일반화 감사 hard-coded-default 47건 · 남은 목록 N4-0): 게이트웨이·AgentLeague·be-3d 코드 리터럴로 있던 선언 기본값·문턱·화면 상한·가상 생성 규칙을 옮김(가산 — 1.2 의 행과 값은 그대로). 새 행은 전부 id · value · unit(QuantityUnit 낱말) 또는 unit_text · label_ko · rule_ko · classification · basis_kind · basis · source 를 싣는다. basis_kind: moved_literal(코드 값 그대로) · declared_demo_assumption(외부 근거 없는 선언 시연 가정) · standard_citation(표준·법령 인용) · derived_from_ec(이미 있는 정본 값에서 파생 — 새 수 없음). 이미 정본에 있는 값(순위 기본 개수 · 이상 z · 상위 비율 · 빠른 회수 · 폭염 달 창)은 새 행을 만들지 않았다 — 코드가 그 행을 읽는다. hazard_days.heat 에 baseline_months 추가. · 1.2(2026-09-29 RV-B3 초안, 0.3.62): 단위를 interface_types.QuantityUnit 낱말로(top_share '%'→pct · 햇수 yr) · 게이트웨이 모듈 상수로 남아 있던 선언 기본값을 옮김 — scenario_defaults(공실률·시나리오 공실률·끌 수 있는 부하 절감 몫·우선순위) · _assumption_ranges(가정 탐색 범위 5개) · measured_portfolio(순위 행 기본 개수). 값은 옮기기만 했다(동작 변경 없음). 모든 항목의 분류 = assumed(선언 가정) — 사람 대면 라벨은 data_classification 의 assumed label_ko 에서 파생한다.",
+  "$comment": "1.4(2026-09-30, 0.3.71 — GPT 상의 반영 · 사용자 지시 '지피티와 상의해서 정해' · 가산): 근거 없이 정한 여섯 값(short_cycling · comm_status_thresholds · life_roadmap · investment_tiers · precool_delta_c · judgement_thresholds 의 min_observed_temperature_days)과 인용 셋(min_r2 · pmv_inputs · debate_stated_term_ranges)을 검토했다. 1.3 의 키와 value 는 하나도 바꾸지 않았다 — 새 칸은 전부 **행 수준**(value 의 형제)에 둔다: 소비처가 value 를 통째로 도구 인자로 넘기는 자리(투자 구간·수명 로드맵 — 도구 스키마가 모르는 칸을 거절한다)가 있어서다. 새 칸: short_cycling.interpretation · comm_status_thresholds.by_delivery·unknown_delivery_profile · life_roadmap.sensitivity_life_used_shares·remaining_life_status_when_unknown · investment_tiers.classification_basis·numeric_thresholds_role·label_ko_by_work_scope · precool_delta_c.conditions_ko. 여섯 값은 표준값이 아니다 — basis_kind 는 declared_demo_assumption 그대로이고 basis 에 'GPT 상의 2026-09-30' 을 적는다(표준 인용으로 올리지 않는다). 인용 셋은 웹 대조(2026-09-30)로 문구를 고쳤다. · 1.3(2026-09-30, 0.3.70 — 일반화 감사 hard-coded-default 47건 · 남은 목록 N4-0): 게이트웨이·AgentLeague·be-3d 코드 리터럴로 있던 선언 기본값·문턱·화면 상한·가상 생성 규칙을 옮김(가산 — 1.2 의 행과 값은 그대로). 새 행은 전부 id · value · unit(QuantityUnit 낱말) 또는 unit_text · label_ko · rule_ko · classification · basis_kind · basis · source 를 싣는다. basis_kind: moved_literal(코드 값 그대로) · declared_demo_assumption(외부 근거 없는 선언 시연 가정) · standard_citation(표준·법령 인용) · derived_from_ec(이미 있는 정본 값에서 파생 — 새 수 없음). 이미 정본에 있는 값(순위 기본 개수 · 이상 z · 상위 비율 · 빠른 회수 · 폭염 달 창)은 새 행을 만들지 않았다 — 코드가 그 행을 읽는다. hazard_days.heat 에 baseline_months 추가. · 1.2(2026-09-29 RV-B3 초안, 0.3.62): 단위를 interface_types.QuantityUnit 낱말로(top_share '%'→pct · 햇수 yr) · 게이트웨이 모듈 상수로 남아 있던 선언 기본값을 옮김 — scenario_defaults(공실률·시나리오 공실률·끌 수 있는 부하 절감 몫·우선순위) · _assumption_ranges(가정 탐색 범위 5개) · measured_portfolio(순위 행 기본 개수). 값은 옮기기만 했다(동작 변경 없음). 모든 항목의 분류 = assumed(선언 가정) — 사람 대면 라벨은 data_classification 의 assumed label_ko 에서 파생한다.",
   "type": "object",
   "default": {
     "hazard_days": {
@@ -313,7 +313,7 @@
       "rule_ko": "PMV(ISO 7730 식) 가정 입력 = 대사량 1.2 met(좌업 사무) · 착의 여름 0.5 · 겨울 1.0 · 봄가을 0.7 clo · 기류 0.1 m/s · 평균복사온도 = 실내 공기온도(복사 채널 없음) · 외부 일 0. 결과는 추정(측정 아님)으로 표시한다. 냉방기 = 여름 · 난방기 = 겨울 · 그 밖 = 봄가을 값을 쓴다",
       "classification": "assumed",
       "basis_kind": "standard_citation",
-      "basis": "ISO 7730:2005 의 대표값 인용(좌업 사무 1.2 met · 여름 실내복 0.5 clo · 겨울 실내복 1.0 clo) — 원문 조항 대조 전. 봄가을 0.7 clo · 기류 0.1 m/s · 복사온도 = 공기온도는 우리 선언. ⚠ 코드에 두 벌이 있었고 값이 달랐다: general_ops/pmv.DECLARED met 1.2 ↔ asset_inputs/simulation_scene_query.PMV_ASSUMPTIONS met 1.1 — 표준 인용이 있는 1.2 를 정본으로 한다(장면 쪽 PMV 값이 바뀐다)",
+      "basis": "ISO 7730:2005 부속서 B 표 B.1(좌업 활동 — 사무·주거·학교·실험실 70 W/㎡ = 1.2 met)과 부속서 C 의 대표 의복 조합(약 0.5 clo · 1.0 clo)에서 고른 계산 가정 — 표준이 정한 계절 기본값이 아니다. 기류 0.1 m/s 와 '평균복사온도 = 공기온도'는 측정값이 없을 때의 우리 가정(표준의 대표값 아님). 봄가을 0.7 clo 도 우리 선언 — 웹 대조 2026-09-30. ⚠ 코드에 두 벌이 있었고 값이 달랐다: general_ops/pmv.DECLARED met 1.2 ↔ asset_inputs/simulation_scene_query.PMV_ASSUMPTIONS met 1.1 — 표 B.1 의 좌업 활동 값과 같은 1.2 를 정본으로 한다(장면 쪽 PMV 값이 바뀐다)",
       "source": "게이트웨이(8.simulation/ems_transformer/serving) general_ops/pmv.DECLARED · asset_inputs/simulation_scene_query.PMV_ASSUMPTIONS"
     },
     "night_setback_plan": {
@@ -352,11 +352,17 @@
       "id": "precool_delta_c",
       "value": 1.0,
       "unit": "celsius",
-      "label_ko": "예냉 제안의 설정온도 하향 폭",
-      "rule_ko": "예냉 제안 설정 = 냉방 설정 − 1℃(질문이 폭을 말하지 않았을 때) — setpoint_step_c 와 같은 한 단계",
+      "label_ko": "예냉 제안의 설정온도 하향 시험 폭(최대)",
+      "rule_ko": "예냉 제안 설정 = 냉방 설정 − 최대 1℃(질문이 폭을 말하지 않았을 때) — setpoint_step_c 와 같은 한 단계. 1℃ 는 시험 폭의 상한이지 모든 건물에 그대로 적용하는 규칙이 아니다 — 제안에는 조건(conditions_ko)을 함께 싣는다",
+      "conditions_ko": [
+        "먼저 점유 시각 설정온도로 조기 기동을 검토한다",
+        "재실 전에 원래 설정으로 복귀한다",
+        "습도·결로·최대수요를 확인한다",
+        "부하·요금 효과가 확인된 건물에만 적용한다"
+      ],
       "classification": "assumed",
       "basis_kind": "declared_demo_assumption",
-      "basis": "외부 근거 없는 선언 시연 가정 — 새 수를 만들지 않고 setpoint_step_c(1℃)와 같은 값으로 둔다(시험이 같은지 본다)",
+      "basis": "선언 시연 가정 — GPT 상의(2026-09-30): 표준이 정한 예냉 하향 폭은 없다(ASHRAE Guideline 36 은 기동 시각 최적화를 다룬다), 1℃ 는 작은 시험 폭이다. 새 수를 만들지 않고 setpoint_step_c(1℃)와 같은 값으로 둔다(시험이 같은지 본다)",
       "source": "REMAINING_GAP_BUILD_LIST N4-0 · N4-5 precool_proposal(코드 리터럴 없음 — 새 연산)"
     },
     "setpoint_step_c": {
@@ -456,11 +462,12 @@
         "starts_per_day_flag": 6
       },
       "unit": "count",
-      "label_ko": "단주기 기동 의심 문턱",
-      "rule_ko": "단주기 기동 의심 = 평소 운전 시각 기준 하루 기동 6회 초과. 시간 해상도 자료로는 1시간 미만 주기를 볼 수 없다 — 결과에 해상도 한계를 함께 적는다",
+      "interpretation": "screening_only",
+      "label_ko": "시간 자료상 기동 빈번 의심 선별 조건(설비 이상 판정 아님)",
+      "rule_ko": "하루 기동 6회 초과(평소 운전 시각 기준)는 '단주기 기동' 판정이 아니라 확인이 필요한 채널을 고르는 선별 조건이다 · 단주기 기동은 분 단위 현상이라 시간 자료로는 판정할 수 없다(1시간 안의 여러 기동은 보이지 않는다 — 결과에 해상도 한계를 함께 적는다) · 판정에는 제조사·제어 사양의 최소 운전·정지 시간 또는 허용 기동 횟수와 분 단위 상태 자료가 필요하다(결과에 그 요청을 적는다) · 설비 사양이 등록되면 그 값이 먼저다",
       "classification": "assumed",
       "basis_kind": "declared_demo_assumption",
-      "basis": "외부 근거 없는 선언 시연 가정(제조사 기동 횟수 제한을 인용하지 않았다 — 설비 사양이 등록되면 그 값이 먼저)",
+      "basis": "선언 시연 가정 — GPT 상의(2026-09-30): 보편적인 '일 6회' 표준은 없다(허용 기동 횟수는 설비 형식·용량·제어 방식마다 다르다). 6회는 표준값이 아니라 선별용으로 남긴 값이다(제조사 기동 횟수 제한을 인용하지 않았다)",
       "source": "REMAINING_GAP_BUILD_LIST N8-C 12 equipment_channel_review.short_cycling(코드 리터럴 없음 — 새 칸)"
     },
     "readback_delay_limit_min": {
@@ -481,11 +488,22 @@
         "delayed_max_staleness_h": 72
       },
       "unit": "hour",
-      "label_ko": "계량·통신 상태 문턱(마지막 수신 뒤 경과 시간)",
-      "rule_ko": "통신 상태 = 마지막 수신 뒤 24시간 이내 정상 · 72시간 이내 지연 · 그 뒤 끊김(시간 단위 계량 기준)",
+      "by_delivery": {
+        "hourly_realtime": {
+          "ok_max_staleness_h": 2,
+          "delayed_max_staleness_h": 24
+        },
+        "daily_batch": {
+          "ok_max_staleness_h": 24,
+          "delayed_max_staleness_h": 72
+        }
+      },
+      "unknown_delivery_profile": "daily_batch",
+      "label_ko": "계량·통신 상태 문턱(마지막 수신 뒤 경과 시간 · 전송 주기별)",
+      "rule_ko": "통신 상태 = 마지막 수신 뒤 정상 문턱 이내 정상 · 지연 문턱 이내 지연 · 그 뒤 끊김. 문턱은 채널의 선언된 전송 주기로 고른다(by_delivery): 시간 단위 실시간 전송(hourly_realtime) = 2시간·24시간 · 일 배치 전송(daily_batch) = 24시간·72시간 · value 의 두 값(24·72)은 일 배치 기준이다 · 전송 주기가 등록되지 않았으면 일 배치 기준을 쓰고 결과에 '전송 주기 미등록 — 일 배치 기준 적용'이라고 적는다 · 통신 SLA·현장 규칙이 있으면 그것이 먼저다",
       "classification": "assumed",
       "basis_kind": "declared_demo_assumption",
-      "basis": "외부 근거 없는 선언 시연 가정(하루 · 사흘)",
+      "basis": "선언 시연 가정 — GPT 상의(2026-09-30): 시간 단위로 수신하는 채널을 24시간 동안 정상으로 두면 하루치 손실을 가린다 · 표준이 정한 문턱은 없다. 2시간 = 시간 단위 계량 주기 둘 · 24시간·72시간 = 하루·사흘",
       "source": "REMAINING_GAP_BUILD_LIST N3-11 data_completeness.comm_status(코드 리터럴 없음 — 새 칸)"
     },
     "report_recurrence_default": {
@@ -685,11 +703,13 @@
         "early_replacement_payback_max_yr_ref": "quick_payback_max_yr_default"
       },
       "unit_text": "rule",
+      "sensitivity_life_used_shares": [0.25, 0.75],
+      "remaining_life_status_when_unknown": "unknown_assumed_scenarios",
       "label_ko": "수명 로드맵 가정(기존 설비 사용 연수 비율·로드맵 기간·조기 교체 회수 문턱)",
-      "rule_ko": "기존 설비는 수명의 절반이 지났다고 본다(연식 기록이 없을 때) · 로드맵 기간 5년 · 조기 교체 회수 문턱 = quick_payback_max_yr_default(3년). 잔여수명 = 수명 × (1 − 사용 비율). 연식·기간을 말하면 그 값이 먼저다",
+      "rule_ko": "연식 기록이 없으면 잔여수명은 미상이다 — 중앙 가정 50% 소진과 함께 25%·75% 소진 시나리오를 나란히 보인다(한 값으로 단정하지 않는다) · 로드맵 기간 5년은 계획 기간 가정이지 설비 수명 기준이 아니다 · 조기 교체 회수 문턱 = quick_payback_max_yr_default(3년). 잔여수명 = 수명 × (1 − 사용 비율). 연식·기간을 말하면 그 값이 먼저다",
       "classification": "assumed",
       "basis_kind": "declared_demo_assumption",
-      "basis": "외부 근거 없는 선언 시연 가정(사용 비율 0.5 = 중간값 · 기간 5년). 조기 교체 문턱은 새 수를 두지 않고 정본 quick_payback_max_yr_default 를 가리킨다",
+      "basis": "선언 시연 가정 — GPT 상의(2026-09-30): 개별 설비의 잔여수명을 일률 50% 로 볼 근거는 없다(ASHRAE 기대수명 자료는 설비 종류별 통계값이지 개별 설비의 잔여수명이 아니다). 50% 는 중앙 시나리오 · 25%·75% 는 민감도 시나리오 · 기간 5년은 계획 기간 가정. 조기 교체 문턱은 새 수를 두지 않고 정본 quick_payback_max_yr_default 를 가리킨다",
       "source": "게이트웨이(8.simulation/ems_transformer/serving) argument_vocabulary.ASSUMPTION_PARAMETERS[('retrofit_economics','life_roadmap')](build None — 값 없음) · internal_query_tools retrofit_economics life_roadmap 인자"
     },
     "discount_rate_grid_default": {
@@ -710,11 +730,18 @@
         "small_repair_max_krw_per_m2": 15000.0
       },
       "unit_text": "KRW/m2",
-      "label_ko": "투자 구간 문턱(㎡당 투자비)",
-      "rule_ko": "저비용 운영 개선 = 운영 개선 조치 중 ㎡당 6,000원 이하 · 소규모 보수 = 그 밖의 조치 중 ㎡당 15,000원 이하 · 대공사 = 그 초과(질문이 문턱을 말하지 않았을 때)",
+      "classification_basis": "measure_cost_catalog.work_scope",
+      "numeric_thresholds_role": "fallback_only",
+      "label_ko_by_work_scope": {
+        "operational": "저비용 운영 개선",
+        "minor_repair": "소규모 보수",
+        "major_project": "대공사"
+      },
+      "label_ko": "투자 구간 분류(조치의 공사 범위 기준 · ㎡당 금액 문턱은 조치 목록에 없는 조치에만)",
+      "rule_ko": "투자 구간은 ㎡당 금액이 아니라 조치의 공사 범위(정본 조치 목록의 work_scope)로 가른다: 저비용 운영 개선(operational) = 제어값·스케줄·재커미셔닝처럼 설비 교체가 거의 없는 조치 · 소규모 보수(minor_repair) = 부분 부품·등기구 교체 등 제한된 범위 · 대공사(major_project) = 주요 설비 교체·배관·덕트·전기 용량 변경·외피 공사. ㎡당 금액 문턱(운영 개선 조치 중 6,000원 이하 · 그 밖의 조치 중 15,000원 이하 · 그 초과)은 조치 목록에 없는 조치에만 '개략 단가 기준(가정)' 표시와 함께 쓴다 · 질문이 승인 한도를 말하면 그것이 먼저다",
       "classification": "assumed",
       "basis_kind": "declared_demo_assumption",
-      "basis": "6,000원 = 정본 조치 목록(measure_cost_catalog) 운영 개선 조치의 최대 단가(BEMS)에서 파생(시험이 같은지 본다) · 15,000원 = 정본 조치 목록 LED 단가 수준 — 구간 경계 자체는 외부 근거 없는 선언 시연 가정",
+      "basis": "선언 시연 가정 — GPT 상의(2026-09-30): 공사 등급을 가르는 보편적인 ㎡당 금액 문턱은 없다(단가는 건물 규모·기존 설비·공사 조건에 따라 크게 달라 한 조치의 단가를 구간 경계로 일반화할 수 없다). 공사 범위 분류(work_scope)는 조치 설명에서 정한 우리 선언 분류다. ㎡당 문턱은 개략 단가 기준으로만 남긴다: 6,000원 = 정본 조치 목록(measure_cost_catalog) 운영 개선 조치의 최대 단가(BEMS)에서 파생(시험이 같은지 본다) · 15,000원 = 정본 조치 목록 LED 단가 수준",
       "source": "게이트웨이(8.simulation/ems_transformer/serving) internal_query_tools retrofit_economics investment_tiers 인자(요청이 밝힌 가정 — 서버 기본값 없음)"
     },
     "retrofit_difficulty": {
@@ -1077,13 +1104,13 @@
           "range": [1, 10],
           "unit": "yr",
           "side": "burden",
-          "basis": "상가건물 임대차보호법 — 최단 존속기간 1년(제9조) · 계약갱신요구권 전체 10년(제10조 제2항) 인용, 원문 대조 전"
+          "basis": "상가건물 임대차보호법 제9조 제1항(기간을 정하지 않았거나 1년 미만으로 정한 임대차는 1년으로 본다 — 단 임차인은 1년 미만으로 정한 기간이 유효함을 주장할 수 있다) · 제10조 제2항(계약갱신요구권은 최초 기간을 포함한 전체 임대차기간이 10년을 넘지 않는 범위 — 제1항의 갱신 거절 사유 적용 가능) — 웹 대조 2026-09-30, 현행 법령 기준으로 다시 확인할 것"
         },
         "budget_cycle_yr": {
           "range": [1, 1],
           "unit": "yr",
           "side": "burden",
-          "basis": "회계연도 1년(국가재정법 제2조 — 매년 1월 1일~12월 31일) 인용"
+          "basis": "국가재정법 제2조(회계연도는 매년 1월 1일에 시작하여 12월 31일에 종료한다) — 웹 대조 2026-09-30(대조 완료)"
         },
         "equipment_life_yr": {
           "range_ref": "measure_cost_catalog.measures[*].lifetime_yr(min~max)",

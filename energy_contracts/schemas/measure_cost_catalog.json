@@ -11,9 +11,18 @@
     "building-energy-3d",
     "gen_constants → DISCOUNT_RATE_DEFAULT·DISCOUNT_RATE_SOURCE (building-energy-3d·8sim-shared·agentleague)"
   ],
-  "version": "1.2",
-  "updated": "2026-09-28",
+  "version": "1.3",
+  "updated": "2026-09-30",
   "$defs": {
+    "WorkScope": {
+      "type": "string",
+      "enum": [
+        "operational",
+        "minor_repair",
+        "major_project"
+      ],
+      "description": "조치의 공사 범위(1.3, 2026-09-30, 0.3.71 — GPT 상의 반영 · declared_assumptions.investment_tiers 가 투자 구간을 이 칸으로 가른다). operational = 제어값·스케줄·재커미셔닝처럼 설비 교체가 거의 없는 조치 / minor_repair = 부분 부품·등기구 교체 등 제한된 범위 / major_project = 주요 설비 교체·배관·덕트·전기 용량 변경·외피 공사. 조치마다의 값은 조치 설명(name·note·capex 근거)에서 정한 **선언 분류**다(현장 견적의 공사 범위가 다르면 현장 값이 먼저). MeasureClass(운영·외피·설비교체)와는 다른 축이다 — 외피 조치라도 코킹 수준이면 minor_repair 다."
+    },
     "MeasureClass": {
       "type": "string",
       "enum": [
@@ -200,6 +209,7 @@
         "required": [
           "name",
           "measure_class",
+          "work_scope",
           "savings_by_enduse",
           "capex_krw_per_m2",
           "lifetime_yr",
@@ -216,6 +226,9 @@
           },
           "measure_class": {
             "$ref": "#/$defs/MeasureClass"
+          },
+          "work_scope": {
+            "$ref": "#/$defs/WorkScope"
           },
           "measure_ref": {
             "type": "string",
@@ -413,6 +426,7 @@
       "RCX": {
         "name": "재커미셔닝(설비 재조정)",
         "measure_class": "operational",
+        "work_scope": "operational",
         "measure_ref": "ems:recommissioning",
         "savings_by_enduse": {
           "cooling_elec": 0.16,
@@ -433,6 +447,7 @@
       "BEMS": {
         "name": "BEMS 최적제어(M00~M20)",
         "measure_class": "operational",
+        "work_scope": "operational",
         "measure_ref": "ems:M00_M20",
         "savings_by_enduse": {
           "cooling_elec": 0.1,
@@ -452,6 +467,7 @@
       "LED": {
         "name": "LED 조명",
         "measure_class": "equipment_replacement",
+        "work_scope": "minor_repair",
         "measure_ref": "equipment:led",
         "savings_by_enduse": {
           "lighting_elec": 0.6
@@ -468,6 +484,7 @@
       "CHIL": {
         "name": "인버터 냉동기",
         "measure_class": "equipment_replacement",
+        "work_scope": "major_project",
         "measure_ref": "equipment:inverter_chiller",
         "savings_by_enduse": {
           "cooling_elec": 0.35
@@ -484,6 +501,7 @@
       "VSD": {
         "name": "가변속 펌프/팬",
         "measure_class": "equipment_replacement",
+        "work_scope": "minor_repair",
         "measure_ref": "equipment:vsd",
         "savings_by_enduse": {
           "fanpump_elec": 0.35
@@ -500,6 +518,7 @@
       "COND": {
         "name": "콘덴싱 보일러",
         "measure_class": "equipment_replacement",
+        "work_scope": "major_project",
         "measure_ref": "equipment:condensing_boiler",
         "savings_by_enduse": {
           "heating_gas": 0.2
@@ -516,6 +535,7 @@
       "HP": {
         "name": "히트펌프(가스보일러 대체)",
         "measure_class": "equipment_replacement",
+        "work_scope": "major_project",
         "measure_ref": "policy_measures:SRC02",
         "savings_by_enduse": {
           "heating_gas": 1.0
@@ -537,6 +557,7 @@
       "ERV": {
         "name": "폐열회수 환기",
         "measure_class": "equipment_replacement",
+        "work_scope": "major_project",
         "measure_ref": "equipment:erv",
         "savings_by_enduse": {
           "heating_gas": 0.12,
@@ -554,6 +575,7 @@
       "INS": {
         "name": "외벽 단열(외단열)",
         "measure_class": "passive",
+        "work_scope": "major_project",
         "measure_ref": "policy_measures:ENV01",
         "savings_by_enduse": {
           "heating_gas": 0.25,
@@ -571,6 +593,7 @@
       "WIN": {
         "name": "고성능 창호(삼중)",
         "measure_class": "passive",
+        "work_scope": "major_project",
         "measure_ref": "policy_measures:ENV02",
         "savings_by_enduse": {
           "heating_gas": 0.07,
@@ -588,6 +611,7 @@
       "SEAL": {
         "name": "기밀 개선(침기 저감)",
         "measure_class": "passive",
+        "work_scope": "minor_repair",
         "measure_ref": "policy_measures:ENV03",
         "savings_by_enduse": {
           "heating_gas": 0.15,
@@ -605,6 +629,7 @@
       "SHAD": {
         "name": "외부 차양",
         "measure_class": "passive",
+        "work_scope": "major_project",
         "measure_ref": "equipment:external_shading",
         "savings_by_enduse": {
           "cooling_elec": 0.25
