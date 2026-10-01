@@ -9,7 +9,6 @@ from __future__ import annotations
 
 import copy
 import json
-import subprocess
 from pathlib import Path
 
 import pytest
@@ -77,8 +76,9 @@ def test_unknown_need_is_named_not_counted_as_absent():
 
 def test_v01_fields_are_kept():
     """가산만 — 0.1 의 Operation 칸·필수·기간 낱말이 그대로 있다(v0.3.77 태그와 맞댄다)."""
-    old = json.loads(subprocess.run(["git", "show", "v0.3.77:energy_contracts/schemas/operation_manifest.json"], cwd=ROOT,
-                                    capture_output=True, check=True).stdout.decode("utf-8"))
+    # 2026-10-01: CI 체크아웃은 태그를 가져오지 않아 `git show v0.3.77:…` 이 실패했다 — v0.3.77 판 스키마를 고정 사본으로 둔다
+    #   (사본 = `git show v0.3.77:energy_contracts/schemas/operation_manifest.json` 그대로 · 비교 규칙은 바꾸지 않는다)
+    old = json.loads((ROOT / "tests" / "fixtures" / "operation_manifest_schema_v0.3.77.json").read_text(encoding="utf-8"))
     new = _schema()
     old_op, new_op = old["$defs"]["Operation"], new["$defs"]["Operation"]
     assert set(old_op["properties"]) == FIELDS_01 <= set(new_op["properties"])
