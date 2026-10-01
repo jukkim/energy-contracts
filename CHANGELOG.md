@@ -4,6 +4,24 @@
 
 ---
 
+## 0.3.78 (2026-10-01, 태그 v0.3.78) — 연산 매니페스트를 채운다: 등록된 연산 420개의 요구 자료 선언(operation_manifest 0.2 · 가산)
+
+근거 = 캠페인 `docs/ACCEPTANCE_INSPECTION_PLAN_2026-10-01.md` §3 G4('새 기능 = 기능 계약 한 곳 등록') · `docs/GENERALIZATION_PLAN_2026-09-28.md` §6.2 P0
+('연산 요구자료 선언이 완결되지 않았다 — 정본 기본 operations={}' · §6.3 '등록 연산 0').
+
+- `default.operations` 420개(키 = `도구` 또는 `도구/연산`) — 손으로 적지 않았다. 게이트웨이 생성기 `8.simulation/ems_transformer/tools/gen_operation_manifest.py`
+  가 능력표(`capability_table.ROWS` — 대상 종류·질문 인자·내는 부분·축·입력 출처·구현·시뮬 팩)와 점포 연산 채널 표(`store_operations_brief`)에서
+  파생해 쓴다. 정형 질문 스위치(QUESTION_FORMS) 꺼짐 418 · 켜짐 420 을 합쳤다(`registered_when`). `--check` 로 다시 지은 것과 같은지 본다.
+- `needs` 어휘 = `default.needs_vocabulary`(배정 자산 자료 · 건물번호 공공 자료 · 지역 통계 · 원형 표 · 시뮬 팩 · 호출자 계열 · 외부 서비스 ·
+  `subject_data_not_derived`) + `channel:<채널>`. 능력표로 정하지 못한 25행은 '자료 없음'이 아니라 **못 잼**(`subject_data_not_derived`)으로 적는다.
+- `default_period` 낱말 추가: `tool_rule`(도구 구현의 기본 기간 규칙 — 매니페스트가 아직 정하지 않음) · `not_applicable`(시간 축 없음). 점포 채널
+  연산 23개만 `coverage_of_needs`.
+- `Operation` 칸 추가: tool · operation · selector · subject_kinds · required_arguments · produces · axes · input_source · implementation ·
+  comparison_unit · registered_when. 뿌리 칸 추가: generator · derivation_ko · operation_count · needs_vocabulary. 0.1 칸·필수·기간 낱말은 그대로
+  (시험이 v0.3.77 태그와 맞댄다). `_usage` reference-only → runtime-validate(게이트웨이 능력표 적재 검사가 읽는다 — 등록된 연산마다 항목,
+  검사 0건 = 실패). pydantic 모델 `operation_manifest.py` 다시 생성.
+- 시험: 새 `test_operation_manifest_0378`(기본 표가 스키마를 통과 · 420 항목 키·어휘 · 막아야 할 항목 6 · 받아야 할 항목 3 · 못 잼 이름 · 0.1 칸 보존).
+
 ## 0.3.77 (2026-10-01, 태그 v0.3.77) — 값의 종류 배지 낱말 · 방법 한 줄 · 합성 시연 자료 별칭(data_classification 1.5 · 가산)
 
 근거 = 캠페인 `docs/UIUX_CONSISTENCY_RESEARCH_2026-10-01.md` 결정 U1(배지 '측정 → 실측' · '참고치 → 참고' — 사용자 10-01 15:5x) · U4(분류가 없는 값 =
