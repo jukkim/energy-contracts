@@ -4,6 +4,22 @@
 
 ---
 
+## 0.3.77 (2026-10-01, 태그 v0.3.77) — 값의 종류 배지 낱말 · 방법 한 줄 · 합성 시연 자료 별칭(data_classification 1.5 · 가산)
+
+근거 = 캠페인 `docs/UIUX_CONSISTENCY_RESEARCH_2026-10-01.md` 결정 U1(배지 '측정 → 실측' · '참고치 → 참고' — 사용자 10-01 15:5x) · U4(분류가 없는 값 =
+'표시 없음') · §2 '배지 낱말·짧은 방법 줄 = EC data_classification(badge_ko·short_ko)' · 표 H1(AgentLeague 합성 시연 자료 `synthetic_demo_fixture` 가
+어휘 밖 낱말이라 '못 잼 · 분류 미표시'로 보였다).
+
+- `default.classification.display_badges_ko` = 표시 등급(EvidenceDisplayClass 8개 — 순서 그대로) → 화면 배지 낱말 7개(실측 · 예측 · 추정 · 참고 · 가상 ·
+  혼합 · 가상 · 표시 없음 — synthetic 과 virtual 은 둘 다 '가상').
+- `words[*].badge_ko`(= `display_badges_ko[display_class]` — 시험이 낱말마다 본다) · `words[*].short_ko`(방법 한 줄 — 명사형 · 표마다 한 번 보이는 짧은 글:
+  계량기 기록 · 시뮬레이션 · 실측에 맞춘 모델 · 빈 값 채움 · 공공 기준표 · 질문에 적힌 값 · 기본 가정 · 연습용 가상 값 …).
+- 별칭 `synthetic_demo_fixture → virtual`(배지 '가상').
+- 기존 낱말 · `label_ko` · 별칭 · 합성 규칙은 하나도 바꾸지 않았다(시험이 v0.3.76 태그와 잎마다 맞댄다). 생성 상수(`DATA_CLASSIFICATION_VOCAB` — 표 통째)는
+  새 칸을 그대로 싣는다(`gen_constants --all` · `--check` drift 0).
+- 시험: 새 `test_classification_badges_0377`(표시 등급 8 · 낱말 17 · 반례 — 추정에 '실측' · 모름에 '가상' 금지 · 별칭 받아야 할 3 · 막아야 할 5 ·
+  v0.3.76 태그 대조 · 생성본).
+
 ## 0.3.76 (2026-10-01, 태그 v0.3.76) — 통합 화면 상품 고르기 계약 airo_product_route 1.0(새 스키마 · 가산)
 
 근거 = 캠페인 `docs/INTEGRATED_INTERFACE_AND_LLM_ROLE_RESEARCH_2026-10-01.md` D1(사용자 결정 10-01 09:5x — 심사위원 시연은 통합 화면 Studio `/stage` ·
