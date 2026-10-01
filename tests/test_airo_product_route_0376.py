@@ -63,7 +63,7 @@ def test_schema_is_valid_and_carries_headers():
     assert schema["$id"] == BASE + NAME
     assert schema["_usage"] == "runtime-validate"
     assert "ems_transformer" in schema["_consumers"] and "energy-decision-studio" in schema["_consumers"]
-    assert schema["version"] == "1.0"
+    assert schema["version"] in ("1.0", "1.1")                     # 1.1(0.3.79) = source interpretation 가산 — test_airo_product_route_0379
     assert schema["$defs"]["Product"]["enum"] == PRODUCTS            # 이름·순서(결정 문서 D1 의 순서)
     assert schema["$defs"]["Response"]["properties"]["schema"]["const"] == "airo-product-route/v1"
     assert schema["$defs"]["Response"]["properties"]["alternatives"]["maxItems"] == 2

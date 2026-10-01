@@ -4,6 +4,18 @@
 
 ---
 
+## 0.3.79 (2026-10-01, 태그 v0.3.79) — 상품 고르기 응답 출처에 '한 번 해석' 가산(airo_product_route 1.1 · 가산)
+
+근거 = 캠페인 `docs/CAPABILITY_FIRST_QUERY_DESIGN_2026-09-30.md` §3.1(2026-10-01 19:5x 사용자 결정 — 한 질문에 LLM 이 둘(상품 고르기 · 정형 변환) 돌던 것을
+하나로: LLM 은 정형·칸·표현 방식만 뽑고 상품은 게이트웨이가 그 결과와 질의자 권한으로 정한다 · 규칙이 확실하면 LLM 없이).
+
+- `Response.source` 열거에 `interpretation` 추가(화면 계약 airo-product-route/v1 의 칸·모양은 그대로). `model` 칸: llm 이면 필수 · rule·fallback 이면
+  없음(1.0 그대로) · interpretation 이면 선택(해석을 LLM 이 했을 때만). `allOf` 를 두 조건(llm → 필수 · rule|fallback → 금지)으로 나눴다.
+- 설명 갱신: 문서 설명 · `source`(1.1 의 rule = 선언 낱말이 실제로 걸려 한 상품만 가리킴 — 해석 LLM 이 돌았어도 상품은 낱말이 정해 model 없음) ·
+  `Request.asker`(한 번 해석 경로에서 질의자가 쓸 수 없는 상품을 고르지 않는 데에도 쓴다 — 자료 접근 권한은 고른 상품의 입구가 본다).
+- pydantic 모델 `airo_product_route.py` 다시 생성. 생성 상수 영향 없음.
+- 시험: 새 `test_airo_product_route_0379`(열거 · 받음 5 · 막음 7 · 생성 모델) · `test_airo_product_route_0376` 의 판 단언을 1.0|1.1 로.
+
 ## 0.3.78 (2026-10-01, 태그 v0.3.78) — 연산 매니페스트를 채운다: 등록된 연산 420개의 요구 자료 선언(operation_manifest 0.2 · 가산)
 
 근거 = 캠페인 `docs/ACCEPTANCE_INSPECTION_PLAN_2026-10-01.md` §3 G4('새 기능 = 기능 계약 한 곳 등록') · `docs/GENERALIZATION_PLAN_2026-09-28.md` §6.2 P0
