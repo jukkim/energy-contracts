@@ -599,7 +599,7 @@
     "strategies": {
       "M00": {
         "name_en": "Baseline",
-        "name_kr": "고정 설정온도 + 야간 Setback",
+        "name_kr": "고정 설정온도 + 야간 설정 완화(셋백)",
         "type": "single",
         "components": [],
         "observable_signature": {
@@ -942,7 +942,7 @@
       },
       "rule_ko": "단일 전략마다 설정온도를 어떻게 움직이는지의 선언 — 조합은 싣지 않고 구성 대책에서 파생한다. 설정온도 ℃ 단계 질문에 자기 표의 '가장 가까운 줄'(쾌적 범위 안 동적 설정)을 고르는 소비처는 comfort_band_dynamic 을 읽는다",
       "classification": "declared",
-      "basis": "정본 전략 이름·물리 정의의 뜻 그대로 — M04·M05 'PMV ± 동적 설정온도'(8.simulation docs/PHYSICS_SPEC_2026-09-15_CONTRACT.md §5 M04/M05: PMV 밴드에 따라 냉·난방 설정을 움직인다) · M16 'DR 야간 셋백' · M09 '피크 전 프리쿨링/프리히팅' · M00 '고정 설정온도 + 야간 Setback'(기준안) · M10 = 같은 문서 §5 M10 VB 'VA(+2 ℃ 14~17 시) + 수요관리'(피크 시간 냉방 설정 상향 — 요청 E4-1 의 '나머지 none' 과 달리 설정을 움직인다) · 나머지 단일 전략(기동 시각·외기·대수·야간 순환·환기·전열교환·조명·ESS·열저장·태양광) = none",
+      "basis": "정본 전략 이름·물리 정의의 뜻 그대로 — M04·M05 'PMV ± 동적 설정온도'(8.simulation docs/PHYSICS_SPEC_2026-09-15_CONTRACT.md §5 M04/M05: PMV 밴드에 따라 냉·난방 설정을 움직인다) · M16 'DR 야간 셋백' · M09 '피크 전 프리쿨링/프리히팅' · M00 '고정 설정온도 + 야간 설정 완화(셋백)'(기준안) · M10 = 같은 문서 §5 M10 VB 'VA(+2 ℃ 14~17 시) + 수요관리'(피크 시간 냉방 설정 상향 — 요청 E4-1 의 '나머지 none' 과 달리 설정을 움직인다) · 나머지 단일 전략(기동 시각·외기·대수·야간 순환·환기·전열교환·조명·ESS·열저장·태양광) = none",
       "source": "캠페인 scratch/capability_first/EC_ROWS_NEEDED_round3.md E4-1 · 게이트웨이 general_ops/archetype_climate_grid.setpoint_strategy_codes(예전 이름 낱말 '설정온도' 읽기)"
     },
     "applicability_conditions": {
@@ -974,7 +974,7 @@
       },
       "rule_ko": "applies_when 의 전제는 모두 만족해야 그 대책이 대상에 뜻이 있다. 전제를 가르는 대상 사실(decided_by_usage_fact — building_usage_map.usages[*] 의 칸)이 선언돼 있으면 그 값으로 판정한다(met_when_fact_is 와 같으면 만족 · 다르면 대상 아님). 사실이 선언되지 않았거나 가르는 사실이 없는 전제(설비 대수·기계 환기·ESS)는 판정하지 않는다(못 잼 — 현장 확인)",
       "classification": "declared",
-      "basis": "전략 정의(name_kr · name_en)의 뜻 그대로 — 야간 순환·DR 야간 셋백·기준안 야간 Setback = 비운영 시간 · 최적 기동·정지 = 날마다 켜고 끔 · 냉동기·보일러 대수 제어 = 여러 대 · 전열교환기 = 기계 환기 · ESS 피크셰이빙 = ESS. 표준 모델(원형) 율을 다른 대상에 대리로 보일 때 일정·설비 전제가 다르면 율이 옮겨지지 않는다(설계 §5 · 결정 2 사유)",
+      "basis": "전략 정의(name_kr · name_en)의 뜻 그대로 — 야간 순환·DR 야간 셋백·기준안 야간 설정 완화(셋백) = 비운영 시간 · 최적 기동·정지 = 날마다 켜고 끔 · 냉동기·보일러 대수 제어 = 여러 대 · 전열교환기 = 기계 환기 · ESS 피크셰이빙 = ESS. 표준 모델(원형) 율을 다른 대상에 대리로 보일 때 일정·설비 전제가 다르면 율이 옮겨지지 않는다(설계 §5 · 결정 2 사유)",
       "source": "캠페인 scratch/capability_first/EC_ROWS_NEEDED_round3.md E5-1 · 게이트웨이 general_ops/measure_candidates.SCHEDULE_APPLICABILITY_UNMEASURED 자리"
     },
     "signal_mapping": {
