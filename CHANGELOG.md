@@ -4,6 +4,24 @@
 
 ---
 
+## 0.3.76 (2026-10-01, 태그 v0.3.76) — 통합 화면 상품 고르기 계약 airo_product_route 1.0(새 스키마 · 가산)
+
+근거 = 캠페인 `docs/INTEGRATED_INTERFACE_AND_LLM_ROLE_RESEARCH_2026-10-01.md` D1(사용자 결정 10-01 09:5x — 심사위원 시연은 통합 화면 Studio `/stage` ·
+질문 상자 하나 · LLM 이 상품을 고르고 칩으로 보이며 사용자가 바꾼다 · 질의자는 고른 상품이 정한다) · 화면 세션과 합의한 계약 `POST /v2/route-product`.
+
+- 새 `airo_product_route.json`(airo-product-route/v1, `_usage` runtime-validate · 소비처 ems_transformer · energy-decision-studio):
+  `$defs/Request{question_ko, surface: const stage, asker?, prior_product?, continuation?{prior_request_id, prior_question_ko?}}` ·
+  `$defs/Response{schema: const airo-product-route/v1, product, why_ko, alternatives[≤2]{product, why_ko}, source: llm|rule|fallback, model?}` ·
+  `$defs/Product` = studio · airos · be3d · agentleague · mcp · `$defs/WhyKo` = 2~120자 · 줄바꿈 없음. 모두 `additionalProperties: false`.
+  `model` 은 source=llm 일 때만(있어야 한다), rule·fallback 이면 없다. 문서 뿌리 = oneOf(요청 | 응답).
+- 질의자 모양은 사본을 두지 않고 `airo_request.json#/$defs/Asker` 를 가리킨다(파일 밖 $ref — 검사는 두 문서를 한 레지스트리에). 질의 봉투
+  `airo_request` 는 그대로(표면 목록에 stage 를 넣지 않는다 — 상품 고르기는 자기 계약). 대안 상품이 서로 다르고 고른 상품과 다르다는 규칙은
+  JSON Schema 로 적을 수 없어 게이트웨이 코드(`serving/product_router.py`)가 검사한다. 상품 역할 글·예문·규칙 낱말은 게이트웨이 상품 표 한 곳 — 이
+  스키마는 이름만 정한다.
+- `_index.yaml` 등재 · pydantic 모델 `airo_product_route.py` 생성. 생성 상수 그대로(runtime-validate: `gen_constants --all` 12 소비처 SAME · `--check` drift 0).
+- 시험: 새 `test_airo_product_route_0376`(받아야 할 요청 6 · 막아야 할 요청 18 · 받아야 할 응답 6 · 막아야 할 응답 18 · 질의자 정본 정의 대조 ·
+  질의 봉투 표면 목록 불변 · 색인 · 생성 모델).
+
 ## 0.3.75 (2026-10-01, 태그 v0.3.75) — 요청 봉투 표면 이름 canvas(airo_request 2.6 · 가산)
 
 요청 = 화면 세션(캠페인 `scratch/capability_first/requests_round3.md` 주 세션 메모 06:25 — energy-decision-canvas :3030 이 6단계 흐름도를 v2 질의 한 번으로

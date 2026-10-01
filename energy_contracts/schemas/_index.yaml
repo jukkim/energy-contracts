@@ -32,6 +32,7 @@ components:
     OperationManifest:        {$ref: 'operation_manifest.json'}
     AiroRequest:              {$ref: 'airo_request.json'}
     AiroResult:               {$ref: 'airo_result.json'}
+    AiroProductRoute:         {$ref: 'airo_product_route.json'}
     InterfaceTypes:           {$ref: 'interface_types.json'}
     AnomalyResponse:          {$ref: 'anomaly_response.json'}
     AuthPolicy:               {$ref: 'auth_policy.json'}

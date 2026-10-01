@@ -1,0 +1,186 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "energy-contracts/airo_product_route.json",
+  "title": "AIRO 통합 화면 상품 고르기 (airo-product-route/v1)",
+  "description": "통합 화면(Studio 새 경로 /stage — 질문 상자 하나)이 질문을 어느 상품(studio · airos · be3d · agentleague · mcp)으로 보낼지 게이트웨이에 묻는 계약(POST /v2/route-product). 요청 = $defs/Request · 응답 = $defs/Response. LLM 은 상품 하나와 그 이유 한 줄만 고른다 — 질의자·대상·값은 고르지 않는다(질의자는 고른 상품의 기본 질의자 규칙이 정한다). LLM 이 못 고르면 규칙(게이트웨이 상품 표의 선언 낱말), 그것도 없으면 직전 상품(없으면 studio). 근거 = 공모전 docs/INTEGRATED_INTERFACE_AND_LLM_ROLE_RESEARCH_2026-10-01.md D1(사용자 결정 2026-10-01 09:5x · 통합 화면 + LLM 상품 선택) · docs/PRODUCT_ROLES_AND_QUESTION_SET_PLAN_2026-09-30.md §0(상품 역할).",
+  "_usage": "runtime-validate",
+  "_consumers": [
+    "ems_transformer",
+    "energy-decision-studio"
+  ],
+  "version": "1.0",
+  "updated": "2026-10-01",
+  "$comment": "1.0(2026-10-01, 0.3.76 · 화면 세션과 합의한 계약): 새 스키마. 질의 봉투(airo_request.json)의 surface 목록에 stage 를 넣지 않는다 — 상품 고르기는 질의가 아니라 자기 계약을 가진다(요청 surface = const stage). 질의자 모양은 정본 airo_request.json#/$defs/Asker 를 가리킨다(사본 없음 — 파일 밖 $ref 는 $id 기준 상대 경로: 검사하는 쪽은 두 문서를 한 레지스트리에 올려 읽는다). 대안(alternatives)의 상품이 서로 다르고 고른 상품과도 다르다는 것은 JSON Schema 로 적을 수 없어 게이트웨이 코드가 검사한다(serving/product_router.py).",
+  "oneOf": [
+    {
+      "$ref": "#/$defs/Request"
+    },
+    {
+      "$ref": "#/$defs/Response"
+    }
+  ],
+  "$defs": {
+    "Product": {
+      "enum": [
+        "studio",
+        "airos",
+        "be3d",
+        "agentleague",
+        "mcp"
+      ],
+      "description": "통합 화면이 보낼 수 있는 상품 이름. studio = 지역·공공 값·표 분석(정책 담당 공무원) · airos = 로그인한 사람의 내 건물·점포·가정 운영 · be3d = 3D 장면·지도(Lab 포함) · agentleague = 이해관계자 토론 · mcp = 외부 도구(Claude Desktop 등) 사용. 역할 글·예문·규칙 낱말은 게이트웨이 상품 표 한 곳(serving/product_router.py)이 가진다 — 이 목록은 이름만 정한다."
+    },
+    "WhyKo": {
+      "type": "string",
+      "minLength": 2,
+      "maxLength": 120,
+      "not": {
+        "pattern": "[\\r\\n]"
+      },
+      "description": "그 상품을 고른 이유 한 줄(한국어). 줄바꿈 없음. 질문에 없는 수·지명·건물 이름을 싣지 않는다(게이트웨이가 검사하고, 어기면 규칙 문장으로 바꾼다)."
+    },
+    "Request": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "question_ko",
+        "surface"
+      ],
+      "properties": {
+        "question_ko": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 4000,
+          "pattern": "\\S",
+          "description": "사용자가 질문 상자에 쓴 글 그대로(airo_request.query 와 같은 길이 상한)."
+        },
+        "surface": {
+          "const": "stage",
+          "description": "부른 화면 — 통합 화면(Studio /stage) 하나뿐이다. 다른 표면은 자기 질의 봉투(airo_request)를 쓴다."
+        },
+        "asker": {
+          "$ref": "airo_request.json#/$defs/Asker",
+          "description": "지금 화면에 보이는 질의자(선택). 상품 고르기에 쓰지 않는다 — 기록용이다. 세션 검증을 하지 않으므로 늘 선언 질의자로 기록한다(id_source 를 airos_session 이라 적어 보내도 검증됨이 아니다)."
+        },
+        "prior_product": {
+          "$ref": "#/$defs/Product",
+          "description": "직전 답을 낸 상품(선택). 고르기가 실패하면 여기로 간다(없으면 studio). 이어 묻기면 LLM 에게도 보인다."
+        },
+        "continuation": {
+          "$ref": "#/$defs/RouteContinuation"
+        }
+      }
+    },
+    "RouteContinuation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "prior_request_id"
+      ],
+      "properties": {
+        "prior_request_id": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 120,
+          "description": "이 질문이 이어 묻는 앞 답의 request_id(질의 봉투 continuation.prior_request_id 와 같은 값)."
+        },
+        "prior_question_ko": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 4000,
+          "pattern": "\\S",
+          "description": "앞 질문 글(선택) — '2도는?' 같은 짧은 이어 묻기를 LLM 이 앞 질문과 함께 읽게 한다."
+        }
+      },
+      "description": "이어 묻기 표시(선택). 있으면 이 질문이 앞 답을 잇는다 — 상품 이름을 가리키는 말(규칙 표의 상품 낱말)이 없으면 직전 상품을 지킨다."
+    },
+    "Alternative": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "product",
+        "why_ko"
+      ],
+      "properties": {
+        "product": {
+          "$ref": "#/$defs/Product"
+        },
+        "why_ko": {
+          "$ref": "#/$defs/WhyKo"
+        }
+      }
+    },
+    "Response": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "schema",
+        "product",
+        "why_ko",
+        "alternatives",
+        "source"
+      ],
+      "allOf": [
+        {
+          "if": {
+            "required": [
+              "source"
+            ],
+            "properties": {
+              "source": {
+                "const": "llm"
+              }
+            }
+          },
+          "then": {
+            "required": [
+              "model"
+            ]
+          },
+          "else": {
+            "not": {
+              "required": [
+                "model"
+              ]
+            }
+          }
+        }
+      ],
+      "properties": {
+        "schema": {
+          "const": "airo-product-route/v1",
+          "description": "응답 표지 — 화면은 이 글자가 정확히 같을 때만 상품 결정으로 받는다."
+        },
+        "product": {
+          "$ref": "#/$defs/Product",
+          "description": "고른 상품 — 화면은 질문 상자 옆 칩으로 보이고 사용자가 바꿀 수 있다(바꾸면 같은 질문을 그 상품으로 다시 보낸다)."
+        },
+        "why_ko": {
+          "$ref": "#/$defs/WhyKo"
+        },
+        "alternatives": {
+          "type": "array",
+          "maxItems": 2,
+          "items": {
+            "$ref": "#/$defs/Alternative"
+          },
+          "description": "칩 옆에 보일 다른 후보(0~2). 상품은 서로 다르고 고른 상품과도 다르다(게이트웨이 코드 검사)."
+        },
+        "source": {
+          "enum": [
+            "llm",
+            "rule",
+            "fallback"
+          ],
+          "description": "llm = 질문 이해 LLM 이 고르고 질문 글 근거 조각이 검사를 지났다 · rule = LLM 이 못 골라(공급자 장애·느림·근거 없음) 상품 표의 선언 낱말로 골랐다 · fallback = 그것도 없어 직전 상품(없으면 studio)으로 갔다."
+        },
+        "model": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 120,
+          "description": "source=llm 일 때 고른 모델 이름(공급자가 돌려준 것). rule·fallback 이면 칸이 없다."
+        }
+      }
+    }
+  }
+}
