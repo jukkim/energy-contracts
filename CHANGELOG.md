@@ -4,6 +4,16 @@
 
 ---
 
+## 0.3.80 (2026-10-02, 태그 v0.3.80) — 지역 해석 표: 구 중심 닻 좌표를 업무·상업 중심으로(데이터만 · 모양 불변)
+
+근거 = 사용자 '지역의 가장 중심되는 곳' · '강남구는 번화가로' + 캠페인 `review_exchange/rounds/R083_gpt.md` 송파구 EUI 지도 점검(송파 '도심' 닻이
+건물 수 최대 셀 = 마천동 저층 주거지).
+
+- `data/region_resolver_table.json` 다시 생성(be-3d `scripts/gen_region_resolver_table.py` — 입력 닻 표 `anchors.json` 이 바뀌었다). 구 중심 닻
+  259곳의 좌표 = 500m 격자 **비주거 연면적**(건물당 5만㎡ 상한) 최대 셀의 연면적 가중 중심(be-3d `scripts/gen_region_anchors.py
+  commercial_core_point`). 닻 이름·id·개수(316)·해석 결과(지명 → 코드)는 그대로. 표의 `sources.anchors.sha256` 이 새 닻 파일을 가리킨다.
+- 이 판에는 0.3.79 뒤에 들어간 `ems_strategies` M00 한글 이름 수정(125b530)도 함께 실린다.
+
 ## 0.3.79 (2026-10-01, 태그 v0.3.79) — 상품 고르기 응답 출처에 '한 번 해석' 가산(airo_product_route 1.1 · 가산)
 
 근거 = 캠페인 `docs/CAPABILITY_FIRST_QUERY_DESIGN_2026-09-30.md` §3.1(2026-10-01 19:5x 사용자 결정 — 한 질문에 LLM 이 둘(상품 고르기 · 정형 변환) 돌던 것을
