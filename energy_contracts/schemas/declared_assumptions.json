@@ -982,7 +982,7 @@
     "answer_delivery_rules": {
       "id": "answer_delivery_rules",
       "value": {
-        "partial_min_provided_share": 0.5,
+        "partial_min_provided_share": 0.0,
         "partial_comparison": "strictly_greater",
         "plan_repair_elapsed_limit_s": 35.0,
         "surface_proxy_limit_s": {
@@ -991,10 +991,10 @@
       },
       "unit_text": "ratio · s",
       "label_ko": "부분 전달·다시 계획 규칙",
-      "rule_ko": "부분 전달 = 물은 부분 가운데 제공한 몫이 0.5 를 넘을 때(같은 대상) 빠진 부분을 밝히고 전달 · 다시 계획(수리)은 요청 시작 뒤 35초가 지나기 전에만(AIROS 프록시 한도 90초 안)",
+      "rule_ko": "부분 전달 = 같은 대상이고 물은 부분 가운데 하나라도 제공했으면(몫 > 0) 빠진 부분을 밝히고 전달 — 대상이 다르거나 제공한 것이 없으면 멈춘다 · 다시 계획(수리)은 요청 시작 뒤 35초가 지나기 전에만(AIROS 프록시 한도 90초 안)",
       "classification": "assumed",
       "basis_kind": "declared_demo_assumption",
-      "basis": "선언 가정 — 35초 = AIROS 프록시 한도 90초와 ok 답 75분위 41초 사이에서 계획이 정한 값(2026-09-30). 부분 전달 몫 0.5 = '과반' 의 선언",
+      "basis": "선언 가정 — 35초 = AIROS 프록시 한도 90초와 ok 답 75분위 41초 사이에서 계획이 정한 값(2026-09-30). 부분 전달 몫 0 = 시연을 멈추지 않는다는 사용자 원칙(2026-10-02 demo-never-blocked · 2026-10-03 확인: 과반 문턱 0.5 가 실측 있는 일상 질문 2건을 '바꿔 물어봐 주세요' 로 멈춤)",
       "source": "게이트웨이(8.simulation/ems_transformer/serving) answer_coverage.PARTIAL_MIN_PROVIDED_SHARE · plan_repair.ELAPSED_LIMIT_SEC"
     },
     "member_selection_caps": {
@@ -1260,6 +1260,21 @@
       "basis_kind": "moved_literal",
       "basis": "코드 리터럴 값 그대로 옮김(값 동일) — 외부 근거 없는 선언 시연 가정 — asset_inputs/locked_financial_scenario_compute.TOP_MEASURES",
       "source": "게이트웨이(8.simulation/ems_transformer/serving) asset_inputs/locked_financial_scenario_compute.candidate_measures_max() (요청 C9)"
+    },
+    "climate_year_interpolation": {
+      "id": "climate_year_interpolation",
+      "value": {
+        "baseline_anchor": "request_year_kst",
+        "method": "linear",
+        "max_gap_years": 60
+      },
+      "unit": "year",
+      "label_ko": "시뮬레이션 기후 연도 사이의 연도 추정",
+      "rule_ko": "질문한 미래 연도의 기후 시나리오 칸이 없으면, 현재 기후(baseline — 대표 기상년을 요청한 해(KST)의 기후로 본다) 값과 그 뒤 가장 가까운 시나리오 연도 값 사이를 선형 보간한 추정값을 함께 보인다. 원래 시뮬레이션 칸은 그대로 두고 추정 행은 '추정'으로 표시한다. 질문 연도가 요청한 해 이전이거나 가장 먼 시나리오 연도 뒤면 만들지 않는다(외삽 금지)",
+      "classification": "assumed",
+      "basis_kind": "declared_demo_assumption",
+      "basis": "선언 시연 가정(2026-10-03) — 경진대회 가상·추정 채움 원칙(~/.claude/rules/competition-virtual-data.md) · 시연 비차단 원칙. baseline 이름표 = building_archetypes.sim_axes.scenario_names.baseline '현재 기후(대표 기상년)' 를 요청 해의 기후로 읽는다. 기후 응답이 연도에 선형이라는 것은 가정이다",
+      "source": "게이트웨이(8.simulation/ems_transformer/serving) general_ops/archetype_climate_grid.interpolate_asked_year"
     },
     "climate_load_shift": {
       "id": "climate_load_shift",
