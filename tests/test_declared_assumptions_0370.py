@@ -69,7 +69,8 @@ def test_new_rows_carry_value_unit_label_basis_and_class():
     #   지킨다. 0.3.70 의 54 행이 그대로인지는 0.3.72 시험의 태그 대조가 본다(반대쪽).
     # 근거(2026-10-01, 0.3.74): 새 행 3(operation_reading_window · operation_reading_freshness · cohort_city_min_share — 캠페인 요청
     #   EC_ROWS_NEEDED_round3 E5-3·R3F-1·R3F-2, 이름 목록 = test_ec_rows_0374.NEW_ROWS_0374). 0.3.73 의 키·값이 그대로인지는 0.3.74 시험의 태그 대조.
-    assert len(rows) == 54 + 33 + 3, len(rows)     # 검사 90 건(0 건이면 그것이 사고다)
+    # 근거(2026-10-03): 새 행 1(climate_year_interpolation — 기후 시나리오 연도 사이 보간 선언 가정 · 캠페인 SCREEN_FIX / 지역 미래 연도 질문).
+    assert len(rows) == 54 + 33 + 3 + 1, len(rows)     # 검사 91 건(0 건이면 그것이 사고다)
     # 근거 없는 값은 '선언 시연 가정' 이라고 스스로 적는다 — 표준인 척하지 않는다
     demo = [k for k, r in rows.items() if r["basis_kind"] == "declared_demo_assumption"]
     assert demo and all("선언" in rows[k]["basis"] or "가정" in rows[k]["basis"] for k in demo), \
@@ -385,7 +386,8 @@ def test_0371_existing_keys_and_values_unchanged():
     assert terms["lease_term_yr"]["range"] == [1, 10] and terms["budget_cycle_yr"]["range"] == [1, 1]
     # 0.3.71 은 새 행을 만들지 않았다(칸만 더했다 — 54). 근거(0.3.72): 새 행 33 을 더했다 — 이름 목록과 태그 대조는 0.3.72 시험.
     # 근거(0.3.74): 새 행 3 — 이름 목록과 태그 대조는 test_ec_rows_0374.
-    assert len(_new_rows()) == 54 + 33 + 3
+    # 근거(2026-10-03): 새 행 1(climate_year_interpolation).
+    assert len(_new_rows()) == 54 + 33 + 3 + 1
 
 
 def test_0371_consulted_rows_say_what_their_basis_is():
