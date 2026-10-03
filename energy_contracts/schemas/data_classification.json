@@ -259,7 +259,7 @@
         "measured_with_synthetic_members": "mixed",
         "synthetic_virtual_series": "virtual",
         "synthetic_not_measured": "synthetic",
-        "simulated_not_measured": "simulated",
+        "simulated_not_measured": "simulated", "simulation_verified_table": "simulated",
         "virtual_pack": "virtual",
         "demo": "virtual",
         "forecast": "predicted",

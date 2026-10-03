@@ -954,6 +954,7 @@
         "panel_value_target_bytes": 49152,
         "panel_table_keep_rows": 20,
         "presentation_table_max_rows": 20,
+        "presentation_timeseries_max_rows": 60,
         "presentation_chart_max_points": 60,
         "group_rows_shown": 20,
         "group_derived_rows": 20,
@@ -974,6 +975,7 @@
       "basis": "성능·전송 상한(선언). 48KB = 장면 저장 한도 64KB 의 75%(봉투·다른 op 몫을 남김) · 표 20행 = Studio 표의 가장 좁은 쪽. 질문이 행 수를 말하면 그 수가 먼저다",
       "source": "be-3d src/visualization/scenarios_api.PAYLOAD_MAX_BYTES · 게이트웨이(8.simulation/ems_transformer/serving) panel_projection.PANEL_VALUE_TARGET_BYTES · PANEL_TABLE_KEEP_ROWS · answer_presentation.MAX_ROWS · MAX_POINTS · query_orchestrator._GROUP_ROWS_SHOWN · _GROUP_DERIVED_ROWS · _GROUP_ROW_COLUMNS · _COMPARISON_MAX_SERIES_FIELDS · _SCENE_SELECTION_MAX · general_ops/cohort.MAP_ROWS_MAX · PARCEL_WIDE_MAX_GROUPS",
       "value_notes_ko": {
+        "presentation_timeseries_max_rows": "시간 축 표(하루 24시간 · 한 달 31일 · 30분 48칸 · 12달)의 행 상한 60 = 그림 점 상한(presentation_chart_max_points)과 같다 — 20행 상한이 24시간·31일 표를 잘라 계산된 값이 화면에서 빠졌다(2026-10-03 제안 질의 25문구 검증 F02·F03·B02·R02·H03·S01)",
         "presentation_table_max_columns": "공통 표시 객체 표의 열 상한 12 — answer_presentation.MAX_COLUMNS 리터럴 값 그대로(0.3.72 요청 C4)",
         "presentation_chart_max_series": "공통 표시 객체 그림의 계열 상한 6 — answer_presentation.MAX_SERIES 리터럴 값 그대로(0.3.72 요청 C4)",
         "display_significant_digits": "표시 칸(목표 보기의 기준 사용량·1% 눈금·변화량 display_quantity)의 유효숫자 3 — 게이트웨이 general_ops/measure_candidates.DISPLAY_SIGNIFICANT_DIGITS 리터럴 값 그대로 옮김(0.3.74 요청 E5-2). 근거 = 캠페인 설계 CAPABILITY_FIRST_QUERY_DESIGN §2.4 한계 3('kWh 는 유효숫자 2~3자리로 보인다 · 0.1 kWh 자리까지 찍지 않는다'). 글 모양이지 판정 문턱이 아니다 — 정확한 값은 원래 칸 그대로"
