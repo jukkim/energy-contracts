@@ -8,7 +8,7 @@
     "edge-agent",
     "mgcc"
   ],
-  "version": "1.5",
+  "version": "1.6",
   "type": "object",
   "required": [
     "provisioning_id",
@@ -86,6 +86,23 @@
         },
         "pnu": {
           "type": "string"
+        },
+        "building_mgmt_no": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "pattern": "^[0-9]{25}$",
+          "description": "건물관리번호(25자리) — 신원 키(2026-10-04 사용자 '필지 단위는 전부 건물로'). 한 동짜리 필지면 그 동 번호. 여러 동 필지는 null + identity_scope=site"
+        },
+        "identity_scope": {
+          "type": "string",
+          "enum": [
+            "building",
+            "site",
+            "unknown"
+          ],
+          "description": "신원 범위 — building = 25자리 건물 하나 · site = 여러 동 필지(단지) 전체 자원(건물별 아님 — 동 선택·순위·건물 수에 쓰지 않는다) · unknown = 범위 판정 자료 없음"
         },
         "building_type": {
           "type": "string",
@@ -686,5 +703,6 @@
       ]
     }
   },
-  "updated": "2026-08-01"
+  "updated": "2026-08-01",
+  "$comment": "1.6(2026-10-04): building_mgmt_no(25자리) · identity_scope 추가 — 신원은 건물, pnu 는 필지 보조 칸(가산). "
 }
