@@ -1280,6 +1280,20 @@
       "basis": "선언 시연 가정(2026-10-03) — 경진대회 가상·추정 채움 원칙(~/.claude/rules/competition-virtual-data.md) · 시연 비차단 원칙. baseline 이름표 = building_archetypes.sim_axes.scenario_names.baseline '현재 기후(대표 기상년)' 를 요청 해의 기후로 읽는다. 기후 응답이 연도에 선형이라는 것은 가정이다",
       "source": "게이트웨이(8.simulation/ems_transformer/serving) general_ops/archetype_climate_grid.interpolate_asked_year"
     },
+    "robust_strategy_comfort": {
+        "id": "robust_strategy_comfort",
+        "value": {
+          "max_delta_mean_ppd": 0.0,
+          "comparison": "le"
+        },
+        "unit_text": "%p",
+        "label_ko": "쾌적 대가 제한(전략 강건성 고르기)",
+        "rule_ko": "여러 기상 조건(도시 × 기후 시나리오)에서 절감이 유지되는 운전 전략을 고를 때, 모든 조건 칸에서 평균 불만족률(PPD) 변화가 이 값 이하(같거나 작음)여야 '쾌적 대가 제한 통과'다. 자료가 절대 PPD 가 아닌 변화량뿐이라 ISO 7730 등급 판정이 아니다 — 'ISO 쾌적 충족'이라 말하지 않는다. 기본 0.0 = 어느 조건에서도 평균 불만족률을 악화시키지 않음",
+        "classification": "assumed",
+        "basis_kind": "declared_demo_assumption",
+        "basis": "선언 시연 가정(2026-10-03 GPT-5.6 상의 · 사용자 '지피티와 상의해서 끝내') — 변화량 자료만으로 가장 방어 가능한 값(악화 없음). 절대 PPD 가 생기면 ISO 7730 카테고리 B(PPD ≤ 10% · PMV ±0.5)로 바꾼다",
+        "source": "게이트웨이(8.simulation/ems_transformer/serving) general_ops/archetype_climate_grid robust_strategies 연산"
+      },
     "climate_load_shift": {
       "id": "climate_load_shift",
       "value": {
