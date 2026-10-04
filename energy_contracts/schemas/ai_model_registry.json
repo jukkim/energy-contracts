@@ -257,11 +257,11 @@
         "version": "1.2",
         "path": "8.simulation/Korean_BB/checkpoints/",
         "task": "forecast",
-        "framework": "patchtst",
+        "framework": "transformer",
         "input_shape": [
           "batch",
           168,
-          8
+          1
         ],
         "output_shape": [
           "batch",
@@ -276,7 +276,7 @@
         "trained_at": "2026-03-15",
         "frozen": true,
         "project": "Korean_BB",
-        "description": "Korean-700 EnergyPlus 시뮬레이션 학습, BuildingsBench 955동 평가 및 GS25 실측 zero-shot 평가. Energy and AI 투고 중 — 변경 금지. **사용자 결정 #7 (2026-05-29, lifecycle=locked)**: Korean_BB v1.0 LOCKED 유지 (투고 보존). F14 Policy Evaluation 의 forecast component 한정 — policy-aware variant 가 필요한 경우 `korean_bb_policy_adapter` 별 model_id 신설 (Korean_BB v1.0 fork, residual prediction + policy-aware feature 추가). 본 모델 자체 unlock 금지.",
+        "description": "Korean-700 EnergyPlus 시뮬레이션 학습(모델 = TransformerWithGaussian-M 인코더-디코더, 입력 168시간 부하 + 시간 특징 — 2026-10-04 정정: 예전 카드 patchtst·[168,8] 은 체크포인트와 달랐다), BuildingsBench 955동 평가 및 GS25 실측 zero-shot 평가. Energy and AI 투고 중 — 변경 금지. **사용자 결정 #7 (2026-05-29, lifecycle=locked)**: Korean_BB v1.0 LOCKED 유지 (투고 보존). F14 Policy Evaluation 의 forecast component 한정 — policy-aware variant 가 필요한 경우 `korean_bb_policy_adapter` 별 model_id 신설 (Korean_BB v1.0 fork, residual prediction + policy-aware feature 추가). 본 모델 자체 unlock 금지.",
         "active_checkpoint": "TransformerWithGaussian-M-v3-3k_ms_n50_s18000_revin_on_seed42_best.pt",
         "sha256": "66aad235e4705ede773586557f149556d197a4b8fa15442eb98f5c6ad84d4372",
         "backend_url": "http://localhost:8040",
@@ -326,7 +326,7 @@
         },
         "data_source": "predicted",
         "project": "korean_bb_residential",
-        "description": "Korean_BB fork, K-apt 132MB 학습 중. v1.1 frozen_for_demo 등재 (학습 완료 시 active_checkpoint 갱신).",
+        "description": "Korean_BB fork — 가구 단위 시뮬 300건(R01~R06 × 50, 서울 기상)으로 학습 중. v1.1 frozen_for_demo 등재(학습 완료 시 active_checkpoint 갱신). 2026-10-04 정정: 예전 문구 'K-apt 132MB 학습' 은 근거 파일이 없어 뺐다.",
         "active_checkpoint": "v0.3-development",
         "retrain_type": "type_1_sim",
         "training_domain": {
@@ -442,52 +442,55 @@
       },
       "building_ai_forecast": {
         "id": "building_ai_forecast",
-        "name": "Building AI Forecast (XGBoost)",
+        "name": "Building AI Load Forecast (XGBoost v4)",
         "name_kr": "건물 에너지 예측",
-        "version": "2.1",
-        "path": "8.simulation/building_ai/models/xgboost.json",
+        "version": "4.0",
+        "path": "8.simulation/building_ai/output/load_prediction/load_prediction_model.joblib",
         "task": "forecast",
         "framework": "xgboost",
         "accuracy_metric": {
-          "r2": 0.87,
-          "mae_kwh": 0.32,
-          "cvrmse_pct": 5.5
+          "cvrmse_pct": 2.72,
+          "global_cvrmse_pct": 4.74,
+          "r2": 0.9991
         },
-        "data_source": "predicted",
+        "data_source": "simulated",
         "project": "building_ai",
-        "description": "v1.1 — Type 2 (실측). OI-12 freeze = 본선 자동 재학습 1종 (월/분기). smartbuilding-api :8005 서빙.",
-        "active_checkpoint": "xgboost_v2.1",
+        "description": "168시간 부하 → 다음 24시간 부하(F10d, smartbuilding-api :8005 /api/v1/ai/load-predict · 게이트웨이 /v1/ai/load-predict). ems_transformer 한국화 E+ 시뮬 1,995건(15종 원형 × 한국 10개 도시)에서 뽑은 168→24 시간 구간 101,745개로 학습. 2026-10-04 정정: 예전 카드(XGBoost v2.1 · building_ai/models/xgboost.json · 실측 Type 2)는 실제 서빙 모델과 달랐다 — 서빙 응답의 model 이름을 active_checkpoint 로 둔다.",
+        "active_checkpoint": "XGBoost (v4 ems_transformer)",
         "backend_url": "http://localhost:8005",
-        "retrain_type": "type_2_real",
+        "retrain_type": "type_1_sim",
         "training_domain": {
           "use_type": [
             "office",
             "public_office",
             "retail",
             "school",
-            "education"
+            "education",
+            "medical",
+            "hotel",
+            "warehouse",
+            "apartment",
+            "residential"
           ],
           "gross_area_m2": {
-            "min": 186.7,
-            "max": 80038.2
+            "min": 232.3,
+            "max": 46320.4
           },
           "region": [
-            "US",
-            "GB",
-            "IE",
-            "CA"
+            "KR"
           ],
           "resolution": [
-            "hourly",
-            "daily"
+            "hourly"
           ],
-          "basis_ko": "서빙 모델 = smartbuilding-api energy_daily_demo4(LightGBM) · 학습 자료 = ASHRAE GEPIII 전기 계량(meter 0)에서 Office·Retail·Education 건물 중 8,000시간 이상 648동(교육 431·사무 212·판매 5) · 연면적 square_feet 약 2,010~861,524 → 186.7~80,038.2㎡ · 지역 = GEPIII 14개 사이트(미국·영국·아일랜드·캐나다 — 사이트 위치는 대회 참가자 공개 분석 기준, 한국 자료 없음) · 시간 계량을 일별 합으로 집계해 학습(시간·일 자료 모두 일별로 넣는다)",
+          "basis_ko": "학습 자료 = load_prediction_metrics.json(v4_ems_transformer) · 모델 encoders: 건물 15종(Apartment·FullServiceRestaurant·Hospital·Hotel·LargeOffice·MediumOffice·OutPatient·PrimarySchool·Restaurant·Retail·RetailStripmall·School·SmallHotel·SmallOffice·Warehouse) · 도시 10곳(서울·부산·대구·대전·광주·인천·울산·청주·강릉·제주) · 원형 = ASHRAE 90.1 원형 E+ 모델(형상 고정) → 연면적 최소 패스트푸드 232.3㎡(generate_new_building_idfs.py)~최대 대형 사무 46,320.4㎡(같은 원형 E+ 표) · 시간 단위(168→24)",
           "source_refs": [
-            "8.simulation/building_ai/scripts/train/train_energy_daily_demo4.py",
-            "8.simulation/building_ai/output/energy_forecast/energy_daily_demo4_metrics.json",
-            "8.simulation/building_ai/input/ashrae/building_metadata.csv"
+            "8.simulation/building_ai/output/load_prediction/load_prediction_metrics.json",
+            "8.simulation/building_ai/output/load_prediction/load_prediction_model.joblib",
+            "8.simulation/ems_transformer/scripts/generate_ems_idfs.py",
+            "8.simulation/ems_transformer/scripts/generate_new_building_idfs.py"
           ]
-        }
+        },
+        "trained_at": "2026-04-10"
       },
       "building_ai_anomaly": {
         "id": "building_ai_anomaly",
