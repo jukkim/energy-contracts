@@ -143,14 +143,80 @@
         },
         "retrain_type": {
           "type": "string",
-          "enum": ["type_1_sim", "type_2_real"],
+          "enum": [
+            "type_1_sim",
+            "type_2_real"
+          ],
           "description": "v1.1 추가 — Type 1(시뮬 학습, 수동만) vs Type 2(실측, 자동 가능). UNIFIED_GATEWAY_DESIGN §8.5."
         },
         "lifecycle": {
           "type": "string",
-          "enum": ["active", "rollback_only", "training_pending", "locked", "deprecated"],
+          "enum": [
+            "active",
+            "rollback_only",
+            "training_pending",
+            "locked",
+            "deprecated"
+          ],
           "default": "active",
           "description": "v1.2 추가 (사용자 결정 #6, 2026-05-29) — 모델 운영 lifecycle. **active**: 운영 traffic 처리. **rollback_only**: 운영 진입 금지, rollback target 만 (예: v2.5-pre Phase K G6 미통과). **training_pending**: 학습 진입 자격 미확정 (예: KBEP, ECMHS). **locked**: frozen baseline (예: Korean_BB v1.0 Energy & AI 투고). **deprecated**: 폐기 예정. Gateway routing 시 본 필드 권위 — `active` 외 모델로 traffic 가 들어가면 startup_check ERROR."
+        },
+        "training_domain": {
+          "type": "object",
+          "additionalProperties": false,
+          "description": "2026-10-04 — 모델이 학습한 자료의 영역(축별). 게이트웨이 학습 영역 대조(measured_store_analysis._model_domain)가 자산 속성과 견준다. 선언하지 않은 축은 '등록 없음'(못 잼). 값은 학습 자료 원본에서 확인한 사실만.",
+          "properties": {
+            "use_type": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "description": "학습 자료의 건물 용도(자산 기록 use_type 낱말과 같은 낱말)"
+            },
+            "gross_area_m2": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "min": {
+                  "type": "number"
+                },
+                "max": {
+                  "type": "number"
+                }
+              },
+              "description": "학습 자료 연면적 범위(㎡)"
+            },
+            "region": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "description": "학습 자료의 나라 코드(ISO 3166-1 alpha-2, 예: KR)"
+            },
+            "resolution": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "enum": [
+                  "hourly",
+                  "daily",
+                  "monthly"
+                ]
+              },
+              "description": "입력 자료 시간 해상도"
+            },
+            "basis_ko": {
+              "type": "string",
+              "description": "각 축 값의 근거(학습 자료·설정 파일)"
+            },
+            "source_refs": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "description": "근거 파일 경로"
+            }
+          }
         }
       },
       "additionalProperties": true
@@ -173,7 +239,11 @@
     },
     "gateway_verify_policy": {
       "type": "string",
-      "enum": ["strict", "warn", "off"],
+      "enum": [
+        "strict",
+        "warn",
+        "off"
+      ],
       "default": "warn",
       "description": "v1.1 추가 — Gateway startup_check 의 검증 정책. strict=ERROR 차단, warn=alert 후 통과, off=비활성. 본선 시점 = strict, 개발 = warn."
     }
@@ -211,7 +281,37 @@
         "sha256": "66aad235e4705ede773586557f149556d197a4b8fa15442eb98f5c6ad84d4372",
         "backend_url": "http://localhost:8040",
         "retrain_type": "type_1_sim",
-        "lifecycle": "locked"
+        "lifecycle": "locked",
+        "training_domain": {
+          "use_type": [
+            "office",
+            "public_office",
+            "retail",
+            "school",
+            "education",
+            "medical",
+            "hotel",
+            "warehouse",
+            "apartment",
+            "residential"
+          ],
+          "gross_area_m2": {
+            "min": 232.3,
+            "max": 46320.4
+          },
+          "region": [
+            "KR"
+          ],
+          "resolution": [
+            "hourly"
+          ],
+          "basis_ko": "학습 자료 = Korean-700(EnergyPlus 14종 원형 × 50, 서울·부산·대구·강릉·제주 한국 기상) · 용도 = configs/idf_mapping.yaml 14종을 자산 낱말로(사무 3(공공 업무 포함)·판매 2·초등학교·대학·병원·호텔·창고·아파트 2 — 음식점 2종은 자산 낱말 없음, 편의점은 학습 용도 아님) · 연면적 = 원형 형상 고정(부하 밀도만 scale_mult 0.3~3.0)이라 14종 E+ 표의 Total Building Area 최소(패스트푸드 232.3㎡)~최대(대형 사무 46,320.4㎡) · 시간 단위 8,760시간(입력 168시간)",
+          "source_refs": [
+            "8.simulation/Korean_BB/configs/idf_mapping.yaml",
+            "8.simulation/Korean_BB/docs/paper_final.md",
+            "8.simulation/Korean_BB/simulations/results_exp039_us/*/eplustbl.htm"
+          ]
+        }
       },
       "korean_bb_residential": {
         "id": "korean_bb_residential",
@@ -228,7 +328,29 @@
         "project": "korean_bb_residential",
         "description": "Korean_BB fork, K-apt 132MB 학습 중. v1.1 frozen_for_demo 등재 (학습 완료 시 active_checkpoint 갱신).",
         "active_checkpoint": "v0.3-development",
-        "retrain_type": "type_1_sim"
+        "retrain_type": "type_1_sim",
+        "training_domain": {
+          "use_type": [
+            "home",
+            "apartment",
+            "residential"
+          ],
+          "gross_area_m2": {
+            "min": 15.07,
+            "max": 149.12
+          },
+          "region": [
+            "KR"
+          ],
+          "resolution": [
+            "hourly"
+          ],
+          "basis_ko": "학습 자료 = 가구 단위 시뮬 300건(R01 고층아파트~R06 원룸 × 50, 서울 기상) · 연면적은 가구 전용면적 15.07~149.12㎡(catalog.csv) — 건물 전체가 아니다 · R07 단독주택은 설정만 있고 학습 자료에 없다 · 시간 단위",
+          "source_refs": [
+            "8.simulation/korean_bb_residential/configs/household_params.yaml",
+            "8.simulation/korean_bb_residential/data/household/metadata/catalog.csv"
+          ]
+        }
       },
       "ems_transformer": {
         "id": "ems_transformer",
@@ -291,8 +413,16 @@
         "path": "8.simulation/mpc_model/energyx_surrogate/artifacts/",
         "task": "predict",
         "framework": "patchtst",
-        "input_shape": ["batch", 48, 7],
-        "output_shape": ["batch", "{1,4,24}", 4],
+        "input_shape": [
+          "batch",
+          48,
+          7
+        ],
+        "output_shape": [
+          "batch",
+          "{1,4,24}",
+          4
+        ],
         "accuracy_metric": {
           "elec_cvrmse_pct_1h": 8.52,
           "elec_cvrmse_pct_4h": 11.78,
@@ -328,7 +458,36 @@
         "description": "v1.1 — Type 2 (실측). OI-12 freeze = 본선 자동 재학습 1종 (월/분기). smartbuilding-api :8005 서빙.",
         "active_checkpoint": "xgboost_v2.1",
         "backend_url": "http://localhost:8005",
-        "retrain_type": "type_2_real"
+        "retrain_type": "type_2_real",
+        "training_domain": {
+          "use_type": [
+            "office",
+            "public_office",
+            "retail",
+            "school",
+            "education"
+          ],
+          "gross_area_m2": {
+            "min": 186.7,
+            "max": 80038.2
+          },
+          "region": [
+            "US",
+            "GB",
+            "IE",
+            "CA"
+          ],
+          "resolution": [
+            "hourly",
+            "daily"
+          ],
+          "basis_ko": "서빙 모델 = smartbuilding-api energy_daily_demo4(LightGBM) · 학습 자료 = ASHRAE GEPIII 전기 계량(meter 0)에서 Office·Retail·Education 건물 중 8,000시간 이상 648동(교육 431·사무 212·판매 5) · 연면적 square_feet 약 2,010~861,524 → 186.7~80,038.2㎡ · 지역 = GEPIII 14개 사이트(미국·영국·아일랜드·캐나다 — 사이트 위치는 대회 참가자 공개 분석 기준, 한국 자료 없음) · 시간 계량을 일별 합으로 집계해 학습(시간·일 자료 모두 일별로 넣는다)",
+          "source_refs": [
+            "8.simulation/building_ai/scripts/train/train_energy_daily_demo4.py",
+            "8.simulation/building_ai/output/energy_forecast/energy_daily_demo4_metrics.json",
+            "8.simulation/building_ai/input/ashrae/building_metadata.csv"
+          ]
+        }
       },
       "building_ai_anomaly": {
         "id": "building_ai_anomaly",
