@@ -918,7 +918,13 @@
           [300, -45],
           [150, -12]
         ],
-        "dive_building_end_alt_m": 250
+        "dive_building_end_alt_m": 250,
+        "palettes": {
+          "blue": ["#BBDEFB", "#42A5F5", "#0D47A1"],
+          "green": ["#C8E6C9", "#66BB6A", "#1B5E20"],
+          "gray": ["#E0E0E0", "#9E9E9E", "#424242"]
+        },
+        "palette_default_alternate": "blue"
       },
       "unit_text": "s · deg · m",
       "label_ko": "장면 연출 기본값(시점·회전·멈춤·경로)",
@@ -929,7 +935,9 @@
       "source": "게이트웨이(8.simulation/ems_transformer/serving) _compose_execution_guard.PLAIN_MOVE_DEFAULT_VIEW · query_orchestrator(orbitSeconds 14 · _top_one_tour · tour.get('orbit_seconds', 14)) · scene_choreography.VERSION_SECONDS_DEFAULT · PATH_LEG_SECONDS · PATH_RANGE_M · _SIDE_PITCH · holdSeconds 4|8 · anchors[:6] · scene_contract.ROW_ANCHOR_MAX · durationS 6 · asset_inputs/simulation_scene_query.SCENE_DURATION_DEFAULT_S",
       "value_notes_ko": {
         "descend_keys": "층 자료가 없을 때 위↔아래 훑기의 (거리 m, 기울기 °) 세 단계 — 예전 scene_choreography._DESCEND_KEYS 리터럴 값 그대로(0.3.72 요청 C3)",
-        "dive_building_end_alt_m": "급강하 도착이 건물 한 채일 때 끝 높이 250 m — 내려다보는 각 −35°에서 건물 한 채가 화면을 채우는 높이(선언 · be-3d 등록부 허용 60~3000 · 0.3.72 요청 C3)"
+        "dive_building_end_alt_m": "급강하 도착이 건물 한 채일 때 끝 높이 250 m — 내려다보는 각 −35°에서 건물 한 채가 화면을 채우는 높이(선언 · be-3d 등록부 허용 60~3000 · 0.3.72 요청 C3)",
+        "palettes": "표시만 바꾸는 이어 묻기('색만 파란 계열로')의 색 계열 — 낮은 값→높은 값 순 세 색(값 구간 문턱은 그대로 · 값은 바꾸지 않는다). 화면 표시 선언(외부 근거 없음 · 2026-10-04 통합 검토 Q3)",
+        "palette_default_alternate": "계열을 말하지 않고 '색을 바꿔' 만 했을 때 쓰는 계열 이름(palettes 의 열쇠)"
       }
     },
     "display_tier_alpha": {
