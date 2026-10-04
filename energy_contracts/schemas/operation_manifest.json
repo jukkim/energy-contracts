@@ -10865,13 +10865,20 @@
         "operation": null,
         "selector": null,
         "needs": [
-          "subject_data_not_derived"
+          "region_statistics"
         ],
-        "default_period": "not_applicable",
-        "subject_kinds": [],
+        "default_period": "tool_rule",
+        "subject_kinds": [
+          "region"
+        ],
         "required_arguments": [],
-        "produces": [],
-        "axes": [],
+        "produces": [
+          "axis:yearly",
+          "qualifier:metric:eui"
+        ],
+        "axes": [
+          "year"
+        ],
         "input_source": "bound",
         "implementation": "internal",
         "registered_when": "always"
