@@ -8164,6 +8164,7 @@
           "level"
         ],
         "produces": [
+          "axis:monthly",
           "concept:basis_archetype_pack",
           "qualifier:fixed_setpoints",
           "qualifier:future_year",
