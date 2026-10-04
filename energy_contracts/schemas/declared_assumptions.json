@@ -707,6 +707,19 @@
       "basis": "외부 근거 없는 선언 시연 가정(일평균 기온 ±1℃)",
       "source": "게이트웨이(8.simulation/ems_transformer/serving) internal_query_tools.weather_matched_mv_workflow (2026-10-05 Q500 STUDIO-037)"
     },
+    "zone_co2_plausibility": {
+      "id": "zone_co2_plausibility",
+      "value": {
+        "model_suspect_ppm": 5000
+      },
+      "unit_text": "ppm",
+      "label_ko": "존 CO₂ 시뮬 값 타당성 경계",
+      "rule_ko": "시뮬레이션 존의 재실 시간 평균 CO₂ 가 이 값 이상이면 사람이 머무는 실내의 정상 운영 농도로 볼 수 없어(산업 노출기준 TWA) '모델의 외기 도입 경로 의심(모델 한계)' 으로 표시한다 — 값을 지우거나 고치지 않고 표시만, 현장 판단 근거로 쓰지 않는다",
+      "classification": "assumed",
+      "basis_kind": "standard_citation",
+      "basis": "고용노동부 고시 「화학물질 및 물리적 인자의 노출기준」 이산화탄소 시간가중평균(TWA) 5,000 ppm — 타당성 표시 경계로 차용(선언)",
+      "source": "게이트웨이(8.simulation/ems_transformer/serving) dcv_control_pair_analysis._zone_overlap (2026-10-05 Q500 LAB-036)"
+    },
     "virtual_targets": {
       "id": "virtual_targets",
       "value": {
