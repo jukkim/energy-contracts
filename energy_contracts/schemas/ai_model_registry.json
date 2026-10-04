@@ -215,6 +215,19 @@
                 "type": "string"
               },
               "description": "근거 파일 경로"
+            },
+            "outdoor_temp_c": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "min": {
+                  "type": "number"
+                },
+                "max": {
+                  "type": "number"
+                }
+              },
+              "description": "학습 기상 자료(EPW)의 외기 건구온도 범위(℃) — 게이트웨이가 자산 기간의 시간별 외기온과 견줘 범위 밖 시간 구간을 경고한다"
             }
           }
         }
@@ -305,12 +318,17 @@
           "resolution": [
             "hourly"
           ],
-          "basis_ko": "학습 자료 = Korean-700(EnergyPlus 14종 원형 × 50, 서울·부산·대구·강릉·제주 한국 기상) · 용도 = configs/idf_mapping.yaml 14종을 자산 낱말로(사무 3(공공 업무 포함)·판매 2·초등학교·대학·병원·호텔·창고·아파트 2 — 음식점 2종은 자산 낱말 없음, 편의점은 학습 용도 아님) · 연면적 = 원형 형상 고정(부하 밀도만 scale_mult 0.3~3.0)이라 14종 E+ 표의 Total Building Area 최소(패스트푸드 232.3㎡)~최대(대형 사무 46,320.4㎡) · 시간 단위 8,760시간(입력 168시간)",
+          "basis_ko": "학습 자료 = Korean-700(EnergyPlus 14종 원형 × 50, 서울·부산·대구·강릉·제주 한국 기상) · 용도 = configs/idf_mapping.yaml 14종을 자산 낱말로(사무 3(공공 업무 포함)·판매 2·초등학교·대학·병원·호텔·창고·아파트 2 — 음식점 2종은 자산 낱말 없음, 편의점은 학습 용도 아님) · 연면적 = 원형 형상 고정(부하 밀도만 scale_mult 0.3~3.0)이라 14종 E+ 표의 Total Building Area 최소(패스트푸드 232.3㎡)~최대(대형 사무 46,320.4㎡) · 시간 단위 8,760시간(입력 168시간) · 외기온 = 학습 EPW(Korean_BB/weather/KOR_{서울·부산·대구·강릉·제주}.epw) 건구온도 최저 -14.7℃~최고 36.2℃",
           "source_refs": [
             "8.simulation/Korean_BB/configs/idf_mapping.yaml",
             "8.simulation/Korean_BB/docs/paper_final.md",
-            "8.simulation/Korean_BB/simulations/results_exp039_us/*/eplustbl.htm"
-          ]
+            "8.simulation/Korean_BB/simulations/results_exp039_us/*/eplustbl.htm",
+            "8.simulation/Korean_BB/weather/KOR_*.epw"
+          ],
+          "outdoor_temp_c": {
+            "min": -14.7,
+            "max": 36.2
+          }
         }
       },
       "korean_bb_residential": {
@@ -345,11 +363,16 @@
           "resolution": [
             "hourly"
           ],
-          "basis_ko": "학습 자료 = 가구 단위 시뮬 300건(R01 고층아파트~R06 원룸 × 50, 서울 기상) · 연면적은 가구 전용면적 15.07~149.12㎡(catalog.csv) — 건물 전체가 아니다 · R07 단독주택은 설정만 있고 학습 자료에 없다 · 시간 단위",
+          "basis_ko": "학습 자료 = 가구 단위 시뮬 300건(R01 고층아파트~R06 원룸 × 50, 서울 기상) · 연면적은 가구 전용면적 15.07~149.12㎡(catalog.csv) — 건물 전체가 아니다 · R07 단독주택은 설정만 있고 학습 자료에 없다 · 시간 단위 · 외기온 = 학습 EPW(ems_simulation/weather/KOR_Seoul.epw) 건구온도 최저 -12.5℃~최고 36.2℃",
           "source_refs": [
             "8.simulation/korean_bb_residential/configs/household_params.yaml",
-            "8.simulation/korean_bb_residential/data/household/metadata/catalog.csv"
-          ]
+            "8.simulation/korean_bb_residential/data/household/metadata/catalog.csv",
+            "8.simulation/ems_simulation/weather/KOR_Seoul.epw*.epw"
+          ],
+          "outdoor_temp_c": {
+            "min": -12.5,
+            "max": 36.2
+          }
         }
       },
       "ems_transformer": {
@@ -482,13 +505,18 @@
           "resolution": [
             "hourly"
           ],
-          "basis_ko": "학습 자료 = load_prediction_metrics.json(v4_ems_transformer) · 모델 encoders: 건물 15종(Apartment·FullServiceRestaurant·Hospital·Hotel·LargeOffice·MediumOffice·OutPatient·PrimarySchool·Restaurant·Retail·RetailStripmall·School·SmallHotel·SmallOffice·Warehouse) · 도시 10곳(서울·부산·대구·대전·광주·인천·울산·청주·강릉·제주) · 원형 = ASHRAE 90.1 원형 E+ 모델(형상 고정) → 연면적 최소 패스트푸드 232.3㎡(generate_new_building_idfs.py)~최대 대형 사무 46,320.4㎡(같은 원형 E+ 표) · 시간 단위(168→24)",
+          "basis_ko": "학습 자료 = load_prediction_metrics.json(v4_ems_transformer) · 모델 encoders: 건물 15종(Apartment·FullServiceRestaurant·Hospital·Hotel·LargeOffice·MediumOffice·OutPatient·PrimarySchool·Restaurant·Retail·RetailStripmall·School·SmallHotel·SmallOffice·Warehouse) · 도시 10곳(서울·부산·대구·대전·광주·인천·울산·청주·강릉·제주) · 원형 = ASHRAE 90.1 원형 E+ 모델(형상 고정) → 연면적 최소 패스트푸드 232.3㎡(generate_new_building_idfs.py)~최대 대형 사무 46,320.4㎡(같은 원형 E+ 표) · 시간 단위(168→24) · 외기온 = 학습 EPW(ems_transformer/weather/KOR_{10개 도시}.epw) 건구온도 최저 -16.6℃~최고 36.2℃",
           "source_refs": [
             "8.simulation/building_ai/output/load_prediction/load_prediction_metrics.json",
             "8.simulation/building_ai/output/load_prediction/load_prediction_model.joblib",
             "8.simulation/ems_transformer/scripts/generate_ems_idfs.py",
-            "8.simulation/ems_transformer/scripts/generate_new_building_idfs.py"
-          ]
+            "8.simulation/ems_transformer/scripts/generate_new_building_idfs.py",
+            "8.simulation/ems_transformer/weather/KOR_*.epw"
+          ],
+          "outdoor_temp_c": {
+            "min": -16.6,
+            "max": 36.2
+          }
         },
         "trained_at": "2026-04-10"
       },
