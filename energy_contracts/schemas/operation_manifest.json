@@ -11029,19 +11029,21 @@
         "selector": null,
         "needs": [
           "assigned_subject_data",
-          "building_registry"
+          "building_registry",
+          "region_statistics"
         ],
-        "default_period": "not_applicable",
+        "default_period": "tool_rule",
         "subject_kinds": [
           "assigned_asset",
           "building_no",
-          "portfolio"
+          "portfolio",
+          "region"
         ],
-        "required_arguments": [
-          "max_temperature_delta_c"
-        ],
+        "required_arguments": [],
         "produces": [],
-        "axes": [],
+        "axes": [
+          "hour"
+        ],
         "input_source": "bound",
         "implementation": "internal",
         "registered_when": "always"
