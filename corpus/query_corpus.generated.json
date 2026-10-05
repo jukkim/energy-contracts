@@ -8,9 +8,9 @@
     "executor_keys": "projects\\energy-decision-studio\\lib\\actions\\executor_keys.ts"
   },
   "counts": {
-    "opcodes": 114,
+    "opcodes": 120,
     "opA": 8,
-    "opB": 95,
+    "opB": 101,
     "opC": 11,
     "routerClasses": 43,
     "executors": 7,
@@ -203,6 +203,13 @@
       "summary": "금색 플라이오버 데모 정지."
     },
     {
+      "api": "keepExampleScene",
+      "name": "demo.keepExample",
+      "ns": "demo",
+      "consumerClass": "B",
+      "summary": "지금 장면을 '임시 예시' 로 표시하고 그 판(장면 동작 그대로)을 '원래 예시' 기록으로 서버에 따로 저장한다. 나중에 실측 자료가 들어오면 "
+    },
+    {
       "api": "demoMetroFaceTier",
       "name": "demo.metroFaceTier",
       "ns": "demo",
@@ -252,11 +259,32 @@
       "summary": "서울 25구 노후도 choropleth (고도 사다리 Tier ②) 단독 장착."
     },
     {
+      "api": "pinSceneData",
+      "name": "demo.pinData",
+      "ns": "demo",
+      "consumerClass": "B",
+      "summary": "같은 임시(가상·추정) 자료를 다시 써서 발표해도 숫자가 바뀌지 않게 장면이 읽는 자료 응답(GET /api/v1/…)을 처음 받은 그대로 고정"
+    },
+    {
       "api": "controlPlayback",
       "name": "demo.playback",
       "ns": "demo",
       "consumerClass": "B",
       "summary": "모든 연출(카메라 순회·시간 재생·차량 시계)을 함께 멈추거나(action=pause) 멈춘 자리에서 잇거나(resume) 전체 속도를 바꾼다("
+    },
+    {
+      "api": "mountSceneChoice",
+      "name": "demo.sceneChoice",
+      "ns": "demo",
+      "consumerClass": "B",
+      "summary": "관람객이 고르는 갈림길: prompt 와 버튼(choices 최대 4 — label · 준비된 다음 장면 = scenarioId(저장 장면) 또"
+    },
+    {
+      "api": "unmountSceneChoice",
+      "name": "demo.sceneChoiceOff",
+      "ns": "demo",
+      "consumerClass": "B",
+      "summary": "관람객 선택 갈림길을 닫는다."
     },
     {
       "api": "mountShowSummary",
@@ -313,6 +341,20 @@
       "ns": "demo",
       "consumerClass": "B",
       "summary": "서울 choropleth 해제."
+    },
+    {
+      "api": "mountVirtualLayout",
+      "name": "demo.virtualLayout",
+      "ns": "demo",
+      "consumerClass": "B",
+      "summary": "실제 건물 위치를 모르는 대상(외곽선 없는 칠한 건물 · 지도 위치 없는 선택 대상·자산)을 가상의 설명 공간(격자 카드)에 값·이름과 함께 놓"
+    },
+    {
+      "api": "unmountVirtualLayout",
+      "name": "demo.virtualLayoutOff",
+      "ns": "demo",
+      "consumerClass": "B",
+      "summary": "가상 배치 카드를 닫는다."
     },
     {
       "api": "controlEdgeHvac",
@@ -2629,11 +2671,15 @@
         "flyCameraPath",
         "flyCameraShot",
         "highlightBuildingsByRef",
+        "keepExampleScene",
         "mountFlowLines",
+        "mountSceneChoice",
         "mountShowSummary",
         "mountUhiGrid",
         "mountValueMarkers",
+        "mountVirtualLayout",
         "mountZoneHighlights",
+        "pinSceneData",
         "placeVehicleAlongRoute",
         "playEvidenceTimeline",
         "playExhibitionLoop",
@@ -2650,10 +2696,12 @@
         "unmountMetricTimeline",
         "unmountNationalChoropleth",
         "unmountReverseCascade",
+        "unmountSceneChoice",
         "unmountSeoulChoropleth",
-        "unmountShowSummary"
+        "unmountShowSummary",
+        "unmountVirtualLayout"
       ],
-      "nlTarget": 67,
+      "nlTarget": 71,
       "nlCovered": 53,
       "nlUncovered": [
         "controlPlayback",
@@ -2661,11 +2709,15 @@
         "flyCameraPath",
         "flyCameraShot",
         "highlightBuildingsByRef",
+        "keepExampleScene",
         "mountFlowLines",
+        "mountSceneChoice",
         "mountShowSummary",
         "mountUhiGrid",
         "mountValueMarkers",
+        "mountVirtualLayout",
         "mountZoneHighlights",
+        "pinSceneData",
         "playEvidenceTimeline",
         "playExhibitionLoop",
         "selectFromPaint",
@@ -2691,8 +2743,10 @@
         "unmountMetricTimeline",
         "unmountNationalChoropleth",
         "unmountReverseCascade",
+        "unmountSceneChoice",
         "unmountSeoulChoropleth",
-        "unmountShowSummary"
+        "unmountShowSummary",
+        "unmountVirtualLayout"
       ],
       "deprecatedExempt": [
         "cameraFlyTo",
