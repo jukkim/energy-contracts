@@ -32,7 +32,9 @@ CHANGED_SCHEMAS = ("building_usage_map.json", "building_archetypes.json", "targe
                    "declared_assumptions.json")
 #: 원형 별칭 목록 셋은 **뒤에 붙이기만** 했다(아래에서 앞 원소를 따로 본다) — 그 밖은 판 표지뿐
 ALIAS_PATHS = {f"building_archetypes.json:/default/doe_buildings/{c}/aliases" for c in ("B01", "B02", "B03")}
-ALLOWED_CHANGES = {"/version", "/updated", "/$comment", *ALIAS_PATHS}
+ALLOWED_CHANGES = {"/version", "/updated", "/$comment", *ALIAS_PATHS,
+                   # 2026-10-01 125b530: M00 한국어 이름을 쉬운 말로(사람 대면 이름표만)
+                   "ems_strategies.json:/default/strategies/M00/name_kr"}
 
 
 def _load(name: str) -> dict:

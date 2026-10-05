@@ -56,7 +56,9 @@ ALLOWED_CHANGES = {"/version", "/updated", "/$comment",
                    "calendar_conventions.json:/default/question_season_system",
                    "calendar_conventions.json:/default/question_season_system_note",
                    "error_response.json:/$defs/Refusal/properties/retry/enum",
-                   "error_response.json:/$defs/Refusal/properties/retry/description"}
+                   "error_response.json:/$defs/Refusal/properties/retry/description",
+                   # 2026-10-01 125b530: M00 한국어 이름을 쉬운 말로(Setback → 설정 완화(셋백)) — 사람 대면 이름표만, 코드·값 아님
+                   "ems_strategies.json:/default/strategies/M00/name_kr"}
 
 
 def _load(name: str) -> dict:
@@ -500,8 +502,9 @@ def test_declined_requests_did_not_become_rows():
     for key in ("review_task_roles", "judge_calibration_agreement_min", "judge_calibration_set_size", "storage_capex_krw_per_kwh"):
         assert key not in d, key
     assert all("new_saving_share_range" not in dev for dev in d["home_appliance_replacement"]["value"]["devices"])
+    # 2026-10-05: 모델 카드 학습 영역(training_domain)은 그 뒤(10-04 모델 카드 결정) 정식으로 들어왔다 — 이 단언은 0.3.72 시점의 것이라 거둔다
     models = _load("ai_model_registry.json")["default"]["models"]
-    assert models and all("training_domain" not in m for m in models.values())
+    assert models
 
 
 def test_generated_models_follow_the_new_enum_and_fields():
