@@ -8,9 +8,9 @@
     "executor_keys": "projects\\energy-decision-studio\\lib\\actions\\executor_keys.ts"
   },
   "counts": {
-    "opcodes": 120,
+    "opcodes": 121,
     "opA": 8,
-    "opB": 101,
+    "opB": 102,
     "opC": 11,
     "routerClasses": 43,
     "executors": 7,
@@ -138,6 +138,13 @@
       "ns": "data",
       "consumerClass": "B",
       "summary": "검증 결과 근거 패널 해제."
+    },
+    {
+      "api": "editSceneNotes",
+      "name": "demo.editNotes",
+      "ns": "demo",
+      "consumerClass": "B",
+      "summary": "기존 장면(저장 장면 scenarioId · 없으면 지금 장면)에서 특정 건물·장면의 설명 글 하나만 교체 — 장면의 설명 칸(제목·라벨·안내·"
     },
     {
       "api": "playExhibitionLoop",
@@ -2668,6 +2675,7 @@
         "driveOsrmRoute",
         "driveOsrmRouteVia",
         "driveTmapRoute",
+        "editSceneNotes",
         "flyCameraPath",
         "flyCameraShot",
         "highlightBuildingsByRef",
@@ -2701,11 +2709,12 @@
         "unmountShowSummary",
         "unmountVirtualLayout"
       ],
-      "nlTarget": 71,
+      "nlTarget": 72,
       "nlCovered": 53,
       "nlUncovered": [
         "controlPlayback",
         "cycleEvidenceScenes",
+        "editSceneNotes",
         "flyCameraPath",
         "flyCameraShot",
         "highlightBuildingsByRef",

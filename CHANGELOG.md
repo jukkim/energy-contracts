@@ -4,6 +4,12 @@
 
 ---
 
+## 0.3.84 (2026-10-06, 태그 v0.3.84) — 게이트웨이 새 연산 peer_monthly_benchmark · cohort_query 인자 role_tour·entry_candidates(가산)
+
+- operation_manifest: peer_monthly_benchmark(우리 건물 월간 사용량 ↔ 유사 건물 월별 중앙값) · cohort_query role_tour·entry_candidates · building_id 가 배정 자산 번호도 받음.
+- corpus: Lab editSceneNotes(장면 설명 교체) · flyCameraShot showRelation.
+- 스키마·생성 상수·생성 모델 값 변경 없음.
+
 ## 0.3.83 (2026-10-05, 태그 v0.3.83) — 게이트웨이 새 연산 climate_scenario_rank · cohort_query data_gaps(가산)
 
 - operation_manifest: climate_scenario_rank(미래기후 시나리오별 유형 순위·범위·유지 후보·현재 사용량 대 미래 증가율) · cohort_query 인자 data_gaps.
