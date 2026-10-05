@@ -61,6 +61,21 @@ CONSUMERS = ("edge-agent", "gridbridge", "building-energy-3d", "ingestion-worker
 #:   고쳤다. `current_ci_pins`/`bump_ci_pins` 는 CONSUMERS + 이 목록의 **모든 워크플로**에서
 #:   pip 설치 핀을 찾아 같은 태그로 맞춘다(ssot-drift 의 checkout `ref:` 는 `_WF_REF_RE` 몫).
 CI_PIN_REPOS = ("eduarena",)
+#: ⚠ **목록은 손으로 적되, 빠진 소비자는 찾아서 더한다 (2026-10-05)** — 위 목록에 세 번(mgcc·sejong·ingestion-worker) 빠진 소비자가
+#:   조용히 뒤처졌고, 네 번째로 8.simulation/ems_transformer(pyproject 핀)가 v0.3.79 에 남아 sentinel-cron 이 빨갰다(10-03·10-04).
+#:   작업 공간의 pyproject 에서 EC 핀을 선언한 저장소를 **찾아** 목록에 더한다 — 이름 → 폴더(projects/ 밖도 된다).
+def _discovered_pin_dirs() -> dict[str, Path]:
+    out: dict[str, Path] = {}
+    for pp in [*PROJECTS.glob("*/pyproject.toml"), *(WORKSPACE_ROOT / "8.simulation").glob("*/pyproject.toml")]:
+        try:
+            text = pp.read_text(encoding="utf-8")
+        except OSError:
+            continue
+        if _PIN_RE.search(text):
+            out[pp.parent.name] = pp.parent
+    return out
+
+
 _PIN_RE = re.compile(r"(energy-contracts.*?@)(v[0-9][\w.\-]*)")
 # ssot-drift.yml 의 EC checkout step — `repository: jukkim/energy-contracts` 뒤따르는
 # `ref: vX.Y.Z`(주석 유무 무관). 다른 repo checkout 의 ref 는 건드리지 않는다.
@@ -77,12 +92,16 @@ _WF_REF_RE = re.compile(
 )
 
 
+CONSUMER_DIRS: dict[str, Path] = {**{name: PROJECTS / name for name in CONSUMERS}, **_discovered_pin_dirs()}
+CONSUMERS = tuple(dict.fromkeys([*CONSUMERS, *CONSUMER_DIRS]))
+
+
 def _pyproject(repo: str) -> Path:
-    return PROJECTS / repo / "pyproject.toml"
+    return CONSUMER_DIRS.get(repo, PROJECTS / repo) / "pyproject.toml"
 
 
 def _workflow(repo: str) -> Path:
-    return PROJECTS / repo / ".github" / "workflows" / "ssot-drift.yml"
+    return CONSUMER_DIRS.get(repo, PROJECTS / repo) / ".github" / "workflows" / "ssot-drift.yml"
 
 
 def current_pins() -> dict[str, str | None]:

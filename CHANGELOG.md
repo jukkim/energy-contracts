@@ -4,6 +4,17 @@
 
 ---
 
+## 0.3.81 (2026-10-05, 태그 v0.3.81) — 0.3.80 뒤 가산 묶음 릴리스(소비 저장소 CI 정합 회복)
+
+근거 = 사용자 2026-10-05 '깃허브가 자꾸 실패한다 … 근본적으로 해결하라'. 0.3.80 태그 뒤에 들어간 스키마 변경으로 생성 상수만 재생성되고
+핀·잠금·생성 모델이 따라가지 않아 소비자 CI(airos SSOT Drift Check · EC pytest · 8.simulation sentinel)가 빨갰다. 이 판으로 핀·잠금·상수를 한 번에 맞춘다.
+
+- 가산(값 변경 없음): declared_assumptions 새 행(partial delivery·climate_year_interpolation·robust_strategy_comfort·palettes·
+  assumption_flip_scenarios·weather_matched_day_pairs·zone_co2_plausibility) · 모델 카드 training_domain(학습 영역·외기 범위) ·
+  venue/edge_registration/provision 25자리 건물번호·identity_scope · 시계열 표 행 상한 · operation_manifest 갱신.
+- 생성 모델(_pydantic_models) 재생성(ai_model_registry·edge_registration·engineering_session·provision·venue).
+- 도구: `bump_ec_pin.py` 가 작업 공간에서 EC 핀 소비자를 **찾아** 더한다(8.simulation/ems_transformer 가 목록 밖이라 v0.3.79 에 남았다).
+
 ## 0.3.80 (2026-10-02, 태그 v0.3.80) — 지역 해석 표: 구 중심 닻 좌표를 업무·상업 중심으로(데이터만 · 모양 불변)
 
 근거 = 사용자 '지역의 가장 중심되는 곳' · '강남구는 번화가로' + 캠페인 `review_exchange/rounds/R083_gpt.md` 송파구 EUI 지도 점검(송파 '도심' 닻이
