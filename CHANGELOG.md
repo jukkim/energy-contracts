@@ -4,6 +4,12 @@
 
 ---
 
+## 0.3.83 (2026-10-05, 태그 v0.3.83) — 게이트웨이 새 연산 climate_scenario_rank · cohort_query data_gaps(가산)
+
+- operation_manifest: climate_scenario_rank(미래기후 시나리오별 유형 순위·범위·유지 후보·현재 사용량 대 미래 증가율) · cohort_query 인자 data_gaps.
+- corpus: Lab 발표·전시 진행 op(mountSceneChoice · pinSceneData · mountVirtualLayout · keepExampleScene) · 순회 overview.
+- 스키마·생성 상수·생성 모델 값 변경 없음.
+
 ## 0.3.82 (2026-10-05, 태그 v0.3.82) — 게이트웨이 새 연산의 연산 매니페스트·질의 코퍼스(가산)
 
 - operation_manifest: cohort_month_change(두 달 건물별 비교 — previous_month · same_month_last_year) 등 게이트웨이 새 연산 항목.
