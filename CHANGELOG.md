@@ -4,6 +4,13 @@
 
 ---
 
+## 0.3.82 (2026-10-05, 태그 v0.3.82) — 게이트웨이 새 연산의 연산 매니페스트·질의 코퍼스(가산)
+
+- operation_manifest: cohort_month_change(두 달 건물별 비교 — previous_month · same_month_last_year) 등 게이트웨이 새 연산 항목.
+  게이트웨이는 적재 때 등록 연산과 매니페스트를 맞대 본다 — 이 판 없이는 새 연산이 있는 게이트웨이가 CI 에서 import 실패.
+- corpus: Lab op 추가(controlPlayback · mountShowSummary · playExhibitionLoop · tourSelected waitTiles · 지표 지도 month · 시간 재생 latestMonths).
+- 스키마·생성 상수·생성 모델 값 변경 없음.
+
 ## 0.3.81 (2026-10-05, 태그 v0.3.81) — 0.3.80 뒤 가산 묶음 릴리스(소비 저장소 CI 정합 회복)
 
 근거 = 사용자 2026-10-05 '깃허브가 자꾸 실패한다 … 근본적으로 해결하라'. 0.3.80 태그 뒤에 들어간 스키마 변경으로 생성 상수만 재생성되고
