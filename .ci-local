@@ -1,0 +1,5 @@
+#!/bin/sh
+# 푸시 전 CI 와 같은 검사(.github/workflows — pytest·ruff F · validate_ssot 은 커밋 훅이 이미 돈다) — 전역 pre-push 가 부른다(2026-10-05)
+set -e
+python -m ruff check energy_contracts/ scripts/ --select F -q
+python -m pytest tests -q -p no:cacheprovider --basetemp=scratch/pt_ci_local -x --tb=line | tail -2
