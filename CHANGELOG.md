@@ -4,6 +4,10 @@
 
 ---
 
+## 0.3.94 (2026-10-07, 태그 v0.3.94) — 연산 매니페스트: answer_reshape 2연산 · 전국 이야기 투어
+
+- `operation_manifest` 재생성(448→450): `answer_reshape/decision_readiness`(바로 결정·추가 검토 나누기) · `answer_reshape/key_numbers`(핵심 숫자 N + 한 줄 주석) 추가 · `building_story_tour` subject_kinds 에 national · `sim_variant_compare/pack_variants` produces 보정. 가산 — 생성 상수·SOURCE_HASH 변경 없음(핀만).
+
 ## 0.3.93 (2026-10-07, 태그 v0.3.93) — 연산 매니페스트: 용도 거르기 한정어
 
 - `operation_manifest` 재생성: 코호트 연산 항목에 `qualifier:usage_filter` 추가(질문이 말한 용도 이름을 정본 용도 코드로 거르는 한정어 — 게이트웨이 `cohort.question_use_filters`). 가산 — 생성 상수·SOURCE_HASH 변경 없음(핀만 올림).
