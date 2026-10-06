@@ -53,8 +53,14 @@ PROJECTS = WORKSPACE_ROOT / "projects"
 #: CI YAML 안에만 있어 이 목록 밖이었다. 그 결과 M00~M20 에 멈추고 **배출계수
 #: 0.4594 구값**으로 CO₂ 를 계산해 왔다(정본 0.4173). 핀을 pyproject 로 옮기고
 #: 여기 등재해야 게이트가 이 repo 를 본다 — mgcc(#78) 와 같은 종류의 누락이다.
+# ⚠ **agentleague · smartbuilding 편입 (2026-10-06, ECON v1.5)** — 둘 다 **의도적 핀-free 아님, 단순 미등재**였다
+#:   (피어 2 세션 확인). 그래서 v0.3.86 전까지 lockstep 그룹 밖이라 SOURCE_HASH 일관 검사·bump 대상이 아니었다.
+#:   ⚠ 둘 다 **pyproject 가 없다** — agentleague 는 `.github/workflows/ssot-drift.yml` 의 checkout `ref:`(master→v0.3.86 고정)
+#:   가 핀이고(`bump_wf_refs` 가 올린다), smartbuilding 은 EC 를 거는 워크플로가 아예 없다(ci.yml 에 EC 없음). smartbuilding 은
+#:   pyproject/ssot-drift/ci 핀이 없어 bump 가 올릴 파일이 없지만, EC_PIN_CONSUMERS 에 넣어 **SOURCE_HASH 일관 검사**로
+#:   드리프트를 잡는다(생성 상수만 수동 regen+커밋). 진짜 핀 강제는 smartbuilding 에 pyproject 또는 ssot-drift 게이트가 생겨야 한다.
 CONSUMERS = ("edge-agent", "gridbridge", "building-energy-3d", "ingestion-worker",
-             "mgcc", "building-energy-sejong")
+             "mgcc", "building-energy-sejong", "agentleague", "smartbuilding")
 #: ⚠ **핀이 CI 워크플로 안에만 있는 저장소 (2026-09-13 추가)** — eduarena 는 pyproject 핀이
 #:   없고 `.github/workflows/pytest.yml` 의 `pip install "energy-contracts @ git+…@vX"` 한 줄로
 #:   EC 를 설치한다. pyproject·ssot-drift 만 고치던 이 도구는 그 줄을 몰라 v0.3.55 때 손으로

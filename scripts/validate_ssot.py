@@ -1189,7 +1189,8 @@ def check_mirror_core_keywords() -> list[str]:
 #: 0.4594 구값**으로 CO₂ 를 계산해 왔다(정본 0.4173). 핀을 pyproject 로 옮기고
 #: 여기 등재해야 게이트가 이 repo 를 본다 — mgcc(#78) 와 같은 종류의 누락이다.
 EC_PIN_CONSUMERS = ("edge-agent", "gridbridge", "building-energy-3d",
-                    "ingestion-worker", "mgcc", "building-energy-sejong")
+                    "ingestion-worker", "mgcc", "building-energy-sejong",
+                    "agentleague", "smartbuilding")  # 2026-10-06 ECON v1.5 편입 — bump_ec_pin.CONSUMERS 와 동기
 _EC_PIN_RE = re.compile(r"energy-contracts.*?@(v[0-9][\w.\-]*)")
 _GEN_CONST_RELPATHS = (
     "src/_generated_constants.py", "_generated_constants.py",
