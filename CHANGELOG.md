@@ -4,6 +4,10 @@
 
 ---
 
+## 0.3.93 (2026-10-07, 태그 v0.3.93) — 연산 매니페스트: 용도 거르기 한정어
+
+- `operation_manifest` 재생성: 코호트 연산 항목에 `qualifier:usage_filter` 추가(질문이 말한 용도 이름을 정본 용도 코드로 거르는 한정어 — 게이트웨이 `cohort.question_use_filters`). 가산 — 생성 상수·SOURCE_HASH 변경 없음(핀만 올림).
+
 ## 0.3.92 (2026-10-06, 태그 v0.3.92) — 달력 규약 school_vacation · 연산 매니페스트 새 연산 둘
 
 - `calendar_conventions.season_systems.school_vacation`(학교 방학 달 대표 가정 1·2·7·8월, classification assumed) — '방학' 질문의 기본 달(게이트웨이 question_frame.vacation_months). `CALENDAR_CONVENTIONS` 생성 상수가 바뀐다 — SOURCE_HASH 변경 · 소비처 재생성 필요.

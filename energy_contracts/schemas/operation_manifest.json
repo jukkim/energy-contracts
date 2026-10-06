@@ -2160,7 +2160,8 @@
           "derived:rank",
           "qualifier:metric:electricity",
           "qualifier:metric:eui",
-          "qualifier:metric:gas"
+          "qualifier:metric:gas",
+          "qualifier:usage_filter"
         ],
         "axes": [
           "month",
