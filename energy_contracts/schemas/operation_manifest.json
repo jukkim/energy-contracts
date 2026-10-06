@@ -8657,6 +8657,8 @@
           "derived:classify",
           "qualifier:fixed_setpoints",
           "qualifier:future_year",
+          "qualifier:metric:gas",
+          "qualifier:metric:peak",
           "qualifier:scenarios",
           "qualifier:setpoint_change",
           "qualifier:setpoint_delta",

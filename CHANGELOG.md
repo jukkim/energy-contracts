@@ -4,6 +4,10 @@
 
 ---
 
+## 0.3.95 (2026-10-07, 태그 v0.3.95) — 연산 매니페스트 한정어 보정
+
+- `operation_manifest` 재생성: 한정어 `qualifier:metric:gas`·`qualifier:metric:peak` 추가(가산 — 생성 상수·SOURCE_HASH 변경 없음, 핀만).
+
 ## 0.3.94 (2026-10-07, 태그 v0.3.94) — 연산 매니페스트: answer_reshape 2연산 · 전국 이야기 투어
 
 - `operation_manifest` 재생성(448→450): `answer_reshape/decision_readiness`(바로 결정·추가 검토 나누기) · `answer_reshape/key_numbers`(핵심 숫자 N + 한 줄 주석) 추가 · `building_story_tour` subject_kinds 에 national · `sim_variant_compare/pack_variants` produces 보정. 가산 — 생성 상수·SOURCE_HASH 변경 없음(핀만).
