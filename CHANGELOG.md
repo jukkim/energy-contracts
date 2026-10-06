@@ -4,6 +4,11 @@
 
 ---
 
+## 0.3.85 (2026-10-06, 태그 v0.3.85) — 게이트웨이 새 연산 building_search · building_month_counts(가산)
+
+- operation_manifest: building_search(주소·건물 이름으로 건물 찾기 · 같은 이름 후보 구분 · 개별 동/필지 합계 단위) · building_month_counts(건물마다 전기·가스 자료가 있는 달 · 두 채널 관측 범위가 다른 건물).
+- 스키마·생성 상수·생성 모델 값 변경 없음.
+
 ## 0.3.84 (2026-10-06, 태그 v0.3.84) — 게이트웨이 새 연산 peer_monthly_benchmark · cohort_query 인자 role_tour·entry_candidates(가산)
 
 - operation_manifest: peer_monthly_benchmark(우리 건물 월간 사용량 ↔ 유사 건물 월별 중앙값) · cohort_query role_tour·entry_candidates · building_id 가 배정 자산 번호도 받음.
