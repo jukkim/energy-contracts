@@ -8208,10 +8208,12 @@
         ],
         "required_arguments": [],
         "produces": [
+          "axis:monthly",
           "axis:yearly",
           "qualifier:metric:eui"
         ],
         "axes": [
+          "month",
           "year"
         ],
         "input_source": "bound",
@@ -8257,10 +8259,12 @@
         ],
         "required_arguments": [],
         "produces": [
+          "axis:monthly",
           "axis:yearly",
           "qualifier:metric:eui"
         ],
         "axes": [
+          "month",
           "year"
         ],
         "input_source": "bound",

@@ -4,6 +4,10 @@
 
 ---
 
+## 0.3.96 (2026-10-07, 태그 v0.3.96) — 연산 매니페스트 보정
+
+- `operation_manifest` 재생성(가산 — 생성 상수·SOURCE_HASH 변경 없음, 핀만). 전제 해결·저장 산출물 선언 반영.
+
 ## 0.3.95 (2026-10-07, 태그 v0.3.95) — 연산 매니페스트 한정어 보정
 
 - `operation_manifest` 재생성: 한정어 `qualifier:metric:gas`·`qualifier:metric:peak` 추가(가산 — 생성 상수·SOURCE_HASH 변경 없음, 핀만).
