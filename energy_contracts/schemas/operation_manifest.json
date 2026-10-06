@@ -179,7 +179,7 @@
   "default": {
     "generator": "8.simulation/ems_transformer/tools/gen_operation_manifest.py",
     "derivation_ko": "능력표(capability_table.ROWS — 대상 종류·질문 인자·내는 부분·축·입력 출처·구현·시뮬 팩)와 점포 연산 채널 표(store_operations_brief.operation_channels·REPLAY_DEFAULT_PERIOD)에서 파생 · 정형 질문 스위치 꺼짐·켜짐 두 상태를 합침",
-    "operation_count": 437,
+    "operation_count": 440,
     "needs_vocabulary": {
       "assigned_subject_data": "배정 자산·포트폴리오의 등록 자료(아이로스 기록·측정 묶음)",
       "building_registry": "25자리 건물번호의 공공 건물 자료",
@@ -1138,6 +1138,22 @@
         "implementation": "internal",
         "registered_when": "always"
       },
+      "answer_reshape/conditions_issues": {
+        "tool": "answer_reshape",
+        "operation": "conditions_issues",
+        "selector": "operation",
+        "needs": [
+          "caller_series"
+        ],
+        "default_period": "not_applicable",
+        "subject_kinds": [],
+        "required_arguments": [],
+        "produces": [],
+        "axes": [],
+        "input_source": "caller_series",
+        "implementation": "internal",
+        "registered_when": "always"
+      },
       "answer_reshape/criteria_table": {
         "tool": "answer_reshape",
         "operation": "criteria_table",
@@ -1188,9 +1204,41 @@
         "implementation": "internal",
         "registered_when": "always"
       },
+      "answer_reshape/location_check": {
+        "tool": "answer_reshape",
+        "operation": "location_check",
+        "selector": "operation",
+        "needs": [
+          "caller_series"
+        ],
+        "default_period": "not_applicable",
+        "subject_kinds": [],
+        "required_arguments": [],
+        "produces": [],
+        "axes": [],
+        "input_source": "caller_series",
+        "implementation": "internal",
+        "registered_when": "always"
+      },
       "answer_reshape/order_check": {
         "tool": "answer_reshape",
         "operation": "order_check",
+        "selector": "operation",
+        "needs": [
+          "caller_series"
+        ],
+        "default_period": "not_applicable",
+        "subject_kinds": [],
+        "required_arguments": [],
+        "produces": [],
+        "axes": [],
+        "input_source": "caller_series",
+        "implementation": "internal",
+        "registered_when": "always"
+      },
+      "answer_reshape/pin_set": {
+        "tool": "answer_reshape",
+        "operation": "pin_set",
         "selector": "operation",
         "needs": [
           "caller_series"
@@ -2002,7 +2050,9 @@
           "axis:yearly",
           "derived:difference",
           "derived:rank",
+          "qualifier:metric:electricity",
           "qualifier:metric:eui",
+          "qualifier:metric:gas",
           "qualifier:usage_filter"
         ],
         "axes": [
@@ -6850,9 +6900,7 @@
         ],
         "default_period": "not_applicable",
         "subject_kinds": [],
-        "required_arguments": [
-          "perspective"
-        ],
+        "required_arguments": [],
         "produces": [],
         "axes": [],
         "input_source": "caller_series",
@@ -8091,9 +8139,12 @@
         "required_arguments": [
           "metric"
         ],
-        "produces": [],
+        "produces": [
+          "axis:monthly"
+        ],
         "axes": [
-          "hour"
+          "hour",
+          "month"
         ],
         "input_source": "bound",
         "implementation": "internal",
@@ -8139,9 +8190,11 @@
         "required_arguments": [
           "metric"
         ],
-        "produces": [],
+        "produces": [
+          "axis:monthly"
+        ],
         "axes": [
-          "hour"
+          "month"
         ],
         "input_source": "bound",
         "implementation": "internal",

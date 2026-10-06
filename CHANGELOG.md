@@ -4,6 +4,12 @@
 
 ---
 
+## 0.3.87 (2026-10-06, 태그 v0.3.87) — 연산 매니페스트: answer_reshape 다섯 연산 추가 · 파생 재생성
+
+- 추가: `answer_reshape/distribution`(최소·중앙값·최대·우리 건물 위치) · `tie_groups`(동률 묶음) · `pin_set`(대상 목록 고정) · `location_check`(지도 위치 확인) · `conditions_issues`(대안별 성립 조건·남은 쟁점) — be-3d 추가 100 대응.
+- 파생 재생성(게이트웨이 능력표에서 — 가산만): `climate_scenario_rank`·`measured_building_climate` 연도 축 · `measured_channel_coverage`·`scene_data_query` 월 축 · `perspective_reorder` 관점 인자 선택(질문 낱말로 채움).
+- 제거·값 변경 없음(`cohort_query` 전기·가스 지표는 능력표 선언으로 유지).
+
 ## 0.3.86 (2026-10-06, 태그 v0.3.86) — measure_cost_catalog ECON 외기냉방(Economizer) 조치 가산 (스키마 v1.5)
 
 - measure_cost_catalog(스키마 1.4→1.5): measures 에 ECON(외기냉방/엔탈피 이코노마이저, measure_ref ems:M02) 추가 → 12→13조치. savings_by_enduse cooling_elec 0.11 = KR2026B EnergyPlus 시뮬 M02 cooling_pct 유효쌍 grounding(B01 대형사무소 중앙값 10.9% 보수 채택, data_classification=simulation_derived — 조사 deemed 12조치와 방법론 구분, note 명시). CAPEX 600원/㎡ = ems_strategy_capex_assumption(M02) 파생.
