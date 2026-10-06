@@ -50,7 +50,7 @@ def test_allowed_kinds_are_catalog_plus_two_decided_operational_kinds():
     from energy_contracts._utils.resource_authorization import allowed_action_kinds
     spec = policy()["actions"]["approve:action"]["conditions"]["action_kind"]
     assert allowed_action_kinds(spec) == frozenset(SAVINGS_CODES) | {"check_action", "schedule_change"}
-    assert len(allowed_action_kinds(spec)) == 14
+    assert len(allowed_action_kinds(spec)) == 15  # 13 catalog(+ECON 2026-10-06) + 2 operational kinds
     assert "setpoint_change" not in allowed_action_kinds(spec)
 
 

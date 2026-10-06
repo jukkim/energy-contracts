@@ -4,15 +4,15 @@
   "title": "Measure Cost Catalog (조치 경제성 카탈로그 — MACC)",
   "description": "조치별 깜냥절감(deemed savings) + 단위 CAPEX + 수명 SSOT. 운영(EMS)·패시브(외피)·설비교체를 '돈'으로 비교(한계저감비용곡선 MACC)하기 위한 근거 데이터. Spec source = 공모전/2026-04-24_AI챔피언_전국민AI경진대회/docs/MEASURE_ECONOMICS_SPEC.md (2026-07-12). sibling policy_measures.json#$defs.MeasureCode(자본·설계 조치 8종, 공학 기여분) + ems_strategies.json#StrategyCode(운영 M00~M20)에 '비용 축'을 additive 로 얹는다 — measure_ref 로 두 네임스페이스를 참조. 탄소가격·요금·배출계수는 재정의하지 않고 market_prices.json(kau/unit_prices) + emission_factors.json(0.4173) 을 인용한다(ssot-canonical-compliance). ⚠ deemed 절감률=조사 근거(신뢰도 A~C), CAPEX 단위단가=국제값 현지화 추정(한국 공개 단가표 부재=no_korean_data). 실측/E+ 정밀화 시 상위호환 교체.",
   "_usage": "hybrid",
-  "$comment": "1.4(2026-09-30, 0.3.72 — 요청 C9·C1·C2 · 가산): 조치마다 aliases_ko(질문·조치 대상 명사가 조치를 부르는 일상 이름 — 한 별칭 = 한 조치, 적재 때 scripts/vocabulary_gate.py). 값·단가는 그대로. · reference-only — gen_constants.py load_schemas() 미진입(SOURCE_HASH 무관, codegen cascade 회피, sibling policy_measures.json 과 동일 패턴). consumer 는 wheel `from energy_contracts import load_schema; load_schema('measure_cost_catalog')` 로 소비. 상태=designed (F16 후보 economics 축, 서빙 미구현). 값 정정 시 bulk-edit-verify.",
+  "$comment": "1.5(2026-10-06 — 외기냉방 ECON 가산, 완전성 방향 사용자 승인 A): measures 에 ECON(외기냉방/엔탈피 이코노마이저, measure_ref ems:M02) 추가 — 13조치. ⚠ ECON 절감은 KR2026B EnergyPlus 시뮬 유래(simulation_derived)로 나머지 12조치(조사 deemed)와 방법론이 다르다(note 에 명시, 섞어 집계 금지). CAPEX=ems_strategy_capex_assumption(M02) 파생값. 1.4(2026-09-30, 0.3.72 — 요청 C9·C1·C2 · 가산): 조치마다 aliases_ko(질문·조치 대상 명사가 조치를 부르는 일상 이름 — 한 별칭 = 한 조치, 적재 때 scripts/vocabulary_gate.py). 값·단가는 그대로. · ⚠ load_schemas() 는 이 파일을 적재한다 — measures 추가는 SOURCE_HASH 를 바꾼다(실측 2026-10-06, 옛 'reference-only·SOURCE_HASH 무관' 주석은 틀렸다). gen_constants.py --all 재생성 필요. consumer 는 wheel `from energy_contracts import load_schema; load_schema('measure_cost_catalog')` 로 소비. 상태=designed (F16 후보 economics 축, 서빙 미구현). 값 정정 시 bulk-edit-verify.",
   "_consumers": [
     "agentleague",
     "ems_transformer",
     "building-energy-3d",
     "gen_constants → DISCOUNT_RATE_DEFAULT·DISCOUNT_RATE_SOURCE (building-energy-3d·8sim-shared·agentleague)"
   ],
-  "version": "1.4",
-  "updated": "2026-09-30",
+  "version": "1.5",
+  "updated": "2026-10-06",
   "$defs": {
     "WorkScope": {
       "type": "string",
@@ -701,6 +701,30 @@
           "블라인드",
           "어닝",
           "차양막"
+        ]
+      },
+      "ECON": {
+        "name": "외기냉방(엔탈피 이코노마이저)",
+        "measure_class": "operational",
+        "work_scope": "operational",
+        "measure_ref": "ems:M02",
+        "savings_by_enduse": {
+          "cooling_elec": 0.11
+        },
+        "capex_krw_per_m2": 600,
+        "lifetime_yr": 15,
+        "simple_payback_yr_ref": "<1 (제어 시퀀스, 기존 외기 댐퍼 활용 시)",
+        "savings_confidence": "B",
+        "capex_confidence": "C",
+        "transferability": "estimated",
+        "source": "KR2026B EnergyPlus 시뮬 M02(Economizer) cooling_pct 유효쌍(B01 대형사무소·B03 소형사무소, 2026-09-29) + CAPEX=measure_cost_catalog ems_strategy_capex_assumption(M02)",
+        "note": "⚠ 절감 방법론이 다른 12조치(조사 deemed, DOE/LBNL/ASHRAE/KEA)와 다르다 — 이 절감은 KR2026B 자체 EnergyPlus 시뮬(in-domain, Korean-localized) 유래다(data_classification=simulation_derived, 조사값과 섞어 집계하지 말 것). 생성규칙: 각 M02 셀 metadata.savings.cooling_pct(=(M00 baseline−M02)/baseline, pair_validity=valid) → 건물별 중앙값 B01 대형사무소 10.9% · B03 소형사무소 19.2% 중 보수적으로 대형사무소 중앙값 0.11 채택(소형사무소는 상한). 외기냉방 절감은 거의 전량 냉방 전기이고 난방(heating_pct)≈0. CAPEX 600원/㎡ = ems_strategy_capex_assumption M02(BEMS 6000 × oa_damper_pct 1점/제어점우주 10점) — 제어 시퀀스 조치 기준이며 외기 댐퍼·엔탈피 센서 본체는 미포함(기존 BAS·댐퍼 가정, capex_confidence C·현장견적 아님, data_source=imputed). 실측·추가 건물(GCP batch6) 집계 시 상위호환 교체.",
+        "aliases_ko": [
+          "외기냉방",
+          "외기 냉방",
+          "이코노마이저",
+          "외기 무료냉방",
+          "무료냉방"
         ]
       }
     }

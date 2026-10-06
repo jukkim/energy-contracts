@@ -4,6 +4,12 @@
 
 ---
 
+## 0.3.86 (2026-10-06, 태그 v0.3.86) — measure_cost_catalog ECON 외기냉방(Economizer) 조치 가산 (스키마 v1.5)
+
+- measure_cost_catalog(스키마 1.4→1.5): measures 에 ECON(외기냉방/엔탈피 이코노마이저, measure_ref ems:M02) 추가 → 12→13조치. savings_by_enduse cooling_elec 0.11 = KR2026B EnergyPlus 시뮬 M02 cooling_pct 유효쌍 grounding(B01 대형사무소 중앙값 10.9% 보수 채택, data_classification=simulation_derived — 조사 deemed 12조치와 방법론 구분, note 명시). CAPEX 600원/㎡ = ems_strategy_capex_assumption(M02) 파생.
+- resource_authorization 허용 action_kind 14→15(catalog 13 + 2 operational).
+- ⚠ measure_cost_catalog 는 load_schemas() 에 적재되어 measures 가산이 SOURCE_HASH 를 바꾼다(옛 'reference-only·SOURCE_HASH 무관' 주석 정정). 소비처 _generated_constants 는 SOURCE_HASH만 갱신(생성 상수·모델 값 불변).
+
 ## 0.3.85 (2026-10-06, 태그 v0.3.85) — 게이트웨이 새 연산 building_search · building_month_counts(가산)
 
 - operation_manifest: building_search(주소·건물 이름으로 건물 찾기 · 같은 이름 후보 구분 · 개별 동/필지 합계 단위) · building_month_counts(건물마다 전기·가스 자료가 있는 달 · 두 채널 관측 범위가 다른 건물).
