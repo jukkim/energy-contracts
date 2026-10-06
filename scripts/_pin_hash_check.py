@@ -35,16 +35,47 @@ from pathlib import Path
 _HASH_RE = re.compile(r'SOURCE_HASH\s*=\s*"([0-9a-f]+)"')
 
 
+def _tracked_gen_files(root: Path) -> list[Path]:
+    """root 에서 **git 이 추적하는**(= 커밋된) _generated_constants.py 만.
+
+    ⚠ 2026-10-06: 예전엔 `rglob` 로 긁어 **ignored·untracked 사본**까지 셌다 — git-ignore 를 안 보기 때문.
+    실측: `airos-energy-decision/scratch/g1g2/before/.../_generated_constants.py`(=.gitignore `scratch/`,
+    **연결워크트리 아님 · 그냥 스크래치 스냅샷**, 옛 해시 a81c5a5)가 섞여 `--check` 가 '소비자 SOURCE_HASH 갈라짐'
+    가짜 빨강을 냈다. 함수 이름이 'committed' 인 만큼 **index 에 있는 파일만** 센다 — 이것이 ignored 스냅샷과
+    연결워크트리(그 체크아웃 파일은 이 저장소 index 에 없다) 둘 다 자연히 뺀다(연결워크트리만 빼는 것보다 넓다).
+    git 을 못 쓰는 환경은 rglob 로 떨어지되 연결워크트리(.git 파일)·`scratch/` 사본은 뺀다."""
+    try:
+        r = subprocess.run(["git", "-C", str(root), "ls-files", "-z", "--",
+                            "*_generated_constants.py"], capture_output=True)
+        if r.returncode == 0:
+            return [root / p for p in r.stdout.decode("utf-8", "replace").split("\0")
+                    if p and "node_modules" not in p]
+    except Exception:                                    # noqa: BLE001
+        pass
+    out: list[Path] = []
+    for gen in root.rglob("_generated_constants.py"):
+        s = str(gen).replace("\\", "/")
+        if "node_modules" in s or "/scratch/" in s:
+            continue
+        g = gen
+        for d in [gen.parent, *gen.parent.parents]:      # 연결워크트리(.git 파일)면 뺀다
+            if (d / ".git").exists():
+                if (d / ".git").is_file():
+                    g = None
+                break
+        if g is not None:
+            out.append(gen)
+    return out
+
+
 def committed_source_hashes(projects: Path, consumers) -> set[str]:
-    """소비자들이 **커밋해 둔** 생성상수 해시 모음."""
+    """소비자들이 **커밋해 둔**(git 추적) 생성상수 해시 모음. ignored 스냅샷·연결워크트리 사본은 뺀다(_tracked_gen_files)."""
     found: set[str] = set()
     for repo in consumers:
         root = projects / repo
         if not root.exists():
             continue
-        for gen in root.rglob("_generated_constants.py"):
-            if "node_modules" in str(gen):
-                continue
+        for gen in _tracked_gen_files(root):
             m = _HASH_RE.search(gen.read_text(encoding="utf-8", errors="replace"))
             if m:
                 found.add(m.group(1))

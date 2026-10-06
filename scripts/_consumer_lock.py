@@ -42,9 +42,19 @@ class LockError(RuntimeError):
     """잠금 파일을 안전하게 다시 만들 수 없다(해시 모듈 없음·기준 불일치·스키마 없음·태그 없음)."""
 
 
+def linked_worktree(repo_root: Path) -> bool:
+    """git **연결 작업 트리**(`git worktree add` — `.git` 이 gitdir 를 가리키는 파일)인가. 본 체크아웃은 `.git` 이 폴더다."""
+    return (repo_root / ".git").is_file()
+
+
 def consumer_locks(projects: Path) -> list[Path]:
-    """워크스페이스의 모든 소비자 잠금 파일(찾아서 — 목록으로 적지 않는다)."""
-    return sorted(projects.glob(f"*/{LOCK_REL.as_posix()}"))
+    """워크스페이스의 모든 소비자 잠금 파일(찾아서 — 목록으로 적지 않는다).
+
+    2026-10-01(캠페인 round3b 리뷰 수정 ⑫): **연결 작업 트리는 뺀다.** 그것은 같은 소비자의 다른 세션 기능 브랜치다 —
+    v0.3.74 bump 가 airos-ops-charts·airos-ops-ec-labels(airos-energy-decision 의 작업 트리)의 잠금만 태그로 고쳐 쓰고
+    그 트리의 생성 상수는 그대로여서, 잠금은 v0.3.74 라 말하는데 `_generated_constants.SOURCE_HASH` 는 옛 태그였다
+    (`--check` 가 그 트리 때문에 '소비자 SOURCE_HASH 가 갈라져 있다'로 실패). 브랜치 주인이 자기 브랜치에서 올린다."""
+    return sorted(p for p in projects.glob(f"*/{LOCK_REL.as_posix()}") if not linked_worktree(repo_of(p)))
 
 
 def repo_of(lock_path: Path) -> Path:
