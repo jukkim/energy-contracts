@@ -4,6 +4,11 @@
 
 ---
 
+## 0.3.91 (2026-10-06, 태그 v0.3.91) — declared_assumptions 1.7: 새 행 셋(가산 · 생성 상수 바뀜)
+
+- `capex_quote_band`(설치비 견적 편차 0.8~1.2 — 게이트웨이 리터럴을 옮김) · `map_estimate_fill_rule`(be-3d 지도 빈 값 채움 순서·문턱 20 — 게이트웨이 사본 제거, be-3d·게이트웨이가 같은 행을 읽음) · `role_tour_representative_quantile`(0.25 — 선언 시연 가정).
+- 1.6 의 키와 값은 바꾸지 않았다. `DECLARED_ASSUMPTIONS` 생성 상수에 행이 더해져 SOURCE_HASH 가 바뀐다 — 소비처 재생성 필요.
+
 ## 0.3.90 (2026-10-06, 태그 v0.3.90) — 연산 매니페스트: scenario_versions/nature_compare
 
 - 추가: `scenario_versions/nature_compare`(가상 예시 판 ↔ 실측 연결 판의 성격 비교 — 질문 낱말로 미리보기·차이를 가로채던 갈래를 명시 동작으로).
