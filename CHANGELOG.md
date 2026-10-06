@@ -4,6 +4,13 @@
 
 ---
 
+## 0.3.88 (2026-10-06, 태그 v0.3.88) — 연산 매니페스트: 새 연산 다섯 (가산)
+
+- 추가: `answer_reshape/measure_pair`(같은 건물 집합에 두 대책 · 같은 기준안) · `archetype_climate_grid/tradeoffs`(에너지·탄소·쾌적 상충) ·
+  `portfolio_climate_candidates`(미래기후 시나리오별 공통·달라지는 후보) · `portfolio_criteria_candidates`(운영 부담·비용·쾌적 기준별 후보 집합) ·
+  `scenario_versions/replay`(저장한 판을 다시 계산하지 않고 재생) — be-3d 추가 100 대응.
+- 제거·값 변경 없음.
+
 ## 0.3.87 (2026-10-06, 태그 v0.3.87) — 연산 매니페스트: answer_reshape 다섯 연산 추가 · 파생 재생성
 
 - 추가: `answer_reshape/distribution`(최소·중앙값·최대·우리 건물 위치) · `tie_groups`(동률 묶음) · `pin_set`(대상 목록 고정) · `location_check`(지도 위치 확인) · `conditions_issues`(대안별 성립 조건·남은 쟁점) — be-3d 추가 100 대응.
