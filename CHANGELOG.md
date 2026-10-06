@@ -4,6 +4,11 @@
 
 ---
 
+## 0.3.92 (2026-10-06, 태그 v0.3.92) — 달력 규약 school_vacation · 연산 매니페스트 새 연산 둘
+
+- `calendar_conventions.season_systems.school_vacation`(학교 방학 달 대표 가정 1·2·7·8월, classification assumed) — '방학' 질문의 기본 달(게이트웨이 question_frame.vacation_months). `CALENDAR_CONVENTIONS` 생성 상수가 바뀐다 — SOURCE_HASH 변경 · 소비처 재생성 필요.
+- `operation_manifest` 재생성: `action_cross_compare`(여러 건물 같은 조치 비교) · `measured_store_analysis/event_day_plan`(행사 전·중·후 계획) 항목 추가, `simulation_pack_analysis/coldwave_heating_check`·`store_operations_brief/temp_rise_flat_power` produces 개념 추가(가산).
+
 ## 0.3.91 (2026-10-06, 태그 v0.3.91) — declared_assumptions 1.7: 새 행 셋(가산 · 생성 상수 바뀜)
 
 - `capex_quote_band`(설치비 견적 편차 0.8~1.2 — 게이트웨이 리터럴을 옮김) · `map_estimate_fill_rule`(be-3d 지도 빈 값 채움 순서·문턱 20 — 게이트웨이 사본 제거, be-3d·게이트웨이가 같은 행을 읽음) · `role_tour_representative_quantile`(0.25 — 선언 시연 가정).

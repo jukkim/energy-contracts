@@ -179,7 +179,7 @@
   "default": {
     "generator": "8.simulation/ems_transformer/tools/gen_operation_manifest.py",
     "derivation_ko": "능력표(capability_table.ROWS — 대상 종류·질문 인자·내는 부분·축·입력 출처·구현·시뮬 팩)와 점포 연산 채널 표(store_operations_brief.operation_channels·REPLAY_DEFAULT_PERIOD)에서 파생 · 정형 질문 스위치 꺼짐·켜짐 두 상태를 합침",
-    "operation_count": 446,
+    "operation_count": 448,
     "needs_vocabulary": {
       "assigned_subject_data": "배정 자산·포트폴리오의 등록 자료(아이로스 기록·측정 묶음)",
       "building_registry": "25자리 건물번호의 공공 건물 자료",
@@ -191,6 +191,29 @@
       "subject_data_not_derived": "능력표가 대상 종류·자료 출처를 내지 못한 행 — 대상 자료를 읽는지 이 생성기가 정하지 못했다(못 잼 · 도구 구현이 정한다 — 자료 없음이 아니다)"
     },
     "operations": {
+      "action_cross_compare": {
+        "tool": "action_cross_compare",
+        "operation": null,
+        "selector": null,
+        "needs": [
+          "assigned_subject_data"
+        ],
+        "default_period": "tool_rule",
+        "subject_kinds": [
+          "assigned_asset",
+          "portfolio"
+        ],
+        "required_arguments": [],
+        "produces": [
+          "derived:rank"
+        ],
+        "axes": [
+          "hour"
+        ],
+        "input_source": "bound",
+        "implementation": "internal",
+        "registered_when": "always"
+      },
       "airos_assigned_operations_query/bems_channel_trust": {
         "tool": "airos_assigned_operations_query",
         "operation": "bems_channel_trust",
@@ -1607,7 +1630,8 @@
           "previous_demand_kw",
           "current_demand_kw",
           "previous_demand_rate",
-          "current_demand_rate"
+          "current_demand_rate",
+          "expected_saving"
         ],
         "produces": [
           "qualifier:metric:peak"
@@ -5180,6 +5204,29 @@
         "implementation": "internal",
         "registered_when": "always"
       },
+      "measured_store_analysis/event_day_plan": {
+        "tool": "measured_store_analysis",
+        "operation": "event_day_plan",
+        "selector": "operation",
+        "needs": [
+          "assigned_subject_data",
+          "building_registry"
+        ],
+        "default_period": "tool_rule",
+        "subject_kinds": [
+          "assigned_asset",
+          "building_no",
+          "portfolio"
+        ],
+        "required_arguments": [],
+        "produces": [],
+        "axes": [
+          "hour"
+        ],
+        "input_source": "bound",
+        "implementation": "internal",
+        "registered_when": "always"
+      },
       "measured_store_analysis/fragility_flags": {
         "tool": "measured_store_analysis",
         "operation": "fragility_flags",
@@ -7466,7 +7513,7 @@
           "building_registry",
           "region_statistics"
         ],
-        "default_period": "not_applicable",
+        "default_period": "tool_rule",
         "subject_kinds": [
           "assigned_asset",
           "building_no",
@@ -7477,9 +7524,12 @@
           "metric_id"
         ],
         "produces": [
+          "axis:yearly",
           "derived:classify"
         ],
-        "axes": [],
+        "axes": [
+          "year"
+        ],
         "input_source": "bound",
         "implementation": "internal",
         "registered_when": "always"
@@ -7531,10 +7581,12 @@
           "metric_id"
         ],
         "produces": [
+          "axis:yearly",
           "derived:classify"
         ],
         "axes": [
-          "hour"
+          "hour",
+          "year"
         ],
         "input_source": "bound",
         "implementation": "internal",
@@ -8712,6 +8764,7 @@
         "required_arguments": [],
         "produces": [
           "concept:basis_archetype_pack",
+          "concept:night_heating_plan",
           "qualifier:metric:gas",
           "qualifier:metric:peak"
         ],
@@ -10963,6 +11016,7 @@
           "power_flat_pct"
         ],
         "produces": [
+          "concept:temp_rise_flat_energy",
           "derived:rank"
         ],
         "axes": [
