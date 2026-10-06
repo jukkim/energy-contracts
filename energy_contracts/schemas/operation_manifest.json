@@ -8100,7 +8100,9 @@
           "portfolio"
         ],
         "required_arguments": [],
-        "produces": [],
+        "produces": [
+          "qualifier:metric:eui"
+        ],
         "axes": [],
         "input_source": "bound",
         "implementation": "internal",
@@ -8114,15 +8116,20 @@
           "assigned_subject_data",
           "building_registry"
         ],
-        "default_period": "not_applicable",
+        "default_period": "tool_rule",
         "subject_kinds": [
           "assigned_asset",
           "building_no",
           "portfolio"
         ],
         "required_arguments": [],
-        "produces": [],
-        "axes": [],
+        "produces": [
+          "axis:yearly",
+          "qualifier:metric:eui"
+        ],
+        "axes": [
+          "year"
+        ],
         "input_source": "bound",
         "implementation": "internal",
         "registered_when": "always"
@@ -8135,15 +8142,20 @@
           "assigned_subject_data",
           "building_registry"
         ],
-        "default_period": "not_applicable",
+        "default_period": "tool_rule",
         "subject_kinds": [
           "assigned_asset",
           "building_no",
           "portfolio"
         ],
         "required_arguments": [],
-        "produces": [],
-        "axes": [],
+        "produces": [
+          "axis:yearly",
+          "qualifier:metric:eui"
+        ],
+        "axes": [
+          "year"
+        ],
         "input_source": "bound",
         "implementation": "internal",
         "registered_when": "always"
