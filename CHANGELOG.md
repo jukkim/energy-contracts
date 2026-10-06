@@ -4,6 +4,11 @@
 
 ---
 
+## 0.3.90 (2026-10-06, 태그 v0.3.90) — 연산 매니페스트: scenario_versions/nature_compare
+
+- 추가: `scenario_versions/nature_compare`(가상 예시 판 ↔ 실측 연결 판의 성격 비교 — 질문 낱말로 미리보기·차이를 가로채던 갈래를 명시 동작으로).
+- `scenario_versions/diff` 의 파생 지표에서 원단위가 빠짐(그 갈래가 nature_compare 로 옮겨감) — 값 변경 없음.
+
 ## 0.3.89 (2026-10-06, 태그 v0.3.89) — 연산 매니페스트 파생 재생성(가산)
 
 - `scenario_versions/diff·list·preview`: 저장된 판이 없을 때의 기본 결과 칸(지역 지도 기본 분석)으로 연도 축·원단위 지표가 파생에 더해짐.
