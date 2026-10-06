@@ -8228,7 +8228,7 @@
           "assigned_subject_data",
           "building_registry"
         ],
-        "default_period": "not_applicable",
+        "default_period": "tool_rule",
         "subject_kinds": [
           "assigned_asset",
           "building_no",
@@ -8236,9 +8236,12 @@
         ],
         "required_arguments": [],
         "produces": [
+          "axis:monthly",
           "qualifier:metric:eui"
         ],
-        "axes": [],
+        "axes": [
+          "month"
+        ],
         "input_source": "bound",
         "implementation": "internal",
         "registered_when": "always"

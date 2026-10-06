@@ -4,6 +4,10 @@
 
 ---
 
+## 0.3.97 (2026-10-07, 태그 v0.3.97) — 연산 매니페스트 보정
+
+- `scenario_versions/nature_compare` 가 실제로 저장하며 자료 기준월 칸이 생겨 default_period not_applicable→tool_rule(가산·핀만).
+
 ## 0.3.96 (2026-10-07, 태그 v0.3.96) — 연산 매니페스트 보정
 
 - `operation_manifest` 재생성(가산 — 생성 상수·SOURCE_HASH 변경 없음, 핀만). 전제 해결·저장 산출물 선언 반영.
