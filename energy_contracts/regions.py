@@ -205,6 +205,14 @@ def _index() -> _Index:
         st = _stem(leaf)
         if st:
             add(st, c, 1)
+    # 옛 시군 이름(마산시 → 마산합포구·마산회원구 · 2026-10-07) — 표의 sigungu_retired_names(생성기가 법정동 폐지 행에서 만든다).
+    #   승계가 둘 이상이면 같은 등급 후보가 여럿이라 모호 = 되묻기다(짐작하지 않는다). 줄임('마산')은 한 등급 낮게.
+    for n, codes in (t.get("sigungu_retired_names") or {}).items():
+        for c in codes:
+            add(n, c, 0)
+            st = _stem(n)
+            if st:
+                add(st, c, 1)
     # 특별시·광역시의 'X시' 부름(서울시·광주시) — 시군구 정식 이름과 같은 등급이라 겹치면 모호가 된다.
     for c, v in t["sido"].items():
         if v["name"].endswith(("특별시", "광역시", "특별자치시")):
