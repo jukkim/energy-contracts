@@ -2664,16 +2664,19 @@
         "needs": [
           "assigned_subject_data"
         ],
-        "default_period": "not_applicable",
+        "default_period": "tool_rule",
         "subject_kinds": [
           "assigned_asset",
           "portfolio"
         ],
         "required_arguments": [],
         "produces": [
-          "concept:near_term_weather_hazard"
+          "concept:near_term_weather_hazard",
+          "qualifier:metric:peak"
         ],
-        "axes": [],
+        "axes": [
+          "hour"
+        ],
         "input_source": "bound",
         "implementation": "internal",
         "registered_when": "always"
@@ -2708,16 +2711,19 @@
         "needs": [
           "assigned_subject_data"
         ],
-        "default_period": "not_applicable",
+        "default_period": "tool_rule",
         "subject_kinds": [
           "assigned_asset",
           "portfolio"
         ],
         "required_arguments": [],
         "produces": [
-          "concept:near_term_weather_hazard"
+          "concept:near_term_weather_hazard",
+          "qualifier:metric:peak"
         ],
-        "axes": [],
+        "axes": [
+          "hour"
+        ],
         "input_source": "bound",
         "implementation": "internal",
         "registered_when": "always"
@@ -4509,7 +4515,9 @@
           "assigned_asset",
           "portfolio"
         ],
-        "required_arguments": [],
+        "required_arguments": [
+          "per_subject_pick"
+        ],
         "produces": [
           "qualifier:metric:peak"
         ],
@@ -4532,7 +4540,9 @@
           "assigned_asset",
           "portfolio"
         ],
-        "required_arguments": [],
+        "required_arguments": [
+          "per_subject_pick"
+        ],
         "produces": [],
         "axes": [
           "strategy"
@@ -8462,11 +8472,14 @@
         "selector": null,
         "needs": [
           "building_registry",
-          "region_statistics"
+          "region_statistics",
+          "archetype_tables"
         ],
         "default_period": "tool_rule",
         "subject_kinds": [
+          "archetype",
           "building_no",
+          "national",
           "region"
         ],
         "required_arguments": [],
@@ -10059,6 +10072,7 @@
           "temp_link_delta_c",
           "drop_threshold_pct",
           "grade_thresholds",
+          "rank_by",
           "effect_low_fraction",
           "recurrence_ratio",
           "comfort_min_c",
@@ -10108,6 +10122,7 @@
           "temp_link_delta_c",
           "drop_threshold_pct",
           "grade_thresholds",
+          "rank_by",
           "effect_low_fraction",
           "recurrence_ratio",
           "comfort_min_c",
@@ -10159,6 +10174,7 @@
           "temp_link_delta_c",
           "drop_threshold_pct",
           "grade_thresholds",
+          "rank_by",
           "effect_low_fraction",
           "recurrence_ratio",
           "comfort_min_c",
@@ -10209,6 +10225,7 @@
           "temp_link_delta_c",
           "drop_threshold_pct",
           "grade_thresholds",
+          "rank_by",
           "effect_low_fraction",
           "recurrence_ratio",
           "comfort_min_c",
@@ -10258,6 +10275,7 @@
           "temp_link_delta_c",
           "drop_threshold_pct",
           "grade_thresholds",
+          "rank_by",
           "effect_low_fraction",
           "recurrence_ratio",
           "comfort_min_c",
@@ -10307,6 +10325,7 @@
           "temp_link_delta_c",
           "drop_threshold_pct",
           "grade_thresholds",
+          "rank_by",
           "effect_low_fraction",
           "recurrence_ratio",
           "comfort_min_c",
@@ -10358,6 +10377,7 @@
           "temp_link_delta_c",
           "drop_threshold_pct",
           "grade_thresholds",
+          "rank_by",
           "effect_low_fraction",
           "recurrence_ratio",
           "comfort_min_c",
@@ -10405,6 +10425,7 @@
           "temp_link_delta_c",
           "drop_threshold_pct",
           "grade_thresholds",
+          "rank_by",
           "effect_low_fraction",
           "recurrence_ratio",
           "comfort_min_c",
@@ -10456,6 +10477,7 @@
           "temp_link_delta_c",
           "drop_threshold_pct",
           "grade_thresholds",
+          "rank_by",
           "effect_low_fraction",
           "recurrence_ratio",
           "comfort_min_c",
@@ -10505,6 +10527,7 @@
           "temp_link_delta_c",
           "drop_threshold_pct",
           "grade_thresholds",
+          "rank_by",
           "effect_low_fraction",
           "recurrence_ratio",
           "comfort_min_c",
@@ -10553,6 +10576,7 @@
           "temp_link_delta_c",
           "drop_threshold_pct",
           "grade_thresholds",
+          "rank_by",
           "effect_low_fraction",
           "recurrence_ratio",
           "comfort_min_c",
@@ -10602,6 +10626,7 @@
           "temp_link_delta_c",
           "drop_threshold_pct",
           "grade_thresholds",
+          "rank_by",
           "effect_low_fraction",
           "recurrence_ratio",
           "comfort_min_c",
@@ -10652,6 +10677,7 @@
           "temp_link_delta_c",
           "drop_threshold_pct",
           "grade_thresholds",
+          "rank_by",
           "effect_low_fraction",
           "recurrence_ratio",
           "comfort_min_c",
@@ -10701,6 +10727,7 @@
           "temp_link_delta_c",
           "drop_threshold_pct",
           "grade_thresholds",
+          "rank_by",
           "effect_low_fraction",
           "recurrence_ratio",
           "comfort_min_c",
@@ -10751,6 +10778,7 @@
           "temp_link_delta_c",
           "drop_threshold_pct",
           "grade_thresholds",
+          "rank_by",
           "effect_low_fraction",
           "recurrence_ratio",
           "comfort_min_c",
@@ -10801,6 +10829,7 @@
           "temp_link_delta_c",
           "drop_threshold_pct",
           "grade_thresholds",
+          "rank_by",
           "effect_low_fraction",
           "recurrence_ratio",
           "comfort_min_c",
@@ -10852,6 +10881,7 @@
           "temp_link_delta_c",
           "drop_threshold_pct",
           "grade_thresholds",
+          "rank_by",
           "effect_low_fraction",
           "recurrence_ratio",
           "comfort_min_c",
@@ -10902,6 +10932,7 @@
           "temp_link_delta_c",
           "drop_threshold_pct",
           "grade_thresholds",
+          "rank_by",
           "effect_low_fraction",
           "recurrence_ratio",
           "comfort_min_c",
@@ -10951,6 +10982,7 @@
           "temp_link_delta_c",
           "drop_threshold_pct",
           "grade_thresholds",
+          "rank_by",
           "effect_low_fraction",
           "recurrence_ratio",
           "comfort_min_c",
@@ -10998,6 +11030,7 @@
           "temp_link_delta_c",
           "drop_threshold_pct",
           "grade_thresholds",
+          "rank_by",
           "effect_low_fraction",
           "recurrence_ratio",
           "comfort_min_c",
@@ -11048,6 +11081,7 @@
           "temp_link_delta_c",
           "drop_threshold_pct",
           "grade_thresholds",
+          "rank_by",
           "effect_low_fraction",
           "recurrence_ratio",
           "comfort_min_c",
@@ -11098,6 +11132,7 @@
           "temp_link_delta_c",
           "drop_threshold_pct",
           "grade_thresholds",
+          "rank_by",
           "effect_low_fraction",
           "recurrence_ratio",
           "comfort_min_c",
@@ -11145,6 +11180,7 @@
           "temp_link_delta_c",
           "drop_threshold_pct",
           "grade_thresholds",
+          "rank_by",
           "effect_low_fraction",
           "recurrence_ratio",
           "comfort_min_c",
