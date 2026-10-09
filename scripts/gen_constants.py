@@ -1714,9 +1714,46 @@ def regenerate_all(check_only: bool = False) -> int:
                 tag = "WROTE" if changed else "SAME "
                 print(f"[gen_constants] {tag} {rel_path}")
     if check_only:
+        unreg = unregistered_generated_copies()
+        for rel in unreg:
+            print(f"[gen_constants] UNREGISTERED: {rel} — 생성본 머리글이 있는데 PROJECT_TARGETS 에 없다(재생성 안 됨 → 표류)")
+        drift += len(unreg)
         print(f"\n[gen_constants] drift {drift} files")
         return 1 if drift else 0
     return 0
+
+
+_GEN_MARK = "AUTO-GENERATED constants from energy-contracts"
+
+
+def unregistered_generated_copies() -> list[str]:
+    """작업 공간의 git 저장소들에서 **생성본 머리글을 단 추적 파일** 중 PROJECT_TARGETS 에 없는 것(2026-10-09 일반화).
+
+    8.simulation 거울(mpc_model/mpc_shared)이 대상에 없어 v0.3.64 에 멈춘 채 푸시를 막았다 — 사본 하나씩 찾지 않고 종류를 잡는다.
+    작업 공간이 없으면(CI 단독 클론) 저장소 0 개 — 그때는 아무것도 주장하지 않는다(로그에 '훑은 저장소 수' 를 남긴다)."""
+    import subprocess as _sp
+    registered = {str(cfg.get(lang)).replace("\\", "/") for cfg in PROJECT_TARGETS.values()
+                  for lang in ("python", "ts") if cfg.get(lang)}
+    repos = [d for d in [WORKSPACE_ROOT / "8.simulation", *sorted((WORKSPACE_ROOT / "projects").glob("*"))]
+             if (d / ".git").exists()]
+    out: list[str] = []
+    for repo in repos:
+        try:
+            files = _sp.run(["git", "-C", str(repo), "ls-files", "*generated_constants.py", "*generated_constants.ts"],
+                            capture_output=True, text=True, encoding="utf-8", timeout=60).stdout
+        except (OSError, _sp.SubprocessError):
+            continue
+        for f in sorted({x for x in files.splitlines() if x}):
+            path = repo / f
+            try:
+                head = path.read_text(encoding="utf-8", errors="replace")[:400]
+            except OSError:
+                continue
+            rel = path.relative_to(WORKSPACE_ROOT).as_posix()
+            if _GEN_MARK in head and rel not in registered:
+                out.append(rel)
+    print(f"[gen_constants] 생성본 사본 등록 검사: 저장소 {len(repos)} 개 훑음 · 미등록 {len(out)}")
+    return sorted(out)
 
 
 def main() -> int:
