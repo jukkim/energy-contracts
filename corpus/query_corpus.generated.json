@@ -8,9 +8,9 @@
     "executor_keys": "projects\\energy-decision-studio\\lib\\actions\\executor_keys.ts"
   },
   "counts": {
-    "opcodes": 121,
+    "opcodes": 122,
     "opA": 8,
-    "opB": 102,
+    "opB": 103,
     "opC": 11,
     "routerClasses": 43,
     "executors": 7,
@@ -558,6 +558,13 @@
       "ns": "insight",
       "consumerClass": "B",
       "summary": "Outline the verified result's buildings named only by opaque scene_ref tokens: b"
+    },
+    {
+      "api": "mountFloorStack",
+      "name": "insight.floorStack",
+      "ns": "insight",
+      "consumerClass": "B",
+      "summary": "Switch a building's floors on and off one by one as a cross-section panel, from "
     },
     {
       "api": "mountFlowLines",
@@ -2680,6 +2687,7 @@
         "flyCameraShot",
         "highlightBuildingsByRef",
         "keepExampleScene",
+        "mountFloorStack",
         "mountFlowLines",
         "mountSceneChoice",
         "mountShowSummary",
@@ -2709,7 +2717,7 @@
         "unmountShowSummary",
         "unmountVirtualLayout"
       ],
-      "nlTarget": 72,
+      "nlTarget": 73,
       "nlCovered": 53,
       "nlUncovered": [
         "controlPlayback",
@@ -2719,6 +2727,7 @@
         "flyCameraShot",
         "highlightBuildingsByRef",
         "keepExampleScene",
+        "mountFloorStack",
         "mountFlowLines",
         "mountSceneChoice",
         "mountShowSummary",
