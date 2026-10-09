@@ -673,6 +673,32 @@ def everyday_stem_blocked(word: str, text: str) -> bool:
     return True
 
 
+@lru_cache(maxsize=1)
+def everyday_dong_stems() -> frozenset[str]:
+    """법정동 어간 가운데 일상어(같은 자료 파일 `dong_stems` — 항목마다 뜻·근거)."""
+    return frozenset(json.loads(EVERYDAY_STEMS_PATH.read_text(encoding="utf-8")).get("dong_stems") or {})
+
+
+def everyday_dong_stem_blocked(stem: str, text: str) -> bool:
+    """'동' 을 뗀 낱말(예: '가정')을 문장 속에서 지명으로 읽지 않나 — 일상어 동 어간이고, 같은 문장에 그 동(들)이 속한
+    시도·시군구 표기가 하나도 없을 때(2026-10-09 v0.3.98). '가정에서 사용하는 전기'·'70,000원 가정에서' 는 막고
+    '인천 가정에서'·'서구 가정에서' 는 막지 않는다. 시군구 어간 규칙(:func:`everyday_stem_blocked`)과 같은 모양 — 사본 금지."""
+    if stem not in everyday_dong_stems():
+        return False
+    r = resolve(stem + "동")
+    codes = [str(r.code)] if r.ok and r.code else [str(c.code) for c in (r.candidates or []) if c.code]
+    codes = [c for c in codes if len(c) == 10]
+    flat = re.sub(r"\s+", "", text or "")
+    idx = _index()
+    for name, (sido_code, _grade) in idx.sido_by_name.items():
+        if len(name) >= 2 and name in flat and any(c.startswith(sido_code) for c in codes):
+            return False
+    for name, rows in idx.sigungu_by_key.items():
+        if len(name) >= 2 and name in flat and any(c.startswith(sgg) for c in codes for sgg, _g in rows):
+            return False
+    return True
+
+
 def find_region_mention(text: str, *, context: Optional[str] = None,
                         max_words: int = 3) -> Optional[RegionResolution]:
     """문장 속 지역 언급 → 해석(해석됨 또는 모호). 앵커 이름(이태원 거리·강남역 사거리)을 먼저, 그다음 가장 긴
