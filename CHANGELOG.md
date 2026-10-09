@@ -4,6 +4,11 @@
 
 ---
 
+## 0.3.98 (2026-10-09, 태그 v0.3.98) — 일상어 동 어간 · 생성본 사본 점검
+
+- `region_everyday_stems.json` 에 `dong_stems`(법정동 어간 중 일상어 — '가정') + `regions.everyday_dong_stem_blocked`: 같은 문장에 그 동의 시도·시군구 표기가 없으면 지명으로 읽지 않는다(GPT 901 재검증 AL-076~085).
+- `gen_constants.py`: 8.simulation 거울(mpc_model/mpc_shared) 대상 등록 · `--check` 가 작업 공간의 미등록 생성본 사본을 UNREGISTERED 로 잡는다.
+
 ## 0.3.97 (2026-10-07, 태그 v0.3.97) — 연산 매니페스트 보정
 
 - `scenario_versions/nature_compare` 가 실제로 저장하며 자료 기준월 칸이 생겨 default_period not_applicable→tool_rule(가산·핀만).
