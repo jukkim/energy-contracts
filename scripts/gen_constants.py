@@ -324,6 +324,12 @@ PROJECT_TARGETS: dict[str, dict] = {
     },
 }
 
+# 8.simulation 의 바이트 거울(mpc_model/mpc_shared) — 원본(8sim-shared)과 **같은 내보내기 목록**으로 같은 내용을 쓴다.
+#   2026-10-09: 핀을 올릴 때 원본만 재생성되고 거울은 v0.3.64 에 멈춰 8.sim test_shared_mirror_drift 가 빨갰다(푸시 차단).
+#   목록을 복사하지 않고 원본 설정을 그대로 참조한다(두 벌이면 갈린다).
+PROJECT_TARGETS["8sim-mpc-mirror"] = {**PROJECT_TARGETS["8sim-shared"],
+                                      "python": "8.simulation/mpc_model/mpc_shared/_generated_constants.py"}
+
 
 def load_schemas() -> dict:
     """필요한 SSOT 스키마들을 로드해 단일 dict로 반환.
