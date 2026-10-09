@@ -1458,7 +1458,10 @@
           "building_type",
           "hvac"
         ],
-        "produces": [],
+        "produces": [
+          "concept:heat_days",
+          "derived:rank"
+        ],
         "axes": [
           "archetype",
           "city",
@@ -4716,6 +4719,7 @@
         "produces": [
           "axis:strategy_range",
           "qualifier:metric:gas",
+          "qualifier:metric:hvac_type",
           "qualifier:metric:peak",
           "qualifier:strategies"
         ],
@@ -4741,6 +4745,7 @@
         "produces": [
           "axis:strategy_range",
           "qualifier:metric:gas",
+          "qualifier:metric:hvac_type",
           "qualifier:metric:peak",
           "qualifier:strategies"
         ],
@@ -8677,6 +8682,7 @@
           "derived:classify",
           "qualifier:fixed_setpoints",
           "qualifier:future_year",
+          "qualifier:metric:electricity",
           "qualifier:metric:gas",
           "qualifier:metric:peak",
           "qualifier:scenarios",

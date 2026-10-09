@@ -4,6 +4,10 @@
 
 ---
 
+## 0.3.99 (2026-10-09, 태그 v0.3.99) — 연산 매니페스트 보정
+
+- `operation_manifest` 재생성(가산 — 생성 상수·SOURCE_HASH 변경 없음, 핀만): `archetype_climate_grid/heat_days` produces `concept:heat_days`·`derived:rank` · `measured_building_savings_query` 두 연산·`sim_variant_compare/pack_variants` 에 `qualifier:metric:hvac_type`·전기 지표 반영.
+
 ## 0.3.98 (2026-10-09, 태그 v0.3.98) — 일상어 동 어간 · 생성본 사본 점검
 
 - `region_everyday_stems.json` 에 `dong_stems`(법정동 어간 중 일상어 — '가정') + `regions.everyday_dong_stem_blocked`: 같은 문장에 그 동의 시도·시군구 표기가 없으면 지명으로 읽지 않는다(GPT 901 재검증 AL-076~085).
