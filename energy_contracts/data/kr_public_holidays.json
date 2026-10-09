@@ -1,0 +1,1375 @@
+{
+ "schema": "kr-public-holidays/v1",
+ "version": "1.0.0",
+ "updated": "2026-10-10",
+ "coverage_years": [
+  2012,
+  2026
+ ],
+ "label_ko": "대한민국 관공서 공휴일표(2012~2026)",
+ "rule_ko": "「관공서의 공휴일에 관한 규정」의 공휴일 — 고정 공휴일 · 음력 공휴일(설날·추석 3일 · 부처님 오신 날, 한국천문연구원 월력요항 날짜) · 대체공휴일(2014 설날·추석·어린이날, 2021 국경일 확대, 2023 부처님 오신 날·성탄절) · 공직선거일 · 임시공휴일. 한글날은 2013년부터 공휴일. 근로자의 날(노동절)은 관공서 공휴일이 아니라 넣지 않았다",
+ "classification": "reference",
+ "source": "관공서의 공휴일에 관한 규정(대통령령) · 인사혁신처 연도별 공휴일 공고 · 한국천문연구원 월력요항",
+ "years": {
+  "2012": [
+   {
+    "date": "2012-01-01",
+    "name_ko": "신정",
+    "kind": "fixed"
+   },
+   {
+    "date": "2012-01-22",
+    "name_ko": "설날 전날",
+    "kind": "lunar"
+   },
+   {
+    "date": "2012-01-23",
+    "name_ko": "설날",
+    "kind": "lunar"
+   },
+   {
+    "date": "2012-01-24",
+    "name_ko": "설날 다음날",
+    "kind": "lunar"
+   },
+   {
+    "date": "2012-03-01",
+    "name_ko": "삼일절",
+    "kind": "fixed"
+   },
+   {
+    "date": "2012-04-11",
+    "name_ko": "제19대 국회의원 선거일",
+    "kind": "election"
+   },
+   {
+    "date": "2012-05-05",
+    "name_ko": "어린이날",
+    "kind": "fixed"
+   },
+   {
+    "date": "2012-05-28",
+    "name_ko": "부처님 오신 날",
+    "kind": "lunar"
+   },
+   {
+    "date": "2012-06-06",
+    "name_ko": "현충일",
+    "kind": "fixed"
+   },
+   {
+    "date": "2012-08-15",
+    "name_ko": "광복절",
+    "kind": "fixed"
+   },
+   {
+    "date": "2012-09-29",
+    "name_ko": "추석 전날",
+    "kind": "lunar"
+   },
+   {
+    "date": "2012-09-30",
+    "name_ko": "추석",
+    "kind": "lunar"
+   },
+   {
+    "date": "2012-10-01",
+    "name_ko": "추석 다음날",
+    "kind": "lunar"
+   },
+   {
+    "date": "2012-10-03",
+    "name_ko": "개천절",
+    "kind": "fixed"
+   },
+   {
+    "date": "2012-12-19",
+    "name_ko": "제18대 대통령 선거일",
+    "kind": "election"
+   },
+   {
+    "date": "2012-12-25",
+    "name_ko": "기독탄신일",
+    "kind": "fixed"
+   }
+  ],
+  "2013": [
+   {
+    "date": "2013-01-01",
+    "name_ko": "신정",
+    "kind": "fixed"
+   },
+   {
+    "date": "2013-02-09",
+    "name_ko": "설날 전날",
+    "kind": "lunar"
+   },
+   {
+    "date": "2013-02-10",
+    "name_ko": "설날",
+    "kind": "lunar"
+   },
+   {
+    "date": "2013-02-11",
+    "name_ko": "설날 다음날",
+    "kind": "lunar"
+   },
+   {
+    "date": "2013-03-01",
+    "name_ko": "삼일절",
+    "kind": "fixed"
+   },
+   {
+    "date": "2013-05-05",
+    "name_ko": "어린이날",
+    "kind": "fixed"
+   },
+   {
+    "date": "2013-05-17",
+    "name_ko": "부처님 오신 날",
+    "kind": "lunar"
+   },
+   {
+    "date": "2013-06-06",
+    "name_ko": "현충일",
+    "kind": "fixed"
+   },
+   {
+    "date": "2013-08-15",
+    "name_ko": "광복절",
+    "kind": "fixed"
+   },
+   {
+    "date": "2013-09-18",
+    "name_ko": "추석 전날",
+    "kind": "lunar"
+   },
+   {
+    "date": "2013-09-19",
+    "name_ko": "추석",
+    "kind": "lunar"
+   },
+   {
+    "date": "2013-09-20",
+    "name_ko": "추석 다음날",
+    "kind": "lunar"
+   },
+   {
+    "date": "2013-10-03",
+    "name_ko": "개천절",
+    "kind": "fixed"
+   },
+   {
+    "date": "2013-10-09",
+    "name_ko": "한글날",
+    "kind": "fixed"
+   },
+   {
+    "date": "2013-12-25",
+    "name_ko": "기독탄신일",
+    "kind": "fixed"
+   }
+  ],
+  "2014": [
+   {
+    "date": "2014-01-01",
+    "name_ko": "신정",
+    "kind": "fixed"
+   },
+   {
+    "date": "2014-01-30",
+    "name_ko": "설날 전날",
+    "kind": "lunar"
+   },
+   {
+    "date": "2014-01-31",
+    "name_ko": "설날",
+    "kind": "lunar"
+   },
+   {
+    "date": "2014-02-01",
+    "name_ko": "설날 다음날",
+    "kind": "lunar"
+   },
+   {
+    "date": "2014-03-01",
+    "name_ko": "삼일절",
+    "kind": "fixed"
+   },
+   {
+    "date": "2014-05-05",
+    "name_ko": "어린이날",
+    "kind": "fixed"
+   },
+   {
+    "date": "2014-05-06",
+    "name_ko": "부처님 오신 날",
+    "kind": "lunar"
+   },
+   {
+    "date": "2014-06-04",
+    "name_ko": "제6회 전국동시지방선거일",
+    "kind": "election"
+   },
+   {
+    "date": "2014-06-06",
+    "name_ko": "현충일",
+    "kind": "fixed"
+   },
+   {
+    "date": "2014-08-15",
+    "name_ko": "광복절",
+    "kind": "fixed"
+   },
+   {
+    "date": "2014-09-07",
+    "name_ko": "추석 전날",
+    "kind": "lunar"
+   },
+   {
+    "date": "2014-09-08",
+    "name_ko": "추석",
+    "kind": "lunar"
+   },
+   {
+    "date": "2014-09-09",
+    "name_ko": "추석 다음날",
+    "kind": "lunar"
+   },
+   {
+    "date": "2014-09-10",
+    "name_ko": "대체공휴일",
+    "kind": "substitute"
+   },
+   {
+    "date": "2014-10-03",
+    "name_ko": "개천절",
+    "kind": "fixed"
+   },
+   {
+    "date": "2014-10-09",
+    "name_ko": "한글날",
+    "kind": "fixed"
+   },
+   {
+    "date": "2014-12-25",
+    "name_ko": "기독탄신일",
+    "kind": "fixed"
+   }
+  ],
+  "2015": [
+   {
+    "date": "2015-01-01",
+    "name_ko": "신정",
+    "kind": "fixed"
+   },
+   {
+    "date": "2015-02-18",
+    "name_ko": "설날 전날",
+    "kind": "lunar"
+   },
+   {
+    "date": "2015-02-19",
+    "name_ko": "설날",
+    "kind": "lunar"
+   },
+   {
+    "date": "2015-02-20",
+    "name_ko": "설날 다음날",
+    "kind": "lunar"
+   },
+   {
+    "date": "2015-03-01",
+    "name_ko": "삼일절",
+    "kind": "fixed"
+   },
+   {
+    "date": "2015-05-05",
+    "name_ko": "어린이날",
+    "kind": "fixed"
+   },
+   {
+    "date": "2015-05-25",
+    "name_ko": "부처님 오신 날",
+    "kind": "lunar"
+   },
+   {
+    "date": "2015-06-06",
+    "name_ko": "현충일",
+    "kind": "fixed"
+   },
+   {
+    "date": "2015-08-14",
+    "name_ko": "임시공휴일(광복 70주년)",
+    "kind": "temporary"
+   },
+   {
+    "date": "2015-08-15",
+    "name_ko": "광복절",
+    "kind": "fixed"
+   },
+   {
+    "date": "2015-09-26",
+    "name_ko": "추석 전날",
+    "kind": "lunar"
+   },
+   {
+    "date": "2015-09-27",
+    "name_ko": "추석",
+    "kind": "lunar"
+   },
+   {
+    "date": "2015-09-28",
+    "name_ko": "추석 다음날",
+    "kind": "lunar"
+   },
+   {
+    "date": "2015-09-29",
+    "name_ko": "대체공휴일",
+    "kind": "substitute"
+   },
+   {
+    "date": "2015-10-03",
+    "name_ko": "개천절",
+    "kind": "fixed"
+   },
+   {
+    "date": "2015-10-09",
+    "name_ko": "한글날",
+    "kind": "fixed"
+   },
+   {
+    "date": "2015-12-25",
+    "name_ko": "기독탄신일",
+    "kind": "fixed"
+   }
+  ],
+  "2016": [
+   {
+    "date": "2016-01-01",
+    "name_ko": "신정",
+    "kind": "fixed"
+   },
+   {
+    "date": "2016-02-07",
+    "name_ko": "설날 전날",
+    "kind": "lunar"
+   },
+   {
+    "date": "2016-02-08",
+    "name_ko": "설날",
+    "kind": "lunar"
+   },
+   {
+    "date": "2016-02-09",
+    "name_ko": "설날 다음날",
+    "kind": "lunar"
+   },
+   {
+    "date": "2016-02-10",
+    "name_ko": "대체공휴일",
+    "kind": "substitute"
+   },
+   {
+    "date": "2016-03-01",
+    "name_ko": "삼일절",
+    "kind": "fixed"
+   },
+   {
+    "date": "2016-04-13",
+    "name_ko": "제20대 국회의원 선거일",
+    "kind": "election"
+   },
+   {
+    "date": "2016-05-05",
+    "name_ko": "어린이날",
+    "kind": "fixed"
+   },
+   {
+    "date": "2016-05-06",
+    "name_ko": "임시공휴일",
+    "kind": "temporary"
+   },
+   {
+    "date": "2016-05-14",
+    "name_ko": "부처님 오신 날",
+    "kind": "lunar"
+   },
+   {
+    "date": "2016-06-06",
+    "name_ko": "현충일",
+    "kind": "fixed"
+   },
+   {
+    "date": "2016-08-15",
+    "name_ko": "광복절",
+    "kind": "fixed"
+   },
+   {
+    "date": "2016-09-14",
+    "name_ko": "추석 전날",
+    "kind": "lunar"
+   },
+   {
+    "date": "2016-09-15",
+    "name_ko": "추석",
+    "kind": "lunar"
+   },
+   {
+    "date": "2016-09-16",
+    "name_ko": "추석 다음날",
+    "kind": "lunar"
+   },
+   {
+    "date": "2016-10-03",
+    "name_ko": "개천절",
+    "kind": "fixed"
+   },
+   {
+    "date": "2016-10-09",
+    "name_ko": "한글날",
+    "kind": "fixed"
+   },
+   {
+    "date": "2016-12-25",
+    "name_ko": "기독탄신일",
+    "kind": "fixed"
+   }
+  ],
+  "2017": [
+   {
+    "date": "2017-01-01",
+    "name_ko": "신정",
+    "kind": "fixed"
+   },
+   {
+    "date": "2017-01-27",
+    "name_ko": "설날 전날",
+    "kind": "lunar"
+   },
+   {
+    "date": "2017-01-28",
+    "name_ko": "설날",
+    "kind": "lunar"
+   },
+   {
+    "date": "2017-01-29",
+    "name_ko": "설날 다음날",
+    "kind": "lunar"
+   },
+   {
+    "date": "2017-01-30",
+    "name_ko": "대체공휴일",
+    "kind": "substitute"
+   },
+   {
+    "date": "2017-03-01",
+    "name_ko": "삼일절",
+    "kind": "fixed"
+   },
+   {
+    "date": "2017-05-03",
+    "name_ko": "부처님 오신 날",
+    "kind": "lunar"
+   },
+   {
+    "date": "2017-05-05",
+    "name_ko": "어린이날",
+    "kind": "fixed"
+   },
+   {
+    "date": "2017-05-09",
+    "name_ko": "제19대 대통령 선거일",
+    "kind": "election"
+   },
+   {
+    "date": "2017-06-06",
+    "name_ko": "현충일",
+    "kind": "fixed"
+   },
+   {
+    "date": "2017-08-15",
+    "name_ko": "광복절",
+    "kind": "fixed"
+   },
+   {
+    "date": "2017-10-02",
+    "name_ko": "임시공휴일",
+    "kind": "temporary"
+   },
+   {
+    "date": "2017-10-03",
+    "name_ko": "개천절 · 추석 전날",
+    "kind": "fixed"
+   },
+   {
+    "date": "2017-10-04",
+    "name_ko": "추석",
+    "kind": "lunar"
+   },
+   {
+    "date": "2017-10-05",
+    "name_ko": "추석 다음날",
+    "kind": "lunar"
+   },
+   {
+    "date": "2017-10-06",
+    "name_ko": "대체공휴일",
+    "kind": "substitute"
+   },
+   {
+    "date": "2017-10-09",
+    "name_ko": "한글날",
+    "kind": "fixed"
+   },
+   {
+    "date": "2017-12-25",
+    "name_ko": "기독탄신일",
+    "kind": "fixed"
+   }
+  ],
+  "2018": [
+   {
+    "date": "2018-01-01",
+    "name_ko": "신정",
+    "kind": "fixed"
+   },
+   {
+    "date": "2018-02-15",
+    "name_ko": "설날 전날",
+    "kind": "lunar"
+   },
+   {
+    "date": "2018-02-16",
+    "name_ko": "설날",
+    "kind": "lunar"
+   },
+   {
+    "date": "2018-02-17",
+    "name_ko": "설날 다음날",
+    "kind": "lunar"
+   },
+   {
+    "date": "2018-03-01",
+    "name_ko": "삼일절",
+    "kind": "fixed"
+   },
+   {
+    "date": "2018-05-05",
+    "name_ko": "어린이날",
+    "kind": "fixed"
+   },
+   {
+    "date": "2018-05-07",
+    "name_ko": "대체공휴일",
+    "kind": "substitute"
+   },
+   {
+    "date": "2018-05-22",
+    "name_ko": "부처님 오신 날",
+    "kind": "lunar"
+   },
+   {
+    "date": "2018-06-06",
+    "name_ko": "현충일",
+    "kind": "fixed"
+   },
+   {
+    "date": "2018-06-13",
+    "name_ko": "제7회 전국동시지방선거일",
+    "kind": "election"
+   },
+   {
+    "date": "2018-08-15",
+    "name_ko": "광복절",
+    "kind": "fixed"
+   },
+   {
+    "date": "2018-09-23",
+    "name_ko": "추석 전날",
+    "kind": "lunar"
+   },
+   {
+    "date": "2018-09-24",
+    "name_ko": "추석",
+    "kind": "lunar"
+   },
+   {
+    "date": "2018-09-25",
+    "name_ko": "추석 다음날",
+    "kind": "lunar"
+   },
+   {
+    "date": "2018-09-26",
+    "name_ko": "대체공휴일",
+    "kind": "substitute"
+   },
+   {
+    "date": "2018-10-03",
+    "name_ko": "개천절",
+    "kind": "fixed"
+   },
+   {
+    "date": "2018-10-09",
+    "name_ko": "한글날",
+    "kind": "fixed"
+   },
+   {
+    "date": "2018-12-25",
+    "name_ko": "기독탄신일",
+    "kind": "fixed"
+   }
+  ],
+  "2019": [
+   {
+    "date": "2019-01-01",
+    "name_ko": "신정",
+    "kind": "fixed"
+   },
+   {
+    "date": "2019-02-04",
+    "name_ko": "설날 전날",
+    "kind": "lunar"
+   },
+   {
+    "date": "2019-02-05",
+    "name_ko": "설날",
+    "kind": "lunar"
+   },
+   {
+    "date": "2019-02-06",
+    "name_ko": "설날 다음날",
+    "kind": "lunar"
+   },
+   {
+    "date": "2019-03-01",
+    "name_ko": "삼일절",
+    "kind": "fixed"
+   },
+   {
+    "date": "2019-05-05",
+    "name_ko": "어린이날",
+    "kind": "fixed"
+   },
+   {
+    "date": "2019-05-06",
+    "name_ko": "대체공휴일",
+    "kind": "substitute"
+   },
+   {
+    "date": "2019-05-12",
+    "name_ko": "부처님 오신 날",
+    "kind": "lunar"
+   },
+   {
+    "date": "2019-06-06",
+    "name_ko": "현충일",
+    "kind": "fixed"
+   },
+   {
+    "date": "2019-08-15",
+    "name_ko": "광복절",
+    "kind": "fixed"
+   },
+   {
+    "date": "2019-09-12",
+    "name_ko": "추석 전날",
+    "kind": "lunar"
+   },
+   {
+    "date": "2019-09-13",
+    "name_ko": "추석",
+    "kind": "lunar"
+   },
+   {
+    "date": "2019-09-14",
+    "name_ko": "추석 다음날",
+    "kind": "lunar"
+   },
+   {
+    "date": "2019-10-03",
+    "name_ko": "개천절",
+    "kind": "fixed"
+   },
+   {
+    "date": "2019-10-09",
+    "name_ko": "한글날",
+    "kind": "fixed"
+   },
+   {
+    "date": "2019-12-25",
+    "name_ko": "기독탄신일",
+    "kind": "fixed"
+   }
+  ],
+  "2020": [
+   {
+    "date": "2020-01-01",
+    "name_ko": "신정",
+    "kind": "fixed"
+   },
+   {
+    "date": "2020-01-24",
+    "name_ko": "설날 전날",
+    "kind": "lunar"
+   },
+   {
+    "date": "2020-01-25",
+    "name_ko": "설날",
+    "kind": "lunar"
+   },
+   {
+    "date": "2020-01-26",
+    "name_ko": "설날 다음날",
+    "kind": "lunar"
+   },
+   {
+    "date": "2020-01-27",
+    "name_ko": "대체공휴일",
+    "kind": "substitute"
+   },
+   {
+    "date": "2020-03-01",
+    "name_ko": "삼일절",
+    "kind": "fixed"
+   },
+   {
+    "date": "2020-04-15",
+    "name_ko": "제21대 국회의원 선거일",
+    "kind": "election"
+   },
+   {
+    "date": "2020-04-30",
+    "name_ko": "부처님 오신 날",
+    "kind": "lunar"
+   },
+   {
+    "date": "2020-05-05",
+    "name_ko": "어린이날",
+    "kind": "fixed"
+   },
+   {
+    "date": "2020-06-06",
+    "name_ko": "현충일",
+    "kind": "fixed"
+   },
+   {
+    "date": "2020-08-15",
+    "name_ko": "광복절",
+    "kind": "fixed"
+   },
+   {
+    "date": "2020-08-17",
+    "name_ko": "임시공휴일",
+    "kind": "temporary"
+   },
+   {
+    "date": "2020-09-30",
+    "name_ko": "추석 전날",
+    "kind": "lunar"
+   },
+   {
+    "date": "2020-10-01",
+    "name_ko": "추석",
+    "kind": "lunar"
+   },
+   {
+    "date": "2020-10-02",
+    "name_ko": "추석 다음날",
+    "kind": "lunar"
+   },
+   {
+    "date": "2020-10-03",
+    "name_ko": "개천절",
+    "kind": "fixed"
+   },
+   {
+    "date": "2020-10-09",
+    "name_ko": "한글날",
+    "kind": "fixed"
+   },
+   {
+    "date": "2020-12-25",
+    "name_ko": "기독탄신일",
+    "kind": "fixed"
+   }
+  ],
+  "2021": [
+   {
+    "date": "2021-01-01",
+    "name_ko": "신정",
+    "kind": "fixed"
+   },
+   {
+    "date": "2021-02-11",
+    "name_ko": "설날 전날",
+    "kind": "lunar"
+   },
+   {
+    "date": "2021-02-12",
+    "name_ko": "설날",
+    "kind": "lunar"
+   },
+   {
+    "date": "2021-02-13",
+    "name_ko": "설날 다음날",
+    "kind": "lunar"
+   },
+   {
+    "date": "2021-03-01",
+    "name_ko": "삼일절",
+    "kind": "fixed"
+   },
+   {
+    "date": "2021-05-05",
+    "name_ko": "어린이날",
+    "kind": "fixed"
+   },
+   {
+    "date": "2021-05-19",
+    "name_ko": "부처님 오신 날",
+    "kind": "lunar"
+   },
+   {
+    "date": "2021-06-06",
+    "name_ko": "현충일",
+    "kind": "fixed"
+   },
+   {
+    "date": "2021-08-15",
+    "name_ko": "광복절",
+    "kind": "fixed"
+   },
+   {
+    "date": "2021-08-16",
+    "name_ko": "대체공휴일",
+    "kind": "substitute"
+   },
+   {
+    "date": "2021-09-20",
+    "name_ko": "추석 전날",
+    "kind": "lunar"
+   },
+   {
+    "date": "2021-09-21",
+    "name_ko": "추석",
+    "kind": "lunar"
+   },
+   {
+    "date": "2021-09-22",
+    "name_ko": "추석 다음날",
+    "kind": "lunar"
+   },
+   {
+    "date": "2021-10-03",
+    "name_ko": "개천절",
+    "kind": "fixed"
+   },
+   {
+    "date": "2021-10-04",
+    "name_ko": "대체공휴일",
+    "kind": "substitute"
+   },
+   {
+    "date": "2021-10-09",
+    "name_ko": "한글날",
+    "kind": "fixed"
+   },
+   {
+    "date": "2021-10-11",
+    "name_ko": "대체공휴일",
+    "kind": "substitute"
+   },
+   {
+    "date": "2021-12-25",
+    "name_ko": "기독탄신일",
+    "kind": "fixed"
+   }
+  ],
+  "2022": [
+   {
+    "date": "2022-01-01",
+    "name_ko": "신정",
+    "kind": "fixed"
+   },
+   {
+    "date": "2022-01-31",
+    "name_ko": "설날 전날",
+    "kind": "lunar"
+   },
+   {
+    "date": "2022-02-01",
+    "name_ko": "설날",
+    "kind": "lunar"
+   },
+   {
+    "date": "2022-02-02",
+    "name_ko": "설날 다음날",
+    "kind": "lunar"
+   },
+   {
+    "date": "2022-03-01",
+    "name_ko": "삼일절",
+    "kind": "fixed"
+   },
+   {
+    "date": "2022-03-09",
+    "name_ko": "제20대 대통령 선거일",
+    "kind": "election"
+   },
+   {
+    "date": "2022-05-05",
+    "name_ko": "어린이날",
+    "kind": "fixed"
+   },
+   {
+    "date": "2022-05-08",
+    "name_ko": "부처님 오신 날",
+    "kind": "lunar"
+   },
+   {
+    "date": "2022-06-01",
+    "name_ko": "제8회 전국동시지방선거일",
+    "kind": "election"
+   },
+   {
+    "date": "2022-06-06",
+    "name_ko": "현충일",
+    "kind": "fixed"
+   },
+   {
+    "date": "2022-08-15",
+    "name_ko": "광복절",
+    "kind": "fixed"
+   },
+   {
+    "date": "2022-09-09",
+    "name_ko": "추석 전날",
+    "kind": "lunar"
+   },
+   {
+    "date": "2022-09-10",
+    "name_ko": "추석",
+    "kind": "lunar"
+   },
+   {
+    "date": "2022-09-11",
+    "name_ko": "추석 다음날",
+    "kind": "lunar"
+   },
+   {
+    "date": "2022-09-12",
+    "name_ko": "대체공휴일",
+    "kind": "substitute"
+   },
+   {
+    "date": "2022-10-03",
+    "name_ko": "개천절",
+    "kind": "fixed"
+   },
+   {
+    "date": "2022-10-09",
+    "name_ko": "한글날",
+    "kind": "fixed"
+   },
+   {
+    "date": "2022-10-10",
+    "name_ko": "대체공휴일",
+    "kind": "substitute"
+   },
+   {
+    "date": "2022-12-25",
+    "name_ko": "기독탄신일",
+    "kind": "fixed"
+   }
+  ],
+  "2023": [
+   {
+    "date": "2023-01-01",
+    "name_ko": "신정",
+    "kind": "fixed"
+   },
+   {
+    "date": "2023-01-21",
+    "name_ko": "설날 전날",
+    "kind": "lunar"
+   },
+   {
+    "date": "2023-01-22",
+    "name_ko": "설날",
+    "kind": "lunar"
+   },
+   {
+    "date": "2023-01-23",
+    "name_ko": "설날 다음날",
+    "kind": "lunar"
+   },
+   {
+    "date": "2023-01-24",
+    "name_ko": "대체공휴일",
+    "kind": "substitute"
+   },
+   {
+    "date": "2023-03-01",
+    "name_ko": "삼일절",
+    "kind": "fixed"
+   },
+   {
+    "date": "2023-05-05",
+    "name_ko": "어린이날",
+    "kind": "fixed"
+   },
+   {
+    "date": "2023-05-27",
+    "name_ko": "부처님 오신 날",
+    "kind": "lunar"
+   },
+   {
+    "date": "2023-05-29",
+    "name_ko": "대체공휴일",
+    "kind": "substitute"
+   },
+   {
+    "date": "2023-06-06",
+    "name_ko": "현충일",
+    "kind": "fixed"
+   },
+   {
+    "date": "2023-08-15",
+    "name_ko": "광복절",
+    "kind": "fixed"
+   },
+   {
+    "date": "2023-09-28",
+    "name_ko": "추석 전날",
+    "kind": "lunar"
+   },
+   {
+    "date": "2023-09-29",
+    "name_ko": "추석",
+    "kind": "lunar"
+   },
+   {
+    "date": "2023-09-30",
+    "name_ko": "추석 다음날",
+    "kind": "lunar"
+   },
+   {
+    "date": "2023-10-02",
+    "name_ko": "임시공휴일",
+    "kind": "temporary"
+   },
+   {
+    "date": "2023-10-03",
+    "name_ko": "개천절",
+    "kind": "fixed"
+   },
+   {
+    "date": "2023-10-09",
+    "name_ko": "한글날",
+    "kind": "fixed"
+   },
+   {
+    "date": "2023-12-25",
+    "name_ko": "기독탄신일",
+    "kind": "fixed"
+   }
+  ],
+  "2024": [
+   {
+    "date": "2024-01-01",
+    "name_ko": "신정",
+    "kind": "fixed"
+   },
+   {
+    "date": "2024-02-09",
+    "name_ko": "설날 전날",
+    "kind": "lunar"
+   },
+   {
+    "date": "2024-02-10",
+    "name_ko": "설날",
+    "kind": "lunar"
+   },
+   {
+    "date": "2024-02-11",
+    "name_ko": "설날 다음날",
+    "kind": "lunar"
+   },
+   {
+    "date": "2024-02-12",
+    "name_ko": "대체공휴일",
+    "kind": "substitute"
+   },
+   {
+    "date": "2024-03-01",
+    "name_ko": "삼일절",
+    "kind": "fixed"
+   },
+   {
+    "date": "2024-04-10",
+    "name_ko": "제22대 국회의원 선거일",
+    "kind": "election"
+   },
+   {
+    "date": "2024-05-05",
+    "name_ko": "어린이날",
+    "kind": "fixed"
+   },
+   {
+    "date": "2024-05-06",
+    "name_ko": "대체공휴일",
+    "kind": "substitute"
+   },
+   {
+    "date": "2024-05-15",
+    "name_ko": "부처님 오신 날",
+    "kind": "lunar"
+   },
+   {
+    "date": "2024-06-06",
+    "name_ko": "현충일",
+    "kind": "fixed"
+   },
+   {
+    "date": "2024-08-15",
+    "name_ko": "광복절",
+    "kind": "fixed"
+   },
+   {
+    "date": "2024-09-16",
+    "name_ko": "추석 전날",
+    "kind": "lunar"
+   },
+   {
+    "date": "2024-09-17",
+    "name_ko": "추석",
+    "kind": "lunar"
+   },
+   {
+    "date": "2024-09-18",
+    "name_ko": "추석 다음날",
+    "kind": "lunar"
+   },
+   {
+    "date": "2024-10-01",
+    "name_ko": "임시공휴일(국군의 날)",
+    "kind": "temporary"
+   },
+   {
+    "date": "2024-10-03",
+    "name_ko": "개천절",
+    "kind": "fixed"
+   },
+   {
+    "date": "2024-10-09",
+    "name_ko": "한글날",
+    "kind": "fixed"
+   },
+   {
+    "date": "2024-12-25",
+    "name_ko": "기독탄신일",
+    "kind": "fixed"
+   }
+  ],
+  "2025": [
+   {
+    "date": "2025-01-01",
+    "name_ko": "신정",
+    "kind": "fixed"
+   },
+   {
+    "date": "2025-01-27",
+    "name_ko": "임시공휴일",
+    "kind": "temporary"
+   },
+   {
+    "date": "2025-01-28",
+    "name_ko": "설날 전날",
+    "kind": "lunar"
+   },
+   {
+    "date": "2025-01-29",
+    "name_ko": "설날",
+    "kind": "lunar"
+   },
+   {
+    "date": "2025-01-30",
+    "name_ko": "설날 다음날",
+    "kind": "lunar"
+   },
+   {
+    "date": "2025-03-01",
+    "name_ko": "삼일절",
+    "kind": "fixed"
+   },
+   {
+    "date": "2025-03-03",
+    "name_ko": "대체공휴일",
+    "kind": "substitute"
+   },
+   {
+    "date": "2025-05-05",
+    "name_ko": "어린이날 · 부처님 오신 날",
+    "kind": "fixed"
+   },
+   {
+    "date": "2025-05-06",
+    "name_ko": "대체공휴일",
+    "kind": "substitute"
+   },
+   {
+    "date": "2025-06-03",
+    "name_ko": "제21대 대통령 선거일",
+    "kind": "election"
+   },
+   {
+    "date": "2025-06-06",
+    "name_ko": "현충일",
+    "kind": "fixed"
+   },
+   {
+    "date": "2025-08-15",
+    "name_ko": "광복절",
+    "kind": "fixed"
+   },
+   {
+    "date": "2025-10-03",
+    "name_ko": "개천절",
+    "kind": "fixed"
+   },
+   {
+    "date": "2025-10-05",
+    "name_ko": "추석 전날",
+    "kind": "lunar"
+   },
+   {
+    "date": "2025-10-06",
+    "name_ko": "추석",
+    "kind": "lunar"
+   },
+   {
+    "date": "2025-10-07",
+    "name_ko": "추석 다음날",
+    "kind": "lunar"
+   },
+   {
+    "date": "2025-10-08",
+    "name_ko": "대체공휴일",
+    "kind": "substitute"
+   },
+   {
+    "date": "2025-10-09",
+    "name_ko": "한글날",
+    "kind": "fixed"
+   },
+   {
+    "date": "2025-12-25",
+    "name_ko": "기독탄신일",
+    "kind": "fixed"
+   }
+  ],
+  "2026": [
+   {
+    "date": "2026-01-01",
+    "name_ko": "신정",
+    "kind": "fixed"
+   },
+   {
+    "date": "2026-02-16",
+    "name_ko": "설날 전날",
+    "kind": "lunar"
+   },
+   {
+    "date": "2026-02-17",
+    "name_ko": "설날",
+    "kind": "lunar"
+   },
+   {
+    "date": "2026-02-18",
+    "name_ko": "설날 다음날",
+    "kind": "lunar"
+   },
+   {
+    "date": "2026-03-01",
+    "name_ko": "삼일절",
+    "kind": "fixed"
+   },
+   {
+    "date": "2026-03-02",
+    "name_ko": "대체공휴일",
+    "kind": "substitute"
+   },
+   {
+    "date": "2026-05-05",
+    "name_ko": "어린이날",
+    "kind": "fixed"
+   },
+   {
+    "date": "2026-05-24",
+    "name_ko": "부처님 오신 날",
+    "kind": "lunar"
+   },
+   {
+    "date": "2026-05-25",
+    "name_ko": "대체공휴일",
+    "kind": "substitute"
+   },
+   {
+    "date": "2026-06-03",
+    "name_ko": "제9회 전국동시지방선거일",
+    "kind": "election"
+   },
+   {
+    "date": "2026-06-06",
+    "name_ko": "현충일",
+    "kind": "fixed"
+   },
+   {
+    "date": "2026-08-15",
+    "name_ko": "광복절",
+    "kind": "fixed"
+   },
+   {
+    "date": "2026-08-17",
+    "name_ko": "대체공휴일",
+    "kind": "substitute"
+   },
+   {
+    "date": "2026-09-24",
+    "name_ko": "추석 전날",
+    "kind": "lunar"
+   },
+   {
+    "date": "2026-09-25",
+    "name_ko": "추석",
+    "kind": "lunar"
+   },
+   {
+    "date": "2026-09-26",
+    "name_ko": "추석 다음날",
+    "kind": "lunar"
+   },
+   {
+    "date": "2026-10-03",
+    "name_ko": "개천절",
+    "kind": "fixed"
+   },
+   {
+    "date": "2026-10-05",
+    "name_ko": "대체공휴일",
+    "kind": "substitute"
+   },
+   {
+    "date": "2026-10-09",
+    "name_ko": "한글날",
+    "kind": "fixed"
+   },
+   {
+    "date": "2026-12-25",
+    "name_ko": "기독탄신일",
+    "kind": "fixed"
+   }
+  ]
+ }
+}

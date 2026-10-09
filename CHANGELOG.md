@@ -4,6 +4,13 @@
 
 ---
 
+## 0.3.100 (2026-10-10, 태그 v0.3.100) — 재점검 76건 묶음
+
+- `data/kr_public_holidays.json` + `kr_holidays.py`(`covers`·`holiday`·`holidays_between`) — 한국 공휴일 2012~2026(대체·선거·임시 공휴일 포함, 표 밖 해는 '못 잼'). ⚠ 공식 공고 대조 전.
+- `declared_assumptions.virtual_startup_channels` — 설비 채널 없는 기동 순서 가상 분해 규칙(펌프 → 보일러 → 공조기 팬 · 켜짐 문턱·부하 몫, 가정).
+- `data/region_everyday_stems.json` — 일상어 동 어간(계산·대화) · 일상 접미 낱말 21개(자산군·평상시 …) + `regions.everyday_suffix_word`.
+- `operation_manifest` 재생성 — `answer_reshape/gain_loss` 추가.
+
 ## 0.3.99 (2026-10-09, 태그 v0.3.99) — 연산 매니페스트 보정
 
 - `operation_manifest` 재생성(가산 — 생성 상수·SOURCE_HASH 변경 없음, 핀만): `archetype_climate_grid/heat_days` produces `concept:heat_days`·`derived:rank` · `measured_building_savings_query` 두 연산·`sim_variant_compare/pack_variants` 에 `qualifier:metric:hvac_type`·전기 지표 반영.

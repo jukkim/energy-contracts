@@ -674,6 +674,17 @@ def everyday_stem_blocked(word: str, text: str) -> bool:
 
 
 @lru_cache(maxsize=1)
+def everyday_suffix_words() -> frozenset[str]:
+    """시·군·구로 끝나지만 지명이 아닌 일상 낱말(같은 자료 파일 `suffix_words` — '자산군'·'평상시' · 2026-10-10)."""
+    return frozenset(json.loads(EVERYDAY_STEMS_PATH.read_text(encoding="utf-8")).get("suffix_words") or {})
+
+
+def everyday_suffix_word(word: str) -> bool:
+    """이 낱말(조사를 뗀 통째)이 시·군·구 꼴의 일상어인가 — 장소 오타 되묻기가 이 낱말을 지명 오타로 보지 않는다."""
+    return str(word or "") in everyday_suffix_words()
+
+
+@lru_cache(maxsize=1)
 def everyday_dong_stems() -> frozenset[str]:
     """법정동 어간 가운데 일상어(같은 자료 파일 `dong_stems` — 항목마다 뜻·근거)."""
     return frozenset(json.loads(EVERYDAY_STEMS_PATH.read_text(encoding="utf-8")).get("dong_stems") or {})

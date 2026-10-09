@@ -665,6 +665,21 @@
       "basis": "외부 근거 없는 선언 시연 가정 — 실제 민원 대장이 아니다",
       "source": "게이트웨이(8.simulation/ems_transformer/serving) asset_inputs/_virtual.COMPLAINT_HOURS_PER_CASE · COMPLAINT_FACTOR_RANGE · COMPLAINT_LOG_MAX · COMPLAINT_LOG_FALLBACK_HOUR"
     },
+    "virtual_startup_channels": {
+      "id": "virtual_startup_channels",
+      "value": {
+        "interlock_order": ["heating_water_flow", "boiler_fuel_rate", "ahu_supply_fan_kw"],
+        "on_fraction": {"heating_water_flow": 0.10, "boiler_fuel_rate": 0.25, "ahu_supply_fan_kw": 0.45},
+        "load_share": {"heating_water_flow": 0.15, "boiler_fuel_rate": 0.15, "ahu_supply_fan_kw": 0.70}
+      },
+      "unit_text": "rule",
+      "label_ko": "가상 기동 설비 채널(주 계량 분리) 생성 규칙",
+      "rule_ko": "설비별 계량이 없을 때 주 계량 시간값의 기저 위 부하(값 − 기저)를 설비별로 나눈 가상 채널 — 설비 k 는 기저 위 부하가 (95분위 − 기저) × on_fraction[k] 이상인 첫 시각에 켜지고, 켜진 동안 기저 위 부하 × load_share[k] · 같은 시각에 켜지면 연동 순서(순환 펌프 → 보일러 → 공조기 급기팬 — 유량 확인 뒤 연소 · 열원 준비 뒤 송풍)로 가른다",
+      "classification": "assumed",
+      "basis_kind": "declared_demo_assumption",
+      "basis": "외부 근거 없는 선언 시연 가정 — 연동 순서는 일반적인 난방 설비 기동 연동(순환 유량 확인 뒤 보일러 연소)을 따른 선언이며 이 건물의 제어 기록이 아니다",
+      "source": "게이트웨이(8.simulation/ems_transformer/serving) general_ops/measured_actions.startup_channels (2026-10-10 E1 LAB-073)"
+    },
     "virtual_metering": {
       "id": "virtual_metering",
       "value": {
