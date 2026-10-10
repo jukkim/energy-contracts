@@ -120,6 +120,7 @@
       "source": "선언 가정 — 게이트웨이 serving/general_ops/measured_portfolio.measured_cohort_peak 의 top_n 기본 10 을 옮김(RV-B3)"
     },
     "peer_cohort_area_ratio_default": {
+      "id": "peer_cohort_area_ratio_default",
       "value": 0.2,
       "unit": "ratio",
       "label_ko": "유사 건물 비교 집단 기본 연면적 폭",
@@ -130,10 +131,10 @@
       "source": "게이트웨이 serving/general_ops/peer_monthly_benchmark.DEFAULT_AREA_RATIO(0.2) 를 옮김(2026-10-10 재점검 LAB-ADD-011~020)"
     },
     "beds_per_floor_area_proxy": {
+      "id": "beds_per_floor_area_proxy",
       "value": 0.0125,
       "unit": "count/m2",
-      "unit_text": "병상/㎡",
-      "label_ko": "병상 수 대리 밀도(연면적당 병상)",
+      "label_ko": "병상 수 대리 밀도(연면적당 병상 · 병상/㎡)",
       "rule_ko": "병상 수 자료가 없을 때 병상 수(추정) = 연면적 × 0.0125(병상당 연면적 약 80㎡) — 병상당 값은 '추정' 표시. 병상 수가 연면적에 비례한다고 보므로 병상당 순위는 면적당 순위와 같다",
       "classification": "assumed",
       "basis_kind": "declared_demo_assumption",

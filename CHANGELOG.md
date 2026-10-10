@@ -4,6 +4,11 @@
 
 ---
 
+## 0.3.102 (2026-10-10, 태그 v0.3.102) — 선언 가정 행 모양 보정
+
+- `declared_assumptions.peer_cohort_area_ratio_default`·`beds_per_floor_area_proxy` 에 `id` 칸 · 병상 행은 `unit`(count/m2) 하나만(`unit_text` 뺌 — 모양 규칙 '정확히 하나'). 값은 그대로.
+- `tests/test_declared_assumptions_0370.py` 새 행 수 기대값 98 → 101(0.3.100 virtual_startup_channels 1 · 0.3.101 2). 0.3.100·0.3.101 CI pytest 빨강의 원인.
+
 ## 0.3.101 (2026-10-10, 태그 v0.3.101) — 재점검 남은 27건 묶음
 
 - `declared_assumptions.peer_cohort_area_ratio_default`(0.2 — 유사 건물 비교 집단 기본 연면적 폭 · 게이트웨이 `peer_monthly_benchmark.DEFAULT_AREA_RATIO` 리터럴을 옮김).
