@@ -1,2 +1,5 @@
 # 표 지문(regions.table_sha256)이 체크아웃마다 갈리지 않게 — 생성 표는 LF 고정(2026-09-30 v0.3.66)
 energy_contracts/data/*.json text eol=lf
+
+# 2026-10-10: 전역 pre-push 가 bash 로 실행 — CRLF 체크아웃이면 깨진다
+.ci-local text eol=lf
