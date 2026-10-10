@@ -4,6 +4,13 @@
 
 ---
 
+## 0.3.101 (2026-10-10, 태그 v0.3.101) — 재점검 남은 27건 묶음
+
+- `declared_assumptions.peer_cohort_area_ratio_default`(0.2 — 유사 건물 비교 집단 기본 연면적 폭 · 게이트웨이 `peer_monthly_benchmark.DEFAULT_AREA_RATIO` 리터럴을 옮김).
+- `declared_assumptions.beds_per_floor_area_proxy`(0.0125 병상/㎡ — 병상 수 대리 밀도 · 선언 시연 가정, 공식 통계 아님 · 실제 병상 수가 결속되면 그것이 먼저).
+- `interface_types.QuantityUnit += count/m2`(연면적당 개수 — 병상·학생·객실 대리 밀도). 가산.
+- `operation_manifest` 재생성(새 정리 방식 priority_matrix·comfort_guard 등) · `corpus/query_corpus.generated.json` 재생성(be-3d 새 op drawBuildingLinks · 새 내부 인자 endMonth·gapField·onGap·waitReady·showFailures).
+
 ## 0.3.100 (2026-10-10, 태그 v0.3.100) — 재점검 76건 묶음
 
 - `data/kr_public_holidays.json` + `kr_holidays.py`(`covers`·`holiday`·`holidays_between`) — 한국 공휴일 2012~2026(대체·선거·임시 공휴일 포함, 표 밖 해는 '못 잼'). ⚠ 공식 공고 대조 전.

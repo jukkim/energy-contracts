@@ -13,7 +13,7 @@
   ],
   "version": "1.2",
   "updated": "2026-09-29",
-  "$comment": "1.2(2026-09-29 3b-2 S1 초안, 0.3.63 — 태그·gen_constants 는 묶음 끝): RequestResolution(실행 전 해석 입구 응답) 추가. 가산. 1.1(2026-09-29 RV-B1 초안, 0.3.62): QuantityUnit += score. 가산.파일 밖 $ref(airo_request.json · data_classification.json)는 $id 기준 상대 경로다. 검사하는 쪽은 EC schemas/*.json 전부를 한 레지스트리(referencing)에 올려 읽는다 — tests/test_interface_contracts.py 가 그 방법의 본보기다.",
+  "$comment": "1.3(2026-10-10): QuantityUnit += count/m2(연면적당 개수 — 병상·학생·객실 대리 밀도). 가산. 1.2(2026-09-29 3b-2 S1 초안, 0.3.63 — 태그·gen_constants 는 묶음 끝): RequestResolution(실행 전 해석 입구 응답) 추가. 가산. 1.1(2026-09-29 RV-B1 초안, 0.3.62): QuantityUnit += score. 가산.파일 밖 $ref(airo_request.json · data_classification.json)는 $id 기준 상대 경로다. 검사하는 쪽은 EC schemas/*.json 전부를 한 레지스트리(referencing)에 올려 읽는다 — tests/test_interface_contracts.py 가 그 방법의 본보기다.",
   "$defs": {
     "TargetRef": {
       "$ref": "airo_request.json#/$defs/Target",
@@ -54,7 +54,8 @@
         "month",
         "day",
         "hour",
-        "score"
+        "score",
+        "count/m2"
       ],
       "description": "수량 단위 어휘. score = 점수·등급 문턱(예 화재 위험 70점 — 1.1 RV-B1, 게이트웨이 clarify SELECTION_QUALIFIERS risk). 에너지·전력·탄소·1차에너지·면적·온도의 표기는 energy_units.json#default.base_units 와 같다(시험이 포함 관계를 지킨다). ratio=0~1 비율 · pct=백분율(25 = 25%) — 질문의 '상위 25%' 는 pct 로 싣고 환산은 한 곳(질문 수 환산)에서 한다."
     },

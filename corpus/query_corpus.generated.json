@@ -8,9 +8,9 @@
     "executor_keys": "projects\\energy-decision-studio\\lib\\actions\\executor_keys.ts"
   },
   "counts": {
-    "opcodes": 122,
+    "opcodes": 123,
     "opA": 8,
-    "opB": 103,
+    "opB": 104,
     "opC": 11,
     "routerClasses": 43,
     "executors": 7,
@@ -551,6 +551,13 @@
       "ns": "gb",
       "consumerClass": "C",
       "summary": "VEN 목록 조회 — GridBridge GET /venues: 등록된 EdgeAgent 목록. kind 필터(telemetry=관측형/disp"
+    },
+    {
+      "api": "drawBuildingLinks",
+      "name": "insight.buildingLinks",
+      "ns": "insight",
+      "consumerClass": "B",
+      "summary": "근거 패널 결과의 건물 근접 짝(linksKey, 예 proximity_links: links[from·to·band_ko·combined_kw"
     },
     {
       "api": "highlightBuildingsByRef",
@@ -2677,6 +2684,7 @@
         "clearV68Features",
         "controlPlayback",
         "cycleEvidenceScenes",
+        "drawBuildingLinks",
         "driveKakaoRoute",
         "driveNaverRoute",
         "driveOsrmRoute",
@@ -2717,11 +2725,12 @@
         "unmountShowSummary",
         "unmountVirtualLayout"
       ],
-      "nlTarget": 73,
+      "nlTarget": 74,
       "nlCovered": 53,
       "nlUncovered": [
         "controlPlayback",
         "cycleEvidenceScenes",
+        "drawBuildingLinks",
         "editSceneNotes",
         "flyCameraPath",
         "flyCameraShot",
