@@ -1,5 +1,8 @@
 #!/bin/sh
 # 푸시 전 CI 와 같은 검사(.github/workflows — pytest·ruff F · validate_ssot 은 커밋 훅이 이미 돈다) — 전역 pre-push 가 부른다(2026-10-05)
 set -e
+# 2026-10-10 (사용자 "푸시 시간이 너무 많이 든다"): 전역 pre-push 가 푸시 범위를 보고 가벼운 변경(문서·생성 상수·EC 버전 고정 줄만)이면
+#   CI_LOCAL_SCOPE=light 를 넘긴다 — 위의 생성 상수·고정 일치 검사까지만 돌고 시험은 깃허브가 본다(판정 = ~/.git-hooks-global/push_scope.py)
+if [ "${CI_LOCAL_SCOPE:-full}" = light ]; then echo "[ci-local] 가벼운 변경 — 시험 생략(깃허브가 돌린다)"; exit 0; fi
 python -m ruff check energy_contracts/ scripts/ --select F -q
 python -m pytest tests -q -p no:cacheprovider --basetemp=scratch/pt_ci_local -x --tb=line | tail -2
