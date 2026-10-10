@@ -63,7 +63,7 @@ def _defs_enum(schemas: dict, name: str) -> list:
 PROJECT_TARGETS: dict[str, dict] = {
     "smartbuilding": {
         "python": "projects/smartbuilding/api/constants/_generated_constants.py",
-        "exports": {"python": ["AUTH_JWT_POLICY"]},
+        "exports": {"python": ["AUTH_JWT_POLICY", "LEGACY_EMS_SIMULATION_CODES"]},
     },
     # ⚠ **2026-08-02 추가** — sejong 의 `_generated_constants.py` 는 "AUTO-GENERATED …
     # gen_constants.py 로 재생성" 이라고 **스스로 밝히는데** 이 표에 없어서 `--all` 이
@@ -603,6 +603,10 @@ def gen_python(schemas: dict) -> str:
     # Legacy mapping (lookup only)
     lines.append("# ─ Legacy code mapping (lookup only — DO NOT use for new code) ─")
     lines.append(f"LEGACY_MAPPING: dict[str, dict[str, str]] = {ems['legacy_mapping']!r}")
+    # ems_simulation CSV raw code → 실제 적용 전략(건물별). 정본 = legacy_ems_code_mapping.json#ems_simulation_codes (2026-10-10 R095)
+    _sim_codes = {b: {c: {k: n[k] for k in ("components", "maps_to", "exact")} for c, n in rows.items()}
+                  for b, rows in legacy_e_codes.ems_simulation_codes().items()}
+    lines.append(f"LEGACY_EMS_SIMULATION_CODES: dict[str, dict[str, dict]] = {_sim_codes!r}")
     lines.append("")
 
     # Ports

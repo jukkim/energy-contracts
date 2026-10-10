@@ -112,6 +112,7 @@ def rule_violations(schemas_dir: Path | None = None) -> list[str]:
                        f"(components={comps}: 같은 전략 → 그것, 없으면 최소 상위집합)")
         if node.get("exact") is not want_exact:
             out.append(f"deprecated_e_codes[{code}].exact={node.get('exact')!r} — 규칙상 {want_exact}")
+    out.extend(ems_simulation_violations(atoms, enum, schemas_dir))
     try:
         ems = _load("ems_strategies.json", schemas_dir)
         have = ems["default"]["legacy_mapping"]["gcs_e_codes"]
@@ -122,6 +123,64 @@ def rule_violations(schemas_dir: Path | None = None) -> list[str]:
         if have.get(code) != want.get(code):
             out.append(f"ems_strategies gcs_e_codes[{code}]={have.get(code)!r} != 정본 maps_to "
                        f"{want.get(code)!r} — gcs_e_codes 는 생성 투영이다: python scripts/gen_constants.py --all")
+    return out
+
+
+def ems_simulation_codes(schemas_dir: Path | None = None) -> dict[str, dict[str, dict]]:
+    """ems_simulation CSV 의 건물 → raw code → {components, maps_to, exact, basis} (2026-10-10 R095)."""
+    legacy = _load("legacy_ems_code_mapping.json", schemas_dir)
+    try:
+        table = legacy["properties"]["ems_simulation_codes"]["default"]["by_building"]
+    except (KeyError, TypeError) as exc:
+        raise ValueError("legacy_ems_code_mapping.json#ems_simulation_codes.default.by_building 를 못 읽었다") from exc
+    if not isinstance(table, dict) or not table:
+        raise ValueError("legacy_ems_code_mapping.json#ems_simulation_codes 가 비어 있다")
+    return table
+
+
+def ems_simulation_violations(atoms: dict[str, frozenset[str]], enum: set[str],
+                              schemas_dir: Path | None = None) -> list[str]:
+    """ems_simulation_codes 의 maps_to/exact 가 components 와 같은 규칙으로 맞는가. 적용 안 된 행 = []·null."""
+    try:
+        table = ems_simulation_codes(schemas_dir)
+    except (OSError, ValueError) as exc:
+        return [f"ems_simulation_codes 로드 실패 — {exc}"]
+    out: list[str] = []
+    for bld, rows in table.items():
+        for raw, node in (rows or {}).items():
+            where = f"ems_simulation_codes[{bld}][{raw}]"
+            comps = node.get("components") if isinstance(node, dict) else None
+            if not isinstance(comps, list) or not all(isinstance(c, str) for c in comps):
+                out.append(f"{where}.components 가 문자열 목록이 아니다")
+                continue
+            if not node.get("basis"):
+                out.append(f"{where}.basis 가 비었다 — 근거(생성기 줄·IDF·CSV)를 적는다")
+            if not comps:
+                if node.get("maps_to") is not None or node.get("exact") is not False:
+                    out.append(f"{where}: components=[] 이면 maps_to=null·exact=false 여야 한다")
+                continue
+            unknown = sorted(set(comps) - enum)
+            if unknown:
+                out.append(f"{where}.components 에 StrategyCode 밖 코드 {unknown}")
+                continue
+            want_m, want_exact = expected_maps_to(comps, atoms)
+            if node.get("maps_to") != want_m or node.get("exact") is not want_exact:
+                out.append(f"{where} maps_to/exact={node.get('maps_to')!r}/{node.get('exact')!r} — "
+                           f"규칙상 {want_m!r}/{want_exact} (components={comps})")
+    #: 평평한 옛 표(ems_strategies#default.legacy_mapping.ems_simulation, 키 M0~M8)는 LO 행의 투영이어야 한다 —
+    #  2026-10-10 전엔 이 표만 따로 M0→M00·M1→M06 으로 갈라져 있었다.
+    try:
+        flat = _load("ems_strategies.json", schemas_dir)["default"]["legacy_mapping"]["ems_simulation"]
+    except (OSError, KeyError) as exc:
+        return out + [f"ems_strategies#default.legacy_mapping.ems_simulation 을 못 읽었다 — {exc}"]
+    lo = table.get("LO") or {}
+    if not lo:
+        out.append("ems_simulation_codes 에 LO 행이 없다 — 평평한 표를 대조할 수 없다")
+    for raw, node in lo.items():
+        key = raw.upper()
+        if flat.get(key) != node.get("maps_to"):
+            out.append(f"ems_strategies legacy_mapping.ems_simulation[{key}]={flat.get(key)!r} != "
+                       f"ems_simulation_codes[LO][{raw}].maps_to {node.get('maps_to')!r}")
     return out
 
 

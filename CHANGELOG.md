@@ -4,6 +4,12 @@
 
 ---
 
+## 0.3.103 (2026-10-10, 태그 v0.3.103) — ems_simulation 전략 코드 뜻(건물별)
+
+- `legacy_ems_code_mapping.json` v1.2.0 — 새 칸 `ems_simulation_codes`(building_ai 전략 표 10city_comprehensive_v3 의 raw m0~m8 → 건물별 실제 적용 components · maps_to · exact · basis, 32행). 근거 = `ems_simulation/scripts/generate_idf.py`(m0 = NightCycle :633 · 복합 m6~m8 M1 제외 :757 · PSZ 재정의 :563~584 · 학교 대수 제어 미적용 :915/:1793) + CSV(m6 = m2) + IDF 확인. 가산.
+- `ems_strategies.json#default.legacy_mapping.ems_simulation` 값 정정 — 옛 `M0→M00·M1→M06` → `M0→M06·M1→M01`(생성기와 같게). 이 표를 읽는 코드는 없었다(조사). 이제 위 칸의 LO 행 투영이며 `legacy_e_codes.rule_violations` 가 대조한다.
+- `gen_constants.py` — `LEGACY_EMS_SIMULATION_CODES` 생성(smartbuilding exports). `legacy_e_codes.ems_simulation_violations`(maps_to/exact 규칙 · basis 필수 · 평평한 표 대조) — 반례(M08 0 채움 재발·M0→M00) 확인.
+
 ## 0.3.102 (2026-10-10, 태그 v0.3.102) — 선언 가정 행 모양 보정
 
 - `declared_assumptions.peer_cohort_area_ratio_default`·`beds_per_floor_area_proxy` 에 `id` 칸 · 병상 행은 `unit`(count/m2) 하나만(`unit_text` 뺌 — 모양 규칙 '정확히 하나'). 값은 그대로.
