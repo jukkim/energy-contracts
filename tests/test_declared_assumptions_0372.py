@@ -58,7 +58,11 @@ ALLOWED_CHANGES = {"/version", "/updated", "/$comment",
                    "error_response.json:/$defs/Refusal/properties/retry/enum",
                    "error_response.json:/$defs/Refusal/properties/retry/description",
                    # 2026-10-01 125b530: M00 한국어 이름을 쉬운 말로(Setback → 설정 완화(셋백)) — 사람 대면 이름표만, 코드·값 아님
-                   "ems_strategies.json:/default/strategies/M00/name_kr"}
+                   "ems_strategies.json:/default/strategies/M00/name_kr",
+                   # 2026-10-10 0.3.103: 평평한 옛 표의 값 정정 — M0 = NightCycle(M06) · M1 = OptimalStart(M01)
+                   #   (생성기 generate_idf.py:633 실물과 달랐다 · 읽는 코드 0건 조사). 그 두 자리만 허용한다.
+                   "ems_strategies.json:/default/legacy_mapping/ems_simulation/M0",
+                   "ems_strategies.json:/default/legacy_mapping/ems_simulation/M1"}
 
 
 def _load(name: str) -> dict:

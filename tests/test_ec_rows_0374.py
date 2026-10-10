@@ -34,7 +34,10 @@ CHANGED_SCHEMAS = ("building_usage_map.json", "building_archetypes.json", "targe
 ALIAS_PATHS = {f"building_archetypes.json:/default/doe_buildings/{c}/aliases" for c in ("B01", "B02", "B03")}
 ALLOWED_CHANGES = {"/version", "/updated", "/$comment", *ALIAS_PATHS,
                    # 2026-10-01 125b530: M00 한국어 이름을 쉬운 말로(사람 대면 이름표만)
-                   "ems_strategies.json:/default/strategies/M00/name_kr"}
+                   "ems_strategies.json:/default/strategies/M00/name_kr",
+                   # 2026-10-10 0.3.103: 평평한 옛 표 값 정정(M0 = NightCycle M06 · M1 = M01 — 생성기 실물) — 두 자리만
+                   "ems_strategies.json:/default/legacy_mapping/ems_simulation/M0",
+                   "ems_strategies.json:/default/legacy_mapping/ems_simulation/M1"}
 
 
 def _load(name: str) -> dict:
