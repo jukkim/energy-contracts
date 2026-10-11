@@ -154,6 +154,14 @@
         "kind": "공공기관 규정",
         "effective": "2026-03-20",
         "retrieved": "2026-09-17",
+        "effective_verification": {
+          "status": "unverified",
+          "checked": "2026-10-11",
+          "finding": "국가법령정보센터 공공기관 규정 검색에서 이 이름·2026-03-20 시행본을 다시 찾지 못했다. 확인되는 판 = 「(한국에너지공단) 건축물 에너지효율등급 인증 및 제로에너지건축물 인증 제도 운영규정」 [시행 2023. 11. 15., 일부개정]. 2025-01-01 인증 통합 뒤 개정본이 공단 누리집에만 있을 수 있다.",
+          "confirmed_edition": {"title": "(한국에너지공단) 건축물 에너지효율등급 인증 및 제로에너지건축물 인증 제도 운영규정", "effective": "2023-11-15", "url": "https://www.law.go.kr/schlPubRulInfoP.do?chrClsCd=010202&schlPubRulSeq=2200000087233"},
+          "values_affected": false,
+          "values_note": "[별표 2] 용도프로필·[별표 3] 1차에너지 환산계수(전기 2.75·가스 1.1·지역난방 0.728)는 원문과 일치(ibs-e4 대조) — 값이 아니라 규정 이름·시행일 근거의 문제다. 인용할 때는 시행일을 쓰지 않거나 confirmed_edition 을 쓴다."
+        },
         "annexes": {
           "2": {
             "title": "주거 및 주거용 이외 건축물 용도프로필",
