@@ -4,6 +4,12 @@
 
 ---
 
+## 0.3.104 (2026-10-11, 태그 v0.3.104) — 출처 검증 표기 · 반사실 정본 · 연산 매니페스트 재생성
+
+- `korean_building_standards.json#default.sources.kea_zeb_rule_20260320.effective_verification` — 운영규정 2026-03-20 시행일을 국가법령정보센터에서 다시 찾지 못함(unverified) · 확인되는 판 2023-11-15(URL) · 값(별표 2·3) 영향 없음. 가산.
+- `ui_capabilities.json#ui.counterfactual.backend` — 반사실 정본 = 게이트웨이 F14 `/v1/counterfactual` → `/v1/policy-evaluate`(KBEP v2 현행 한국 표 + Critic). 예전 KBEP 직접·대만 GBEP 경로 아님(사용자 결정 10-11).
+- `operation_manifest.json` — 게이트웨이 능력표에서 재생성: building_ai_anomaly 필수 인자 3→0(서버 결속), cohort_query 축 = month(옛 연도 축은 과대 표기 — 한 해 코호트).
+
 ## 0.3.103 (2026-10-10, 태그 v0.3.103) — ems_simulation 전략 코드 뜻(건물별)
 
 - `legacy_ems_code_mapping.json` v1.2.0 — 새 칸 `ems_simulation_codes`(building_ai 전략 표 10city_comprehensive_v3 의 raw m0~m8 → 건물별 실제 적용 components · maps_to · exact · basis, 32행). 근거 = `ems_simulation/scripts/generate_idf.py`(m0 = NightCycle :633 · 복합 m6~m8 M1 제외 :757 · PSZ 재정의 :563~584 · 학교 대수 제어 미적용 :915/:1793) + CSV(m6 = m2) + IDF 확인. 가산.
