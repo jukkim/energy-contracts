@@ -4,6 +4,15 @@
 
 ---
 
+## 0.3.105 (2026-10-12, 태그 v0.3.105) — 화면 라벨을 쉬운 한국어로(키·값·숫자 그대로)
+
+- `data_classification.json#default.classification.words` 사람 대면 라벨만: `label_ko` 11개(measured_with_imputed·calibrated·imputed·reference·declared·assumed·virtual·synthetic·mock·mixed·unknown) + `estimated.short_ko`. 낱말·배지·표시 등급·참거짓 칸은 그대로. 머리말(첫 낱말)은 그대로 둬 게이트웨이가 라벨 머리말로 분류 이름을 찾는 자리가 바뀌지 않는다(unknown 만 예외 — '분류 미표시' 는 화면 금지어). 가상 계열은 '실측 아님' 유지.
+- `region_codes.json#default.hvac_types.H_C.name_kr` — '패키지형 단일존 공조(PSZ)' → '한 구역을 맡는 일체형 냉난방기(PSZ)'(표시 이름만 · 글자 비교 코드 없음 조사).
+- `building_usage_map.json#default.usage_archetype` — `apartment_by_floors.unknown_floors.label_ko` · `absence.no_doe_archetype.label_ko` 쉬운 말.
+- 시험: 태그 대비 덧붙이기 검사(0372·0374·0377)가 바뀐 자리만 이름으로 연다(목록 한 곳 = 0372 `PLAIN_KOREAN_0105`).
+- 함께 실림(0.3.104 뒤 커밋): `tools/verify_mcode_semantics.py` — M-code 뜻 게이트가 정본 easy_name_kr 을 유효 라벨로 받음.
+
+
 ## 0.3.104 (2026-10-11, 태그 v0.3.104) — 출처 검증 표기 · 반사실 정본 · 연산 매니페스트 재생성
 
 - `korean_building_standards.json#default.sources.kea_zeb_rule_20260320.effective_verification` — 운영규정 2026-03-20 시행일을 국가법령정보센터에서 다시 찾지 못함(unverified) · 확인되는 판 2023-11-15(URL) · 값(별표 2·3) 영향 없음. 가산.
