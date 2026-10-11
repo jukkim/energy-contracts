@@ -64,6 +64,22 @@ ALLOWED_CHANGES = {"/version", "/updated", "/$comment",
                    "ems_strategies.json:/default/legacy_mapping/ems_simulation/M0",
                    "ems_strategies.json:/default/legacy_mapping/ems_simulation/M1"}
 
+#: 0.3.105(2026-10-12 · 사용자 지시 10-11 21:37 "압축 표현을 자연스럽고 이해가 쉬운 한국어로" · 캠페인 PLAIN_KOREAN_REVIEW D12~D20):
+#:   **사람 대면 문구만** 바꾼 자리를 이름으로 연다 — 키·낱말·배지·표시 등급·참거짓·숫자는 그대로(이 시험들이 계속 막는다).
+#:   분류 라벨은 머리말(첫 낱말 '가상'·'추정'·'참조'·'선언'·'가정'·'혼합'·'모의'·'보정 모델'·'실측')을 그대로 둬서 게이트웨이가
+#:   라벨 머리말로 분류 이름을 찾는 자리(classification._head · label_directives._ec_class_labels · answer_views 혼합 머리)가
+#:   바뀌지 않는다. 예외 = unknown('분류 미표시' 는 화면 금지어 — 바꾼다). 가상 계열은 '실측 아님' 을 그대로 싣는다.
+#:   이 목록이 한 곳이다 — 0377(data_classification)·0374(building_usage_map) 시험이 이것을 읽는다.
+PLAIN_KOREAN_0105 = frozenset(
+    {f"data_classification.json:/default/classification/words/{w}/label_ko" for w in (
+        "measured_with_imputed", "calibrated", "imputed", "reference", "declared", "assumed",
+        "virtual", "synthetic", "mock", "mixed", "unknown")}
+    | {"data_classification.json:/default/classification/words/estimated/short_ko",
+       "region_codes.json:/default/hvac_types/H_C/name_kr",
+       "building_usage_map.json:/default/usage_archetype/apartment_by_floors/unknown_floors/label_ko",
+       "building_usage_map.json:/default/usage_archetype/absence/no_doe_archetype/label_ko"})
+ALLOWED_CHANGES |= PLAIN_KOREAN_0105
+
 
 def _load(name: str) -> dict:
     return json.loads((SCHEMAS / name).read_text(encoding="utf-8"))

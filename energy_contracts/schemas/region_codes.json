@@ -510,7 +510,7 @@
           "HC"
         ],
         "name_en": "Package/PSZ",
-        "name_kr": "패키지형 단일존 공조(PSZ)",
+        "name_kr": "한 구역을 맡는 일체형 냉난방기(PSZ)",
         "cooling": "DX/HP xN",
         "heating": "내장 HP",
         "staging_m03": false,

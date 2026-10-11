@@ -24,7 +24,8 @@ _t0372 = importlib.util.module_from_spec(_spec)
 _spec.loader.exec_module(_t0372)
 strict_additive, _at_tag = _t0372.strict_additive, _t0372._at_tag
 
-ALLOWED_CHANGES = {"/version", "/updated", "/$comment"}
+#: 0.3.105 쉬운 한국어 라벨 — 바뀌어도 되는 자리 목록은 한 곳(0372 PLAIN_KOREAN_0105 · 근거도 거기)
+ALLOWED_CHANGES = {"/version", "/updated", "/$comment", *_t0372.PLAIN_KOREAN_0105}
 
 
 def _schema() -> dict:

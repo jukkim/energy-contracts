@@ -126,7 +126,7 @@ scan N건 ≠ N건 수정. occurrence별 맥락 판정. 예: `제2024-1026호`�
 |---|---|---|---|
 | H_A | 중앙집중식 VAV 공조(냉동기·보일러) | be-3d A "팬코일+냉동기" · 정책평가 A "Window AC" | B01: Chiller 2 · Boiler 2 · VAV 재열 15 / B08: Chiller 1 · Boiler 1 · VAV 41 (B07 은 냉동기 대신 DX 4) |
 | H_B | 패키지형 VAV 공조(DX 냉방·전기 재열) | region_codes·be-3d "중앙식 FCU" · 정책평가 "Split AC" | B01: Chiller 0 · Boiler 0 · DX TwoSpeed 4 · VAV 재열 16 · 전기코일 20 / B08: DX 9 · VAV 46 · 전기코일 46 |
-| H_C | 패키지형 단일존 공조(PSZ) | be-3d C "VAV 중앙공조" · 정책평가 "Packaged Rooftop" | B02: 단일존 히트펌프(UnitaryHeatPump:AirToAir) 15 · DX 15 · 가스 보조코일 15 |
+| H_C | 한 구역을 맡는 일체형 냉난방기(PSZ) | be-3d C "VAV 중앙공조" · 정책평가 "Packaged Rooftop" | B02: 단일존 히트펌프(UnitaryHeatPump:AirToAir) 15 · DX 15 · 가스 보조코일 15 |
 | H_D | 시스템에어컨 냉난방(VRF·EHP) | be-3d·매트릭스 HD "온돌+VRF" · 정책평가 D "VAV" | B02: VRF 실외기 3 · 실내기 15, 보일러 0 / B16: 실외기 1 · 실내기 27 |
 | H_E | 온돌(중앙 가스보일러) + 벽걸이 에어컨 | be-3d E "지역냉난방" · HE "온돌+지역난방" · 매트릭스 E "Hydronic radiant + DOAS" | B16: Boiler 1 · 온돌(LowTemperatureRadiant) 24 · PTAC 27 |
 | H_F | 시스템에어컨 냉방 + 가스보일러 난방 | be-3d HF "온돌+개별보일러" · 매트릭스 HF "Hybrid (central + 온돌)" · 정책평가 HF "District Heat + AC" | B02: Boiler 1 · VRF 실내기 15 · 온수 방열기 15 / B16: Boiler 1 · VRF 27 · 온돌 26 |

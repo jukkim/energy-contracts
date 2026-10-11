@@ -37,7 +37,9 @@ ALLOWED_CHANGES = {"/version", "/updated", "/$comment", *ALIAS_PATHS,
                    "ems_strategies.json:/default/strategies/M00/name_kr",
                    # 2026-10-10 0.3.103: 평평한 옛 표 값 정정(M0 = NightCycle M06 · M1 = M01 — 생성기 실물) — 두 자리만
                    "ems_strategies.json:/default/legacy_mapping/ems_simulation/M0",
-                   "ems_strategies.json:/default/legacy_mapping/ems_simulation/M1"}
+                   "ems_strategies.json:/default/legacy_mapping/ems_simulation/M1",
+                   # 2026-10-12 0.3.105: 쉬운 한국어 라벨(사람 대면 문구만) — 목록·근거는 한 곳(0372 PLAIN_KOREAN_0105)
+                   *_t0372.PLAIN_KOREAN_0105}
 
 
 def _load(name: str) -> dict:

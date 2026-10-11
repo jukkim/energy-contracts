@@ -481,7 +481,7 @@
         "unknown_floors": {
           "archetype": "B16",
           "flag": null,
-          "label_ko": "층수 미상 — 중층 원형"
+          "label_ko": "층수를 몰라 중층 아파트 표준 모델로 계산"
         },
         "source": "be-3d src/simulation/archetypes._MIDRISE_MAX_FLOORS(지상 5층 이하 = 중층) — Korean_BB 적재 규칙과 같은 경계",
         "rule_ko": "공동주택 = 지상 층수 5층 이하 중층 아파트(B16) · 6층 이상 고층 아파트(B17). 층수를 모르면 중층(B16, 기존 값). ⛔ 층수로 용도를 바꾸지 않는다(20층 공동주택은 업무시설이 아니라 고층 아파트)"
@@ -523,7 +523,7 @@
         },
         "no_doe_archetype": {
           "absence_kind": "not_applicable",
-          "label_ko": "이 용도에 맞는 시뮬 원형이 없음(데이터센터 등)"
+          "label_ko": "이 용도에 맞는 표준 건물 모델이 없음(데이터센터 등)"
         }
       }
     }
