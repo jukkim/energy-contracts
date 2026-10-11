@@ -1766,11 +1766,7 @@
         ],
         "default_period": "not_applicable",
         "subject_kinds": [],
-        "required_arguments": [
-          "meter_reading",
-          "building_mean",
-          "building_std"
-        ],
+        "required_arguments": [],
         "produces": [],
         "axes": [],
         "input_source": "bound",
@@ -2209,7 +2205,6 @@
         ],
         "produces": [
           "axis:monthly",
-          "axis:yearly",
           "derived:difference",
           "derived:rank",
           "qualifier:metric:electricity",
@@ -2218,8 +2213,7 @@
           "qualifier:usage_filter"
         ],
         "axes": [
-          "month",
-          "year"
+          "month"
         ],
         "input_source": "bound",
         "implementation": "internal",
