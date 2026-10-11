@@ -525,7 +525,9 @@ def check_declared(code: str, label: str, st: dict) -> str | None:
     if any(k in low for k in SEMANTIC_KEYS.get(code, [])):
         return None
     e = st.get(code) or {}
-    for nm in (e.get("name_en", ""), e.get("name_kr", "")):
+    # 2026-10-11: 정본의 쉬운 이름(easy_name_kr)도 정본 이름이다 — 화면용 사전이 `M01(켜고 끄는 시각 맞추기)` 처럼
+    #   EC 의 easy_name_kr 을 그대로 실었는데 '어느 낱말도 안 맞는다' 로 막혔다(거짓 오매핑). 정본에 없는 이름은 여전히 막힌다.
+    for nm in (e.get("name_en", ""), e.get("name_kr", ""), e.get("easy_name_kr", "")):
         if nm and nm.lower() in low:
             return None
     return (f"정본은 '{e.get('name_kr', '?')}'({e.get('name_en', '?')}) 인데 "
