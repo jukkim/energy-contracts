@@ -4,6 +4,11 @@
 
 ---
 
+## 0.3.106 (2026-10-13, 태그 v0.3.106) — 준공 시기별 외피 기준 · 내일 설정 효과 연산 등재
+
+- `korean_building_standards.json` — 준공 시기(1987/1992/2001/2010)별 외피 열관류율 기준 + 시기 도시→지역 · 침기 배율 근거 = 공동주택만 · 범위 '시기별 외피 시나리오' · 상수 `KR_ENVELOPE_U_LIMITS_BY_VINTAGE` · 법령 원문 확인(`verify_korean_law_sources` vintage) (역할 1, ec47e8a).
+- `operation_manifest` — `day_ahead_setpoint_effect`(오늘·내일·다음 24시간 냉난방 설정 효과 · 원형 대상 받음) 등재(gen_operation_manifest 재생성, 4e86d30·6df4d5e).
+
 ## 0.3.105 (2026-10-12, 태그 v0.3.105) — 화면 라벨을 쉬운 한국어로(키·값·숫자 그대로)
 
 - `data_classification.json#default.classification.words` 사람 대면 라벨만: `label_ko` 11개(measured_with_imputed·calibrated·imputed·reference·declared·assumed·virtual·synthetic·mock·mixed·unknown) + `estimated.short_ko`. 낱말·배지·표시 등급·참거짓 칸은 그대로. 머리말(첫 낱말)은 그대로 둬 게이트웨이가 라벨 머리말로 분류 이름을 찾는 자리가 바뀌지 않는다(unknown 만 예외 — '분류 미표시' 는 화면 금지어). 가상 계열은 '실측 아님' 유지.
