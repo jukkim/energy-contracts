@@ -2353,10 +2353,12 @@
         "operation": null,
         "selector": null,
         "needs": [
-          "assigned_subject_data"
+          "assigned_subject_data",
+          "archetype_tables"
         ],
         "default_period": "not_applicable",
         "subject_kinds": [
+          "archetype",
           "assigned_asset"
         ],
         "required_arguments": [
@@ -2368,6 +2370,7 @@
           "qualifier:setpoint_delta"
         ],
         "axes": [
+          "archetype",
           "setpoint"
         ],
         "input_source": "bound",
