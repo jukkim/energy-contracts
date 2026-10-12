@@ -2,12 +2,12 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "energy-contracts/korean_building_standards.json",
   "title": "Korean Building Standards (law-sourced)",
-  "description": "한국 건축 기준값 정본 — 외피 열관류율 상한·법정 기후지역·필요환기량·인증 평가 조건·설계용 실내 온습도·용도프로필. v1.0 (2026-09-17): 모든 값은 law.go.kr 현행 원문(시행일·별표·조회일·파일 sha256)에 묶인다. 원문 파일 = docs/legal_sources/<조회일>/. 전사는 scripts/verify_korean_law_sources.py 가 원문 텍스트로 대조한다. ⚠ 조회일·해시는 현행성 증명이 아니라 확인 이력이다 — currency.recheck_after_days 가 지나면 소비 코드는 '현행 법령' 실행을 거부한다. 법령값과 모델링 가정(소비 repo 의 modeling_policies)은 섞지 않는다. PE 계수 정본은 energy_constants.pe_factors — 여기는 원문 대조 기록만.",
+  "description": "한국 건축 기준값 정본 — 외피 열관류율 상한·법정 기후지역·필요환기량·인증 평가 조건·설계용 실내 온습도·용도프로필. v1.0 (2026-09-17): 모든 값은 law.go.kr 현행 원문(시행일·별표·조회일·파일 sha256)에 묶인다. 원문 파일 = docs/legal_sources/<조회일>/. 전사는 scripts/verify_korean_law_sources.py 가 원문 텍스트로 대조한다. ⚠ 조회일·해시는 현행성 증명이 아니라 확인 이력이다 — currency.recheck_after_days 가 지나면 소비 코드는 '현행 법령' 실행을 거부한다. 법령값과 모델링 가정(소비 repo 의 modeling_policies)은 섞지 않는다. PE 계수 정본은 energy_constants.pe_factors — 여기는 원문 대조 기록만. v1.1 (2026-10-12): envelope_u_limits_by_vintage 추가 — 준공 시기 구간별(~2000·2001~2012·2013~2017) 법정 외피 상한(1987·2001·2010 개정 표, 옛 3 지역)·시대별 도시→지역·침기 배율(추정) · 원문 = docs/legal_sources/vintage_2026-10-12/ (2010 표는 2차 출처). 현행(2018~)은 envelope_u_limits 그대로.",
   "_usage": "codegen",
   "_consumers": [
     "8sim-shared (gen_constants → KR_* — mpc_model/_shared/korean_standards.py 가 파생)"
   ],
-  "version": "1.0",
+  "version": "1.1",
   "type": "object",
   "properties": {
     "currency": {
@@ -47,6 +47,9 @@
       "type": "object"
     },
     "calculation_rules": {
+      "type": "object"
+    },
+    "envelope_u_limits_by_vintage": {
       "type": "object"
     }
   },
@@ -1413,6 +1416,663 @@
       "rounding": "열관류율·열관류저항 계산결과는 소수점 3자리로 맺음(4째 자리에서 반올림)하여 판정",
       "window_door_u": "별표1 의 창·문 열관류율은 유리와 창틀(문틀)을 포함한 평균 열관류율 (제5조 10호 파)",
       "floor_heating_over_unheated": "바닥난방 공간의 하부가 바닥난방을 하지 않는 공간이면 최하층 바닥 · 외기에 간접 면하는 경우 기준"
+    },
+    "envelope_u_limits_by_vintage": {
+      "unit": "W/m2K",
+      "semantics": "upper_limit",
+      "decision": "사용자 2026-10-12(K 추천 채택) — 1 층 준공 시기 4 구간 ~2000 · 2001~2012 · 2013~2017 · 2018~(현행 = envelope_u_limits). 모든 개정 부칙의 경과조치(허가 시점 기준) 때문에 준공 구간에는 그 앞 시기 표를 싣는다(허가→준공 약 2~3 년, 일반론 [미확인]).",
+      "basis_doc": "8.simulation/docs/koreanization/APPENDIX_C_VINTAGE_U_VALUES.md §C2~C4",
+      "region_keys": [
+        "중부",
+        "남부",
+        "제주"
+      ],
+      "conversion": {
+        "kcal_per_m2hC_to_W_per_m2K": 1.163,
+        "rounding": "소수 둘째 자리 반올림(ROUND_HALF_UP) — 1987 표만"
+      },
+      "caveat": "법정값은 상한 — 실제 재고는 대체로 나쁘다(열교·시공·노후). 결과는 '그 시기 법정 상한으로 지은 건물' 로 표시한다(구축 실측 아님). SHGC 상한은 1979~2026 어느 별표에도 없다 → 시기 공통(현행 가정값 그대로).",
+      "scope": {
+        "label_ko": "시기별 외피 시나리오",
+        "note": "2026-10-12 GPT 정밀 검토 P1-4: 외피(법정 상한)만 그 시기로 바꾸고 설비 효율·형상·급탕·용도프로필은 현행이다. 실제 재고 모델이 아니다 — 재고 비중은 외부 자료로 따로 가중하고, 경계연도(허가→준공 지연)는 혼합·민감도로 다룬다(미실행).",
+        "keys": {
+          "standard_table": "적용 기준 표(vintages.*.table)",
+          "completion_range": "준공 구간(vintages.*.built_from/built_until)",
+          "permit_to_completion_lag_years": [2, 3],
+          "permit_to_completion_lag_classification": "estimated",
+          "retrofit": "none"
+        }
+      },
+      "sources": {
+        "bldg_rule_1987_422": {
+          "title": "건축법 시행규칙",
+          "kind": "부령",
+          "number": "건설부령 제422호",
+          "effective": "1987-07-21",
+          "retrieved": "2026-10-12",
+          "annexes": {
+            "4": {
+              "title": "지역에 따른 건물 부위별 열관류율표(제19조제1호관련)",
+              "file": "docs/legal_sources/vintage_2026-10-12/bldg_rule_1987_annex4.pdf",
+              "sha256": "9419edaa1629c363ee6d299a3437dffaf6ca1c1bf59b2e2b502c285d84d49a08"
+            }
+          }
+        },
+        "equip_rule_1992_506": {
+          "title": "건축물의 설비기준 등에 관한 규칙",
+          "kind": "부령",
+          "number": "건설부령 제506호",
+          "effective": "1992-06-01",
+          "retrieved": "2026-10-12",
+          "annexes": {
+            "4": {
+              "title": "지역별건축물부위의열관류율표(제21조관련) — 1987 값 승계",
+              "file": "docs/legal_sources/vintage_2026-10-12/equip_rule_1992_annex4.pdf",
+              "sha256": "23f258e1e4bfaf08b91772a42f20ec1e7878cbf6db98e05e7f8b444b864999f9"
+            },
+            "article21": {
+              "title": "제21조(건축물의 열손실방지) 발췌 — 2호 층간 바닥",
+              "file": "docs/legal_sources/vintage_2026-10-12/equip_rule_1992_article21_excerpt.txt",
+              "sha256": "d2b19987c708c78cea59b180fe5d2d15748142e72212e8be8f0999ba6e937d03"
+            }
+          }
+        },
+        "equip_rule_2001_270": {
+          "title": "건축물의 설비기준 등에 관한 규칙",
+          "kind": "부령",
+          "number": "건설교통부령 제270호",
+          "effective": "2001-01-17",
+          "retrieved": "2026-10-12",
+          "annexes": {
+            "4": {
+              "title": "지역별 건축물 부위의 열관류율표(제21조관련)",
+              "file": "docs/legal_sources/vintage_2026-10-12/equip_rule_2001_annex4.pdf",
+              "sha256": "6f5e75bd8b0c6f4c4fe37ef584926a0f22ef6487731e8610804a76c32eddc0af"
+            }
+          }
+        },
+        "equip_rule_2010_306": {
+          "title": "건축물의 설비기준 등에 관한 규칙",
+          "kind": "부령",
+          "number": "국토해양부령 제306호",
+          "promulgated": "2010-11-05",
+          "effective": "2011-02-01",
+          "retrieved": "2026-10-12",
+          "annexes": {
+            "4": {
+              "title": "지역별 건축물 부위의 열관류율표 — 원문 사본 없음",
+              "file": null,
+              "sha256": null,
+              "secondary": [
+                {
+                  "cite": "김지혜 외, 건축물의 에너지절약설계기준 강화에 따른 업무용 건물의 에너지성능 개선 효과, KIAEBS 14(1) 2020, Table 4 (P3)",
+                  "copy": "8.simulation/docs/koreanization/sources_vintage/kiaebs2020.pdf",
+                  "sha256": "951f23e33d157ae88add159ff0b402fa8095a5fe9ef12dcdbdef960332ba657b"
+                },
+                {
+                  "cite": "국토해양부 2010 입법예고(공동주택 창·측벽) — 부록 C 리서치 기록",
+                  "copy": null,
+                  "sha256": null
+                }
+              ]
+            }
+          }
+        }
+      },
+      "city_region_by_era": {
+        "1987": {
+          "source_ref": "bldg_rule_1987_422#4 ※적용대상지역 (1992 별표4 승계)",
+          "definitions": {
+            "중부": "서울특별시·경기도·인천직할시·충청북도·강원도",
+            "남부": "충청남도·전라북도·광주직할시·전라남도·경상북도·경상남도·대구직할시·부산직할시(1992: 대전직할시 명시)",
+            "제주": "제주도"
+          },
+          "simulation_cities": {
+            "C01": "중부",
+            "C02": "남부",
+            "C03": "남부",
+            "C04": "중부",
+            "C05": "남부",
+            "C06": "남부",
+            "C07": "남부",
+            "C08": "중부",
+            "C09": "제주",
+            "C10": "중부",
+            "C11": "중부",
+            "C12": "중부",
+            "C13": "남부",
+            "C14": "남부",
+            "C15": "남부",
+            "C16": "남부",
+            "C17": "중부",
+            "C18": "남부"
+          },
+          "notes": [
+            "울산(C07) = 1987 당시 경상남도 → 남부",
+            "대전(C06) = 1987 당시 충청남도 → 남부",
+            "강릉(C08)·철원(C17)·춘천(C11) = 강원도 전역 중부"
+          ]
+        },
+        "2001": {
+          "source_ref": "equip_rule_2001_270#4 비고 1)·2) · 2013-149 [별표1] 비고(울산·세종 남부 명시 — 같은 경계)",
+          "definitions": {
+            "중부": "서울특별시, 인천광역시, 경기도, 강원도(강릉시, 동해시, 속초시, 삼척시, 고성군, 양양군 제외), 충청북도(영동군 제외), 충청남도(천안시), 경상북도(청송군)",
+            "남부": "부산광역시, 대구광역시, 광주광역시, 대전광역시, (울산광역시), 강원도(강릉시, 동해시, 속초시, 삼척시, 고성군, 양양군), 충청북도(영동군), 충청남도(천안시 제외), 전라북도, 전라남도, 경상북도(청송군 제외), 경상남도, (세종특별자치시 — 2013-149)",
+            "제주": "제주도"
+          },
+          "simulation_cities": {
+            "C01": "중부",
+            "C02": "남부",
+            "C03": "남부",
+            "C04": "중부",
+            "C05": "남부",
+            "C06": "남부",
+            "C07": "남부",
+            "C08": "남부",
+            "C09": "제주",
+            "C10": "중부",
+            "C11": "중부",
+            "C12": "중부",
+            "C13": "남부",
+            "C14": "남부",
+            "C15": "남부",
+            "C16": "남부",
+            "C17": "중부",
+            "C18": "남부"
+          },
+          "notes": [
+            "강릉(C08) = 강원 동해안 6 시·군 → 남부(1987 의 중부와 다르다)",
+            "2010 개정 표 비고는 원문 미대조 — 2001·2013-149 비고가 같아 같은 경계로 둔다(가정)"
+          ]
+        }
+      },
+      "infiltration": {
+        "data_classification": "estimated",
+        "method": "현행 대비 비(ACH50 비) — 템플릿-v4 침기(현행 신축 가정)에 곱한다. ACH50→자연 침기 ÷20 환산은 쓰지 않는다(국내 검증 없음 [미확인]).",
+        "ach50_apartment": {
+          "le2000": 13.3,
+          "y2000_2010": 3.5,
+          "after_2010": 2.5
+        },
+        "reference": "after_2010",
+        "basis_use": "apartment",
+        "non_basis_policy": "envelope_only",
+        "policy_note": "2026-10-12 GPT 정밀 검토 P1-3: 근거(공동주택 ACH50)가 있는 용도(소비 코드의 공동주택 분류)에만 배율을 곱한다. 그 밖 용도는 외피만(배율 1.0). 다른 용도에 같은 비를 쓰는 것은 따로 이름 붙인 민감도 시나리오(assumed)로만.",
+        "source": "최수지·조재훈·박시현, 건물 기밀성능의 에너지성능에 대한 기밀성능 영향도 평가, KIAEBS 17(6) 2023 (공동주택 · 표본 적음)",
+        "source_copy": "8.simulation/docs/koreanization/sources_vintage/N0280170605.pdf",
+        "source_sha256": "4ecf9f5cf991097eddba639f75eed791c87a6f1b58f25a39c3117624feb4ffa8",
+        "caveats": [
+          "표본이 공동주택이다 — 비주거에 같은 비를 쓰는 것은 가정",
+          "법정 기밀(ACH) 한도는 어느 시기에도 없다",
+          "2001~2012 구간에 '2000~2010' 값을 쓴다(2011~2012 준공 일부는 2.5 에 가깝다)"
+        ]
+      },
+      "tables": {
+        "1987": {
+          "label_ko": "1987 표(1987.7.21 개정 · 1992.6.1 설비규칙 별표4 승계 · 2000.12 까지 같음)",
+          "source_refs": [
+            "bldg_rule_1987_422#4",
+            "equip_rule_1992_506#4",
+            "equip_rule_1992_506#article21"
+          ],
+          "permits_from": "1987-07-21",
+          "permits_until": "2000-12-31",
+          "region_era": "1987",
+          "data_classification": "reference",
+          "transcription": "primary",
+          "original_unit": "kcal/m2hC",
+          "original_kcal": {
+            "wall_floor": [
+              0.5,
+              0.65,
+              1.0
+            ],
+            "roof": [
+              0.35,
+              0.45,
+              0.65
+            ],
+            "side_wall": [
+              0.4,
+              0.6,
+              0.7
+            ],
+            "window": [
+              2.9,
+              3.1,
+              5.0
+            ],
+            "interfloor_floor_heating_individual_boiler": 1.0
+          },
+          "limits": {
+            "wall": {
+              "direct": {
+                "apartment": {
+                  "중부": 0.58,
+                  "남부": 0.76,
+                  "제주": 1.16
+                },
+                "other": {
+                  "중부": 0.58,
+                  "남부": 0.76,
+                  "제주": 1.16
+                }
+              },
+              "indirect": {
+                "apartment": {
+                  "중부": 0.58,
+                  "남부": 0.76,
+                  "제주": 1.16
+                },
+                "other": {
+                  "중부": 0.58,
+                  "남부": 0.76,
+                  "제주": 1.16
+                }
+              }
+            },
+            "roof": {
+              "direct": {
+                "중부": 0.41,
+                "남부": 0.52,
+                "제주": 0.76
+              },
+              "indirect": {
+                "중부": 0.41,
+                "남부": 0.52,
+                "제주": 0.76
+              }
+            },
+            "floor": {
+              "direct": {
+                "floor_heating": {
+                  "중부": 0.58,
+                  "남부": 0.76,
+                  "제주": 1.16
+                },
+                "no_floor_heating": {
+                  "중부": 0.58,
+                  "남부": 0.76,
+                  "제주": 1.16
+                }
+              },
+              "indirect": {
+                "floor_heating": {
+                  "중부": 0.58,
+                  "남부": 0.76,
+                  "제주": 1.16
+                },
+                "no_floor_heating": {
+                  "중부": 0.58,
+                  "남부": 0.76,
+                  "제주": 1.16
+                }
+              }
+            },
+            "interfloor_floor_heating": 1.16,
+            "window": {
+              "direct": {
+                "apartment": {
+                  "중부": 3.37,
+                  "남부": 3.61,
+                  "제주": 5.82
+                },
+                "other": {
+                  "중부": 3.37,
+                  "남부": 3.61,
+                  "제주": 5.82
+                }
+              },
+              "indirect": {
+                "apartment": {
+                  "중부": 3.37,
+                  "남부": 3.61,
+                  "제주": 5.82
+                },
+                "other": {
+                  "중부": 3.37,
+                  "남부": 3.61,
+                  "제주": 5.82
+                }
+              }
+            },
+            "door": null,
+            "apartment_entrance_fire_door": null,
+            "apartment_side_wall": {
+              "중부": 0.47,
+              "남부": 0.7,
+              "제주": 0.81
+            }
+          },
+          "legal_notes": [
+            "외벽과 최하층 바닥(외기에 면하는 바닥 포함)이 한 칸 — 바닥난방 구분 없음",
+            "외기 직접·간접 구분 없음 — 간접 칸은 법정 같은 값(not_applicable 아님, 부록 C §C2 단서)",
+            "공동주택 구분 없음(외벽) · 창은 '거실의 외기에 면하는 창'(2중창·복층유리로 시공하면 제외 — 법정 상한 값을 쓴다)",
+            "문(출입문)은 열관류율 규정 없음 → door·apartment_entrance_fire_door = null(소비처가 모델링 가정을 적는다)",
+            "층간 바닥 1.0 kcal = 1992 규칙 제21조 2호(온수온돌·세대별 보일러 공동주택 거실바닥) — 별표가 아니라 조문"
+          ]
+        },
+        "2001": {
+          "label_ko": "2001 표(건설교통부령 제270호 별표4 · 2001.1.17 시행 · 2011.1 까지 — 2008 창 강화는 대표값에 싣지 않음)",
+          "source_refs": [
+            "equip_rule_2001_270#4"
+          ],
+          "permits_from": "2001-01-17",
+          "permits_until": "2011-01-31",
+          "region_era": "2001",
+          "data_classification": "reference",
+          "transcription": "primary",
+          "limits": {
+            "wall": {
+              "direct": {
+                "apartment": {
+                  "중부": 0.47,
+                  "남부": 0.58,
+                  "제주": 0.76
+                },
+                "other": {
+                  "중부": 0.47,
+                  "남부": 0.58,
+                  "제주": 0.76
+                }
+              },
+              "indirect": {
+                "apartment": {
+                  "중부": 0.64,
+                  "남부": 0.81,
+                  "제주": 1.1
+                },
+                "other": {
+                  "중부": 0.64,
+                  "남부": 0.81,
+                  "제주": 1.1
+                }
+              }
+            },
+            "roof": {
+              "direct": {
+                "중부": 0.29,
+                "남부": 0.35,
+                "제주": 0.41
+              },
+              "indirect": {
+                "중부": 0.41,
+                "남부": 0.52,
+                "제주": 0.58
+              }
+            },
+            "floor": {
+              "direct": {
+                "floor_heating": {
+                  "중부": 0.35,
+                  "남부": 0.41,
+                  "제주": 0.47
+                },
+                "no_floor_heating": {
+                  "중부": 0.41,
+                  "남부": 0.47,
+                  "제주": 0.52
+                }
+              },
+              "indirect": {
+                "floor_heating": {
+                  "중부": 0.52,
+                  "남부": 0.58,
+                  "제주": 0.64
+                },
+                "no_floor_heating": {
+                  "중부": 0.58,
+                  "남부": 0.64,
+                  "제주": 0.76
+                }
+              }
+            },
+            "interfloor_floor_heating": 0.81,
+            "interfloor_other": 1.16,
+            "window": {
+              "direct": {
+                "apartment": {
+                  "중부": 3.84,
+                  "남부": 4.19,
+                  "제주": 5.23
+                },
+                "other": {
+                  "중부": 3.84,
+                  "남부": 4.19,
+                  "제주": 5.23
+                }
+              },
+              "indirect": {
+                "apartment": {
+                  "중부": 5.47,
+                  "남부": 6.05,
+                  "제주": 7.56
+                },
+                "other": {
+                  "중부": 5.47,
+                  "남부": 6.05,
+                  "제주": 7.56
+                }
+              }
+            },
+            "door": {
+              "direct": {
+                "other": {
+                  "중부": 3.84,
+                  "남부": 4.19,
+                  "제주": 5.23
+                }
+              },
+              "indirect": {
+                "other": {
+                  "중부": 5.47,
+                  "남부": 6.05,
+                  "제주": 7.56
+                }
+              }
+            },
+            "apartment_entrance_fire_door": {
+              "direct": {
+                "중부": 3.84,
+                "남부": 4.19,
+                "제주": 5.23
+              },
+              "indirect": {
+                "중부": 5.47,
+                "남부": 6.05,
+                "제주": 7.56
+              }
+            },
+            "apartment_side_wall": {
+              "중부": 0.35,
+              "남부": 0.47,
+              "제주": 0.58
+            }
+          },
+          "legal_notes": [
+            "창·문은 한 칸('창 및 문') — door·apartment_entrance_fire_door 는 같은 칸 값(법정)",
+            "공동주택 구분 없음 · 측벽(공동주택)은 따로(apartment_side_wall)",
+            "민감도 대안 = 2008 창(국토해양부령 33, 공 3.00/3.30/4.20 · 외 3.40/3.80/4.40) — 등록하지 않음(부록 C §C3)"
+          ]
+        },
+        "2010": {
+          "label_ko": "2010 개정 표(국토해양부령 제306호 · 2010.11.5 공포 · 2011.2.1 시행 · 2013.8 까지)",
+          "source_refs": [
+            "equip_rule_2010_306#4"
+          ],
+          "permits_from": "2011-02-01",
+          "permits_until": "2013-08-31",
+          "region_era": "2001",
+          "data_classification": "reference",
+          "transcription": "secondary",
+          "limits": {
+            "wall": {
+              "direct": {
+                "apartment": {
+                  "중부": 0.36,
+                  "남부": 0.45,
+                  "제주": 0.58
+                },
+                "other": {
+                  "중부": 0.36,
+                  "남부": 0.45,
+                  "제주": 0.58
+                }
+              },
+              "indirect": {
+                "apartment": {
+                  "중부": 0.49,
+                  "남부": 0.63,
+                  "제주": 0.85
+                },
+                "other": {
+                  "중부": 0.49,
+                  "남부": 0.63,
+                  "제주": 0.85
+                }
+              }
+            },
+            "roof": {
+              "direct": {
+                "중부": 0.2,
+                "남부": 0.24,
+                "제주": 0.29
+              },
+              "indirect": {
+                "중부": 0.29,
+                "남부": 0.34,
+                "제주": 0.41
+              }
+            },
+            "floor": {
+              "direct": {
+                "floor_heating": {
+                  "중부": 0.3,
+                  "남부": 0.35,
+                  "제주": 0.35
+                },
+                "no_floor_heating": {
+                  "중부": 0.41,
+                  "남부": 0.41,
+                  "제주": 0.41
+                }
+              },
+              "indirect": {
+                "floor_heating": {
+                  "중부": 0.43,
+                  "남부": 0.5,
+                  "제주": 0.5
+                },
+                "no_floor_heating": {
+                  "중부": 0.58,
+                  "남부": 0.58,
+                  "제주": 0.58
+                }
+              }
+            },
+            "interfloor_floor_heating": 0.81,
+            "window": {
+              "direct": {
+                "apartment": {
+                  "중부": 2.1,
+                  "남부": 2.4,
+                  "제주": 3.1
+                },
+                "other": {
+                  "중부": 2.4,
+                  "남부": 2.7,
+                  "제주": 3.4
+                }
+              },
+              "indirect": {
+                "apartment": {
+                  "중부": 2.8,
+                  "남부": 3.1,
+                  "제주": 3.7
+                },
+                "other": {
+                  "중부": 3.2,
+                  "남부": 3.7,
+                  "제주": 4.3
+                }
+              }
+            },
+            "door": {
+              "direct": {
+                "other": {
+                  "중부": 2.4,
+                  "남부": 2.7,
+                  "제주": 3.4
+                }
+              },
+              "indirect": {
+                "other": {
+                  "중부": 3.2,
+                  "남부": 3.7,
+                  "제주": 4.3
+                }
+              }
+            },
+            "apartment_entrance_fire_door": {
+              "direct": {
+                "중부": 2.1,
+                "남부": 2.4,
+                "제주": 3.1
+              },
+              "indirect": {
+                "중부": 2.8,
+                "남부": 3.1,
+                "제주": 3.7
+              }
+            },
+            "apartment_side_wall": {
+              "중부": 0.27,
+              "남부": 0.36,
+              "제주": 0.45
+            }
+          },
+          "legal_notes": [
+            "원문 별표 사본 없음(2차 출처) — 비주거 외벽·지붕·바닥·창(공동주택 외) = 김지혜 외 KIAEBS 14(1) 2020 Table 4 P3 열과 일치",
+            "공동주택 창·측벽 = 국토해양부 2010 입법예고(부록 C 리서치 기록) [2차 출처]",
+            "층간 바닥 0.81 = 2008(국토해양부령 33)·2013-149 와 같은 값 — 2010 원문 미대조(가정)",
+            "창·문 한 칸 — door = 공동주택 외 창 · apartment_entrance_fire_door = 공동주택 창",
+            "민감도 대안 = 2013-149(2013.9 시행) — 외벽 중부 0.36 ↔ 0.27 차이가 큼(부록 C §C3) · 등록하지 않음"
+          ]
+        }
+      },
+      "vintages": {
+        "vint_le2000": {
+          "label_ko": "~2000 준공",
+          "built_until": 2000,
+          "table": "1987",
+          "infiltration_ach50_key": "le2000",
+          "infiltration_factor": 5.32
+        },
+        "vint_2001_2012": {
+          "label_ko": "2001~2012 준공",
+          "built_from": 2001,
+          "built_until": 2012,
+          "table": "2001",
+          "infiltration_ach50_key": "y2000_2010",
+          "infiltration_factor": 1.4
+        },
+        "vint_2013_2017": {
+          "label_ko": "2013~2017 준공",
+          "built_from": 2013,
+          "built_until": 2017,
+          "table": "2010",
+          "infiltration_ach50_key": "after_2010",
+          "infiltration_factor": 1.0
+        },
+        "vint_2018_cur": {
+          "label_ko": "2018~ 준공(현행 = 템플릿-v4)",
+          "built_from": 2018,
+          "table": "current",
+          "table_ref": "envelope_u_limits (esdc_2026_360#1 = 2017-881 값과 같음)",
+          "infiltration_ach50_key": "after_2010",
+          "infiltration_factor": 1.0
+        }
+      }
     }
   }
 }

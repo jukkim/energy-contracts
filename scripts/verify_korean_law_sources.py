@@ -242,6 +242,10 @@ def verify(today: dt.date) -> tuple[int, list[str]]:
             if v[k] != w:
                 problems.append(f"simulation_scenarios.ko_envelope_uvalue.{z}.{k}={v[k]} ≠ 정본 파생 {w}")
 
+    vp, vu = _check_vintage(data)
+    problems += vp
+    unmeasured += vu
+
     cur = data["currency"]
     due = dt.date.fromisoformat(cur["retrieved"]) + dt.timedelta(days=int(cur["recheck_after_days"]))
     if problems:
@@ -251,6 +255,104 @@ def verify(today: dt.date) -> tuple[int, list[str]]:
     if today > due:
         return 3, [f"현행성 확인 기한 {due} 지남 — law.go.kr 현행본 재확인 필요"]
     return 0, [f"OK — 원문 대조 통과 · 현행성 기한 {due}"]
+
+
+def _kcal_to_w(kcal: float, factor: float) -> float:
+    from decimal import ROUND_HALF_UP, Decimal  # noqa: PLC0415
+
+    return float((Decimal(str(kcal)) * Decimal(str(factor))).quantize(Decimal("0.01"), rounding=ROUND_HALF_UP))
+
+
+def _check_vintage(data: dict) -> tuple[list[str], list[str]]:
+    """준공 시기 표(`envelope_u_limits_by_vintage`, v1.1 2026-10-12) ↔ 옛 법령 원문.
+
+    1987(kcal → W 환산)·1992 승계·2001 표는 원문 PDF 숫자 순서로 대조한다. 2010 개정 표는 원문 사본이 없어
+    `transcription=secondary` 로 표시돼 있다 — 여기서 대조하지 않고(못 잼이 아니라 선언된 2 차 출처) 표지가
+    붙어 있는지만 본다. 시대별 도시→지역 표는 region_codes 의 18 도시 전부를 덮는지 본다."""
+    vb = data.get("envelope_u_limits_by_vintage")
+    if not vb:
+        return [], []
+    problems: list[str] = []
+    unmeasured: list[str] = []
+    for sid, src in vb["sources"].items():
+        for ano, ann in src["annexes"].items():
+            if not ann.get("file"):
+                continue
+            fp = ROOT / ann["file"]
+            if not fp.exists():
+                unmeasured.append(f"vintage {sid}#{ano}: 원문 파일 없음 {ann['file']}")
+            elif hashlib.sha256(fp.read_bytes()).hexdigest() != ann["sha256"]:
+                problems.append(f"vintage {sid}#{ano}: sha256 불일치 {ann['file']}")
+    tb = vb["tables"]
+    for name, t in tb.items():
+        files = [vb["sources"][r.split("#")[0]]["annexes"][r.split("#")[1]].get("file") for r in t["source_refs"]]
+        if t["transcription"] == "secondary" and any(files):
+            problems.append(f"vintage table {name}: 원문 파일이 있는데 secondary 로 표시")
+        if t["transcription"] == "primary" and not all(files):
+            problems.append(f"vintage table {name}: primary 인데 원문 파일이 없다")
+    fac = vb["conversion"]["kcal_per_m2hC_to_W_per_m2K"]
+    try:
+        # 1987 원문(kcal) — 텍스트 순서: 외벽·최하층 바닥 / 지붕 / 측벽 / 창 (중부·남부·제주)
+        t87 = tb["1987"]
+        kc = t87["original_kcal"]
+        want_k = kc["wall_floor"] + kc["roof"] + kc["side_wall"] + kc["window"]
+        for ref in ("bldg_rule_1987_422#4", "equip_rule_1992_506#4"):
+            s, a = ref.split("#")
+            got = [float(x) for x in re.findall(r"(\d+\.\d+)이하", re.sub(r"\s+", "", _pdf_text(ROOT / vb["sources"][s]["annexes"][a]["file"])))]
+            if got[:12] != want_k:
+                problems.append(f"vintage 1987 kcal ≠ 원문 {ref} (원문 {got[:12]})")
+        lim = t87["limits"]
+        derived = {"wall_floor": lim["wall"]["direct"]["other"], "roof": lim["roof"]["direct"],
+                   "side_wall": lim["apartment_side_wall"], "window": lim["window"]["direct"]["other"]}
+        for k, regs in derived.items():
+            if list(regs.values()) != [_kcal_to_w(x, fac) for x in kc[k]]:
+                problems.append(f"vintage 1987 {k} W ≠ kcal × {fac} 반올림")
+        art = vb["sources"]["equip_rule_1992_506"]["annexes"]["article21"]
+        if "열관류율을1.0이하로" not in re.sub(r"\s+", "", (ROOT / art["file"]).read_text(encoding="utf-8")):
+            problems.append("vintage 1987 interfloor: 1992 제21조 발췌에 '1.0이하' 없음")
+        if lim["interfloor_floor_heating"] != _kcal_to_w(kc["interfloor_floor_heating_individual_boiler"], fac):
+            problems.append("vintage 1987 interfloor_floor_heating ≠ 1.0 kcal 환산")
+        # 2001 원문(W) — 텍스트 순서: 외벽 직·간 / 지붕 직·간 / 바닥 직(난방·비난방)·간(난방·비난방) / 측벽 / 층간(난방·그밖) / 창·문 직·간
+        l1 = tb["2001"]["limits"]
+        want01 = []
+        for regs in (l1["wall"]["direct"]["other"], l1["wall"]["indirect"]["other"], l1["roof"]["direct"], l1["roof"]["indirect"],
+                     l1["floor"]["direct"]["floor_heating"], l1["floor"]["direct"]["no_floor_heating"],
+                     l1["floor"]["indirect"]["floor_heating"], l1["floor"]["indirect"]["no_floor_heating"],
+                     l1["apartment_side_wall"]):
+            want01 += list(regs.values())
+        want01 += [l1["interfloor_floor_heating"]] * 3 + [l1["interfloor_other"]] * 3
+        want01 += list(l1["window"]["direct"]["other"].values()) + list(l1["window"]["indirect"]["other"].values())
+        f01 = vb["sources"]["equip_rule_2001_270"]["annexes"]["4"]["file"]
+        got01 = [float(x) for x in re.findall(r"(\d+\.\d+)이하\(", re.sub(r"\s+", "", _pdf_text(ROOT / f01)))]
+        if got01 != want01:
+            problems.append(f"vintage 2001 ≠ 원문 [별표4] 숫자 순서 (원문 {len(got01)}개 · 스키마 {len(want01)}개)")
+        for side in ("direct", "indirect"):
+            if l1["window"][side]["apartment"] != l1["window"][side]["other"] or l1["door"][side]["other"] != l1["window"][side]["other"]:
+                problems.append(f"vintage 2001 {side}: 창·문 한 칸인데 값이 갈린다")
+    except ImportError:
+        unmeasured.append("pypdf 없음 — 시기 표 원문 대조 못 잼")
+    except FileNotFoundError as exc:
+        unmeasured.append(f"시기 표 원문 파일 없음 — {exc}")
+    keys = set(vb["region_keys"])
+    try:
+        cities = set(json.loads((ROOT / "energy_contracts" / "schemas" / "region_codes.json").read_text(encoding="utf-8"))
+                     ["default"]["simulation_cities"])
+    except (OSError, KeyError, ValueError):
+        cities = set()
+        unmeasured.append("region_codes.simulation_cities 를 못 읽음 — 시대별 도시 표 대조 못 잼")
+    for era, m in vb["city_region_by_era"].items():
+        if cities and set(m["simulation_cities"]) != cities:
+            problems.append(f"vintage city_region_by_era.{era}: 도시 {sorted(cities ^ set(m['simulation_cities']))} 가 어긋남")
+        bad = {c: z for c, z in m["simulation_cities"].items() if z not in keys}
+        if bad:
+            problems.append(f"vintage city_region_by_era.{era}: 지역 낱말 밖 {bad}")
+    for vk, v in vb["vintages"].items():
+        if v["table"] != "current" and (v["table"] not in tb or tb[v["table"]]["region_era"] not in vb["city_region_by_era"]):
+            problems.append(f"vintage {vk}: 표 {v['table']} 또는 그 지역 시대가 없다")
+        ach = vb["infiltration"]["ach50_apartment"]
+        if round(ach[v["infiltration_ach50_key"]] / ach[vb["infiltration"]["reference"]], 2) != v["infiltration_factor"]:
+            problems.append(f"vintage {vk}: infiltration_factor ≠ ACH50 비")
+    return problems, unmeasured
 
 
 def main() -> int:

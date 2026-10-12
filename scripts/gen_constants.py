@@ -277,6 +277,8 @@ PROJECT_TARGETS: dict[str, dict] = {
                 "KR_VENTILATION", "KR_ASSESSMENT_CONDITIONS", "KR_DESIGN_INDOOR_CONDITIONS",
                 "KR_USAGE_PROFILES", "KR_ENVELOPE_SURFACE_RULES", "KR_SURFACE_RESISTANCES",
                 "KR_AIR_LAYER_RESISTANCES", "KR_CALCULATION_RULES",
+                # 2026-10-12 준공 시기 변종(G2) — envelope_retrofit 시기 조건이 읽는다
+                "KR_ENVELOPE_U_LIMITS_BY_VINTAGE",
                 # 2026-09-28 일반화 G1 — 축 어휘·용도→원형·식별자·대상 어휘·승계표·호환표·달력·문턱·할인율
                 "ID_PATTERNS", "AIR_ASSET_KINDS", "TARGET_KIND_ID", "ADMIN_SUCCESSION",
                 "AXIS_ARCHETYPES", "AXIS_CITIES", "AXIS_HVAC", "AXIS_STRATEGIES", "AXIS_ALIAS_INDEX", "AXIS_KBEP_IDS",
@@ -934,6 +936,8 @@ def gen_python(schemas: dict) -> str:
         lines.append(f"KR_SURFACE_RESISTANCES: dict = {kbs.get('surface_resistances', {})!r}")
         lines.append(f"KR_AIR_LAYER_RESISTANCES: dict = {kbs.get('air_layer_resistances', {})!r}")
         lines.append(f"KR_CALCULATION_RULES: dict = {kbs.get('calculation_rules', {})!r}")
+        # 준공 시기 변종(2026-10-12 v1.1) — 시기별 법정 외피 상한·시대별 도시→지역·침기 배율(추정). 소비 = envelope_retrofit 시기 조건
+        lines.append(f"KR_ENVELOPE_U_LIMITS_BY_VINTAGE: dict = {kbs.get('envelope_u_limits_by_vintage', {})!r}")
         lines.append("")
 
     dbmig = schemas.get("dbmig", {}).get("default", {})
