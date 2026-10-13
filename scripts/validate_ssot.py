@@ -72,6 +72,31 @@ def _is_readable_file(p: Path) -> bool:
         return False
 
 
+#: 라이브러리·빌드 산출물 폴더 — 두 스캔이 파일마다 `fp.parts` 로 거르던 바로 그 목록(한 곳).
+SCAN_SKIP_DIR_NAMES = ("node_modules", "dist", ".git", ".venv", "venv", "env",
+                       "__pycache__", "build", "site-packages", ".next", "out", ".benchmarks")
+
+
+def _scan_files(root: Path, exts: set[str], exempt_patterns: list[str]) -> list[Path]:
+    """root 아래 검사 후보 파일 — 거를 폴더는 **내려가기 전에** 거른다(2026-10-14).
+
+    예전엔 `root.rglob("*")` 로 node_modules·scratch(be-3d 에 수백만 파일)를 끝까지 훑은 뒤 파일마다 걸렀다 — 전체 검사가
+    한 시간을 넘겼다(py-spy: scan_legacy_strategies 의 pathlib 파싱). 걸러지는 집합은 같다: 폴더 이름이 SCAN_SKIP_DIR_NAMES 면
+    그 아래 모든 파일의 parts 에 그 이름이 있고, 폴더 경로 키가 면제 패턴을 품으면 그 아래 모든 파일 키도 품는다(키 = 접두 + 이름).
+    파일별 면제·건너뛰기 검사는 호출자에 그대로 남는다."""
+    out: list[Path] = []
+    for dirpath, dirnames, filenames in os.walk(root, onerror=lambda _e: None):
+        d = Path(dirpath)
+        dirnames[:] = [n for n in dirnames
+                       if n not in SCAN_SKIP_DIR_NAMES
+                       and not any(pat in _exempt_key(d / n / "_", root)[:-1] for pat in exempt_patterns)]
+        for n in filenames:
+            p = d / n
+            if p.suffix in exts and _is_readable_file(p):
+                out.append(p)
+    return out
+
+
 def scan_legacy_strategies(paths: list[Path]) -> list[tuple[Path, int, str]]:
     violations = []
     for root in paths:
@@ -80,7 +105,7 @@ def scan_legacy_strategies(paths: list[Path]) -> list[tuple[Path, int, str]]:
         else:
             # 확장자를 먼저 본다(stat 없음). 접근할 수 없는 항목(깨진 pytest `current` 링크 등, 2026-09-29 실측
             #   WinError 1920)은 읽을 수 없는 파일과 같이 건너뛴다 — 아래 read_text 실패와 같은 규칙.
-            files = [p for p in root.rglob("*") if p.suffix in STRATEGY_SCAN_EXTS and _is_readable_file(p)]
+            files = _scan_files(root, STRATEGY_SCAN_EXTS, STRATEGY_EXEMPT_PATTERNS)
         for fp in files:
             # 절대경로가 아니라 **루트 기준 상대경로**로 판정한다(`_exempt_key` 참조).
             if any(pat in _exempt_key(fp, root) for pat in STRATEGY_EXEMPT_PATTERNS):
@@ -227,7 +252,7 @@ def scan_stale_canonical_values(paths: list[Path]) -> list[tuple[Path, int, str]
         if root.is_file():
             files = [root]
         else:
-            files = [p for p in root.rglob("*") if p.suffix in CANONICAL_SCAN_EXTS and _is_readable_file(p)]
+            files = _scan_files(root, CANONICAL_SCAN_EXTS, CANONICAL_EXEMPT_PATTERNS)
         for fp in files:
             if any(pat in _exempt_key(fp, root) for pat in CANONICAL_EXEMPT_PATTERNS):
                 continue
