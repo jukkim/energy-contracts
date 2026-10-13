@@ -11,9 +11,9 @@
     "agentleague",
     "eduarena"
   ],
-  "version": "1.5",
+  "version": "1.6",
   "updated": "2026-10-14",
-  "$comment": "v1.5(2026-10-14 · 가산): education_by_sub_use.name_fallback — 세부 용도를 모를 때만 대장 건물명(초등학교 / 중학교·고등학교)으로 학교 급을 추정(archetype_basis register_name · flag school_level_from_name). 둘 다 있거나 학교 이름이 없으면 대분류 가정 그대로. · v1.4(2026-10-13 · Lab 3단계 원형 정직성 — 가산): 교육연구시설 = 세부 용도 규칙(usage_archetype.education_by_sub_use · 행 칸 sub_use_rule). 표제부 주용도 코드는 대분류(10000)뿐이라 층별개요 세부 용도(10101 초등학교 · 10103 고등학교 · 10301 연구소 · 10003 학원 …)로 가른다 — 초등학교 → B07 · 중·고등학교 → B08 · 학교(급 미상) → B07 가정 · 그 밖 → 이름 있는 결손 archetype_mismatch · 세부 용도 미확인 → B07 + 대분류 가정(flag major_class_assumed). 행의 archetype B07 은 그대로(세부 용도를 넘기지 않는 옛 호출 = 대분류 가정과 같은 원형). · v1.3(2026-10-01 · EC 0.3.74 — 캠페인 scratch/capability_first/EC_ROWS_NEEDED_round3.md E6-1 · E5-1 · R3F-3 · 가산): 용도 별칭 '사무실' → 업무시설(사무소·오피스와 같은 일상어 — 면적 모름 = 중형·'면적 미확인') · usages.convenience_store.operates_24h(선언 가정 — 게이트웨이 가상 일정 _virtual.OCCUPIED_HOURS['RET'] 값 그대로) · usage_archetype.rows[*].archetype_relation(same_type | nearest_other_type — 같은 종류일 때만 '같은 종류 표준 모델'이라 말한다) + 관계 어휘 usage_archetype.archetype_relations. 원형 없음 행(방송통신시설)에는 관계 칸이 없다. 1.2 의 키·값·문구는 그대로. · v1.2(2026-09-28 최종 라운드 X2): 용도 표 두 벌(usages[*].archetype 손 값 ↔ usage_archetype.rows)을 하나로 — 정본 = usage_archetype.rows. usages[*] 는 archetype 을 손으로 적지 않고 registry_usage(rows 키)만 적는다. 생성본 BUILDING_USAGES 의 archetype(영문명)·archetype_code 는 gen_constants 가 rows 에서 파생한다. 편의점 = B11(사용자 결정 2026-09-28 22:35 — 자산 용도를 알 때; 대장 주용도 근린생활 B03 은 용도를 모를 때만). 공동주택 층수 규칙(apartment_by_floors: 지상 5층 이하 중층 B16 · 초과 고층 B17 · 층수 미상 B16) 추가. 확장 용도 행(노유자·수련·문화및집회·운동·운수·자동차관련·위험물·방송통신) = 가장 가까운 원형의 선언 가정(classification assumed) 또는 이름 있는 결손(방송통신 = DOE 원형 없음).",
+  "$comment": "v1.6(2026-10-14 · 가산 — GPT R121 §5): name_fallback.archetype_basis_by_source — 건물 자신의 표제부 이름(register_title → register_name '건물명으로 추정')과 확정 필지의 표제부 이름들(parcel_titles → parcel_register_names '같은 필지 건물명으로 추정')을 근거로 가른다. 원천 미표기 = 자신의 표제부(1.5 와 같음). · v1.5(2026-10-14 · 가산): education_by_sub_use.name_fallback — 세부 용도를 모를 때만 대장 건물명(초등학교 / 중학교·고등학교)으로 학교 급을 추정(archetype_basis register_name · flag school_level_from_name). 둘 다 있거나 학교 이름이 없으면 대분류 가정 그대로. · v1.4(2026-10-13 · Lab 3단계 원형 정직성 — 가산): 교육연구시설 = 세부 용도 규칙(usage_archetype.education_by_sub_use · 행 칸 sub_use_rule). 표제부 주용도 코드는 대분류(10000)뿐이라 층별개요 세부 용도(10101 초등학교 · 10103 고등학교 · 10301 연구소 · 10003 학원 …)로 가른다 — 초등학교 → B07 · 중·고등학교 → B08 · 학교(급 미상) → B07 가정 · 그 밖 → 이름 있는 결손 archetype_mismatch · 세부 용도 미확인 → B07 + 대분류 가정(flag major_class_assumed). 행의 archetype B07 은 그대로(세부 용도를 넘기지 않는 옛 호출 = 대분류 가정과 같은 원형). · v1.3(2026-10-01 · EC 0.3.74 — 캠페인 scratch/capability_first/EC_ROWS_NEEDED_round3.md E6-1 · E5-1 · R3F-3 · 가산): 용도 별칭 '사무실' → 업무시설(사무소·오피스와 같은 일상어 — 면적 모름 = 중형·'면적 미확인') · usages.convenience_store.operates_24h(선언 가정 — 게이트웨이 가상 일정 _virtual.OCCUPIED_HOURS['RET'] 값 그대로) · usage_archetype.rows[*].archetype_relation(same_type | nearest_other_type — 같은 종류일 때만 '같은 종류 표준 모델'이라 말한다) + 관계 어휘 usage_archetype.archetype_relations. 원형 없음 행(방송통신시설)에는 관계 칸이 없다. 1.2 의 키·값·문구는 그대로. · v1.2(2026-09-28 최종 라운드 X2): 용도 표 두 벌(usages[*].archetype 손 값 ↔ usage_archetype.rows)을 하나로 — 정본 = usage_archetype.rows. usages[*] 는 archetype 을 손으로 적지 않고 registry_usage(rows 키)만 적는다. 생성본 BUILDING_USAGES 의 archetype(영문명)·archetype_code 는 gen_constants 가 rows 에서 파생한다. 편의점 = B11(사용자 결정 2026-09-28 22:35 — 자산 용도를 알 때; 대장 주용도 근린생활 B03 은 용도를 모를 때만). 공동주택 층수 규칙(apartment_by_floors: 지상 5층 이하 중층 B16 · 초과 고층 B17 · 층수 미상 B16) 추가. 확장 용도 행(노유자·수련·문화및집회·운동·운수·자동차관련·위험물·방송통신) = 가장 가까운 원형의 선언 가정(classification assumed) 또는 이름 있는 결손(방송통신 = DOE 원형 없음).",
   "$defs": {
     "UsageEntry": {
       "type": "object",
@@ -547,6 +547,11 @@
           },
           "ambiguous": "keep_unknown",
           "archetype_basis": "register_name",
+          "archetype_basis_by_source": {
+            "register_title": "register_name",
+            "parcel_titles": "parcel_register_names"
+          },
+          "source_rule_ko": "건물명은 그 건물 자신의 표제부(확정 연결 하나) 이름이 먼저다. 그 이름이 없을 때만 그 건물의 확정 필지 하나에 있는 표제부 이름들을 함께 본다 — 근거를 '같은 필지 건물명으로 추정'으로 따로 밝힌다(학교 이름은 학교 터의 이름이지 그 동의 이름이 아니다). 세부 용도가 있으면 어느 이름도 쓰지 않는다.",
           "flag": "school_level_from_name",
           "rule_ko": "세부 용도를 모를 때 대장 건물명에 '초등학교'만 있으면 초등학교 원형, '중학교'·'고등학교'만 있으면 중·고등학교 원형을 쓰고 근거를 '건물명으로 추정'으로 밝힌다. 두 갈래가 함께 있거나(통합학교 — '초중학교' 는 초등 갈래에도 넣어 두 갈래로 잡힌다) 학교 이름이 없으면(연구소·학원 등) 대분류 가정 그대로 — 이름으로 학교가 아닌 용도를 만들지 않는다",
           "basis": "사용자 지적 2026-10-13 21시(Lab 3단계 '학교는 맞지?') · 2026-10-14 실화면: 일원동 중동중학교 행이 세부 용도 없음으로 초등학교 모델(대분류 가정)"
@@ -556,7 +561,8 @@
           "school_level_assumed": "학교 급 가정",
           "major_class_assumed": "대분류 가정",
           "usage_row": "주용도 표",
-          "register_name": "건물명으로 추정"
+          "register_name": "건물명으로 추정",
+          "parcel_register_names": "같은 필지 건물명으로 추정"
         },
         "basis": "사용자 지시 2026-10-13(Lab 3단계 — 교육연구시설 18동 전부 초등학교 모델이던 결함) · 리뷰 M5(도서관 → 초등학교는 같은 종류가 아니다) · 행 relation_basis_ko(중·고등학교 원형 B08 은 따로 있다)"
       },

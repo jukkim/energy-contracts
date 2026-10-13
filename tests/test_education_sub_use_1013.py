@@ -85,3 +85,20 @@ def test_name_ambiguous_or_not_school_keeps_major_class_assumption():
     for nm in ("OO초중학교 통합", "한국기술연구원", "", None):
         r = axes.usage_to_archetype("교육연구시설", sub_uses={}, building_name=nm)
         assert (r["archetype"], r["archetype_basis"], r["flag"]) == ("B07", "major_class_assumed", "major_class_assumed"), nm
+
+
+def test_name_source_parcel_titles_has_its_own_basis_v1_6():
+    """v1.6(GPT R121 §5): 확정 필지 표제부 이름에서 온 학교 급은 근거가 따로('같은 필지 건물명으로 추정') · 자신의 표제부 이름은 그대로 register_name.
+    반례: 모르는 원천은 조용히 register_name 이 되지 않고 멈춘다 · 원천을 밝혀도 두 갈래 이름이면 대분류 가정."""
+    parcel = axes.usage_to_archetype("교육연구시설", None, building_name={"name": "중동중학교 / 중동고등학교", "source": "parcel_titles"})
+    assert parcel["archetype"] == "B08" and parcel["archetype_basis"] == "parcel_register_names" and parcel["building_name_source"] == "parcel_titles"
+    own = axes.usage_to_archetype("교육연구시설", None, building_name="중동중학교")
+    assert own["archetype_basis"] == "register_name" and own["building_name_source"] == "register_title"
+    assert axes.usage_to_archetype("교육연구시설", None, building_name={"name": "중동중학교", "source": "register_title"})["archetype_basis"] == "register_name"
+    import pytest
+    with pytest.raises(ValueError):
+        axes.usage_to_archetype("교육연구시설", None, building_name={"name": "중동중학교", "source": "guess"})
+    mixed = axes.usage_to_archetype("교육연구시설", None, building_name={"name": "대모초등학교 / 대왕중학교", "source": "parcel_titles"})
+    assert mixed["archetype_basis"] == "major_class_assumed"
+    labels = axes.usage_archetype_table()["education_by_sub_use"]["archetype_basis_labels"]
+    assert labels["parcel_register_names"] == "같은 필지 건물명으로 추정"

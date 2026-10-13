@@ -138,9 +138,18 @@ def ec_usage_to_archetype(usage: object, gross_floor_area_m2: object = None, tab
     return {"archetype": row["archetype"], "flag": None, "absence": None, "basis": row.get("basis")}
 
 
+def _building_name_parts(building_name: object) -> tuple[str, str]:
+    """건물명 인자 → (이름, 원천). 문자열 = 그 건물 자신의 표제부(register_title) · {"name", "source"} = 원천을 밝힌 이름(v1.6 —
+    parcel_titles = 확정 필지의 표제부 이름들)."""
+    if isinstance(building_name, dict):
+        nm = building_name.get("name")
+        return (str(nm).strip() if nm is not None else ""), str(building_name.get("source") or "register_title")
+    return (str(building_name).strip() if building_name is not None else ""), "register_title"
+
+
 def _name_fallback_class(nf: dict | None, building_name: object) -> str | None:
     """대장 건물명 → 학교 갈래(v1.5 name_fallback). 정확히 한 갈래의 이름만 들어 있을 때만 — 둘 이상(통합학교)·없음이면 None."""
-    name = str(building_name).strip() if building_name is not None else ""
+    name = _building_name_parts(building_name)[0]
     if not nf or not name:
         return None
     hits = [cls for cls, words in (nf.get("classes") or {}).items() if any(w in name for w in words)]
@@ -174,8 +183,13 @@ def ec_sub_use_archetype(row: dict, rule: dict, sub_uses: dict | None, rule_name
         named = _name_fallback_class(rule.get("name_fallback"), building_name)
         if named is not None:
             nf, decl = rule["name_fallback"], classes[named]
+            source = _building_name_parts(building_name)[1]
+            by_src = nf.get("archetype_basis_by_source") or {}
+            if by_src and source not in by_src:
+                raise ValueError(f"name_fallback: 모르는 건물명 원천 {source!r} — archetype_basis_by_source 에 없다")
             return {"archetype": decl["archetype"], "flag": nf["flag"], "absence": None, "basis": f"{rule_name}:name_fallback:{named}",
-                    "archetype_basis": nf["archetype_basis"], "sub_use": {"class": named, "codes": [], "share": None}}
+                    "archetype_basis": by_src.get(source, nf["archetype_basis"]), "building_name_source": source,
+                    "sub_use": {"class": named, "codes": [], "share": None}}
         unk = rule["unknown_sub_use"]
         return {"archetype": row["archetype"], "flag": unk["flag"], "absence": None,
                 "basis": f"{rule_name}:unknown_sub_use", "archetype_basis": unk["archetype_basis"], "sub_use": None}
