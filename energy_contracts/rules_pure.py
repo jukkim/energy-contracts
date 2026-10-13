@@ -75,8 +75,9 @@ def ec_axis_encode(kind: str, token: object, index: dict | None = None) -> str:
 
 
 def ec_usage_to_archetype(usage: object, gross_floor_area_m2: object = None, table: dict | None = None,
-                          floors_above: object = None) -> dict:
-    """건축물대장 주용도·자산 용도(+연면적·지상 층수) → 원형. 결과 = {archetype, flag, absence, basis}.
+                          floors_above: object = None, sub_uses: dict | None = None,
+                          building_name: object = None) -> dict:
+    """건축물대장 주용도·자산 용도(+연면적·지상 층수·세부 용도) → 원형. 결과 = {archetype, flag, absence, basis}.
 
     * 업무시설 = 연면적 구간(결정 D1). 연면적이 없거나 0 이하이면 면적 미상 원형 + flag='area_unverified'.
     * 공동주택 = 지상 층수 구간(apartment_by_floors, 2026-09-28 X2). 층수 미상이면 unknown_floors 원형(기존 값).
@@ -84,6 +85,11 @@ def ec_usage_to_archetype(usage: object, gross_floor_area_m2: object = None, tab
     * 표에 없는 용도·용도 미상 = archetype None + absence(usage_not_in_archetype_table·usage_unknown) — 기본 원형 없음.
       행이 원형 없음(archetype null)을 선언하면 그 행의 absence(예 no_doe_archetype).
     * 도면으로 확인된 원형은 호출자가 이 결과보다 앞세운다(표의 precedence).
+    * 행에 sub_use_rule(예 교육연구시설 education_by_sub_use, v1.4)이 있으면 세부 용도로 가른다 — sub_uses = {세부 용도
+      5자리 코드: 층 면적 m²}(층별개요). 결과에 archetype_basis(sub_use | school_level_assumed | major_class_assumed)와
+      sub_use(갈래 · 코드 · 면적 몫)를 더 싣는다. 학교가 아닌 세부 용도 = archetype None + absence archetype_mismatch.
+      세부 용도를 모르면 행의 원형 + flag major_class_assumed(값은 내고 가정을 밝힌다 — D1 '면적 미확인' 과 같은 꼴).
+      v1.5: 그때 규칙에 name_fallback 이 있고 building_name(대장 건물명)이 한 갈래의 학교 이름만 담으면 그 갈래(archetype_basis register_name).
     """
     t = table if table is not None else globals().get("USAGE_ARCHETYPE")
     if t is None:
@@ -127,7 +133,63 @@ def ec_usage_to_archetype(usage: object, gross_floor_area_m2: object = None, tab
     if row.get("archetype") is None:
         return {"archetype": None, "flag": None, "absence": row.get("absence") or "usage_not_in_archetype_table",
                 "basis": row.get("basis")}
+    if row.get("sub_use_rule"):
+        return ec_sub_use_archetype(row, t[row["sub_use_rule"]], sub_uses, row["sub_use_rule"], building_name)
     return {"archetype": row["archetype"], "flag": None, "absence": None, "basis": row.get("basis")}
+
+
+def _name_fallback_class(nf: dict | None, building_name: object) -> str | None:
+    """대장 건물명 → 학교 갈래(v1.5 name_fallback). 정확히 한 갈래의 이름만 들어 있을 때만 — 둘 이상(통합학교)·없음이면 None."""
+    name = str(building_name).strip() if building_name is not None else ""
+    if not nf or not name:
+        return None
+    hits = [cls for cls, words in (nf.get("classes") or {}).items() if any(w in name for w in words)]
+    return hits[0] if len(hits) == 1 else None
+
+
+def ec_sub_use_archetype(row: dict, rule: dict, sub_uses: dict | None, rule_name: str, building_name: object = None) -> dict:
+    """대분류 주용도 행 + 세부 용도 규칙(usage_archetype.<rule_name>) + {세부 코드: 층 면적} → 원형 결과.
+
+    대분류 접두(major_prefix)로 시작하는 코드만 센다(근린생활 층 등 다른 용도 층은 이 판정에 넣지 않는다). 미지정 코드는 뺀다.
+    갈래(classes)별 면적 합이 가장 큰 갈래 — 같으면 classes 순서가 먼저, 어느 갈래에도 없는 코드(그 밖)는 마지막."""
+    prefix = str(rule.get("major_prefix") or "")
+    unspecified = {str(c) for c in rule.get("unspecified_codes") or []}
+    classes = rule.get("classes") or {}
+    by_code = {str(c): name for name, decl in classes.items() for c in decl.get("codes") or []}
+    area: dict[str, float] = {}
+    codes: dict[str, list] = {}
+    for code, a in (sub_uses or {}).items():
+        c = str(code).strip()
+        if not c.startswith(prefix) or c in unspecified:
+            continue
+        try:
+            v = float(a) if a is not None else 0.0
+        except (TypeError, ValueError):
+            v = 0.0
+        v = v if v == v and v > 0 else 0.0
+        k = by_code.get(c, "other")
+        area[k] = area.get(k, 0.0) + v
+        codes.setdefault(k, []).append(c)
+    if not area:
+        named = _name_fallback_class(rule.get("name_fallback"), building_name)
+        if named is not None:
+            nf, decl = rule["name_fallback"], classes[named]
+            return {"archetype": decl["archetype"], "flag": nf["flag"], "absence": None, "basis": f"{rule_name}:name_fallback:{named}",
+                    "archetype_basis": nf["archetype_basis"], "sub_use": {"class": named, "codes": [], "share": None}}
+        unk = rule["unknown_sub_use"]
+        return {"archetype": row["archetype"], "flag": unk["flag"], "absence": None,
+                "basis": f"{rule_name}:unknown_sub_use", "archetype_basis": unk["archetype_basis"], "sub_use": None}
+    order = [*classes, "other"]
+    best = min(area, key=lambda k: (-area[k], order.index(k)))
+    total = sum(area.values())
+    sub = {"class": best, "codes": sorted(codes[best]), "share": round(area[best] / total, 3) if total > 0 else None}
+    if best == "other":
+        oth = rule["other_sub_use"]
+        return {"archetype": None, "flag": None, "absence": oth["absence"], "basis": f"{rule_name}:other_sub_use",
+                "archetype_basis": "sub_use", "sub_use": sub}
+    decl = classes[best]
+    return {"archetype": decl["archetype"], "flag": decl.get("flag"), "absence": None, "basis": f"{rule_name}:{best}",
+            "archetype_basis": decl["archetype_basis"], "sub_use": sub}
 
 
 def ec_percentile(values, q: float):

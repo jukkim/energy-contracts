@@ -812,6 +812,23 @@ def check_usage_archetype(schemas_dir: Path | None = None) -> list[str]:
                 v.append(f"usage_archetype.rows[{usage}] 가 원형 없음인데 absence 가 absence 표에 없다: {row.get('absence')!r}")
         elif row.get("archetype") not in docs:
             v.append(f"usage_archetype.rows[{usage}].archetype={row.get('archetype')!r} 가 doe_buildings 에 없다")
+        if row.get("sub_use_rule"):
+            # 세부 용도 규칙(v1.4 교육연구시설) — 규칙 표가 있고 · 갈래 원형이 doe_buildings 에 · 결손 이름이 absence 표에 · 코드 겹침 없음
+            sr = ua.get(row["sub_use_rule"]) or {}
+            if not sr.get("classes"):
+                v.append(f"usage_archetype.rows[{usage}].sub_use_rule={row['sub_use_rule']!r} 의 갈래(classes)가 없다 — 검사 0건은 통과가 아니다")
+            if row.get("archetype") not in docs:
+                v.append(f"usage_archetype.rows[{usage}] 는 세부 용도 규칙이 있는데 세부 용도 미상 원형(archetype)이 없다")
+            seen: dict[str, str] = {}
+            for name, decl in (sr.get("classes") or {}).items():
+                if decl.get("archetype") not in docs:
+                    v.append(f"{row['sub_use_rule']}.classes[{name}].archetype={decl.get('archetype')!r} 가 doe_buildings 에 없다")
+                for c in decl.get("codes") or []:
+                    if c in seen or c in (sr.get("unspecified_codes") or []):
+                        v.append(f"{row['sub_use_rule']} 코드 {c} 가 두 갈래(또는 미지정)에 함께 있다")
+                    seen[c] = name
+            if (sr.get("other_sub_use") or {}).get("absence") not in (ua.get("absence") or {}):
+                v.append(f"{row['sub_use_rule']}.other_sub_use.absence 가 absence 표에 없다")
     for alias, target in (ua.get("usage_aliases") or {}).items():
         if target not in rows:
             v.append(f"usage_aliases[{alias}]={target!r} 가 rows 에 없다")
