@@ -123,6 +123,21 @@ def expected_lock(lock: dict, contracts_root: Path, commit: str,
     return out
 
 
+def lock_hashes_at_own_commits(lock: dict, contracts_root: Path, hasher: Callable[[bytes], str]) -> dict:
+    """잠금이 **지금 가리키는** 곳에서 다시 센 스키마 해시 — 스키마별 `schema_commits` 덮어쓰기를 따른다.
+
+    소비자(AIROS `contracts_client.pinned_schema_bytes`)는 `schema_commits.get(name, commit)` 을 읽는다.
+    자기 일관성 검사가 `commit` 하나로만 세면 덮어쓴 스키마(새 스키마를 다른 핀을 건드리지 않고 더한 경우)를
+    '없다' 로 잘못 막는다(2026-10-14 residential_electricity_tariff). 옮기기(`expected_lock`)는 그대로 덮어쓰기를 지운다.
+    """
+    commit = lock.get("commit")
+    overrides = lock.get("schema_commits") or {}
+    if not isinstance(commit, str) or not isinstance(overrides, dict):
+        raise LockError("잠금의 commit·schema_commits 모양이 올바르지 않다")
+    return {name: hasher(schema_bytes_at(contracts_root, overrides.get(name, commit), name))
+            for name in lock.get("schemas") or {}}
+
+
 def render(lock: dict) -> str:
     """잠금 파일의 글 모양(들여쓰기 2·한글 그대로·끝 줄바꿈) — 지금 커밋된 파일과 같은 모양."""
     return json.dumps(lock, indent=2, ensure_ascii=False) + "\n"

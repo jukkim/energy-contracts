@@ -191,6 +191,25 @@ def test_airos_hasher_is_airos_pin_hash_and_its_lock_is_self_consistent() -> Non
 
     raw = (_AIROS / "contracts" / "energy_contracts.lock.json").read_text(encoding="utf-8")
     lock = json.loads(raw)
-    want = lock_tool.expected_lock(lock, _ROOT, lock["commit"], hasher, basis)
-    assert want["schemas"] == lock["schemas"]
-    assert lock_tool.render(want) == raw.replace("\r\n", "\n")
+    assert lock.get("hash_basis") == basis
+    # 소비자와 같은 읽기 규칙(스키마별 schema_commits 우선)으로 다시 센다 — commit 하나로만 세면 덧붙인 스키마를 헛짚는다
+    assert lock_tool.lock_hashes_at_own_commits(lock, _ROOT, hasher) == lock["schemas"]
+    assert lock_tool.render(lock) == raw.replace("\r\n", "\n")
+
+
+def test_self_consistency_follows_schema_commit_overrides_both_ways() -> None:
+    """덮어쓴 커밋의 올바른 해시는 통과, 틀린 해시·덮어쓰기 없이 없는 커밋은 실패(2026-10-14 판정기 수정의 반례 양쪽)."""
+    head = _head()
+    base = {"commit": head, "schemas": {name: _fake_hash(_blob(head, name)) for name in SCHEMAS}}
+    first = subprocess.run(["git", "-C", str(_ROOT), "rev-list", "--max-parents=0", "HEAD"],
+                           capture_output=True, text=True, check=True).stdout.split()[0]
+    # 덮어쓰기가 가리키는 커밋의 해시 = 통과
+    ok = {**base, "schema_commits": {"energy_constants.json": head}}
+    assert lock_tool.lock_hashes_at_own_commits(ok, _ROOT, _fake_hash) == ok["schemas"]
+    # 틀린 해시 = 다르다고 나온다
+    bad = {**ok, "schemas": {**ok["schemas"], "energy_constants.json": "fake256:" + "0" * 64}}
+    assert lock_tool.lock_hashes_at_own_commits(bad, _ROOT, _fake_hash) != bad["schemas"]
+    # 그 스키마가 없는 커밋을 가리키면 조용히 줄이지 않고 멈춘다
+    missing = {**base, "commit": first}
+    with pytest.raises(lock_tool.LockError):
+        lock_tool.lock_hashes_at_own_commits(missing, _ROOT, _fake_hash)
