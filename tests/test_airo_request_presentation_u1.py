@@ -80,3 +80,40 @@ def test_generated_model_knows_presentation():
     with pytest.raises(Exception):
         model.Presentation(mode="auto", scene=True)
     assert model.Presentation(mode="none").mode.value == "none"
+
+
+# ── 묶음 U16: 응답 validation.presentation.reason 코드 목록 한 곳(presentation_reasons.json) ─────────────────────────
+REASONS = SCHEMA.with_name("presentation_reasons.json")
+
+
+def _reasons_doc() -> dict:
+    return json.loads(REASONS.read_text(encoding="utf-8"))
+
+
+def test_presentation_reason_table_is_complete():
+    doc = _reasons_doc()
+    Draft202012Validator.check_schema(doc)
+    codes, table = doc["$defs"]["PresentationReason"]["enum"], doc["default"]
+    assert len(codes) == 8 and len(set(codes)) == len(codes), codes
+    assert set(table["labels_ko"]) == set(codes) and set(table["operator_ko"]) == set(codes)
+    for code in codes:                                               # 사람 문장 = 한글 · 코드 글자를 싣지 않는다
+        assert table["labels_ko"][code].strip() and code not in table["labels_ko"][code]
+    assert table["unknown_label_ko"] == "3D 화면을 준비하지 못했습니다."
+    assert doc["_usage"] == "codegen"
+
+
+def test_codegen_emits_reasons_and_refuses_a_table_with_a_missing_sentence():
+    import copy
+    import sys
+    scripts = str(Path(__file__).resolve().parents[1] / "scripts")
+    if scripts not in sys.path:
+        sys.path.insert(0, scripts)
+    import gen_constants as g
+    out = g.presentation_reasons(g.load_schemas())                   # 실제 적재 경로로 — 파일명이 load_schemas 에 묶였나까지 본다
+    assert out["codes"] == _reasons_doc()["$defs"]["PresentationReason"]["enum"]
+    assert out["unknown_label_ko"] == _reasons_doc()["default"]["unknown_label_ko"]
+    broken = {"presentation_reasons": copy.deepcopy(_reasons_doc())}  # 반례: 문장 없는 코드 → 생성하지 않는다
+    broken["presentation_reasons"]["$defs"]["PresentationReason"]["enum"].append("NEW_CODE_WITHOUT_SENTENCE")
+    with pytest.raises(ValueError):
+        g.presentation_reasons(broken)
+    assert g.presentation_reasons({}) is None                        # 정의가 없으면 내보내지 않는다(옛 값을 지어내지 않는다)

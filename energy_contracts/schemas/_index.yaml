@@ -29,6 +29,7 @@ components:
     JudgementThresholds:      {$ref: 'judgement_thresholds.json'}
     DeclaredAssumptions:      {$ref: 'declared_assumptions.json'}
     CertifiedTests:           {$ref: 'certified_tests.json'}
+    PresentationReasons:      {$ref: 'presentation_reasons.json'}
     OperationManifest:        {$ref: 'operation_manifest.json'}
     AiroRequest:              {$ref: 'airo_request.json'}
     AiroResult:               {$ref: 'airo_result.json'}

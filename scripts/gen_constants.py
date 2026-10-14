@@ -293,6 +293,8 @@ PROJECT_TARGETS: dict[str, dict] = {
                 "CERTIFIED_TESTS",
                 # 2026-09-28 O3·O5 — 시뮬 셀 축 · 시뮬 비용 트랙 단가(market_prices.sim_cost_track_2025)
                 "AXIS_SCENARIOS", "AXIS_SETPOINTS", "MARKET_PRICES", "BUILDING_USAGES",
+                # 2026-10-14 묶음 U16 — 게이트웨이 serving/scene_display_policy 가 validation.presentation.reason 코드를 이 표에서만 고른다
+                "PRESENTATION_REASONS",
             ],
         },
     },
@@ -418,7 +420,9 @@ def load_schemas() -> dict:
     declared = _load("declared_assumptions.json")
     # 공인 시험 성적 전달 표(2026-09-30, 0.3.70) — 성적서 값만(가상·추정으로 만들지 않는다). 정본 표 = 캠페인 CAMPAIGN_REFERENCE.
     certified = _load("certified_tests.json")
-    return {"archetypes": archetypes, "hvac_matrix": hvac_matrix, "target_vocab": target_vocab,
+    # 표시 사유 코드(2026-10-14 묶음 U16) — 응답 validation.presentation.reason 의 코드·한국어 문장 한 표
+    presentation_reasons_doc = _load("presentation_reasons.json")
+    return {"presentation_reasons": presentation_reasons_doc, "archetypes": archetypes, "hvac_matrix": hvac_matrix, "target_vocab": target_vocab,
             "calendar": calendar, "thresholds": thresholds, "cost_catalog": cost_catalog,
             "declared": declared, "certified": certified,
         "edge_cap": edge_cap, "household_consent": household_consent, "region": region, "kbs": kbs,
@@ -1049,6 +1053,27 @@ def hvac_ems_compat(schemas: dict) -> dict[str, dict[str, str]]:
 
 
 
+def presentation_reasons(schemas: dict) -> dict | None:
+    """``presentation_reasons.json`` → {codes, labels_ko, operator_ko, unknown_label_ko}. 정의가 없으면 None.
+
+    codes = ``$defs.PresentationReason.enum``(순서 그대로) · 문장 = ``default`` 표.
+    ⛔ 코드 목록(enum)과 두 문장표의 열쇠가 어긋나면 생성하지 않는다(ValueError) — 문장 없는 코드가 소비처로 나가면 화면이 낱말 짐작으로 돌아간다."""
+    doc = schemas.get("presentation_reasons") or {}
+    d = (doc.get("$defs") or {}).get("PresentationReason")
+    if not isinstance(d, dict):
+        return None
+    table = doc.get("default") or {}
+    codes = list(d.get("enum") or [])
+    labels, operator = dict(table.get("labels_ko") or {}), dict(table.get("operator_ko") or {})
+    unknown = table.get("unknown_label_ko")
+    bad = [f"{name} 열쇠 ≠ enum: {sorted(set(table) ^ set(codes))}"
+           for name, table in (("labels_ko", labels), ("operator_ko", operator)) if set(table) != set(codes)]
+    if not codes or not isinstance(unknown, str) or not unknown.strip() or len(set(codes)) != len(codes) or bad:
+        raise ValueError("presentation_reasons.json 결함: " + " | ".join(bad or ["코드 0개·중복·unknown_label_ko 없음"]))
+    return {"codes": codes, "labels_ko": {c: labels[c] for c in codes}, "operator_ko": {c: operator[c] for c in codes},
+            "unknown_label_ko": unknown}
+
+
 def _generalization_python(schemas: dict) -> list[str]:
     out: list[str] = []
     common_defs = (schemas.get("common") or {}).get("$defs", {})
@@ -1120,6 +1145,11 @@ def _generalization_python(schemas: dict) -> list[str]:
     if cert:
         out.append("# ─ 공인 시험 성적 (certified_tests.json — 성적서 값만 · 자체 검증값에는 공인 라벨을 붙이지 않는다) ─────")
         out.append(f"CERTIFIED_TESTS: dict = {cert!r}")
+        out.append("")
+    reasons = presentation_reasons(schemas)
+    if reasons:
+        out.append("# ─ 표시 사유 코드 (presentation_reasons.json — validation.presentation.reason · 묶음 U16) ─────")
+        out.append(f"PRESENTATION_REASONS: dict = {reasons!r}")
         out.append("")
     method = ((schemas.get("cost_catalog") or {}).get("default") or {}).get("method") or {}
     if method.get("discount_rate_default") is not None:
