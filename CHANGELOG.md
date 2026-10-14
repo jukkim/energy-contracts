@@ -4,6 +4,13 @@
 
 ---
 
+## 0.3.107 (2026-10-14, 태그 v0.3.107) — 교육연구시설 원형(세부 용도·건물명) · 주택용 누진 요금표 · 검증기 2건
+
+- `building_usage_map.json` v1.4~v1.6 — 교육연구시설은 층별 세부 용도로 원형(초등/중·고) · 세부 용도 없으면 대장 건물명 보충(name_fallback · 한 갈래만) · 건물명 원천 분리(자신 표제부 register_name / 확정 필지 표제부 parcel_register_names) (역할 2, 00900b5·441b195).
+- `residential_electricity_tariff.json` v1.0 — 한전 주택용(저압) 누진 구간·요금(runtime-validate · 소비처 AIROS) (역할 4, 4275f8b).
+- `validate_ssot.py` — 제외 폴더를 내려가기 전에 걸러 전체 검사 60분+ → 46초(같은 파일 집합) · KBEP/GBEP 셀 열쇠 사전의 M1/M2 축 열쇠는 구 전략 코드 아님(열쇠 자리만 · 반례 4) (역할 2, aa727e7·5c218f2).
+- `_consumer_lock` — 소비자 잠금 자기 일관 검사가 스키마별 schema_commits 를 따름 (역할 4, 9016403).
+
 ## 0.3.106 (2026-10-13, 태그 v0.3.106) — 준공 시기별 외피 기준 · 내일 설정 효과 연산 등재
 
 - `korean_building_standards.json` — 준공 시기(1987/1992/2001/2010)별 외피 열관류율 기준 + 시기 도시→지역 · 침기 배율 근거 = 공동주택만 · 범위 '시기별 외피 시나리오' · 상수 `KR_ENVELOPE_U_LIMITS_BY_VINTAGE` · 법령 원문 확인(`verify_korean_law_sources` vintage) (역할 1, ec47e8a).
