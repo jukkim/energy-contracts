@@ -40,6 +40,20 @@ WORKSPACE_ROOT = CONTRACTS_ROOT.parents[1]  # myjob/
 # 구 코드(M0~M8) 패턴 — string literal 안에서만 매칭하여 false positive 최소화
 # "M5", 'M5' 형태 (식별자 P3-M2 등은 제외)
 LEGACY_STRATEGY_RE = re.compile(r"""['"](M[0-8])['"]""")
+# 2026-10-14 (GPT R123 §5 · 전체 검사 12건 분류): KBEP·GBEP 셀 열쇠 사전 {"B": B, "H": H, "C": C, "M1": M1, "M2": 0} 의 "M1"·"M2" 는
+#   **축 이름**(전략 정수 M1 · 두 번째 전략 M2)이지 구 전략 코드가 아니다. 같은 줄에 축 열쇠 "B": 와 "H": 가 함께 있는 사전의 **열쇠 자리**
+#   ("M1": 꼴)만 축으로 본다. 값 자리("M5")·대응표({"M1": "야간 절감"} — B/H 열쇠 없음)·단독 문자열은 그대로 위반.
+_AXIS_KEY_DICT_RE = re.compile(r"""['"]B['"]\s*:.*['"]H['"]\s*:|['"]H['"]\s*:.*['"]B['"]\s*:""")
+_LEGACY_AS_KEY_RE = re.compile(r"""['"](M[0-8])['"]\s*:""")
+
+
+def legacy_strategy_hits(line: str) -> list[str]:
+    """줄 안의 구 전략 코드 자리(축 열쇠 사전의 M1/M2 열쇠 자리는 뺀다)."""
+    hits = [m.start() for m in LEGACY_STRATEGY_RE.finditer(line)]
+    if hits and _AXIS_KEY_DICT_RE.search(line):
+        keys = {m.start() for m in _LEGACY_AS_KEY_RE.finditer(line)}
+        hits = [h for h in hits if h not in keys]
+    return [line[h:h + 4] for h in hits]
 
 # 파일 레벨 면제 마커
 FILE_EXEMPT_MARKERS = (
@@ -134,7 +148,7 @@ def scan_legacy_strategies(paths: list[Path]) -> list[tuple[Path, int, str]]:
                 if re.search(r"//.*\b(old|legacy|negative|rejected|invalid)\b",
                              line, re.I):
                     continue
-                if LEGACY_STRATEGY_RE.search(line):
+                if legacy_strategy_hits(line):
                     violations.append((fp, lineno, line.strip()[:120]))
     return violations
 

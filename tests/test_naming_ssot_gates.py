@@ -167,3 +167,21 @@ def test_precommit_file_root_keeps_filename_exemption():
     2026-09-15 전: 스테이징된 파일을 루트로 넘기면 면제 키가 `"/."` 가 되어 9건으로 막혔다.
     """
     assert validate_ssot.scan_legacy_strategies([SCHEMAS / "ems_strategies.json"]) == []
+
+
+def test_legacy_strategy_axis_key_dict_is_not_legacy_code_2026_10_14():
+    """GPT R123 §5: KBEP/GBEP 셀 열쇠 사전의 M1·M2 열쇠 자리는 축 이름 — 위반 아님. 반례(막아야 할 것)는 그대로 잡는다."""
+    ok = [
+        '    key = {"B": B, "H": H, "C": C, "M1": M1, "M2": 0}',
+        '"key": {"CZ": cz, "CITY": city, "B": B, "H": H, "M1": M1}, "reason": "no paired cell",',
+    ]
+    for line in ok:
+        assert validate_ssot.legacy_strategy_hits(line) == [], line
+    bad = [
+        'strategy = "M' + '5"',                                 # 단독 구 코드(검사기가 이 시험 파일을 잡지 않게 이어 붙임)
+        'LEGACY = {"M' + '1": "night setback", "M' + '2": "precool"}',   # 대응표(B/H 열쇠 없음)
+        'key = {"B": B, "H": H, "strategy": "M' + '3"}',        # 축 사전이어도 값 자리의 구 코드
+        "row = {'H': h, 'B': b, 'ems': 'M" + "7'}",             # 열쇠 순서가 달라도 값 자리는 잡힘
+    ]
+    for line in bad:
+        assert validate_ssot.legacy_strategy_hits(line), line
