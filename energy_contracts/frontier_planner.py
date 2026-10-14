@@ -90,7 +90,27 @@ def build_candidates(snap: Snapshot) -> list[dict]:
             "protected_ven_ids": list(snap.protected_ven_ids)
             if t["uses_protected"] else [],
         })
-    out.extend(dict(c) for c in snap.extra_candidates)
+    # 2026-10-14 점검 SRC-075: 추가 후보가 스스로 적은 '목표 충족·보호시설 안 건드림'을 믿지 않는다 — 원자료로 다시 잰다.
+    #   절감량은 유한한 0~설비용량 값이어야 하고, 보호시설은 후보가 다루는 VEN 과 이 상황의 보호 목록이 겹치는지로 본다.
+    #   (후보가 '건드린다'고 스스로 밝힌 것은 그대로 둔다 — 보수 쪽 선언만 받아들인다.)
+    for raw in snap.extra_candidates:
+        c = dict(raw)
+        try:
+            shed = float(c.get("shed_kw"))
+        except (TypeError, ValueError):
+            shed = float("nan")
+        valid = shed == shed and abs(shed) != float("inf") and 0.0 <= shed <= float(snap.total_capacity_kw)
+        c["meets_target"] = bool(valid and shed >= snap.target_kw)
+        if not valid:
+            c["invalid_why"] = "절감량(shed_kw)이 0~설비용량 안의 유한한 값이 아니다"
+        vens = set(c.get("ven_ids") or []) | set(c.get("protected_ven_ids") or [])
+        c["touches_protected"] = bool(c.get("touches_protected")) or bool(vens & set(snap.protected_ven_ids))
+        try:
+            rr = float(c.get("rebound_risk", 1.0))
+            c["rebound_risk"] = rr if rr == rr and 0.0 <= rr <= 1.0 else 1.0
+        except (TypeError, ValueError):
+            c["rebound_risk"] = 1.0       # 모르면 가장 나쁜 쪽(관문에서 걸린다)
+        out.append(c)
     return out
 
 

@@ -86,9 +86,9 @@ def compute_delay(
 
     if policy.factor <= 0 or policy.base_seconds <= 0:
         raw = 0.0
-    elif effective_attempt - 1 > 30:
-        raw = policy.max_seconds
     else:
+        # 2026-10-14 점검 SRC-070: '횟수 30 넘으면 상한' 지름길을 뺐다 — factor 1·1.1·0.5 에서도 상한으로 튀었다.
+        #   factor ≤ 1 은 커지지 않고, 큰 지수는 아래 OverflowError 로 상한에 포화한다(현 소비처 factor 2.0 결과는 같다).
         # 사냥꾼 라운드 LOW (2026-06-08): 가드가 지수 '횟수'만 보고 factor 크기를 무시해
         #   거대 factor(상한 미설정 schema)에서 OverflowError 가능 → max_seconds 로 포화.
         try:
