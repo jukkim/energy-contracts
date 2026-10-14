@@ -4,10 +4,11 @@
 
 ---
 
-## 다음 릴리스에 실을 것 (미태그)
+## 0.3.108 (2026-10-15, 태그 v0.3.108) — 표시 선호 칸 presentation · 표시 사유 문장표 · 재시도 지연 식
 
 - `airo_request.json` 2.6 → 2.7 — 봉투 최상위 선택 칸 `presentation{mode: auto|none}`(표시 선호 · 분석 의도와 분리 · 생략 = 기존 동작). 가산. 응답 `validation.presentation` 모양은 게이트웨이 `serving/scene_display_policy` 가 정한다. pydantic 모델 재생성(`Presentation`·`Mode`). 시험 `test_airo_request_presentation_u1`(받을 것 4 · 막을 것 8 · v0.3.107 태그 대비 덧붙이기) · 판 고정 2곳 2.7. 소비처 후속: 게이트웨이 `tests/test_m3g_envelope_v23.py` 판 고정 2.7 (캠페인 NL_TO_BE3D_UNIFICATION_PLAN §10 묶음 U1).
 - `presentation_reasons.json` 1.0 (새 스키마 · codegen) — 응답 `validation.presentation.reason` 코드 8개(`$defs.PresentationReason`)와 한국어 문장표(`labels_ko` 사람용 · `operator_ko` 운영자 보기용 · `unknown_label_ko` 표에 없는 코드의 일반 문장 "3D 화면을 준비하지 못했습니다."). `gen_constants.py` → `PRESENTATION_REASONS`(8sim-shared·거울 내보내기 · 코드와 문장표 열쇠가 어긋나면 생성 거부). 시험 `test_airo_request_presentation_u1`(표 완전성 · 생성 반례). ⚠ 생성기 해시가 바뀌므로 릴리스 때 `gen_constants.py --all` + 핀 일괄 올림 필수. 소비처: 게이트웨이 `serving/scene_display_policy`(생성본 → 없으면 EC 문서) · Studio `scripts/gen_ec_mirrors.py` → `PRESENTATION_REASONS` (묶음 U16).
+- `retry_policy` — 재시도 지연이 모든 인자에서 선언된 식을 따름 · `frontier_planner` 가 추가 후보의 표지를 다시 계산 (06821b0).
 
 ## 0.3.107 (2026-10-14, 태그 v0.3.107) — 교육연구시설 원형(세부 용도·건물명) · 주택용 누진 요금표 · 검증기 2건
 
