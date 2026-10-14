@@ -98,6 +98,7 @@ components:
     RateLimitPolicy:          {$ref: 'rate_limit_policy.json'}
     ReductionSchedule:        {$ref: 'reduction_schedule.json'}
     RegionCodes:              {$ref: 'region_codes.json'}
+    ResidentialElectricityTariff: {$ref: 'residential_electricity_tariff.json'}
     RetryPolicy:              {$ref: 'retry_policy.json'}
     RqAiIntent:               {$ref: 'rq_ai_intent.json'}
     RunModes:                 {$ref: 'run_modes.json'}
