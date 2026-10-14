@@ -48,7 +48,9 @@ def test_versions_bumped_for_the_draft():
     # test_airo_request_interpretation_0373 가 본다(반대쪽).
     # 근거(2026-10-01, 0.3.75): 2.5 → 2.6 은 가산(surface enum 에 canvas — 스키마 $comment 2.6 절). 2.5 봉투가 그대로 유효한지와
     # 목록 밖 표면 이름이 여전히 거절되는지는 test_airo_request_surface_canvas_0375 가 본다(반대쪽).
-    assert _load("airo_request.json")["version"] == "2.6"
+    # 근거(2026-10-14, 묶음 U1): 2.6 → 2.7 은 가산(봉투 최상위 선택 칸 presentation — 스키마 $comment 2.7 절). 2.6 봉투가 그대로
+    # 유효한지와 presentation 안 모르는 칸·목록 밖 mode 가 거절되는지는 test_airo_request_presentation_u1 이 본다(반대쪽).
+    assert _load("airo_request.json")["version"] == "2.7"
     assert _load("airo_result.json")["version"] == "1.1"
     # 근거(2026-09-29 3b-2 S1, 0.3.63 초안): interface_types 는 RequestResolution 추가로 1.1 → 1.2 (스키마 $comment 1.2 절).
     # 1.1 의 가산분(QuantityUnit += score)은 아래 test_declared_units_are_quantity_units_and_new_entries_exist 가 그대로

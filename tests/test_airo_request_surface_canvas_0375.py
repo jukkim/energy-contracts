@@ -45,7 +45,8 @@ def _ok(inst) -> bool:
 
 def test_canvas_is_one_more_surface_name_appended():
     schema = _schema()
-    assert schema["version"] == "2.6"
+    # 2.7(2026-10-14 묶음 U1)은 presentation 칸만 더했다 — 표면 목록은 그대로(아래 단언이 지킨다)
+    assert schema["version"] in ("2.6", "2.7")
     enum = schema["properties"]["surface"]["enum"]
     assert enum == [*SURFACES_2_5, "canvas"]              # 앞 다섯은 그대로, 순서도 그대로
     assert len(enum) == len(set(enum))

@@ -4,6 +4,10 @@
 
 ---
 
+## 다음 릴리스에 실을 것 (미태그)
+
+- `airo_request.json` 2.6 → 2.7 — 봉투 최상위 선택 칸 `presentation{mode: auto|none}`(표시 선호 · 분석 의도와 분리 · 생략 = 기존 동작). 가산. 응답 `validation.presentation` 모양은 게이트웨이 `serving/scene_display_policy` 가 정한다. pydantic 모델 재생성(`Presentation`·`Mode`). 시험 `test_airo_request_presentation_u1`(받을 것 4 · 막을 것 8 · v0.3.107 태그 대비 덧붙이기) · 판 고정 2곳 2.7. 소비처 후속: 게이트웨이 `tests/test_m3g_envelope_v23.py` 판 고정 2.7 (캠페인 NL_TO_BE3D_UNIFICATION_PLAN §10 묶음 U1).
+
 ## 0.3.107 (2026-10-14, 태그 v0.3.107) — 교육연구시설 원형(세부 용도·건물명) · 주택용 누진 요금표 · 검증기 2건
 
 - `building_usage_map.json` v1.4~v1.6 — 교육연구시설은 층별 세부 용도로 원형(초등/중·고) · 세부 용도 없으면 대장 건물명 보충(name_fallback · 한 갈래만) · 건물명 원천 분리(자신 표제부 register_name / 확정 필지 표제부 parcel_register_names) (역할 2, 00900b5·441b195).

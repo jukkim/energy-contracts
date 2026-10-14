@@ -11,9 +11,9 @@
     "energy-decision-studio",
     "building-energy-3d"
   ],
-  "version": "2.6",
-  "updated": "2026-10-01",
-  "$comment": "2.6(2026-10-01, 0.3.75 · 화면 세션 요청 — 캠페인 scratch/capability_first/requests_round3.md 주 세션 메모 06:25): surface enum 에 canvas(energy-decision-canvas :3030 — 6단계 흐름도를 v2 질의 한 번으로 채운다)를 더하고 surface 에 설명을 단다. 가산이다 — 2.5 에서 유효한 봉투는 2.6 에서도 유효하고, 목록 밖의 표면 이름은 여전히 거절한다. canvas 가 따르는 규칙(Studio 와 같은 선언 공무원 표면)은 스키마가 아니라 게이트웨이 한 곳이 정한다. 2.5(2026-10-01, 0.3.73 ·캠페인 docs/CAPABILITY_FIRST_QUERY_DESIGN_2026-09-30.md 결정 14): 봉투 최상위 interpretation{frame_id, from_request_id} — 사용자가 답의 '고를 질문'(validation.suggested_questions[]) 가운데 하나를 눌러 고른 정형 질문. 선택 칸이고 가산이다 — 2.4 에서 유효한 봉투는 2.5 에서도 유효하다(칸이 없으면 게이트웨이 요청 바이트가 달라지지 않는다). 2.4(2026-09-29 RV-B1 초안, 0.3.62):응답 칸이 실제로 싣는 모양을 선언 — TargetContext 에 contract·chain_steps·final_target_source·choices 와 '대상 없음' 모양(resolved=false → kind·source null, ids 빈 목록) · Period 에 source·basis_ko·why·generator·contract 와 basis += forecast_relative_to_today · 원형 미지정(ids=[archetype:all]) 대상은 archetype 객체 없이 허용 · TargetExpansion.rule_id 예시를 게이트웨이 전개 규칙 이름으로 · 봉투 최상위 tool_input_mode(v1 같은 칸 그대로 — v1 입구를 닫기 전 준비) · 봉투 최상위 as_of(요청의 기준 시각) · Continuation 은 requested_tool 또는 prior_request_id 중 하나(되묻기 답의 둘째 턴은 도구가 아직 없다). 모두 가산 — 2.3 에서 유효한 봉투·문맥은 2.4 에서도 유효하다. 2.3(2026-09-29 M3, f7 합의): ① target 생략 허용(게이트웨이 질문 틀이 정한다) ② continuation(되묻기 답·계획 실행의 이어가기) ③ intent 'plan'(쓰기 = 계획 경로) ④ intent 'debate'(AgentLeague) · Target/TargetContext 에 asset_kind·members·expansion(서버가 채움) · Period.basis += coverage_of_needs. 모두 가산 — 2.2 에서 유효한 봉투는 2.3 에서도 유효하다.",
+  "version": "2.7",
+  "updated": "2026-10-14",
+  "$comment": "2.7(2026-10-14 · 캠페인 docs/NL_TO_BE3D_UNIFICATION_PLAN_2026-10-14.md §10 묶음 U1): 봉투 최상위 선택 칸 presentation{mode: auto|none} — 표시 선호를 분석 의도(intent)와 분리한다. 가산이다 — 2.6 에서 유효한 봉투는 2.7 에서도 유효하고(칸이 없으면 게이트웨이 동작·요청 바이트가 달라지지 않는다), presentation 안의 다른 칸·목록 밖 mode 는 거절한다. 표시 정책은 게이트웨이 한 곳이 정한다. 2.6(2026-10-01, 0.3.75 · 화면 세션 요청 — 캠페인 scratch/capability_first/requests_round3.md 주 세션 메모 06:25): surface enum 에 canvas(energy-decision-canvas :3030 — 6단계 흐름도를 v2 질의 한 번으로 채운다)를 더하고 surface 에 설명을 단다. 가산이다 — 2.5 에서 유효한 봉투는 2.6 에서도 유효하고, 목록 밖의 표면 이름은 여전히 거절한다. canvas 가 따르는 규칙(Studio 와 같은 선언 공무원 표면)은 스키마가 아니라 게이트웨이 한 곳이 정한다. 2.5(2026-10-01, 0.3.73 ·캠페인 docs/CAPABILITY_FIRST_QUERY_DESIGN_2026-09-30.md 결정 14): 봉투 최상위 interpretation{frame_id, from_request_id} — 사용자가 답의 '고를 질문'(validation.suggested_questions[]) 가운데 하나를 눌러 고른 정형 질문. 선택 칸이고 가산이다 — 2.4 에서 유효한 봉투는 2.5 에서도 유효하다(칸이 없으면 게이트웨이 요청 바이트가 달라지지 않는다). 2.4(2026-09-29 RV-B1 초안, 0.3.62):응답 칸이 실제로 싣는 모양을 선언 — TargetContext 에 contract·chain_steps·final_target_source·choices 와 '대상 없음' 모양(resolved=false → kind·source null, ids 빈 목록) · Period 에 source·basis_ko·why·generator·contract 와 basis += forecast_relative_to_today · 원형 미지정(ids=[archetype:all]) 대상은 archetype 객체 없이 허용 · TargetExpansion.rule_id 예시를 게이트웨이 전개 규칙 이름으로 · 봉투 최상위 tool_input_mode(v1 같은 칸 그대로 — v1 입구를 닫기 전 준비) · 봉투 최상위 as_of(요청의 기준 시각) · Continuation 은 requested_tool 또는 prior_request_id 중 하나(되묻기 답의 둘째 턴은 도구가 아직 없다). 모두 가산 — 2.3 에서 유효한 봉투·문맥은 2.4 에서도 유효하다. 2.3(2026-09-29 M3, f7 합의): ① target 생략 허용(게이트웨이 질문 틀이 정한다) ② continuation(되묻기 답·계획 실행의 이어가기) ③ intent 'plan'(쓰기 = 계획 경로) ④ intent 'debate'(AgentLeague) · Target/TargetContext 에 asset_kind·members·expansion(서버가 채움) · Period.basis += coverage_of_needs. 모두 가산 — 2.2 에서 유효한 봉투는 2.3 에서도 유효하다.",
   "type": "object",
   "additionalProperties": false,
   "required": [
@@ -115,6 +115,24 @@
       ],
       "default": "value",
       "description": "무엇을 원하나 — value=값만(기본) · scene=화면만 · both=값과 화면을 함께. 없으면 value 로 본다(기존 요청의 바이트가 달라지지 않는다). 2026-09-23 신설: 이 칸이 없을 때 봉투가 작업 방식을 value 로 고정해 장면 요구가 조용히 사라지던 것을 고친다. 2.3(M3) 추가: plan=계획 경로(쓰기 — v1 task_mode plan_action + permissions.plan 과 같은 뜻). continuation 이 반드시 있어야 하고, 무엇이 쓰기인지는 게이트웨이가 정한다(표면은 쓰기 판정 사본을 두지 않는다) · debate=AgentLeague 토론(게이트웨이가 표면 이름만 보고 토론으로 보내던 것을 봉투의 뜻으로 옮긴다). 값·장면 의도를 표면이 싣지 않으면 서버가 질문의 표시 낱말로 판단한다(M2)."
+    },
+    "presentation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "mode"
+      ],
+      "properties": {
+        "mode": {
+          "type": "string",
+          "enum": [
+            "auto",
+            "none"
+          ],
+          "description": "auto=성공한 분석 결과를 기본 장면으로 투영한다(공간 대상이 확인되면 지도, 아니면 근거 패널) · none=장면을 만들지 않는다. 봉투 intent=value 를 명시하거나 질문이 '숫자만' 을 청하면 auto 여도 장면을 만들지 않는다."
+        }
+      },
+      "description": "2.7(2026-10-14 · 캠페인 docs/NL_TO_BE3D_UNIFICATION_PLAN_2026-10-14.md §3.2·§10): 표시 선호 — 분석 의도(intent)와 따로 둔다. 선택 칸이고 가산이다. 없으면 기존 동작 그대로(요청 바이트·응답이 달라지지 않는다). 도구 선택·입력 자료·계산 조건·권한을 바꾸지 않는다 — auto 유무만 다른 같은 질문의 값 바이트는 같다. 응답은 validation.presentation{state: ready|unavailable|not_requested, mode: map|panel|null, reason, result_hashes[], ops_digest} 를 싣는다(이 칸을 보냈을 때). 표시 정책은 게이트웨이 한 곳(serving/scene_display_policy)이 정한다."
     }
   },
   "$defs": {
