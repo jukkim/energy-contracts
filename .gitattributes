@@ -3,3 +3,5 @@ energy_contracts/data/*.json text eol=lf
 
 # 2026-10-10: 전역 pre-push 가 bash 로 실행 — CRLF 체크아웃이면 깨진다
 .ci-local text eol=lf
+# 2026-10-15: 법령 원문(발췌 텍스트 포함)은 바이트 그대로 — 스키마가 sha256 으로 고정한다. 줄바꿈을 바꾸면 Linux CI 체크아웃에서 해시가 갈린다
+docs/legal_sources/** -text

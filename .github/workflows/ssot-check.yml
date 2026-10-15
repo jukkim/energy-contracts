@@ -63,6 +63,9 @@ jobs:
         with:
           python-version: "3.11"
 
+      # 2026-10-15: 법령 원문 대조(PDF·HWP)는 pypdf·pyhwp 가 있어야 잰다 — 없으면 '못 잼' 이 위반으로 남아 매 푸시가 빨강이었다
+      - name: 법령 원문 대조 도구 설치
+        run: python -m pip install --quiet pypdf pyhwp
       - name: Validate SSOT (strategy + ports + schemas + generated drift)
         run: python scripts/validate_ssot.py --check all
 

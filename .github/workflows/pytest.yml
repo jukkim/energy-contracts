@@ -48,6 +48,8 @@ jobs:
     timeout-minutes: 10
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0   # 2026-10-15: 잠금 자기일관 시험이 첫 커밋(rev-list --max-parents=0)을 읽는다 — 얕은 받기면 HEAD 가 첫 커밋이 되어 반례가 안 선다
 
       - uses: actions/setup-python@v5
         with:
