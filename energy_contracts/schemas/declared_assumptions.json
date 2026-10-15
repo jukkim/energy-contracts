@@ -13,7 +13,7 @@
   ],
   "version": "1.6",
   "updated": "2026-10-05",
-  "$comment": "1.7(2026-10-06, 0.3.91 — 일반화 재점검 · 가산): 새 행 셋 — capex_quote_band(게이트웨이 견적 편차 리터럴 0.8~1.2 그대로) · map_estimate_fill_rule(be-3d 지도 채움 순서·문턱 20 그대로 — 게이트웨이 사본 제거) · role_tour_representative_quantile(0.25 — 선언 시연 가정). 1.6 의 키와 값은 하나도 바꾸지 않았다. · 1.6(2026-10-01, 0.3.74 — 캠페인 요청 scratch/capability_first/EC_ROWS_NEEDED_round3.md E5-2·E5-3·R3F-1·R3F-2 · 가산): 새 행 셋 — operation_reading_window(28일 · 7일 · 구성원 12곳 — 게이트웨이 decision_support 리터럴 값 그대로) · operation_reading_freshness(읽은 창이 오늘과 같은 철이면 '지금 운전' — 설계 §2.5 한계 4 '한 철' · 계절 = calendar_conventions.question_season_system · 새 수는 0 하나) · cohort_city_min_share(0.5 초과 — 낱말 '다수결'의 뜻). 기존 행 값 안에 새 칸 serving_display_limits.value.display_significant_digits(3 — measure_candidates 리터럴 그대로, 뜻은 value_notes_ko). 요청이 제안한 operations_proxy_rules.value 대신 새 행으로 둔 까닭: 그 value 는 경제성 수명 격자 가정이 통째로 답에 싣는다(옛 답 바이트 보존). 1.5 의 키와 값(문구 포함)은 하나도 바꾸지 않았다. · 1.5(2026-09-30, 0.3.72 — 일반화 단계 소비처 요청 C1~C11 · WP6 R10 · 가산): 새 행 33개(키 목록 = CHANGELOG 0.3.72) · 기존 행 값 안에 새 칸 (hazard_week_scenarios.value.cold · serving_display_limits.value.presentation_table_max_columns·presentation_chart_max_series · scene_motion_defaults.value.descend_keys·dive_building_end_alt_m · sim_schedule_inference.value.morning_window_hours·startup_window_hours — 뜻은 행 수준 value_notes_ko) · comm_status_thresholds.by_delivery.<프로필>.label_ko. 1.4 의 키와 값(문구 포함)은 하나도 바꾸지 않았다 — 새 칸만. moved_literal = 코드 리터럴 값 그대로 · declared_demo_assumption = 외부 근거 없는 선언. 별칭·어휘 표(한 별칭 = 한 열쇠 · 가리키는 열쇠 존재)는 scripts/vocabulary_gate.py 가 적재 때(gen_constants.load_schemas · validate_ssot --check schemas) 검사한다. · 1.4(2026-09-30, 0.3.71 — GPT 상의 반영 · 사용자 지시 '지피티와 상의해서 정해' · 가산): 근거 없이 정한 여섯 값(short_cycling · comm_status_thresholds · life_roadmap · investment_tiers · precool_delta_c · judgement_thresholds 의 min_observed_temperature_days)과 인용 셋(min_r2 · pmv_inputs · debate_stated_term_ranges)을 검토했다. 1.3 의 키와 value 는 하나도 바꾸지 않았다 — 새 칸은 전부 **행 수준**(value 의 형제)에 둔다: 소비처가 value 를 통째로 도구 인자로 넘기는 자리(투자 구간·수명 로드맵 — 도구 스키마가 모르는 칸을 거절한다)가 있어서다. 새 칸: short_cycling.interpretation · comm_status_thresholds.by_delivery·unknown_delivery_profile · life_roadmap.sensitivity_life_used_shares·remaining_life_status_when_unknown · investment_tiers.classification_basis·numeric_thresholds_role·label_ko_by_work_scope · precool_delta_c.conditions_ko. 여섯 값은 표준값이 아니다 — basis_kind 는 declared_demo_assumption 그대로이고 basis 에 'GPT 상의 2026-09-30' 을 적는다(표준 인용으로 올리지 않는다). 인용 셋은 웹 대조(2026-09-30)로 문구를 고쳤다. · 1.3(2026-09-30, 0.3.70 — 일반화 감사 hard-coded-default 47건 · 남은 목록 N4-0): 게이트웨이·AgentLeague·be-3d 코드 리터럴로 있던 선언 기본값·문턱·화면 상한·가상 생성 규칙을 옮김(가산 — 1.2 의 행과 값은 그대로). 새 행은 전부 id · value · unit(QuantityUnit 낱말) 또는 unit_text · label_ko · rule_ko · classification · basis_kind · basis · source 를 싣는다. basis_kind: moved_literal(코드 값 그대로) · declared_demo_assumption(외부 근거 없는 선언 시연 가정) · standard_citation(표준·법령 인용) · derived_from_ec(이미 있는 정본 값에서 파생 — 새 수 없음). 이미 정본에 있는 값(순위 기본 개수 · 이상 z · 상위 비율 · 빠른 회수 · 폭염 달 창)은 새 행을 만들지 않았다 — 코드가 그 행을 읽는다. hazard_days.heat 에 baseline_months 추가. · 1.2(2026-09-29 RV-B3 초안, 0.3.62): 단위를 interface_types.QuantityUnit 낱말로(top_share '%'→pct · 햇수 yr) · 게이트웨이 모듈 상수로 남아 있던 선언 기본값을 옮김 — scenario_defaults(공실률·시나리오 공실률·끌 수 있는 부하 절감 몫·우선순위) · _assumption_ranges(가정 탐색 범위 5개) · measured_portfolio(순위 행 기본 개수). 값은 옮기기만 했다(동작 변경 없음). 모든 항목의 분류 = assumed(선언 가정) — 사람 대면 라벨은 data_classification 의 assumed label_ko 에서 파생한다.",
+  "$comment": "2026-10-15(가산 · version 칸은 1.7 때처럼 그대로): 새 행 하나 — appliance_added_load(기기 추가 사용 가정표 — 대표 소비전력·가동률·기본 사용 시간·기간 낱말 · 선언 시연 가정). 1.7 의 키와 값은 하나도 바꾸지 않았다. · 1.7(2026-10-06, 0.3.91 — 일반화 재점검 · 가산): 새 행 셋 — capex_quote_band(게이트웨이 견적 편차 리터럴 0.8~1.2 그대로) · map_estimate_fill_rule(be-3d 지도 채움 순서·문턱 20 그대로 — 게이트웨이 사본 제거) · role_tour_representative_quantile(0.25 — 선언 시연 가정). 1.6 의 키와 값은 하나도 바꾸지 않았다. · 1.6(2026-10-01, 0.3.74 — 캠페인 요청 scratch/capability_first/EC_ROWS_NEEDED_round3.md E5-2·E5-3·R3F-1·R3F-2 · 가산): 새 행 셋 — operation_reading_window(28일 · 7일 · 구성원 12곳 — 게이트웨이 decision_support 리터럴 값 그대로) · operation_reading_freshness(읽은 창이 오늘과 같은 철이면 '지금 운전' — 설계 §2.5 한계 4 '한 철' · 계절 = calendar_conventions.question_season_system · 새 수는 0 하나) · cohort_city_min_share(0.5 초과 — 낱말 '다수결'의 뜻). 기존 행 값 안에 새 칸 serving_display_limits.value.display_significant_digits(3 — measure_candidates 리터럴 그대로, 뜻은 value_notes_ko). 요청이 제안한 operations_proxy_rules.value 대신 새 행으로 둔 까닭: 그 value 는 경제성 수명 격자 가정이 통째로 답에 싣는다(옛 답 바이트 보존). 1.5 의 키와 값(문구 포함)은 하나도 바꾸지 않았다. · 1.5(2026-09-30, 0.3.72 — 일반화 단계 소비처 요청 C1~C11 · WP6 R10 · 가산): 새 행 33개(키 목록 = CHANGELOG 0.3.72) · 기존 행 값 안에 새 칸 (hazard_week_scenarios.value.cold · serving_display_limits.value.presentation_table_max_columns·presentation_chart_max_series · scene_motion_defaults.value.descend_keys·dive_building_end_alt_m · sim_schedule_inference.value.morning_window_hours·startup_window_hours — 뜻은 행 수준 value_notes_ko) · comm_status_thresholds.by_delivery.<프로필>.label_ko. 1.4 의 키와 값(문구 포함)은 하나도 바꾸지 않았다 — 새 칸만. moved_literal = 코드 리터럴 값 그대로 · declared_demo_assumption = 외부 근거 없는 선언. 별칭·어휘 표(한 별칭 = 한 열쇠 · 가리키는 열쇠 존재)는 scripts/vocabulary_gate.py 가 적재 때(gen_constants.load_schemas · validate_ssot --check schemas) 검사한다. · 1.4(2026-09-30, 0.3.71 — GPT 상의 반영 · 사용자 지시 '지피티와 상의해서 정해' · 가산): 근거 없이 정한 여섯 값(short_cycling · comm_status_thresholds · life_roadmap · investment_tiers · precool_delta_c · judgement_thresholds 의 min_observed_temperature_days)과 인용 셋(min_r2 · pmv_inputs · debate_stated_term_ranges)을 검토했다. 1.3 의 키와 value 는 하나도 바꾸지 않았다 — 새 칸은 전부 **행 수준**(value 의 형제)에 둔다: 소비처가 value 를 통째로 도구 인자로 넘기는 자리(투자 구간·수명 로드맵 — 도구 스키마가 모르는 칸을 거절한다)가 있어서다. 새 칸: short_cycling.interpretation · comm_status_thresholds.by_delivery·unknown_delivery_profile · life_roadmap.sensitivity_life_used_shares·remaining_life_status_when_unknown · investment_tiers.classification_basis·numeric_thresholds_role·label_ko_by_work_scope · precool_delta_c.conditions_ko. 여섯 값은 표준값이 아니다 — basis_kind 는 declared_demo_assumption 그대로이고 basis 에 'GPT 상의 2026-09-30' 을 적는다(표준 인용으로 올리지 않는다). 인용 셋은 웹 대조(2026-09-30)로 문구를 고쳤다. · 1.3(2026-09-30, 0.3.70 — 일반화 감사 hard-coded-default 47건 · 남은 목록 N4-0): 게이트웨이·AgentLeague·be-3d 코드 리터럴로 있던 선언 기본값·문턱·화면 상한·가상 생성 규칙을 옮김(가산 — 1.2 의 행과 값은 그대로). 새 행은 전부 id · value · unit(QuantityUnit 낱말) 또는 unit_text · label_ko · rule_ko · classification · basis_kind · basis · source 를 싣는다. basis_kind: moved_literal(코드 값 그대로) · declared_demo_assumption(외부 근거 없는 선언 시연 가정) · standard_citation(표준·법령 인용) · derived_from_ec(이미 있는 정본 값에서 파생 — 새 수 없음). 이미 정본에 있는 값(순위 기본 개수 · 이상 z · 상위 비율 · 빠른 회수 · 폭염 달 창)은 새 행을 만들지 않았다 — 코드가 그 행을 읽는다. hazard_days.heat 에 baseline_months 추가. · 1.2(2026-09-29 RV-B3 초안, 0.3.62): 단위를 interface_types.QuantityUnit 낱말로(top_share '%'→pct · 햇수 yr) · 게이트웨이 모듈 상수로 남아 있던 선언 기본값을 옮김 — scenario_defaults(공실률·시나리오 공실률·끌 수 있는 부하 절감 몫·우선순위) · _assumption_ranges(가정 탐색 범위 5개) · measured_portfolio(순위 행 기본 개수). 값은 옮기기만 했다(동작 변경 없음). 모든 항목의 분류 = assumed(선언 가정) — 사람 대면 라벨은 data_classification 의 assumed label_ko 에서 파생한다.",
   "type": "object",
   "default": {
     "hazard_days": {
@@ -2275,6 +2275,281 @@
       "basis_kind": "declared_demo_assumption",
       "basis": "외부 근거 없는 선언 시연 가정(사분위 아래 경계) — 공식 지정이 아니다",
       "source": "게이트웨이 general_ops/cohort._role_tour_rows(be-3d 추가 100 #073) — 2026-10-06 일반화 재점검"
+    },
+    "appliance_added_load": {
+      "id": "appliance_added_load",
+      "value": {
+        "devices": [
+          {
+            "id": "refrigerator",
+            "device_ko": "냉장고",
+            "aliases_ko": [
+              "냉장고"
+            ],
+            "power_kw": 0.12,
+            "duty_factor": 0.4,
+            "always_on": true,
+            "default_hours_per_day": 24,
+            "subject_kinds": [
+              "home",
+              "store",
+              "building"
+            ]
+          },
+          {
+            "id": "kimchi_refrigerator",
+            "device_ko": "김치냉장고",
+            "aliases_ko": [
+              "김치냉장고",
+              "김치 냉장고"
+            ],
+            "power_kw": 0.08,
+            "duty_factor": 0.4,
+            "always_on": true,
+            "default_hours_per_day": 24,
+            "subject_kinds": [
+              "home"
+            ]
+          },
+          {
+            "id": "freezer",
+            "device_ko": "냉동고",
+            "aliases_ko": [
+              "냉동고"
+            ],
+            "power_kw": 0.15,
+            "duty_factor": 0.5,
+            "always_on": true,
+            "default_hours_per_day": 24,
+            "subject_kinds": [
+              "home",
+              "store",
+              "building"
+            ]
+          },
+          {
+            "id": "refrigerated_showcase",
+            "device_ko": "냉장 쇼케이스",
+            "aliases_ko": [
+              "쇼케이스",
+              "냉장 진열대",
+              "진열 냉장고",
+              "음료 냉장고"
+            ],
+            "power_kw": 0.4,
+            "duty_factor": 0.6,
+            "always_on": true,
+            "default_hours_per_day": 24,
+            "subject_kinds": [
+              "home",
+              "store",
+              "building"
+            ]
+          },
+          {
+            "id": "air_conditioner",
+            "device_ko": "에어컨",
+            "aliases_ko": [
+              "에어컨",
+              "냉방기"
+            ],
+            "power_kw": 1.0,
+            "power_kw_by_subject": {
+              "store": 3.0,
+              "building": 3.0
+            },
+            "duty_factor": 0.7,
+            "always_on": false,
+            "default_hours_per_day": 1,
+            "subject_kinds": [
+              "home",
+              "store",
+              "building"
+            ]
+          },
+          {
+            "id": "dehumidifier",
+            "device_ko": "제습기",
+            "aliases_ko": [
+              "제습기"
+            ],
+            "power_kw": 0.3,
+            "duty_factor": 0.8,
+            "always_on": false,
+            "default_hours_per_day": 8,
+            "subject_kinds": [
+              "home",
+              "store",
+              "building"
+            ]
+          },
+          {
+            "id": "electric_heater",
+            "device_ko": "전기 난방기",
+            "aliases_ko": [
+              "전기난로",
+              "전기 난로",
+              "전기히터",
+              "전기 히터",
+              "온풍기",
+              "라디에이터",
+              "히터",
+              "난로"
+            ],
+            "power_kw": 1.0,
+            "duty_factor": 0.6,
+            "always_on": false,
+            "default_hours_per_day": 3,
+            "subject_kinds": [
+              "home",
+              "store",
+              "building"
+            ]
+          },
+          {
+            "id": "electric_blanket",
+            "device_ko": "전기장판",
+            "aliases_ko": [
+              "전기장판",
+              "전기 장판",
+              "전기매트",
+              "전기 매트"
+            ],
+            "power_kw": 0.15,
+            "duty_factor": 0.6,
+            "always_on": false,
+            "default_hours_per_day": 8,
+            "subject_kinds": [
+              "home"
+            ]
+          },
+          {
+            "id": "electric_fan",
+            "device_ko": "선풍기",
+            "aliases_ko": [
+              "선풍기",
+              "서큘레이터"
+            ],
+            "power_kw": 0.04,
+            "duty_factor": 1.0,
+            "always_on": false,
+            "default_hours_per_day": 4,
+            "subject_kinds": [
+              "home",
+              "store",
+              "building"
+            ]
+          },
+          {
+            "id": "television",
+            "device_ko": "TV",
+            "aliases_ko": [
+              "TV",
+              "티비",
+              "텔레비전"
+            ],
+            "power_kw": 0.12,
+            "duty_factor": 1.0,
+            "always_on": false,
+            "default_hours_per_day": 3,
+            "subject_kinds": [
+              "home",
+              "store",
+              "building"
+            ]
+          },
+          {
+            "id": "desktop_pc",
+            "device_ko": "컴퓨터",
+            "aliases_ko": [
+              "컴퓨터",
+              "PC",
+              "데스크톱"
+            ],
+            "power_kw": 0.2,
+            "duty_factor": 0.8,
+            "always_on": false,
+            "default_hours_per_day": 4,
+            "subject_kinds": [
+              "home",
+              "store",
+              "building"
+            ]
+          }
+        ],
+        "default_unit_count": 1,
+        "home_tariff_voltage": "low_voltage",
+        "periods": [
+          {
+            "id": "rainy_season",
+            "label_ko": "장마철",
+            "aliases_ko": [
+              "장마철",
+              "장마 기간",
+              "장마"
+            ],
+            "days": 30,
+            "months": [
+              7
+            ]
+          },
+          {
+            "id": "summer",
+            "label_ko": "여름철",
+            "aliases_ko": [
+              "여름철",
+              "여름 내내",
+              "여름",
+              "냉방철"
+            ],
+            "days": 92,
+            "months": [
+              6,
+              7,
+              8
+            ]
+          },
+          {
+            "id": "winter",
+            "label_ko": "겨울철",
+            "aliases_ko": [
+              "겨울철",
+              "겨울 내내",
+              "겨울",
+              "난방철"
+            ],
+            "days": 90,
+            "months": [
+              12,
+              1,
+              2
+            ]
+          },
+          {
+            "id": "year",
+            "label_ko": "한 해",
+            "aliases_ko": [
+              "1년",
+              "일 년",
+              "한 해",
+              "1년 내내",
+              "연간",
+              "매년",
+              "일년"
+            ],
+            "days": 365,
+            "months": null
+          }
+        ],
+        "default_period": "year"
+      },
+      "unit_text": "rule",
+      "label_ko": "기기 추가 사용 가정표(대표 소비전력·가동률·기본 사용 시간)",
+      "rule_ko": "기기를 더 켜거나 새로 들일 때 늘어나는 전기 = 대수 × 대표 소비전력(kW) × 가동률(켜 둔 시간 중 실제로 그 전력을 쓰는 몫) × 하루 사용 시간 × 날 수. 질문이 기기·시간·대수·기간·소비전력을 말하면 그 값이 먼저이고, 말하지 않은 칸만 이 표의 기본값(상시 기기 = 24시간 · 그 밖 = default_hours_per_day · 대수 1 · 기간 = 한 해)을 쓴다. 기간 낱말(장마철·여름철·겨울철)은 날 수와 해당 달(가정 누진 요금 계절)을 정한다. 가정의 요금 증가는 주택용 누진 요금표(residential_electricity_tariff · home_tariff_voltage 전압)로 달마다 (실측 달 사용량 + 늘어난 양)의 요금 − 실측 달 요금, 그 밖 대상은 정본 평균 단가. 표에 없는 기기(세탁기·식기세척기·건조기·전기차 충전은 게이트웨이 가정 기기 부하표의 운전 출력 × 한 번 운전 시간)는 소비전력을 질문으로 받는다",
+      "classification": "assumed",
+      "basis_kind": "declared_demo_assumption",
+      "basis": "외부 근거 없는 선언 시연 가정 — 가정용·업소용 기기의 일반적인 소비전력 수준(제품 정격·효율 등급 라벨 범위 안의 대표값)과 압축기 가동률을 둥근 값으로 정했다. 특정 제품의 정격·실측이 아니다",
+      "source": "게이트웨이(8.simulation/ems_transformer/serving) general_ops/_added_load(가정 home_action_planner added_load · 실측 자산 measured_store_analysis added_load) — 2026-10-15 사냥꾼 H2(demo.home.001 '편의점처럼 24시간 냉장고를 켜 두면' 멈춤의 일반 해법)"
     }
   }
 }

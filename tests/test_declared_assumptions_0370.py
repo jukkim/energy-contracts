@@ -77,7 +77,9 @@ def test_new_rows_carry_value_unit_label_basis_and_class():
     # 근거(2026-10-10, 0.3.100·0.3.101): 새 행 1(virtual_startup_channels — 재점검 76 · 설비 채널 없는 기동 순서 가상 분해) +
     #   새 행 2(peer_cohort_area_ratio_default — 게이트웨이 리터럴 0.2 옮김 · beds_per_floor_area_proxy — 선언 시연 가정). 0.3.100 이 1 행을 더했는데
     #   이 기대값이 따라오지 않아 0.3.100·0.3.101 CI 가 빨갰다. 세 행은 위 모양 규칙을 통과한다(기준을 낮춘 것이 아니다).
-    assert len(rows) == 54 + 33 + 3 + 1 + 1 + 3 + 3 + 1 + 2, len(rows)     # 검사 101 건(0 건이면 그것이 사고다)
+    # 근거(2026-10-15 사냥꾼 H2): 새 행 1(appliance_added_load — 기기 추가 사용 가정표 · 선언 시연 가정 · 게이트웨이 general_ops/_added_load).
+    #   위 모양 규칙(id·unit_text·label·rule·classification·basis_kind·basis·source)을 통과한다(기준을 낮춘 것이 아니다).
+    assert len(rows) == 54 + 33 + 3 + 1 + 1 + 3 + 3 + 1 + 2 + 1, len(rows)     # 검사 102 건(0 건이면 그것이 사고다)
     # 근거 없는 값은 '선언 시연 가정' 이라고 스스로 적는다 — 표준인 척하지 않는다
     demo = [k for k, r in rows.items() if r["basis_kind"] == "declared_demo_assumption"]
     assert demo and all("선언" in rows[k]["basis"] or "가정" in rows[k]["basis"] for k in demo), \
@@ -395,7 +397,8 @@ def test_0371_existing_keys_and_values_unchanged():
     # 근거(0.3.74): 새 행 3 — 이름 목록과 태그 대조는 test_ec_rows_0374.
     # 근거(2026-10-03): 새 행 1(climate_year_interpolation). 근거(2026-10-04): 새 행 1(robust_strategy_comfort).
     # 근거(2026-10-07): 0.3.91 새 행 3(capex_quote_band · map_estimate_fill_rule · role_tour_representative_quantile).
-    assert len(_new_rows()) == 54 + 33 + 3 + 1 + 1 + 3 + 3 + 1 + 2
+    # 근거(2026-10-15): 새 행 1(appliance_added_load).
+    assert len(_new_rows()) == 54 + 33 + 3 + 1 + 1 + 3 + 3 + 1 + 2 + 1
 
 
 def test_0371_consulted_rows_say_what_their_basis_is():

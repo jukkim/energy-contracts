@@ -179,7 +179,7 @@
   "default": {
     "generator": "8.simulation/ems_transformer/tools/gen_operation_manifest.py",
     "derivation_ko": "능력표(capability_table.ROWS — 대상 종류·질문 인자·내는 부분·축·입력 출처·구현·시뮬 팩)와 점포 연산 채널 표(store_operations_brief.operation_channels·REPLAY_DEFAULT_PERIOD)에서 파생 · 정형 질문 스위치 꺼짐·켜짐 두 상태를 합침",
-    "operation_count": 454,
+    "operation_count": 456,
     "needs_vocabulary": {
       "assigned_subject_data": "배정 자산·포트폴리오의 등록 자료(아이로스 기록·측정 묶음)",
       "building_registry": "25자리 건물번호의 공공 건물 자료",
@@ -4181,6 +4181,24 @@
         "implementation": "internal",
         "registered_when": "always"
       },
+      "home_action_planner/added_load": {
+        "tool": "home_action_planner",
+        "operation": "added_load",
+        "selector": "operation",
+        "needs": [
+          "subject_data_not_derived"
+        ],
+        "default_period": "not_applicable",
+        "subject_kinds": [],
+        "required_arguments": [],
+        "produces": [],
+        "axes": [
+          "city"
+        ],
+        "input_source": "bound",
+        "implementation": "internal",
+        "registered_when": "always"
+      },
       "home_action_planner/bill_budget_actions": {
         "tool": "home_action_planner",
         "operation": "bill_budget_actions",
@@ -4596,14 +4614,16 @@
           "per_subject_pick"
         ],
         "produces": [
-          "qualifier:metric:peak"
+          "axis:strategy_range",
+          "qualifier:metric:peak",
+          "qualifier:strategies"
         ],
         "axes": [
           "strategy"
         ],
         "input_source": "bound",
         "implementation": "internal",
-        "registered_when": "question_forms_on"
+        "registered_when": "always"
       },
       "measure_candidates/target_judgement": {
         "tool": "measure_candidates",
@@ -4626,7 +4646,7 @@
         ],
         "input_source": "bound",
         "implementation": "internal",
-        "registered_when": "question_forms_on"
+        "registered_when": "always"
       },
       "measured_action_review/mv_scenes": {
         "tool": "measured_action_review",
@@ -4894,6 +4914,29 @@
           "concept:observed_day_record",
           "qualifier:metric:peak"
         ],
+        "axes": [
+          "hour"
+        ],
+        "input_source": "bound",
+        "implementation": "internal",
+        "registered_when": "always"
+      },
+      "measured_store_analysis/added_load": {
+        "tool": "measured_store_analysis",
+        "operation": "added_load",
+        "selector": "operation",
+        "needs": [
+          "assigned_subject_data",
+          "building_registry"
+        ],
+        "default_period": "tool_rule",
+        "subject_kinds": [
+          "assigned_asset",
+          "building_no",
+          "portfolio"
+        ],
+        "required_arguments": [],
+        "produces": [],
         "axes": [
           "hour"
         ],
@@ -7972,7 +8015,8 @@
         ],
         "produces": [
           "axis:grouping",
-          "axis:yearly"
+          "axis:yearly",
+          "qualifier:strategies"
         ],
         "axes": [
           "strategy",
