@@ -81,7 +81,9 @@ def test_new_rows_carry_value_unit_label_basis_and_class():
     #   위 모양 규칙(id·unit_text·label·rule·classification·basis_kind·basis·source)을 통과한다(기준을 낮춘 것이 아니다).
     # 근거(2026-10-15 사냥꾼 H5): 새 행 1(home_appliance_loads — 게이트웨이 _virtual.HOME_APPLIANCE_LOADS 리터럴 값 그대로 · moved_literal).
     #   위 모양 규칙을 통과한다(기준을 낮춘 것이 아니다).
-    assert len(rows) == 54 + 33 + 3 + 1 + 1 + 3 + 3 + 1 + 2 + 1 + 1, len(rows)     # 검사 103 건(0 건이면 그것이 사고다)
+    # 근거(2026-10-15 사냥꾼 H6): 새 행 5(home_saving_actions · virtual_execution_draws · virtual_maintenance_share · virtual_hourly_shape ·
+    #   sim_pack_peak_heating_check — 게이트웨이 리터럴 값 그대로 · moved_literal). 위 모양 규칙을 통과한다(기준을 낮춘 것이 아니다).
+    assert len(rows) == 54 + 33 + 3 + 1 + 1 + 3 + 3 + 1 + 2 + 1 + 1 + 5, len(rows)     # 검사 108 건(0 건이면 그것이 사고다)
     # 근거 없는 값은 '선언 시연 가정' 이라고 스스로 적는다 — 표준인 척하지 않는다
     demo = [k for k, r in rows.items() if r["basis_kind"] == "declared_demo_assumption"]
     assert demo and all("선언" in rows[k]["basis"] or "가정" in rows[k]["basis"] for k in demo), \
@@ -400,7 +402,9 @@ def test_0371_existing_keys_and_values_unchanged():
     # 근거(2026-10-03): 새 행 1(climate_year_interpolation). 근거(2026-10-04): 새 행 1(robust_strategy_comfort).
     # 근거(2026-10-07): 0.3.91 새 행 3(capex_quote_band · map_estimate_fill_rule · role_tour_representative_quantile).
     # 근거(2026-10-15): 새 행 1(appliance_added_load). 근거(2026-10-15 사냥꾼 H5): 새 행 1(home_appliance_loads — 게이트웨이 리터럴 값 그대로).
-    assert len(_new_rows()) == 54 + 33 + 3 + 1 + 1 + 3 + 3 + 1 + 2 + 1 + 1
+    # 근거(2026-10-15 사냥꾼 H6): 새 행 5(home_saving_actions · virtual_execution_draws · virtual_maintenance_share · virtual_hourly_shape ·
+    #   sim_pack_peak_heating_check — 게이트웨이 리터럴 값 그대로).
+    assert len(_new_rows()) == 54 + 33 + 3 + 1 + 1 + 3 + 3 + 1 + 2 + 1 + 1 + 5
 
 
 def test_0371_consulted_rows_say_what_their_basis_is():

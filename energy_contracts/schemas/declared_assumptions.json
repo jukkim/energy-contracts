@@ -13,7 +13,7 @@
   ],
   "version": "1.6",
   "updated": "2026-10-05",
-  "$comment": "2026-10-15(가산 · version 칸은 1.7 때처럼 그대로): 새 행 둘 — appliance_added_load(기기 추가 사용 가정표 — 대표 소비전력·가동률·기본 사용 시간·기간 낱말 · 선언 시연 가정) · home_appliance_loads(가정 기기 부하 가정표 — 게이트웨이 _virtual.HOME_APPLIANCE_LOADS 리터럴 값 그대로 옮김 · moved_literal · 사냥꾼 H5). 1.7 의 키와 값은 하나도 바꾸지 않았다. · 1.7(2026-10-06, 0.3.91 — 일반화 재점검 · 가산): 새 행 셋 — capex_quote_band(게이트웨이 견적 편차 리터럴 0.8~1.2 그대로) · map_estimate_fill_rule(be-3d 지도 채움 순서·문턱 20 그대로 — 게이트웨이 사본 제거) · role_tour_representative_quantile(0.25 — 선언 시연 가정). 1.6 의 키와 값은 하나도 바꾸지 않았다. · 1.6(2026-10-01, 0.3.74 — 캠페인 요청 scratch/capability_first/EC_ROWS_NEEDED_round3.md E5-2·E5-3·R3F-1·R3F-2 · 가산): 새 행 셋 — operation_reading_window(28일 · 7일 · 구성원 12곳 — 게이트웨이 decision_support 리터럴 값 그대로) · operation_reading_freshness(읽은 창이 오늘과 같은 철이면 '지금 운전' — 설계 §2.5 한계 4 '한 철' · 계절 = calendar_conventions.question_season_system · 새 수는 0 하나) · cohort_city_min_share(0.5 초과 — 낱말 '다수결'의 뜻). 기존 행 값 안에 새 칸 serving_display_limits.value.display_significant_digits(3 — measure_candidates 리터럴 그대로, 뜻은 value_notes_ko). 요청이 제안한 operations_proxy_rules.value 대신 새 행으로 둔 까닭: 그 value 는 경제성 수명 격자 가정이 통째로 답에 싣는다(옛 답 바이트 보존). 1.5 의 키와 값(문구 포함)은 하나도 바꾸지 않았다. · 1.5(2026-09-30, 0.3.72 — 일반화 단계 소비처 요청 C1~C11 · WP6 R10 · 가산): 새 행 33개(키 목록 = CHANGELOG 0.3.72) · 기존 행 값 안에 새 칸 (hazard_week_scenarios.value.cold · serving_display_limits.value.presentation_table_max_columns·presentation_chart_max_series · scene_motion_defaults.value.descend_keys·dive_building_end_alt_m · sim_schedule_inference.value.morning_window_hours·startup_window_hours — 뜻은 행 수준 value_notes_ko) · comm_status_thresholds.by_delivery.<프로필>.label_ko. 1.4 의 키와 값(문구 포함)은 하나도 바꾸지 않았다 — 새 칸만. moved_literal = 코드 리터럴 값 그대로 · declared_demo_assumption = 외부 근거 없는 선언. 별칭·어휘 표(한 별칭 = 한 열쇠 · 가리키는 열쇠 존재)는 scripts/vocabulary_gate.py 가 적재 때(gen_constants.load_schemas · validate_ssot --check schemas) 검사한다. · 1.4(2026-09-30, 0.3.71 — GPT 상의 반영 · 사용자 지시 '지피티와 상의해서 정해' · 가산): 근거 없이 정한 여섯 값(short_cycling · comm_status_thresholds · life_roadmap · investment_tiers · precool_delta_c · judgement_thresholds 의 min_observed_temperature_days)과 인용 셋(min_r2 · pmv_inputs · debate_stated_term_ranges)을 검토했다. 1.3 의 키와 value 는 하나도 바꾸지 않았다 — 새 칸은 전부 **행 수준**(value 의 형제)에 둔다: 소비처가 value 를 통째로 도구 인자로 넘기는 자리(투자 구간·수명 로드맵 — 도구 스키마가 모르는 칸을 거절한다)가 있어서다. 새 칸: short_cycling.interpretation · comm_status_thresholds.by_delivery·unknown_delivery_profile · life_roadmap.sensitivity_life_used_shares·remaining_life_status_when_unknown · investment_tiers.classification_basis·numeric_thresholds_role·label_ko_by_work_scope · precool_delta_c.conditions_ko. 여섯 값은 표준값이 아니다 — basis_kind 는 declared_demo_assumption 그대로이고 basis 에 'GPT 상의 2026-09-30' 을 적는다(표준 인용으로 올리지 않는다). 인용 셋은 웹 대조(2026-09-30)로 문구를 고쳤다. · 1.3(2026-09-30, 0.3.70 — 일반화 감사 hard-coded-default 47건 · 남은 목록 N4-0): 게이트웨이·AgentLeague·be-3d 코드 리터럴로 있던 선언 기본값·문턱·화면 상한·가상 생성 규칙을 옮김(가산 — 1.2 의 행과 값은 그대로). 새 행은 전부 id · value · unit(QuantityUnit 낱말) 또는 unit_text · label_ko · rule_ko · classification · basis_kind · basis · source 를 싣는다. basis_kind: moved_literal(코드 값 그대로) · declared_demo_assumption(외부 근거 없는 선언 시연 가정) · standard_citation(표준·법령 인용) · derived_from_ec(이미 있는 정본 값에서 파생 — 새 수 없음). 이미 정본에 있는 값(순위 기본 개수 · 이상 z · 상위 비율 · 빠른 회수 · 폭염 달 창)은 새 행을 만들지 않았다 — 코드가 그 행을 읽는다. hazard_days.heat 에 baseline_months 추가. · 1.2(2026-09-29 RV-B3 초안, 0.3.62): 단위를 interface_types.QuantityUnit 낱말로(top_share '%'→pct · 햇수 yr) · 게이트웨이 모듈 상수로 남아 있던 선언 기본값을 옮김 — scenario_defaults(공실률·시나리오 공실률·끌 수 있는 부하 절감 몫·우선순위) · _assumption_ranges(가정 탐색 범위 5개) · measured_portfolio(순위 행 기본 개수). 값은 옮기기만 했다(동작 변경 없음). 모든 항목의 분류 = assumed(선언 가정) — 사람 대면 라벨은 data_classification 의 assumed label_ko 에서 파생한다.",
+  "$comment": "2026-10-15(가산 · version 칸은 1.7 때처럼 그대로): 새 행 둘 — appliance_added_load(기기 추가 사용 가정표 — 대표 소비전력·가동률·기본 사용 시간·기간 낱말 · 선언 시연 가정) · home_appliance_loads(가정 기기 부하 가정표 — 게이트웨이 _virtual.HOME_APPLIANCE_LOADS 리터럴 값 그대로 옮김 · moved_literal · 사냥꾼 H5) · 사냥꾼 H6 새 행 다섯(전부 moved_literal — 게이트웨이 리터럴 값 그대로): home_saving_actions(_virtual.HOME_ACTIONS) · virtual_execution_draws(_virtual.EXEC_*·EVENT_* 일곱 범위) · virtual_maintenance_share(_virtual.MAINTENANCE_SHARE_OF_CAPEX·MAINTENANCE_DEFAULT_SHARE) · virtual_hourly_shape(_virtual.BASE_FRACTION·OCCUPIED_HOURS·WEEKEND_CLOSED) · sim_pack_peak_heating_check(simulation_pack_analysis.MILD_TOP_SHARE·CAPACITY_SHARE). 같은 값이 이미 있던 셋(dr_three_stage · home_gas_base_share · virtual_population_shares.elderly_share_range)은 새 행을 만들지 않고 게이트웨이가 그 행을 읽는다. 1.7 의 키와 값은 하나도 바꾸지 않았다. · 1.7(2026-10-06, 0.3.91 — 일반화 재점검 · 가산): 새 행 셋 — capex_quote_band(게이트웨이 견적 편차 리터럴 0.8~1.2 그대로) · map_estimate_fill_rule(be-3d 지도 채움 순서·문턱 20 그대로 — 게이트웨이 사본 제거) · role_tour_representative_quantile(0.25 — 선언 시연 가정). 1.6 의 키와 값은 하나도 바꾸지 않았다. · 1.6(2026-10-01, 0.3.74 — 캠페인 요청 scratch/capability_first/EC_ROWS_NEEDED_round3.md E5-2·E5-3·R3F-1·R3F-2 · 가산): 새 행 셋 — operation_reading_window(28일 · 7일 · 구성원 12곳 — 게이트웨이 decision_support 리터럴 값 그대로) · operation_reading_freshness(읽은 창이 오늘과 같은 철이면 '지금 운전' — 설계 §2.5 한계 4 '한 철' · 계절 = calendar_conventions.question_season_system · 새 수는 0 하나) · cohort_city_min_share(0.5 초과 — 낱말 '다수결'의 뜻). 기존 행 값 안에 새 칸 serving_display_limits.value.display_significant_digits(3 — measure_candidates 리터럴 그대로, 뜻은 value_notes_ko). 요청이 제안한 operations_proxy_rules.value 대신 새 행으로 둔 까닭: 그 value 는 경제성 수명 격자 가정이 통째로 답에 싣는다(옛 답 바이트 보존). 1.5 의 키와 값(문구 포함)은 하나도 바꾸지 않았다. · 1.5(2026-09-30, 0.3.72 — 일반화 단계 소비처 요청 C1~C11 · WP6 R10 · 가산): 새 행 33개(키 목록 = CHANGELOG 0.3.72) · 기존 행 값 안에 새 칸 (hazard_week_scenarios.value.cold · serving_display_limits.value.presentation_table_max_columns·presentation_chart_max_series · scene_motion_defaults.value.descend_keys·dive_building_end_alt_m · sim_schedule_inference.value.morning_window_hours·startup_window_hours — 뜻은 행 수준 value_notes_ko) · comm_status_thresholds.by_delivery.<프로필>.label_ko. 1.4 의 키와 값(문구 포함)은 하나도 바꾸지 않았다 — 새 칸만. moved_literal = 코드 리터럴 값 그대로 · declared_demo_assumption = 외부 근거 없는 선언. 별칭·어휘 표(한 별칭 = 한 열쇠 · 가리키는 열쇠 존재)는 scripts/vocabulary_gate.py 가 적재 때(gen_constants.load_schemas · validate_ssot --check schemas) 검사한다. · 1.4(2026-09-30, 0.3.71 — GPT 상의 반영 · 사용자 지시 '지피티와 상의해서 정해' · 가산): 근거 없이 정한 여섯 값(short_cycling · comm_status_thresholds · life_roadmap · investment_tiers · precool_delta_c · judgement_thresholds 의 min_observed_temperature_days)과 인용 셋(min_r2 · pmv_inputs · debate_stated_term_ranges)을 검토했다. 1.3 의 키와 value 는 하나도 바꾸지 않았다 — 새 칸은 전부 **행 수준**(value 의 형제)에 둔다: 소비처가 value 를 통째로 도구 인자로 넘기는 자리(투자 구간·수명 로드맵 — 도구 스키마가 모르는 칸을 거절한다)가 있어서다. 새 칸: short_cycling.interpretation · comm_status_thresholds.by_delivery·unknown_delivery_profile · life_roadmap.sensitivity_life_used_shares·remaining_life_status_when_unknown · investment_tiers.classification_basis·numeric_thresholds_role·label_ko_by_work_scope · precool_delta_c.conditions_ko. 여섯 값은 표준값이 아니다 — basis_kind 는 declared_demo_assumption 그대로이고 basis 에 'GPT 상의 2026-09-30' 을 적는다(표준 인용으로 올리지 않는다). 인용 셋은 웹 대조(2026-09-30)로 문구를 고쳤다. · 1.3(2026-09-30, 0.3.70 — 일반화 감사 hard-coded-default 47건 · 남은 목록 N4-0): 게이트웨이·AgentLeague·be-3d 코드 리터럴로 있던 선언 기본값·문턱·화면 상한·가상 생성 규칙을 옮김(가산 — 1.2 의 행과 값은 그대로). 새 행은 전부 id · value · unit(QuantityUnit 낱말) 또는 unit_text · label_ko · rule_ko · classification · basis_kind · basis · source 를 싣는다. basis_kind: moved_literal(코드 값 그대로) · declared_demo_assumption(외부 근거 없는 선언 시연 가정) · standard_citation(표준·법령 인용) · derived_from_ec(이미 있는 정본 값에서 파생 — 새 수 없음). 이미 정본에 있는 값(순위 기본 개수 · 이상 z · 상위 비율 · 빠른 회수 · 폭염 달 창)은 새 행을 만들지 않았다 — 코드가 그 행을 읽는다. hazard_days.heat 에 baseline_months 추가. · 1.2(2026-09-29 RV-B3 초안, 0.3.62): 단위를 interface_types.QuantityUnit 낱말로(top_share '%'→pct · 햇수 yr) · 게이트웨이 모듈 상수로 남아 있던 선언 기본값을 옮김 — scenario_defaults(공실률·시나리오 공실률·끌 수 있는 부하 절감 몫·우선순위) · _assumption_ranges(가정 탐색 범위 5개) · measured_portfolio(순위 행 기본 개수). 값은 옮기기만 했다(동작 변경 없음). 모든 항목의 분류 = assumed(선언 가정) — 사람 대면 라벨은 data_classification 의 assumed label_ko 에서 파생한다.",
   "type": "object",
   "default": {
     "hazard_days": {
@@ -2609,6 +2609,225 @@
       "basis_kind": "moved_literal",
       "basis": "게이트웨이 asset_inputs/_virtual.HOME_APPLIANCE_LOADS 리터럴(2026-09-29 R3 MCP-028 · AIROS-085)을 값 그대로 옮김 — 외부 근거 없는 선언 시연 가정이다(특정 제품의 정격·실측이 아니다). 기기별 계량(스마트 플러그 등)이 생기면 그 값이 먼저다",
       "source": "게이트웨이(8.simulation/ems_transformer/serving) asset_inputs/_virtual.home_appliance_loads(소비처: asset_inputs/measured_ops 다음 날 기기 배치 · general_ops/measured_day.appliance_table · general_ops/measured_home 전기차 충전 · general_ops/_added_load 표에 없는 기기 · asset_inputs/simulation_pack_analysis.dr_stage_table 가상 충전기 출력) — 2026-10-15 사냥꾼 H5(코드 손 표 → EC)"
+    },
+    "home_saving_actions": {
+      "id": "home_saving_actions",
+      "value": {
+        "actions": [
+          {
+            "id": "standby_cut",
+            "end_use": "plug_elec",
+            "action_ko": "안 쓰는 기기 멀티탭 끄기(대기전력)",
+            "inconvenience": 1,
+            "capture_low": 0.03,
+            "capture_high": 0.08
+          },
+          {
+            "id": "lights_off",
+            "end_use": "lighting_elec",
+            "action_ko": "빈 방 소등",
+            "inconvenience": 1,
+            "capture_low": 0.05,
+            "capture_high": 0.15
+          },
+          {
+            "id": "ac_filter",
+            "end_use": "cooling_elec",
+            "action_ko": "에어컨 필터 청소",
+            "inconvenience": 1,
+            "capture_low": 0.02,
+            "capture_high": 0.05
+          },
+          {
+            "id": "ac_setpoint_1c",
+            "end_use": "cooling_elec",
+            "action_ko": "냉방 설정온도 1℃ 올리기",
+            "inconvenience": 2,
+            "capture_low": 0.03,
+            "capture_high": 0.07
+          },
+          {
+            "id": "vent_hours",
+            "end_use": "vent_elec",
+            "action_ko": "환기 장치 가동 시간 줄이기(최소 환기 유지)",
+            "inconvenience": 2,
+            "capture_low": 0.05,
+            "capture_high": 0.1
+          },
+          {
+            "id": "ac_hours",
+            "end_use": "cooling_elec",
+            "action_ko": "냉방 사용 시간 1시간 줄이기",
+            "inconvenience": 3,
+            "capture_low": 0.05,
+            "capture_high": 0.12
+          }
+        ]
+      },
+      "value_notes_ko": "actions[] 한 칸 = 가정 절감 행동 하나: end_use = 대상 용도(경제성 분해 키) · inconvenience = 불편 등급(1 낮음 ~ 3 높음) · capture_low·capture_high = 그 용도 사용량 중 줄일 수 있다고 보는 몫의 하한·상한(비율). 표 순서 = 답에 싣는 순서",
+      "unit_text": "ratio · grade",
+      "label_ko": "가정 절감 행동표(대상 용도·불편 등급·포착 범위)",
+      "rule_ko": "가상 가정 절감 행동표 = 행동마다 대상 용도·불편 등급(1~3)·포착 범위(하한~상한)를 선언 — 절감 범위 = 연간 사용량 × 정본 용도 비중 × 포착 범위 · 실측 절감이 아니라 추정 범위입니다",
+      "classification": "assumed",
+      "basis_kind": "moved_literal",
+      "basis": "게이트웨이 asset_inputs/_virtual.HOME_ACTIONS · HOME_ACTIONS_RULE_KO 리터럴을 값 그대로 옮김 — 외부 근거 없는 선언 시연 가정이다(정본에 가정 행동 효과 표가 없어 선언했다 · 행동별 전후 실측이 아니다). 행동별 계측이 생기면 그 값이 먼저다",
+      "source": "게이트웨이(8.simulation/ems_transformer/serving) asset_inputs/_virtual.home_action_catalog(소비처: general_ops/measured_home 행동 계획·설정 비교 · general_ops/measure_candidates 가정 행동 단 · internal_query_tools 예산 안 행동) — 2026-10-15 사냥꾼 H6(코드 손 표 → EC)"
+    },
+    "virtual_execution_draws": {
+      "id": "virtual_execution_draws",
+      "value": {
+        "execution_log": {
+          "executed_share_range": [
+            0.6,
+            1.0
+          ],
+          "intensity_range": [
+            0.7,
+            1.0
+          ],
+          "observed_factor_range": [
+            0.85,
+            0.98
+          ],
+          "equipment_loss_share": 0.1
+        },
+        "realized_event": {
+          "price_rise_range": [
+            0.02,
+            0.08
+          ],
+          "operating_hours_factor_range": [
+            0.85,
+            0.95
+          ],
+          "realization_range": [
+            0.6,
+            0.9
+          ]
+        }
+      },
+      "value_notes_ko": "execution_log = 가상 실행 기록(달마다 실행 비율·실행 강도·관측 계수를 [하한, 상한] 안에서 결정적 추첨 · 설비 손실 = 해시로 고른 한 달에 그 달 목표 절감 × equipment_loss_share) · realized_event = 가상 실현 사건(실제 단가 = 계획 단가 × (1 + price_rise) · 운영시간 계수 · 실현 절감 = 예상 × realization). 계량 편향 범위는 따로 virtual_metering.exec_meter_bias_range 에 있다",
+      "unit_text": "ratio",
+      "label_ko": "가상 운영 기록(실행 기록·실현 사건)의 추첨 범위",
+      "rule_ko": "가상 실행 기록·실현 사건 = (대상·달 또는 대상·항목) 해시로 선언 범위 안에서 결정적 생성(같은 입력이면 같은 값) — 실제 운영 로그·정산 기록이 아닙니다",
+      "classification": "assumed",
+      "basis_kind": "moved_literal",
+      "basis": "게이트웨이 asset_inputs/_virtual.EXEC_SHARE_RANGE · EXEC_INTENSITY_RANGE · EXEC_OBSERVED_FACTOR_RANGE · EXEC_EQUIPMENT_LOSS_SHARE · EVENT_PRICE_RISE_RANGE · EVENT_HOURS_FACTOR_RANGE · EVENT_REALIZATION_RANGE 리터럴(2026-09-28 U-A)을 값 그대로 옮김 — 외부 근거 없는 선언 시연 가정이다. 한 행으로 묶은 까닭: 일곱 값 모두 같은 생성기 묶음(시뮬 팩 연산의 가상 운영 기록 execution_log · realized_event)의 추첨 범위이고 같은 해시 규칙을 쓴다",
+      "source": "게이트웨이(8.simulation/ems_transformer/serving) asset_inputs/_virtual.execution_log · realized_event — 2026-10-15 사냥꾼 H6(코드 손 표 → EC)"
+    },
+    "virtual_maintenance_share": {
+      "id": "virtual_maintenance_share",
+      "value": {
+        "share_of_capex_by_class": {
+          "operational": 0.05,
+          "equipment_replacement": 0.02,
+          "passive": 0.005
+        },
+        "default_share": 0.02
+      },
+      "value_notes_ko": "share_of_capex_by_class = 조치 부류(EC measure_cost_catalog 의 부류 낱말)별 연간 유지관리비 ÷ CAPEX · default_share = 표에 없는 부류",
+      "unit": "ratio",
+      "label_ko": "가상 연간 유지관리비 비율(조치 부류별 CAPEX 대비)",
+      "rule_ko": "가상 연간 유지관리비 = 조치 CAPEX × 부류별 비율(운영 조치 5% · 설비 교체 2% · 외피 0.5%, 그 밖 2%) — 정본 조치 카탈로그에 유지관리비가 없어 선언 규칙으로 채운 추정값(견적·실적 아님)",
+      "classification": "assumed",
+      "basis_kind": "moved_literal",
+      "basis": "게이트웨이 asset_inputs/_virtual.MAINTENANCE_SHARE_OF_CAPEX · MAINTENANCE_DEFAULT_SHARE 리터럴(2026-09-28 sections S1)을 값 그대로 옮김 — 외부 근거 없는 선언 시연 가정이다. 기본 비율과 부류별 표는 한 규칙(표에 없으면 기본)이라 한 행으로 묶었다",
+      "source": "게이트웨이(8.simulation/ems_transformer/serving) asset_inputs/_virtual.maintenance_cost(소비처: internal_query_tools 경제성 유지관리비) — 2026-10-15 사냥꾼 H6(코드 손 표 → EC)"
+    },
+    "virtual_hourly_shape": {
+      "id": "virtual_hourly_shape",
+      "value": {
+        "base_fraction": 0.35,
+        "occupied_hours_by_class": {
+          "RET": [
+            0,
+            1,
+            2,
+            3,
+            4,
+            5,
+            6,
+            7,
+            8,
+            9,
+            10,
+            11,
+            12,
+            13,
+            14,
+            15,
+            16,
+            17,
+            18,
+            19,
+            20,
+            21,
+            22,
+            23
+          ],
+          "BLD": [
+            9,
+            10,
+            11,
+            12,
+            13,
+            14,
+            15,
+            16,
+            17
+          ],
+          "FAC": [
+            9,
+            10,
+            11,
+            12,
+            13,
+            14,
+            15,
+            16,
+            17
+          ],
+          "HOM": [
+            6,
+            7,
+            8,
+            18,
+            19,
+            20,
+            21,
+            22
+          ]
+        },
+        "weekend_closed_classes": [
+          "BLD",
+          "FAC"
+        ],
+        "unknown_class_uses": "BLD"
+      },
+      "value_notes_ko": "base_fraction = 운영(재실) 시각 밖의 시각 계수(운영 시각 = 1.0) · occupied_hours_by_class = 자산 종류(EC identifiers.air_asset_kind)별 운영 시각(KST 시 · 평일) · weekend_closed_classes = 주말(토·일)에 운영하지 않는 종류 · unknown_class_uses = 표에 없는 종류가 따르는 종류",
+      "unit_text": "ratio · hour",
+      "label_ko": "가상 시각 형상·기본 운영 일정(자산 종류별)",
+      "rule_ko": "가상 시간 계열·가상 운영 일정의 시각 형상 = 자산 종류별 운영 시각은 1.0, 그 밖은 기저 비율 0.35 · 편의점 24시간 · 업무·공장 9~18시·주말 비운영 · 가정 6~9시·18~23시 재실 — 등록 일정·실측이 아닌 선언 시연 가정",
+      "schedule_rule_ko": "가상 운영 일정 = 자산 종류별 기본 운영 시각(가상 계열의 시각 형상과 같은 선언: 편의점 24시간 · 업무·공장 9~18시·주말 비운영 · 가정 6~9시·18~23시 재실) — 등록 일정이 아닙니다",
+      "classification": "assumed",
+      "basis_kind": "moved_literal",
+      "basis": "게이트웨이 asset_inputs/_virtual.BASE_FRACTION · OCCUPIED_HOURS · WEEKEND_CLOSED · SCHEDULE_RULE_KO 리터럴을 값 그대로 옮김 — 외부 근거 없는 선언 시연 가정이다. 세 값은 한 시각 형상(운영 시각 1.0 / 그 밖 기저 비율)의 부품이라 한 행으로 묶었다. 편의점 24시간은 building_usage_map.usages.convenience_store.operates_24h 와 같은 선언이다",
+      "source": "게이트웨이(8.simulation/ems_transformer/serving) asset_inputs/_virtual.occupied · operating_schedule · series_rule_ko(소비처: 가상 시간 계열 · exogenous_load_forecast_workflow 운영 계수 · general_ops/scenario_defaults 기저 몫 · general_ops/sim_packs 재실 마스크 · measured_ops 가상 가정 가스) — 2026-10-15 사냥꾼 H6(코드 손 표 → EC)"
+    },
+    "sim_pack_peak_heating_check": {
+      "id": "sim_pack_peak_heating_check",
+      "value": {
+        "mild_top_share": 0.25,
+        "boiler_capacity_share": 0.95
+      },
+      "value_notes_ko": "mild_top_share = 선선한 날 중 피크 상위 몫(4분의 1) · boiler_capacity_share = 보일러 시간 최대의 이 몫 이상이면 '최대 출력 근처'. 질문이 top_share·capacity_share 를 말하면 그 값이 먼저다",
+      "unit": "ratio",
+      "label_ko": "시뮬 팩 선선한 날 피크·한파 난방 점검 문턱",
+      "rule_ko": "선선한 날 피크 = 선선한 날 중 피크 상위 25% · 한파 난방 점검의 '최대 출력 근처' = 보일러 시간 최대의 95% 이상(질문 값이 먼저)",
+      "classification": "assumed",
+      "basis_kind": "moved_literal",
+      "basis": "게이트웨이 asset_inputs/simulation_pack_analysis.MILD_TOP_SHARE · CAPACITY_SHARE 리터럴(2026-09-28 axis F4)을 값 그대로 옮김 — 외부 근거 없는 선언 시연 가정이다. 둘 다 같은 팩 칸 점검(axis F4 선선한 날 피크 · 한파 난방 점검)의 선언 문턱이라 한 행으로 묶었다",
+      "source": "게이트웨이(8.simulation/ems_transformer/serving) asset_inputs/simulation_pack_analysis.peak_heating_check_value(소비처: 선선한 날 피크 · 한파 난방 점검 · 난방 미달 규칙 heat_rule) — 2026-10-15 사냥꾼 H6(코드 손 표 → EC)"
     }
   }
 }

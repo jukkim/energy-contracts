@@ -7,6 +7,7 @@
 ## 다음 릴리스에 실을 것 (미태그)
 
 - `declared_assumptions.json` 새 행 `appliance_added_load`(기기 추가 사용 가정표 — 기기 11종 대표 소비전력·가동률·기본 사용 시간 · 기간 낱말 장마철·여름철·겨울철·한 해 · 가정 누진 요금 전압 low_voltage · 선언 시연 가정) + `operation_manifest.json` 재생성(home_action_planner/added_load · measured_store_analysis/added_load · 생성기 그대로 — 같은 실행에 다른 세션 작업 트리 변화도 반영). 가산 — 기존 키·값 변경 없음. 소비처 게이트웨이 general_ops/_added_load (2026-10-15 사냥꾼 H2).
+- `declared_assumptions.json` 새 행 다섯(전부 `moved_literal` — 게이트웨이 코드 손 표의 값 그대로 옮김 · 사냥꾼 H6): `home_saving_actions`(가정 절감 행동표 · `_virtual.HOME_ACTIONS`) · `virtual_execution_draws`(가상 실행 기록·실현 사건 추첨 범위 일곱 · `_virtual.EXEC_*`·`EVENT_*`) · `virtual_maintenance_share`(조치 부류별 유지관리비 비율 · `_virtual.MAINTENANCE_SHARE_OF_CAPEX`·`MAINTENANCE_DEFAULT_SHARE`) · `virtual_hourly_shape`(가상 시각 형상 · `_virtual.BASE_FRACTION`·`OCCUPIED_HOURS`·`WEEKEND_CLOSED`) · `sim_pack_peak_heating_check`(`simulation_pack_analysis.MILD_TOP_SHARE`·`CAPACITY_SHARE`). 같은 값이 이미 있던 `dr_three_stage` · `home_gas_base_share` · `virtual_population_shares` 는 새 행 없이 게이트웨이가 읽는다. 가산 — 기존 키·값 변경 없음 (2026-10-15 사냥꾼 H6).
 - `airo_request.json` 2.7 → 2.8 — `Period.basis` 에 `prior_answer_relative`(이어 묻기가 **앞 답의 기간**에서 옮긴 상대 달 — '그 앞 달로 바꿔줘'). 가산(끝에 덧붙임). pydantic 모델(airo_request·airo_result) 재생성. 시험 `test_airo_request_period_basis_u17`(새 값 받음 · 옛 값 그대로 · 목록 밖 거절 · v0.3.108 대비 덧붙이기만) · 판 고정 2.8 · 옛 태그 대비 가산 시험 2곳 허용 목록에 이 칸(이름 있는 허용). 소비처: 게이트웨이 `query_planner._shifted_period_replay`(캠페인 SOURCE_FIX_WORK_PLAN U17).
 
 ## 0.3.108 (2026-10-15, 태그 v0.3.108) — 표시 선호 칸 presentation · 표시 사유 문장표 · 재시도 지연 식
