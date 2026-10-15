@@ -77,8 +77,18 @@ def repo_of(path: Path) -> RepoId | None:
     lines = r.stdout.strip().splitlines()
     if r.returncode != 0 or len(lines) < 2:
         return None
-    return RepoId(common_dir=_key(lines[0]), common_path=Path(lines[0]).resolve(),
-                  toplevel=Path(lines[1]).resolve())
+    top = Path(lines[1]).resolve()
+    # 2026-10-15 아이로 통합 저장소(airo-platform): 뿌리(myjob) 하나에 17 폴더가 든다 — 공통 git 폴더가 하나라 위 판정으로는
+    #   모든 폴더가 '같은 저장소' 가 되어 아무 커밋이나 17 곳의 drift 로 막힌다(09-15 에 고친 일의 재발). 뿌리에 통합 대상 목록
+    #   (.airo/hooks/projects.txt)이 있으면 경로가 속한 대상 폴더를 저장소로 본다(이름 = 폴더 이름 · 뿌리 = 그 폴더). 목록이 없으면 예전 그대로.
+    listing = top / ".airo" / "hooks" / "projects.txt"
+    if listing.is_file():
+        here = Path(path).resolve()
+        for rel in sorted((l.strip() for l in listing.read_text(encoding="utf-8").splitlines() if l.strip()), key=len, reverse=True):
+            proj = (top / rel).resolve()
+            if here == proj or proj in here.parents:
+                return RepoId(common_dir=_key(proj) + "#airo", common_path=proj / ".git", toplevel=proj)
+    return RepoId(common_dir=_key(lines[0]), common_path=Path(lines[0]).resolve(), toplevel=top)
 
 
 class Scope:
