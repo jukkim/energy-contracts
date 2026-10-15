@@ -32,7 +32,10 @@ _spec.loader.exec_module(_t0372)
 strict_additive, _at_tag = _t0372.strict_additive, _t0372._at_tag
 
 #: 태그와 달라도 되는 자리 — 판 표지와 표면 목록(뒤에 붙이기만 — 아래에서 앞 원소를 따로 본다)
-ALLOWED_CHANGES = {"/version", "/updated", "/$comment", "/properties/surface/enum"}
+#: 2026-10-15 U17(airo_request 2.8): Period.basis 값 목록에 prior_answer_relative 를 **끝에 덧붙였다**(설명 한 줄 함께). 덧붙이기만인지(앞 목록 그대로)는
+#:   test_airo_request_period_basis_u17.test_basis_enum_only_appended_against_the_0108_tag 가 본다(반대쪽).
+ALLOWED_CHANGES = {"/version", "/updated", "/$comment", "/properties/surface/enum",
+                   "/$defs/Period/properties/basis/enum", "/$defs/Period/properties/basis/description"}
 
 
 def _schema() -> dict:
@@ -46,7 +49,7 @@ def _ok(inst) -> bool:
 def test_canvas_is_one_more_surface_name_appended():
     schema = _schema()
     # 2.7(2026-10-14 묶음 U1)은 presentation 칸만 더했다 — 표면 목록은 그대로(아래 단언이 지킨다)
-    assert schema["version"] in ("2.6", "2.7")
+    assert schema["version"] in ("2.6", "2.7", "2.8")   # 2.8(10-15 U17)은 Period.basis 값만 — 표면 목록 그대로
     enum = schema["properties"]["surface"]["enum"]
     assert enum == [*SURFACES_2_5, "canvas"]              # 앞 다섯은 그대로, 순서도 그대로
     assert len(enum) == len(set(enum))

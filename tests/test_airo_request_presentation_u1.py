@@ -25,7 +25,10 @@ _spec.loader.exec_module(_t0372)
 strict_additive, _at_tag = _t0372.strict_additive, _t0372._at_tag
 
 #: 태그와 달라도 되는 자리 — 판 표지뿐(presentation 은 새 키라 strict_additive 가 그대로 받는다)
-ALLOWED_CHANGES = {"/version", "/updated", "/$comment"}
+#: 2026-10-15 U17(airo_request 2.8): Period.basis 값 목록에 prior_answer_relative 를 **끝에 덧붙였다**(설명 한 줄 함께). 덧붙이기만인지(앞 목록 그대로)는
+#:   test_airo_request_period_basis_u17.test_basis_enum_only_appended_against_the_0108_tag 가 본다(반대쪽).
+ALLOWED_CHANGES = {"/version", "/updated", "/$comment",
+                   "/$defs/Period/properties/basis/enum", "/$defs/Period/properties/basis/description"}
 
 
 def _schema() -> dict:
@@ -38,7 +41,7 @@ def _ok(inst) -> bool:
 
 def test_presentation_is_optional_and_accepts_both_modes():
     schema = _schema()
-    assert schema["version"] == "2.7"
+    assert schema["version"] in ("2.7", "2.8")       # 2.8(10-15 U17)은 Period.basis 값 하나만 더했다
     Draft202012Validator.check_schema(schema)
     assert "presentation" not in schema["required"]
     accept = [BASE,                                                  # 생략 = 기존 봉투 그대로

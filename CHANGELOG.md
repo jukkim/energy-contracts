@@ -4,6 +4,10 @@
 
 ---
 
+## 다음 릴리스에 실을 것 (미태그)
+
+- `airo_request.json` 2.7 → 2.8 — `Period.basis` 에 `prior_answer_relative`(이어 묻기가 **앞 답의 기간**에서 옮긴 상대 달 — '그 앞 달로 바꿔줘'). 가산(끝에 덧붙임). pydantic 모델(airo_request·airo_result) 재생성. 시험 `test_airo_request_period_basis_u17`(새 값 받음 · 옛 값 그대로 · 목록 밖 거절 · v0.3.108 대비 덧붙이기만) · 판 고정 2.8 · 옛 태그 대비 가산 시험 2곳 허용 목록에 이 칸(이름 있는 허용). 소비처: 게이트웨이 `query_planner._shifted_period_replay`(캠페인 SOURCE_FIX_WORK_PLAN U17).
+
 ## 0.3.108 (2026-10-15, 태그 v0.3.108) — 표시 선호 칸 presentation · 표시 사유 문장표 · 재시도 지연 식
 
 - `airo_request.json` 2.6 → 2.7 — 봉투 최상위 선택 칸 `presentation{mode: auto|none}`(표시 선호 · 분석 의도와 분리 · 생략 = 기존 동작). 가산. 응답 `validation.presentation` 모양은 게이트웨이 `serving/scene_display_policy` 가 정한다. pydantic 모델 재생성(`Presentation`·`Mode`). 시험 `test_airo_request_presentation_u1`(받을 것 4 · 막을 것 8 · v0.3.107 태그 대비 덧붙이기) · 판 고정 2곳 2.7. 소비처 후속: 게이트웨이 `tests/test_m3g_envelope_v23.py` 판 고정 2.7 (캠페인 NL_TO_BE3D_UNIFICATION_PLAN §10 묶음 U1).
